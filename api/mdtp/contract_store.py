@@ -12,13 +12,17 @@ class Contract:
     abi: dict
     ethClient: EthClientInterface
     ownerOfMethodName: str
-    tokenUriMethodName: str
+    tokenContentUriMethodName: str
     totalSupplyMethodName: str
+    setTokenContentUriMethodName: str
+    setTokenContentUriFieldName: str
 
 class ContractStore:
 
-    def __init__(self, contracts: List[Contract]):
+    def __init__(self, contracts: List[Contract], accountAddress: Optional[str] = None, privateKey: Optional[str] = None):
         self.contracts = contracts
+        self.accountAddress = accountAddress
+        self.privateKey = privateKey
 
     def get_contract(self, network: str) -> Contract:
         for contract in self.contracts:
@@ -26,31 +30,38 @@ class ContractStore:
                 return contract
         raise NotFoundException()
 
-    async def _call_function(self, contract: Contract, functionName: str, arguments: Optional[dict] = None) -> List[Any]:
-        methodAbi = [abi for abi in contract.abi if abi.get('name') == functionName][0]
-        response = await contract.ethClient.call_function(toAddress=contract.address, contractAbi=contract.abi, functionAbi=methodAbi, arguments=arguments)
+    async def _call_function(self, contract: Contract, methodName: str, arguments: Optional[dict] = None) -> List[Any]:
+        functionAbi = [abi for abi in contract.abi if abi.get('name') == methodName][0]
+        response = await contract.ethClient.call_function(toAddress=contract.address, contractAbi=contract.abi, functionAbi=functionAbi, arguments=arguments)
         return response
+
+    async def _send_transaction(self, contract: Contract, methodName: str, nonce: int, gas: int, gasPrice: int, arguments: Optional[dict] = None) -> str:
+        if not self.accountAddress or not self.privateKey:
+            raise Exception('accountAddress and privateKey must be provided to ContractStore in order to make transactions')
+        functionAbi = [abi for abi in contract.abi if abi.get('name') == methodName][0]
+        transactionHash = await contract.ethClient.send_transaction(toAddress=contract.address, contractAbi=contract.abi, functionAbi=functionAbi, arguments=arguments, fromAddress=self.accountAddress, privateKey=self.privateKey, nonce=nonce, gas=gas, gasPrice=gasPrice)
+        return transactionHash
 
     async def get_owner_id(self, network: str, tokenId: int) -> str:
         contract = self.get_contract(network=network)
-        ownerIdResponse = await self._call_function(contract=contract, functionName=contract.ownerOfMethodName, arguments={'tokenId': int(tokenId)})
-        print('ownerIdResponse', ownerIdResponse)
+        ownerIdResponse = await self._call_function(contract=contract, methodName=contract.ownerOfMethodName, arguments={'tokenId': int(tokenId)})
         ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
-        print('ownerId', ownerId)
         return ownerId
 
     async def get_total_supply(self, network: str) -> int:
         contract = self.get_contract(network=network)
-        tokenCountResponse = await self._call_function(contract=contract, functionName=contract.totalSupplyMethodName)
-        print('tokenCountResponse', tokenCountResponse)
+        tokenCountResponse = await self._call_function(contract=contract, methodName=contract.totalSupplyMethodName)
         tokenCount = int(tokenCountResponse[0])
-        print('tokenCount', tokenCount)
         return tokenCount
 
     async def get_token_content_url(self, network: str, tokenId: int) -> int:
         contract = self.get_contract(network=network)
-        tokenUriResponse = await self._call_function(contract=contract, functionName=contract.tokenUriMethodName, arguments={'tokenId': int(tokenId)})
-        print('tokenUriResponse', tokenUriResponse)
+        tokenUriResponse = await self._call_function(contract=contract, methodName=contract.tokenContentUriMethodName, arguments={'tokenId': int(tokenId)})
         tokenUri = tokenUriResponse[0].strip()
-        print('tokenUri', tokenUri)
         return tokenUri
+
+    async def set_token_content_url(self, network: str, tokenId: int, tokenContentUri: str, nonce: int, gas: int, gasPrice: int) -> str:
+        contract = self.get_contract(network=network)
+        arguments = {'tokenId': tokenId, contract.setTokenContentUriFieldName: tokenContentUri}
+        transactionHash = await self._send_transaction(contract=contract, methodName=contract.setTokenContentUriMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
+        return transactionHash
