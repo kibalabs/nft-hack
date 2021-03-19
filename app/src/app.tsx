@@ -22,7 +22,7 @@ export const App = hot((): React.ReactElement => {
       <ContainingView>
         <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
           <Spacing variant={PaddingSize.Wide3} />
-          <Text variant='header1'>NFT of the day</Text>
+          <Text variant='header1'>The Million Dollar NFT Page</Text>
           <Spacing variant={PaddingSize.Default} />
         </Stack>
       </ContainingView>
