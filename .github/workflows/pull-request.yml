@@ -1,0 +1,53 @@
+name: Build
+on:
+  pull_request:
+    branches: [ main ]
+# jobs:
+  # build-app:
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: app
+  #   env:
+  #     DOCKER_IMAGE: build
+  #   steps:
+  #   - name: Check out the repo
+  #     uses: actions/checkout@v2
+  #   - name: Build docker image
+  #     run: docker build .
+  #   - name: Build testable docker image
+  #     run: docker build --target build --tag $DOCKER_IMAGE .
+  #   - name: Run linting
+  #     run: |
+  #       docker run --name lint $DOCKER_IMAGE npm run lint -- --output-file lint-results.json --output-file-format annotations
+  #       docker cp lint:/app/lint-results.json ./lint-results.json
+  #   - name: Upload linting results
+  #     uses: kibalabs/github-action-create-annotations@main
+  #     with:
+  #       github-token: ${{ secrets.GITHUB_TOKEN }}
+  #       json-file-path: ./app/lint-results.json
+  #       check-name: lint-app
+  #       fail-on-error: false
+  #       path-prefix: ./app/
+  #   - name: Run typing
+  #     run: |
+  #       docker run --name typing $DOCKER_IMAGE npm run type-check -- --output-file typing-results.json --output-file-format annotations
+  #       docker cp typing:/app/typing-results.json ./typing-results.json
+  #   - name: Upload typing results
+  #     uses: kibalabs/github-action-create-annotations@main
+  #     with:
+  #       github-token: ${{ secrets.GITHUB_TOKEN }}
+  #       json-file-path: ./app/typing-results.json
+  #       check-name: type-app
+  #       fail-on-error: false
+  #       path-prefix: ./app/
+  # build-api:
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: ./api
+  #   steps:
+  #   - name: Check out the repo
+  #     uses: actions/checkout@v2
+  #   - name: Build docker image
+  #     run: docker build .
