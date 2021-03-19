@@ -60,3 +60,7 @@ override.tf.json
 *_override.tf.json
 .terraformrc
 terraform.rc
+
+# Ethereum dev
+artifacts/
+cache/

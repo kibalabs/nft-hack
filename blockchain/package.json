@@ -1,0 +1,19 @@
+{
+  "name": "nfthack",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.1",
+    "ethers": "^5.0.32",
+    "hardhat": "^2.1.1"
+  },
+  "dependencies": {
+    "@alch/alchemy-web3": "^1.0.0",
+    "@openzeppelin/contracts": "^3.4.1"
+  }
+}
