@@ -14,8 +14,16 @@ contract MyNFT is ERC721, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
+    mapping (address => bool) public admins;
+
     // TODO(krishan711): update the name and symbol
     constructor() public ERC721("MyNFT", "NFT") {
+        admins[_msgSender()] = true;
+    }
+
+    modifier onlyAdmin() {
+        require(admins[msg.sender], "Admin: caller is not a valid admin");        
+        _;
     }
 
     modifier onlyTokenOwner(uint256 tokenId) {
@@ -36,6 +44,10 @@ contract MyNFT is ERC721, Ownable {
 
     function setTokenURI(uint256 tokenId, string memory tokenURI) onlyTokenOwner(tokenId) public {
         _setTokenURI(tokenId, tokenURI);
+    }
+
+    function setAdmin(address admin, bool state) onlyAdmin public {
+        admins[admin] = state;
     }
 
 }
