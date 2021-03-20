@@ -5,7 +5,7 @@ import { Alignment, buildTheme, Button, ContainingView, Direction, KibaApp, Load
 import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
-import { Web3 } from 'web3';
+import Web3 from 'web3';
 
 // import  contractAbi from './contracts/MyNFT.sol/MyNFT.json';
 // console.log('contractAbi', contractAbi);
