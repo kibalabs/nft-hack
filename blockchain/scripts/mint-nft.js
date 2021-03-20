@@ -37,10 +37,4 @@ async function mintNFT(tokenURI) {
   });
 }
 
-mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
-mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
-mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
-mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
-mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
-mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
-mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
+mintNFT("https://gateway.pinata.cloud/ipfs/QmXiXaZg6DuSSYkEdu7WTBFnmtfD3KPVR1jQk3RWW7sN8C")

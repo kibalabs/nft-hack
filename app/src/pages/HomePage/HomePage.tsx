@@ -6,7 +6,7 @@ import { Alignment, Button, Direction, LoadingSpinner, PaddingSize, Spacing, Sta
 import { Helmet } from 'react-helmet';
 
 import { useAccounts, useOnLinkAccountsClicked } from '../../accountsContext';
-import { TokenCard } from '../../components/TokenCard';
+import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
 
@@ -31,7 +31,7 @@ export const HomePage = (): React.ReactElement => {
       const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
       const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
       const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
-      const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.imageUrl);
+      const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
       return new Token(tokenId, tokenMetadataUrl, tokenMetadata);
     }));
     setTokens(retrievedTokens);
@@ -72,9 +72,7 @@ export const HomePage = (): React.ReactElement => {
         ) : (
           <React.Fragment>
             <Text variant='bold'>{`${tokenSupply} tokens minted 💰`}</Text>
-            {tokens.map((token: Token): React.ReactElement => (
-              <TokenCard key={token.tokenId} token={token} onClicked={onTokenClicked} />
-            ))}
+            <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
           </React.Fragment>
         )}
         <Spacing variant={PaddingSize.Default} />

@@ -22,7 +22,7 @@ contract MyNFT is ERC721, Ownable {
     }
 
     modifier onlyAdmin() {
-        require(admins[msg.sender], "Admin: caller is not a valid admin");        
+        require(admins[msg.sender], "Admin: caller is not a valid admin");
         _;
     }
 
@@ -31,7 +31,7 @@ contract MyNFT is ERC721, Ownable {
         _;
     }
 
-    function mintNFT(address recipient, string memory tokenURI) public onlyOwner returns (uint256){
+    function mintNFT(address recipient, string memory tokenURI) public onlyAdmin returns (uint256){
         // TODO(krishan711): prevent more than 1000000
         _tokenIds.increment();
 

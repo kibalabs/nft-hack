@@ -39,7 +39,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
     const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
     const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
-    const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.imageUrl);
+    const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
     const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
     setToken(retrievedToken);
   };
