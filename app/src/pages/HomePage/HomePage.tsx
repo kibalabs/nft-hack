@@ -19,11 +19,11 @@ export const HomePage = (): React.ReactElement => {
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
 
-  // @ts-ignore
-  useInitialization(async (): Promise<void> => {
-    // console.log('networkVersion', web3.eth.networkVersion);
-    // console.log('selectedAddress', web3.eth.selectedAddress);
-    // @ts-ignore
+  useInitialization((): Promise<void> => {
+    loadTokens();
+  });
+
+  const loadTokens = async (): Promise<void> => {
     const totalSupply = Number(await contract.methods.totalSupply().call());
     setTokenSupply(totalSupply);
     const retrievedTokens = await Promise.all(new Array(totalSupply).fill(null).map(async (_: unknown, index: number): Promise<Token> => {
@@ -35,7 +35,7 @@ export const HomePage = (): React.ReactElement => {
       return new Token(tokenId, tokenMetadataUrl, tokenMetadata);
     }));
     setTokens(retrievedTokens);
-  });
+  }
 
   const onConnectClicked = async (): Promise<void> => {
     await onLinkAccountsClicked();
