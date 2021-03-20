@@ -8,7 +8,6 @@ import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
 
 import myNFTContract from './contracts/MyNFT.json';
-console.log('myNFTContract', myNFTContract);
 
 // const requester = new Requester();
 // const notdClient = new NotdClient(requester);
@@ -19,11 +18,11 @@ console.log('myNFTContract', myNFTContract);
 const theme = buildTheme();
 
 const getWeb3Connection = (): Web3 => {
-  if (typeof window.web3 === 'undefined') {
+  if (typeof window.ethereum === 'undefined') {
     // TOOD(krishan711): do something here!
     return null;
   }
-  return new Web3(window.web3.currentProvider);
+  return new Web3(window.ethereum);
 };
 
 class Token {
