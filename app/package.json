@@ -17,10 +17,12 @@
     "@kibalabs/everyview-tracker": "0.2.4",
     "@kibalabs/everyview-tracker-react": "0.2.4",
     "@kibalabs/ui-react": "0.8.5-next.6",
+    "@metamask/detect-provider": "^1.2.0",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-helmet": "6.1.0",
-    "styled-components": "5.2.1"
+    "styled-components": "5.2.1",
+    "web3": "^1.3.4"
   },
   "devDependencies": {
     "@kibalabs/build": "0.6.4",

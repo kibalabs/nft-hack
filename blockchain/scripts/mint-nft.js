@@ -37,4 +37,4 @@ async function mintNFT(tokenURI) {
   });
 }
 
-mintNFT("https://gateway.pinata.cloud/ipfs/QmY2atgdL1NEa73Us9FtTUvMEXnAHn9GNR3awCkCwPvpjY")
+mintNFT("https://www.kibalabs.com")
