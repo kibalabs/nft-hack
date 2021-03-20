@@ -1,6 +1,6 @@
 const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
 
-const contract = require("../artifacts/contracts/MyNFT.sol/MyNFT.json");
+const contract = require("../artifacts/contracts/MillionDollarNFT.sol/MillionDollarNFT.json");
 
 const ALCHEMY_URL = process.env.ALCHEMY_URL;
 const ACCOUNT_ADDRESS = process.env.ACCOUNT_ADDRESS;

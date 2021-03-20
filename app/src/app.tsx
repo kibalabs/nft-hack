@@ -8,7 +8,7 @@ import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
 
 import { AccountControlProvider } from './accountsContext';
-import myNFTContract from './contracts/MyNFT.json';
+import MDNFTContract from './contracts/MillionDollarNFT.json';
 import { GlobalsProvider } from './globalsContext';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -32,7 +32,7 @@ const getWeb3Connection = (): Web3 => {
 const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
-const contract = new web3.eth.Contract(myNFTContract.abi, window.KRT_CONTRACT_ADDRESS);
+const contract = new web3.eth.Contract(MDNFTContract.abi, window.KRT_CONTRACT_ADDRESS);
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 

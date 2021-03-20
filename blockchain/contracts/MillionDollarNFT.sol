@@ -10,14 +10,13 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
-contract MyNFT is ERC721, Ownable {
+contract MillionDollarNFT is ERC721, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     mapping (address => bool) public admins;
-
-    // TODO(krishan711): update the name and symbol
-    constructor() public ERC721("MyNFT", "NFT") {
+    
+    constructor() public ERC721("MillionDollarNFT", "MDNFT") {
         admins[_msgSender()] = true;
     }
 

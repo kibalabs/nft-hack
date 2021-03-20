@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "MyNFT",
-  "sourceName": "contracts/MyNFT.sol",
+  "contractName": "MillionDollarNFT",
+  "sourceName": "contracts/MillionDollarNFT.sol",
   "abi": [
     {
       "inputs": [],
