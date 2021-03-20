@@ -11,7 +11,7 @@ import myNFTContract from './contracts/MyNFT.json';
 import { GlobalsProvider } from './globalsContext';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { TokenPage } from './pages/TokenPage/TokenPage';
+import { TokenPage } from './pages/TokenPage';
 import { buildNftHackTheme } from './theme';
 
 declare global {
