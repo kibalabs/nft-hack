@@ -13,6 +13,7 @@ import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { TokenPage } from './pages/TokenPage';
 import { buildNftHackTheme } from './theme';
+import { AccountControlProvider } from './accountsContext';
 
 declare global {
   interface Window {
@@ -45,14 +46,18 @@ const globals = {
 const theme = buildNftHackTheme();
 
 export const App = hot((): React.ReactElement => {
+  const [accounts, setAccounts] = React.useState<string[] | null>(null);
+
   return (
     <KibaApp theme={theme}>
       <GlobalsProvider globals={globals}>
-        <Router>
-          <Route path='/' page={HomePage} />
-          <Route default={true} page={NotFoundPage} />
-          <Route path='/tokens/:tokenId' page={TokenPage} />
-        </Router>
+        <AccountControlProvider accounts={accounts} setAccounts={setAccounts}>
+          <Router>
+            <Route path='/' page={HomePage} />
+            <Route default={true} page={NotFoundPage} />
+            <Route path='/tokens/:tokenId' page={TokenPage} />
+          </Router>
+        </AccountControlProvider>
       </GlobalsProvider>
     </KibaApp>
   );

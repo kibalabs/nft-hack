@@ -7,6 +7,7 @@ import { Helmet } from 'react-helmet';
 
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
+import { useAccounts } from '../../accountsContext';
 
 
 export type TokenPageProps = {
@@ -16,14 +17,20 @@ export type TokenPageProps = {
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, requester } = useGlobals();
   const [token, setToken] = React.useState<Token | null>(null);
+  const [tokenOwner, setTokenOwner] = React.useState<Token | null>(null);
+  const accounts = useAccounts();
+  console.log('accounts', accounts);
 
   // @ts-ignore
   useInitialization(async (): Promise<void> => {
-    const tokenMetadataUrl = await contract.methods.tokenURI(Number(props.tokenId)).call();
+    const tokenId = Number(props.tokenId)
+    const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();
+    setTokenOwner(receivedTokenOwner);
+    const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
     const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
     const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
     const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.imageUrl);
-    const retrievedToken = new Token(Number(props.tokenId), tokenMetadataUrl, tokenMetadata);
+    const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
     setToken(retrievedToken);
   });
 
@@ -52,6 +59,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             </Box>
             <Spacing variant={PaddingSize.Wide3} />
             <Text variant='header1'>{token.metadata.name}</Text>
+            <Spacing variant={PaddingSize.Wide1} />
+            { (accounts === null || !tokenOwner) ? (
+              <LoadingSpinner />
+            ) : (accounts.includes(tokenOwner)) ? (
+              <Text>You are the owner!</Text>
+              ) : (
+              <Text>{`Owned by: ${tokenOwner}`}</Text>
+            )}
             <Spacing variant={PaddingSize.Wide1} />
             <Text>{token.metadata.description}</Text>
             <Spacing variant={PaddingSize.Wide3} />

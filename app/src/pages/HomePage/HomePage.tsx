@@ -8,14 +8,16 @@ import { Helmet } from 'react-helmet';
 import { TokenCard } from '../../components/TokenCard';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
+import { useAccounts, useSetAccounts } from '../../accountsContext';
 
 
 export const HomePage = (): React.ReactElement => {
   const { web3, requester, contract } = useGlobals();
+  const accounts = useAccounts();
+  const setAccounts = useSetAccounts();
   const navigator = useNavigator();
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
-  const [accounts, setAccounts] = React.useState<string[] | null>(null);
 
   // @ts-ignore
   useInitialization(async (): Promise<void> => {
