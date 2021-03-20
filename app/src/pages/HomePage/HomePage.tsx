@@ -5,16 +5,16 @@ import { useInitialization, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Button, Direction, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
-import { useAccounts, useSetAccounts } from '../../accountsContext';
+import { useAccounts, useOnLinkAccountsClicked } from '../../accountsContext';
 import { TokenCard } from '../../components/TokenCard';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
 
 
 export const HomePage = (): React.ReactElement => {
-  const { web3, requester, contract } = useGlobals();
+  const { requester, contract } = useGlobals();
   const accounts = useAccounts();
-  const setAccounts = useSetAccounts();
+  const onLinkAccountsClicked = useOnLinkAccountsClicked();
   const navigator = useNavigator();
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
@@ -35,11 +35,10 @@ export const HomePage = (): React.ReactElement => {
       return new Token(tokenId, tokenMetadataUrl, tokenMetadata);
     }));
     setTokens(retrievedTokens);
-    setAccounts(await web3.eth.getAccounts());
   });
 
   const onConnectClicked = async (): Promise<void> => {
-    setAccounts(await web3.eth.requestAccounts());
+    await onLinkAccountsClicked();
   };
 
   const onTokenClicked = (token: Token) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { LocalStorageClient, Requester } from '@kibalabs/core';
-import { Route, Router } from '@kibalabs/core-react';
+import { Route, Router, useInitialization } from '@kibalabs/core-react';
 import { KibaApp } from '@kibalabs/ui-react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
@@ -48,10 +48,22 @@ const theme = buildNftHackTheme();
 export const App = hot((): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<string[] | null>(null);
 
+  const onLinkAccountsClicked = async (): Promise<void> => {
+    setAccounts(await web3.eth.requestAccounts());
+  }
+
+  const getAccounts = async (): Promise<void> => {
+    setAccounts(await web3.eth.getAccounts());
+  }
+
+  useInitialization((): void => {
+    getAccounts();
+  })
+
   return (
     <KibaApp theme={theme}>
       <GlobalsProvider globals={globals}>
-        <AccountControlProvider accounts={accounts} setAccounts={setAccounts}>
+        <AccountControlProvider accounts={accounts} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router>
             <Route path='/' page={HomePage} />
             <Route default={true} page={NotFoundPage} />
