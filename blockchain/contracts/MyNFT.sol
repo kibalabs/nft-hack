@@ -18,6 +18,11 @@ contract MyNFT is ERC721, Ownable {
     constructor() public ERC721("MyNFT", "NFT") {
     }
 
+    modifier onlyTokenOwner(uint256 tokenId) {
+        require(ownerOf(tokenId) == _msgSender(), "Ownable: caller is not the tokenOwner");
+        _;
+    }
+
     function mintNFT(address recipient, string memory tokenURI) public onlyOwner returns (uint256){
         // TODO(krishan711): prevent more than 1000000
         _tokenIds.increment();
@@ -28,4 +33,9 @@ contract MyNFT is ERC721, Ownable {
 
         return newItemId;
     }
+
+    function setTokenURI(uint256 tokenId, string memory tokenURI) onlyTokenOwner(tokenId) public {
+        _setTokenURI(tokenId, tokenURI);
+    }
+
 }
