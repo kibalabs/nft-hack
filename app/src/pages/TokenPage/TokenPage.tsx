@@ -19,11 +19,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   // @ts-ignore
   useInitialization(async (): Promise<void> => {
-    const tokenMetadataUrl = await contract.methods.tokenURI(props.tokenId).call();
+    const tokenMetadataUrl = await contract.methods.tokenURI(Number(props.tokenId)).call();
     const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
     const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
     const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.imageUrl);
-    const retrievedToken = new Token(props.tokenId, tokenMetadataUrl, tokenMetadata);
+    const retrievedToken = new Token(Number(props.tokenId), tokenMetadataUrl, tokenMetadata);
     setToken(retrievedToken);
   });
 
