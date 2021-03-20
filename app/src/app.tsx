@@ -7,6 +7,7 @@ import { KibaApp } from '@kibalabs/ui-react';
 import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
 
+import { AccountControlProvider } from './accountsContext';
 import myNFTContract from './contracts/MyNFT.json';
 import { GlobalsProvider } from './globalsContext';
 import { HomePage } from './pages/HomePage';
@@ -45,14 +46,18 @@ const globals = {
 const theme = buildNftHackTheme();
 
 export const App = hot((): React.ReactElement => {
+  const [accounts, setAccounts] = React.useState<string[] | null>(null);
+
   return (
     <KibaApp theme={theme}>
       <GlobalsProvider globals={globals}>
-        <Router>
-          <Route path='/' page={HomePage} />
-          <Route default={true} page={NotFoundPage} />
-          <Route path='/tokens/:tokenId' page={TokenPage} />
-        </Router>
+        <AccountControlProvider accounts={accounts} setAccounts={setAccounts}>
+          <Router>
+            <Route path='/' page={HomePage} />
+            <Route default={true} page={NotFoundPage} />
+            <Route path='/tokens/:tokenId' page={TokenPage} />
+          </Router>
+        </AccountControlProvider>
       </GlobalsProvider>
     </KibaApp>
   );
