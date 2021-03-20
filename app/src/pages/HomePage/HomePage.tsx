@@ -19,7 +19,7 @@ export const HomePage = (): React.ReactElement => {
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
 
-  useInitialization((): Promise<void> => {
+  useInitialization((): void => {
     loadTokens();
   });
 
