@@ -17,7 +17,7 @@ export type TokenPageProps = {
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, requester } = useGlobals();
   const [token, setToken] = React.useState<Token | null>(null);
-  const [tokenOwner, setTokenOwner] = React.useState<Token | null>(null);
+  const [tokenOwner, setTokenOwner] = React.useState<string | null>(null);
   const accounts = useAccounts();
 
   // @ts-ignore
