@@ -26,15 +26,16 @@ const StyledTokenBox = styled.div<IStyledTokenBoxProps>`
   transition-duration: 0.3s;
   width: 300px;
   height: 200px;
+  zoom: 0.1;
 
   &:hover {
     ${(props: IStyledTokenBoxProps): string => themeToCss(props.theme.normal.hover?.background)};
-    zoom: 1.3;
+    /* zoom: 1;
     z-index: 100;
     box-shadow: 5px 0px 30px rgba(0, 0, 0, 0.5);
-    margin-left: calc(300px * -0.3 / 2.0);
-    margin-top: calc(200px * -0.2 / 2.0);
-    margin-bottom: calc(200px * -0.2); /// Note the added removal of the bottom margin that all "non" active elements have
+    margin-left: calc(300px * -0.95 / 2.0);
+    margin-top: calc(200px * -0.95 / 2.0); */
+    /* margin-bottom: calc(200px * -0.95); /// Note the added removal of the bottom margin that all "non" active elements have */
   }
   &:active {
     ${(props: IStyledTokenBoxProps): string => themeToCss(props.theme.normal.press?.background)};

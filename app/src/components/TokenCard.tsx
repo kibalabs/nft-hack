@@ -7,6 +7,7 @@ import { TokenBox } from './TokenBox';
 
 interface TokenCardProps {
   token: Token;
+  zoom: number;
   onClicked: (token: Token) => void;
 }
 

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { RestMethod } from '@kibalabs/core';
 import { useInitialization, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Button, Direction, LayerContainer, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts, useOnLinkAccountsClicked } from '../../accountsContext';
@@ -50,33 +50,30 @@ export const HomePage = (): React.ReactElement => {
       <Helmet>
         <title>{'The Million NFT Page'}</title>
       </Helmet>
-      <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        <Spacing variant={PaddingSize.Wide3} />
-        <Text variant='header1'>The Million NFT Page</Text>
-        <Spacing variant={PaddingSize.Wide3} />
-        { !accounts ? (
-          <LoadingSpinner />
-        ) : (accounts.length === 0) ? (
-          <Button variant={'primary'} onClicked={onConnectClicked} text='Enable Ethereum' />
-        ) : (
-          <React.Fragment>
-            <Text variant='bold'>{'Connected accounts:'}</Text>
-            {accounts.map((account: string): React.ReactElement => (
-              <Text key={account}>{`${account}`}</Text>
-            ))}
-          </React.Fragment>
-        )}
-        <Spacing variant={PaddingSize.Wide3} />
+      <LayerContainer>
         { (!tokenSupply || !tokens) ? (
           <LoadingSpinner />
         ) : (
-          <React.Fragment>
-            <Text variant='bold'>{`${tokenSupply} tokens minted 💰`}</Text>
-            <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
-          </React.Fragment>
+          <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
         )}
-        <Spacing variant={PaddingSize.Default} />
-      </Stack>
+        {/* <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
+          <Spacing variant={PaddingSize.Wide3} />
+          <Text variant='header1'>The Million NFT Page</Text>
+          { !accounts ? (
+            <LoadingSpinner />
+          ) : (accounts.length === 0) ? (
+            <Button variant={'primary'} onClicked={onConnectClicked} text='Enable Ethereum' />
+          ) : (
+            <React.Fragment>
+              <Text variant='bold'>{'Connected accounts:'}</Text>
+              {accounts.map((account: string): React.ReactElement => (
+                <Text key={account}>{`${account}`}</Text>
+              ))}
+            </React.Fragment>
+          )}
+          <Spacing variant={PaddingSize.Default} />
+        </Stack> */}
+      </LayerContainer>
     </React.Fragment>
   );
 };
