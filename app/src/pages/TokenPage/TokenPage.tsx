@@ -5,9 +5,9 @@ import { useInitialization } from '@kibalabs/core-react';
 import { Alignment, Box, Direction, Image, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
+import { useAccounts } from '../../accountsContext';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
-import { useAccounts } from '../../accountsContext';
 
 
 export type TokenPageProps = {
@@ -19,11 +19,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const [token, setToken] = React.useState<Token | null>(null);
   const [tokenOwner, setTokenOwner] = React.useState<Token | null>(null);
   const accounts = useAccounts();
-  console.log('accounts', accounts);
 
   // @ts-ignore
   useInitialization(async (): Promise<void> => {
-    const tokenId = Number(props.tokenId)
+    const tokenId = Number(props.tokenId);
     const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();
     setTokenOwner(receivedTokenOwner);
     const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
@@ -64,7 +63,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <LoadingSpinner />
             ) : (accounts.includes(tokenOwner)) ? (
               <Text>You are the owner!</Text>
-              ) : (
+            ) : (
               <Text>{`Owned by: ${tokenOwner}`}</Text>
             )}
             <Spacing variant={PaddingSize.Wide1} />

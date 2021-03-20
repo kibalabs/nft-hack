@@ -23,9 +23,9 @@ export const AccountControlProvider = (props: IAccountControlProviderProps): Rea
 export const useAccounts = (): string[] | null => {
   const { accounts } = React.useContext(AccountsContext);
   return accounts;
-}
+};
 
 export const useSetAccounts = (): ((accounts: string[]) => void) => {
   const { setAccounts } = React.useContext(AccountsContext);
   return setAccounts;
-}
+};

@@ -7,13 +7,13 @@ import { KibaApp } from '@kibalabs/ui-react';
 import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
 
+import { AccountControlProvider } from './accountsContext';
 import myNFTContract from './contracts/MyNFT.json';
 import { GlobalsProvider } from './globalsContext';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { TokenPage } from './pages/TokenPage';
 import { buildNftHackTheme } from './theme';
-import { AccountControlProvider } from './accountsContext';
 
 declare global {
   interface Window {

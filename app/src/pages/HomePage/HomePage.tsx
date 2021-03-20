@@ -5,10 +5,10 @@ import { useInitialization, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Button, Direction, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
+import { useAccounts, useSetAccounts } from '../../accountsContext';
 import { TokenCard } from '../../components/TokenCard';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
-import { useAccounts, useSetAccounts } from '../../accountsContext';
 
 
 export const HomePage = (): React.ReactElement => {
