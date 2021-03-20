@@ -7,12 +7,14 @@ import { TokenBox } from './TokenBox';
 
 interface TokenCardProps {
   token: Token;
+  onClicked: (token: Token) => void;
 }
 
 export const TokenCard = (props: TokenCardProps): React.ReactElement => {
   const onClicked = (): void => {
-    
+    props.onClicked(props.token);
   }
+
   return (
     <TokenBox
       onClicked={onClicked}
