@@ -50,15 +50,15 @@ export const App = hot((): React.ReactElement => {
 
   const onLinkAccountsClicked = async (): Promise<void> => {
     setAccounts(await web3.eth.requestAccounts());
-  }
+  };
 
   const getAccounts = async (): Promise<void> => {
     setAccounts(await web3.eth.getAccounts());
-  }
+  };
 
   useInitialization((): void => {
     getAccounts();
-  })
+  });
 
   return (
     <KibaApp theme={theme}>
