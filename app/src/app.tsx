@@ -11,6 +11,7 @@ import myNFTContract from './contracts/MyNFT.json';
 import { GlobalsProvider } from './globalsContext';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { TokenPage } from './pages/TokenPage';
 import { buildNftHackTheme } from './theme';
 
 declare global {
@@ -50,6 +51,7 @@ export const App = hot((): React.ReactElement => {
         <Router>
           <Route path='/' page={HomePage} />
           <Route default={true} page={NotFoundPage} />
+          <Route path='/tokens/:tokenId' page={TokenPage} />
         </Router>
       </GlobalsProvider>
     </KibaApp>

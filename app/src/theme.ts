@@ -1,28 +1,40 @@
-import { buildTheme, ITheme } from '@kibalabs/ui-react';
+import { buildTheme, ITheme, mergeTheme } from '@kibalabs/ui-react';
 
+import { buildTokenBoxThemes } from './components/TokenBox';
+
+export const defaultTheme = buildTheme();
 export const buildNftHackTheme = (): ITheme => {
-  const theme = buildTheme({
-    colors: {
-      // brandPrimary: '#6F0000',
-      // brandSecondary: '#200122',
-      // background: '#000000',
-      // text: '#ffffff',
-      // placeholderText: 'rgba(255, 255, 255, 0.5)',
+  const colors = {
+    ...defaultTheme.colors,
+    // brandPrimary: '#6F0000',
+    // brandSecondary: '#200122',
+    // background: '#000000',
+    // text: '#ffffff',
+    // placeholderText: 'rgba(255, 255, 255, 0.5)',
+  };
+  const textThemes = {
+    ...defaultTheme.texts,
+    default: mergeTheme(defaultTheme.texts.default, {
+      'font-family': "'Open Sans', sans-serif",
+      'font-weight': '400',
+    }),
+    light: {
+      color: 'rgba(255, 255, 255, 0.95)',
     },
+  };
+  const boxThemes = {
+    ...defaultTheme.boxes,
+  };
+  const theme = buildTheme({
+    colors,
     fonts: {
       main: {
         url: 'https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700,800,900&display=swap',
       },
     },
-    texts: {
-      default: {
-        'font-family': "'Open Sans', sans-serif",
-        'font-weight': '400',
-      },
-      light: {
-        color: 'rgba(255, 255, 255, 0.95)',
-      },
-    },
+    texts: textThemes,
+    boxes: boxThemes,
+    tokenBoxes: buildTokenBoxThemes(colors, defaultTheme.dimensions, textThemes, boxThemes),
     // boxes: {
     //   card: {
     //     padding: '0',

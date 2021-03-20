@@ -3,14 +3,22 @@ import React from 'react';
 import { Alignment, BackgroundView, Box, Direction, Image, LayerContainer, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { Token } from '../model';
+import { TokenBox } from './TokenBox';
 
 interface TokenCardProps {
   token: Token;
+  onClicked: (token: Token) => void;
 }
 
 export const TokenCard = (props: TokenCardProps): React.ReactElement => {
+  const onClicked = (): void => {
+    props.onClicked(props.token);
+  };
+
   return (
-    <Box width={'300px'} height={'200px'}>
+    <TokenBox
+      onClicked={onClicked}
+    >
       <LayerContainer>
         <Image
           isFullHeight={true}
@@ -39,6 +47,6 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
           </BackgroundView>
         </LayerContainer.Layer>
       </LayerContainer>
-    </Box>
+    </TokenBox>
   );
 };

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { RestMethod } from '@kibalabs/core';
-import { useInitialization } from '@kibalabs/core-react';
+import { useInitialization, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Button, Direction, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
@@ -12,6 +12,7 @@ import { Token, TokenMetadata } from '../../model';
 
 export const HomePage = (): React.ReactElement => {
   const { web3, requester, contract } = useGlobals();
+  const navigator = useNavigator();
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
   const [accounts, setAccounts] = React.useState<string[] | null>(null);
@@ -37,6 +38,10 @@ export const HomePage = (): React.ReactElement => {
 
   const onConnectClicked = async (): Promise<void> => {
     setAccounts(await web3.eth.requestAccounts());
+  };
+
+  const onTokenClicked = (token: Token) => {
+    navigator.navigateTo(`/tokens/${token.tokenId}`);
   };
 
   return (
@@ -67,7 +72,7 @@ export const HomePage = (): React.ReactElement => {
           <React.Fragment>
             <Text variant='bold'>{`${tokenSupply} tokens minted 💰`}</Text>
             {tokens.map((token: Token): React.ReactElement => (
-              <TokenCard key={token.tokenId} token={token} />
+              <TokenCard key={token.tokenId} token={token} onClicked={onTokenClicked} />
             ))}
           </React.Fragment>
         )}
