@@ -13,7 +13,7 @@ interface TokenCardProps {
 export const TokenCard = (props: TokenCardProps): React.ReactElement => {
   const onClicked = (): void => {
     props.onClicked(props.token);
-  }
+  };
 
   return (
     <TokenBox

@@ -1,6 +1,6 @@
 import { RecursivePartial } from '@kibalabs/core';
+import { IBoxTheme, IColorGuide, IDimensionGuide, ITextTheme, mergeTheme, ThemeMap } from '@kibalabs/ui-react';
 
-import { IBoxTheme, IColorGuide, IDimensionGuide, ITextTheme,  mergeTheme, mergeThemePartial, ThemeMap } from '@kibalabs/ui-react';
 import { ITokenBoxTheme } from './theme';
 
 export const buildTokenBoxThemes = (colors: IColorGuide, dimensions: IDimensionGuide, textThemes: ThemeMap<ITextTheme>, boxThemes: ThemeMap<IBoxTheme>, base?: RecursivePartial<Record<string, ITokenBoxTheme>>): ThemeMap<ITokenBoxTheme> => {

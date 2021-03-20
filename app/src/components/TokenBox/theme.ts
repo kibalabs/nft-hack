@@ -1,5 +1,4 @@
 import { RecursivePartial } from '@kibalabs/core';
-
 import { IBoxTheme, ThemeType } from '@kibalabs/ui-react';
 
 export interface ITokenBoxThemeBase extends ThemeType {

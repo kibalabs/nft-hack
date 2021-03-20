@@ -1,11 +1,12 @@
 import React from 'react';
 
+import { RestMethod } from '@kibalabs/core';
+import { useInitialization } from '@kibalabs/core-react';
 import { Alignment, Box, Direction, Image, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
-import { Token, TokenMetadata } from '../../model';
-import { RestMethod } from '@kibalabs/core';
+
 import { useGlobals } from '../../globalsContext';
-import { useInitialization } from '@kibalabs/core-react';
+import { Token, TokenMetadata } from '../../model';
 
 
 export type TokenPageProps = {
@@ -37,24 +38,24 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />
           </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <Box
-                maxHeight='350px'
-              >
-                <Image
-                  isFullWidth={true}
-                  fitType={'cover'}
-                  source={token.metadata.imageUrl}
-                  alternativeText={`${token.metadata.name} image`}
-                />
-              </Box>
-              <Spacing variant={PaddingSize.Wide3} />
-              <Text variant='header1'>{token.metadata.name}</Text>
-              <Spacing variant={PaddingSize.Wide1} />
-              <Text>{token.metadata.description}</Text>
-              <Spacing variant={PaddingSize.Wide3} />
-            </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <Box
+              maxHeight='350px'
+            >
+              <Image
+                isFullWidth={true}
+                fitType={'cover'}
+                source={token.metadata.imageUrl}
+                alternativeText={`${token.metadata.name} image`}
+              />
+            </Box>
+            <Spacing variant={PaddingSize.Wide3} />
+            <Text variant='header1'>{token.metadata.name}</Text>
+            <Spacing variant={PaddingSize.Wide1} />
+            <Text>{token.metadata.description}</Text>
+            <Spacing variant={PaddingSize.Wide3} />
+          </React.Fragment>
         )}
         <Spacing variant={PaddingSize.Default} />
       </Stack>

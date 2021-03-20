@@ -1,11 +1,11 @@
 import React from 'react';
 
 import { getClassName } from '@kibalabs/core';
-import { defaultComponentProps, IComponentProps, themeToCss, useBuiltTheme, PaddingSize } from '@kibalabs/ui-react';
+import { IMultiAnyChildProps } from '@kibalabs/core-react';
+import { defaultComponentProps, IComponentProps, themeToCss, useBuiltTheme } from '@kibalabs/ui-react';
 import styled from 'styled-components';
 
 import { ITokenBoxTheme } from './theme';
-import { IMultiAnyChildProps } from '@kibalabs/core-react';
 
 interface IStyledTokenBoxProps {
   theme: ITokenBoxTheme;

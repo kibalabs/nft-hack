@@ -42,7 +42,7 @@ export const HomePage = (): React.ReactElement => {
 
   const onTokenClicked = (token: Token) => {
     navigator.navigateTo(`/tokens/${token.tokenId}`);
-  }
+  };
 
   return (
     <React.Fragment>

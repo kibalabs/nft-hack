@@ -1,4 +1,5 @@
 import { buildTheme, ITheme, mergeTheme } from '@kibalabs/ui-react';
+
 import { buildTokenBoxThemes } from './components/TokenBox';
 
 export const defaultTheme = buildTheme();
@@ -20,10 +21,10 @@ export const buildNftHackTheme = (): ITheme => {
     light: {
       color: 'rgba(255, 255, 255, 0.95)',
     },
-  }
+  };
   const boxThemes = {
     ...defaultTheme.boxes,
-  }
+  };
   const theme = buildTheme({
     colors,
     fonts: {
