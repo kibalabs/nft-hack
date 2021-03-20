@@ -8,10 +8,10 @@ const { ALCHEMY_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 
 module.exports = {
    solidity: "0.7.3",
-   defaultNetwork: "ropsten",
+   defaultNetwork: "rinkeby",
    networks: {
       hardhat: {},
-      ropsten: {
+      rinkeby: {
          url: ALCHEMY_URL,
          accounts: [PRIVATE_KEY]
       }
