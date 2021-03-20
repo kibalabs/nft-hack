@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Box } from '@kibalabs/ui-react';
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import styled from 'styled-components';
 
 import { Token } from '../model';
@@ -28,48 +28,43 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   const lastMoveEndRef = React.useRef<number | null>(null);
 
   const onMovingStart = (): void => {
-    console.log('onMovingStart');
     isMovingRef.current = false;
     lastMoveStartRef.current = new Date().getTime();
-  }
+  };
 
   const onMovingStop = (): void => {
-    console.log('onMovingStop');
     isMovingRef.current = false;
     lastMoveEndRef.current = new Date().getTime();
-  }
+  };
 
-  const onZoomChange = (zoomInfo: object): void => {
-    // setZoom(zoomInfo.scale);
-  }
+  // const onZoomChange = (zoomInfo: object): void => {
+  //   setZoom(zoomInfo.scale);
+  // }
 
   const onTokenClicked = (token: Token): void => {
     if (isMovingRef.current) {
-      console.log('here');
       return;
     }
-    if (lastMoveEndRef.current) {
+    if (lastMoveEndRef.current && lastMoveStartRef.current) {
       const timeSinceLastMove = new Date().getTime() - lastMoveEndRef.current;
-      console.log('timeSinceLastMove', timeSinceLastMove);
       const timeSpentOnLastMove = lastMoveEndRef.current - lastMoveStartRef.current;
-      console.log('timeSpentOnLastMove', timeSpentOnLastMove);
       // NOTE(krishan711): guessed numbers for interaction lengths
       if (timeSinceLastMove < 50 && timeSpentOnLastMove > 90) {
         return;
       }
     }
     props.onTokenClicked(token);
-  }
+  };
 
   return (
     <Box isFullHeight={true} isFullWidth={true}>
       <TransformWrapper
         defaultScale={1}
-        options={{minScale: 1, maxScale: 8}}
-        zoomIn={{step: 100, animationTime: 100}}
-        zoomOut={{step: 100, animationTime: 100}}
-        wheel={{step: 100}}
-        onZoomChange={onZoomChange}
+        options={{ minScale: 1, maxScale: 8 }}
+        zoomIn={{ step: 100, animationTime: 100 }}
+        zoomOut={{ step: 100, animationTime: 100 }}
+        wheel={{ step: 100 }}
+        // onZoomChange={onZoomChange}
         onWheelStart={onMovingStart}
         onWheelStop={onMovingStop}
         onPanningStart={onMovingStart}

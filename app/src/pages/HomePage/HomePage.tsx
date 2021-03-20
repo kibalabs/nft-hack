@@ -2,7 +2,7 @@ import React from 'react';
 
 import { RestMethod } from '@kibalabs/core';
 import { useInitialization, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, LayerContainer, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Button, Direction, LayerContainer, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts, useOnLinkAccountsClicked } from '../../accountsContext';
@@ -56,23 +56,27 @@ export const HomePage = (): React.ReactElement => {
         ) : (
           <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
         )}
-        {/* <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-          <Spacing variant={PaddingSize.Wide3} />
-          <Text variant='header1'>The Million NFT Page</Text>
-          { !accounts ? (
-            <LoadingSpinner />
-          ) : (accounts.length === 0) ? (
-            <Button variant={'primary'} onClicked={onConnectClicked} text='Enable Ethereum' />
-          ) : (
-            <React.Fragment>
-              <Text variant='bold'>{'Connected accounts:'}</Text>
-              {accounts.map((account: string): React.ReactElement => (
-                <Text key={account}>{`${account}`}</Text>
-              ))}
-            </React.Fragment>
-          )}
-          <Spacing variant={PaddingSize.Default} />
-        </Stack> */}
+        <LayerContainer.Layer isFullHeight={false} alignmentVertical={Alignment.End}>
+          <BackgroundView>
+            <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
+              <Spacing variant={PaddingSize.Wide3} />
+              <Text variant='header1'>The Million NFT Page</Text>
+              { !accounts ? (
+                <LoadingSpinner />
+              ) : (accounts.length === 0) ? (
+                <Button variant={'primary'} onClicked={onConnectClicked} text='Enable Ethereum' />
+              ) : (
+                <React.Fragment>
+                  <Text variant='bold'>{'Connected accounts:'}</Text>
+                  {accounts.map((account: string): React.ReactElement => (
+                    <Text key={account}>{`${account}`}</Text>
+                  ))}
+                </React.Fragment>
+              )}
+              <Spacing variant={PaddingSize.Default} />
+            </Stack>
+          </BackgroundView>
+        </LayerContainer.Layer>
       </LayerContainer>
     </React.Fragment>
   );
