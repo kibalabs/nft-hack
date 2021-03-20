@@ -23,7 +23,7 @@ export const AccountControlProvider = (props: IAccountControlProviderProps): Rea
 export const useAccounts = (): string[] | null => {
   const accountsControl = React.useContext(AccountsContext);
   if (!accountsControl) {
-    throw Error('accountsControl has not been initialized correctly.')
+    throw Error('accountsControl has not been initialized correctly.');
   }
   return accountsControl.accounts;
 };
@@ -31,7 +31,7 @@ export const useAccounts = (): string[] | null => {
 export const useSetAccounts = (): ((accounts: string[]) => void) => {
   const accountsControl = React.useContext(AccountsContext);
   if (!accountsControl) {
-    throw Error('accountsControl has not been initialized correctly.')
+    throw Error('accountsControl has not been initialized correctly.');
   }
   return accountsControl.setAccounts;
 };
