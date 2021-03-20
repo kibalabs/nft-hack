@@ -51,7 +51,7 @@ export const App = hot((): React.ReactElement => {
         <Router>
           <Route path='/' page={HomePage} />
           <Route default={true} page={NotFoundPage} />
-            <Route path='/tokens/:tokenId' page={TokenPage} />
+          <Route path='/tokens/:tokenId' page={TokenPage} />
         </Router>
       </GlobalsProvider>
     </KibaApp>
