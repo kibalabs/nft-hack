@@ -7,7 +7,7 @@ import { Helmet } from 'react-helmet';
 import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
 
-import myNFTContract from './contracts/MyNFT.sol/MyNFT.json';
+import myNFTContract from './contracts/MyNFT.json';
 console.log('myNFTContract', myNFTContract);
 
 // const requester = new Requester();
