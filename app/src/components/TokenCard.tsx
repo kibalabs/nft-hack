@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { LayerContainer, Text, Image, Box, BackgroundView, Alignment } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Direction, Image, LayerContainer, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+
 import { Token } from '../model';
 
 interface TokenCardProps {
@@ -9,7 +10,7 @@ interface TokenCardProps {
 
 export const TokenCard = (props: TokenCardProps): React.ReactElement => {
   return (
-    <Box width={'600px'} height={'400px'}>
+    <Box width={'300px'} height={'200px'}>
       <LayerContainer>
         <Image
           isFullHeight={true}
@@ -27,11 +28,17 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
               variant='padded'
               isFullWidth={true}
             >
-              <Text variant='light'>{`${props.token.tokenId}: ${props.token.metadata.name}`}</Text>
+              <Stack
+                direction={Direction.Vertical}
+                childAlignment={Alignment.Center}
+                contentAlignment={Alignment.Center}
+              >
+                <Text variant='light' alignment={TextAlignment.Center}>{`#${props.token.tokenId} ${props.token.metadata.name}`}</Text>
+              </Stack>
             </Box>
           </BackgroundView>
         </LayerContainer.Layer>
       </LayerContainer>
     </Box>
   );
-}
+};

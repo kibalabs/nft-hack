@@ -3,12 +3,14 @@ import React from 'react';
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { IMultiAnyChildProps } from '@kibalabs/core-react';
 import Web3 from 'web3';
+import { Contract } from 'web3-eth-contract';
 
 
 export interface Globals {
   web3: Web3;
   requester: Requester;
   localStorageClient: LocalStorageClient;
+  contract: Contract;
 }
 
 export const GlobalsContext = React.createContext<Globals | null>(null);
