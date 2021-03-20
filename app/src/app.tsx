@@ -39,13 +39,13 @@ const getAccounts = async (): Promise<string[]> => {
   const web3 = getWeb3Connection();
   const accounts = await web3.eth.getAccounts();
   return accounts;
-}
+};
 
 const requestAccounts = async (): Promise<string[]> => {
   const web3 = getWeb3Connection();
   const accounts = await web3.eth.requestAccounts();
   return accounts;
-}
+};
 
 export const App = hot((): React.ReactElement => {
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
@@ -90,7 +90,7 @@ export const App = hot((): React.ReactElement => {
             <Button variant={'primary'} onClicked={onConnectClicked} text='Enable Ethereum' />
           ) : (
             <React.Fragment>
-              <Text variant='bold'>{`Connected accounts:`}</Text>
+              <Text variant='bold'>{'Connected accounts:'}</Text>
               {accounts.map((account: string): React.ReactElement => (
                 <Text key={account}>{`${account}`}</Text>
               ))}
