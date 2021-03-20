@@ -35,7 +35,7 @@ export const HomePage = (): React.ReactElement => {
       return new Token(tokenId, tokenMetadataUrl, tokenMetadata);
     }));
     setTokens(retrievedTokens);
-  }
+  };
 
   const onConnectClicked = async (): Promise<void> => {
     await onLinkAccountsClicked();
