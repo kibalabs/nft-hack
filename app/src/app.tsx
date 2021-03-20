@@ -7,8 +7,7 @@ import { Helmet } from 'react-helmet';
 import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
 
-// import  contractAbi from './contracts/MyNFT.sol/MyNFT.json';
-// console.log('contractAbi', contractAbi);
+import myNFTContract from './contracts/MyNFT.json';
 
 // const requester = new Requester();
 // const notdClient = new NotdClient(requester);
@@ -16,31 +15,14 @@ import Web3 from 'web3';
 // const tracker = new EveryviewTracker('017285d5fef9449783000125f2d5d330');
 // tracker.trackApplicationOpen();
 
-const ABI = [
-  {
-    type: 'function',
-    name: 'totalSupply',
-    inputs: [],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'tokenURI',
-    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
-    outputs: [{ internalType: 'string', name: '', type: 'string' }],
-    stateMutability: 'view',
-  },
-];
-
 const theme = buildTheme();
 
-const getEthereumConnection = (): unknown => {
+const getWeb3Connection = (): Web3 => {
   if (typeof window.ethereum === 'undefined') {
     // TOOD(krishan711): do something here!
     return null;
   }
-  return window.ethereum;
+  return new Web3(window.ethereum);
 };
 
 class Token {
@@ -53,16 +35,28 @@ class Token {
   }
 }
 
+const getAccounts = async (): Promise<string[]> => {
+  const web3 = getWeb3Connection();
+  const accounts = await web3.eth.getAccounts();
+  return accounts;
+};
+
+const requestAccounts = async (): Promise<string[]> => {
+  const web3 = getWeb3Connection();
+  const accounts = await web3.eth.requestAccounts();
+  return accounts;
+};
+
 export const App = hot((): React.ReactElement => {
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
+  const [accounts, setAccounts] = React.useState<string[] | null>(null);
 
   useInitialization(async (): Promise<void> => {
-    const ethereum = getEthereumConnection();
+    const web3 = getWeb3Connection();
     // console.log('networkVersion', ethereum.networkVersion);
     // console.log('selectedAddress', ethereum.selectedAddress);
-    const web3 = new Web3(ethereum);
-    const contract = new web3.eth.Contract(ABI, '0x7aad38ac82B2FAf01317dd5428Dd3B9845A24e0C');
+    const contract = new web3.eth.Contract(myNFTContract.abi, '0x7aad38ac82B2FAf01317dd5428Dd3B9845A24e0C');
     const totalSupply = Number(await contract.methods.totalSupply().call());
     setTokenSupply(totalSupply);
     // console.log('totalSupply', totalSupply);
@@ -75,13 +69,11 @@ export const App = hot((): React.ReactElement => {
       return new Token(tokenId, tokenUrl);
     }));
     setTokens(retrievedTokens);
+    setAccounts(await getAccounts());
   });
 
   const onConnectClicked = async (): Promise<void> => {
-    const ethereum = getEthereumConnection();
-    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-    // eslint-disable-next-line no-console
-    console.log('accounts', accounts);
+    setAccounts(await requestAccounts());
   };
 
   return (
@@ -94,7 +86,16 @@ export const App = hot((): React.ReactElement => {
           <Spacing variant={PaddingSize.Wide3} />
           <Text variant='header1'>The Million NFT Page</Text>
           <Spacing variant={PaddingSize.Wide3} />
-          <Button variant={'primary'} onClicked={onConnectClicked} text='Enable Ethereum' />
+          { !accounts || accounts.length === 0 ? (
+            <Button variant={'primary'} onClicked={onConnectClicked} text='Enable Ethereum' />
+          ) : (
+            <React.Fragment>
+              <Text variant='bold'>{'Connected accounts:'}</Text>
+              {accounts.map((account: string): React.ReactElement => (
+                <Text key={account}>{`${account}`}</Text>
+              ))}
+            </React.Fragment>
+          )}
           <Spacing variant={PaddingSize.Wide3} />
           { (!tokenSupply || !tokens) ? (
             <LoadingSpinner />
