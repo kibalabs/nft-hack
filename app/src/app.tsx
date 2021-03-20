@@ -1,10 +1,11 @@
 import React from 'react';
 
+import { useInitialization } from '@kibalabs/core-react';
 import { Alignment, buildTheme, Button, ContainingView, Direction, KibaApp, LoadingSpinner, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
-import { useInitialization } from '@kibalabs/core-react';
+import { Web3 } from 'web3';
 
 // import  contractAbi from './contracts/MyNFT.sol/MyNFT.json';
 // console.log('contractAbi', contractAbi);
@@ -15,35 +16,32 @@ import { useInitialization } from '@kibalabs/core-react';
 // const tracker = new EveryviewTracker('017285d5fef9449783000125f2d5d330');
 // tracker.trackApplicationOpen();
 
-const Web3 = require("web3");
-
 const ABI = [
-    {
-        "type": "function",
-        "name": "totalSupply",
-        "inputs": [],
-        "outputs": [{"name":"","type":"uint256"}],
-        "stateMutability": "view",
-    },
-    {
-      "type": "function",
-      "name": "tokenURI",
-      "inputs": [{"internalType": "uint256","name": "tokenId","type": "uint256"}],
-      "outputs": [{"internalType": "string","name": "","type": "string"}],
-      "stateMutability": "view",
-    },
+  {
+    type: 'function',
+    name: 'totalSupply',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'tokenURI',
+    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+    outputs: [{ internalType: 'string', name: '', type: 'string' }],
+    stateMutability: 'view',
+  },
 ];
 
 const theme = buildTheme();
 
 const getEthereumConnection = (): unknown => {
   if (typeof window.ethereum === 'undefined') {
-    console.log('MetaMask is installed!');
     // TOOD(krishan711): do something here!
     return null;
   }
   return window.ethereum;
-}
+};
 
 class Token {
   readonly tokenId: number;
@@ -61,29 +59,30 @@ export const App = hot((): React.ReactElement => {
 
   useInitialization(async (): Promise<void> => {
     const ethereum = getEthereumConnection();
-    console.log('networkVersion', ethereum.networkVersion);
-    console.log('selectedAddress', ethereum.selectedAddress);
+    // console.log('networkVersion', ethereum.networkVersion);
+    // console.log('selectedAddress', ethereum.selectedAddress);
     const web3 = new Web3(ethereum);
     const contract = new web3.eth.Contract(ABI, '0x7aad38ac82B2FAf01317dd5428Dd3B9845A24e0C');
     const totalSupply = Number(await contract.methods.totalSupply().call());
     setTokenSupply(totalSupply);
-    console.log('totalSupply', totalSupply);
-    console.log('Array(totalSupply).fill(null)', new Array(totalSupply + 1).fill(null));
-    const tokens = await Promise.all(new Array(totalSupply).fill(null).map(async (_: unknown, index: number): Promise<Token> => {
+    // console.log('totalSupply', totalSupply);
+    // console.log('Array(totalSupply).fill(null)', new Array(totalSupply + 1).fill(null));
+    const retrievedTokens = await Promise.all(new Array(totalSupply).fill(null).map(async (_: unknown, index: number): Promise<Token> => {
       const tokenId = index + 1;
-      console.log('here', tokenId);
+      // console.log('here', tokenId);
       const tokenUrl = await contract.methods.tokenURI(tokenId).call();
-      console.log(tokenUrl);
+      // console.log(tokenUrl);
       return new Token(tokenId, tokenUrl);
     }));
-    setTokens(tokens)
-  })
+    setTokens(retrievedTokens);
+  });
 
   const onConnectClicked = async (): Promise<void> => {
     const ethereum = getEthereumConnection();
     const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+    // eslint-disable-next-line no-console
     console.log('accounts', accounts);
-  }
+  };
 
   return (
     <KibaApp theme={theme}>
