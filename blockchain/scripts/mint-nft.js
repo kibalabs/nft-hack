@@ -5,11 +5,11 @@ const contract = require("../artifacts/contracts/MyNFT.sol/MyNFT.json");
 const ALCHEMY_URL = process.env.ALCHEMY_URL;
 const PUBLIC_KEY = process.env.PUBLIC_KEY;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 
 const web3 = createAlchemyWeb3(ALCHEMY_URL);
 
-const contractAddress = "0x7aad38ac82B2FAf01317dd5428Dd3B9845A24e0C";
-const nftContract = new web3.eth.Contract(contract.abi, contractAddress);
+const nftContract = new web3.eth.Contract(contract.abi, CONTRACT_ADDRESS);
 
 
 async function mintNFT(tokenURI) {
@@ -18,7 +18,7 @@ async function mintNFT(tokenURI) {
   //the transaction
   const tx = {
     'from': PUBLIC_KEY,
-    'to': contractAddress,
+    'to': CONTRACT_ADDRESS,
     'nonce': nonce,
     'gas': 500000,
     'data': nftContract.methods.mintNFT(PUBLIC_KEY, tokenURI).encodeABI()
@@ -37,4 +37,10 @@ async function mintNFT(tokenURI) {
   });
 }
 
-mintNFT("https://www.kibalabs.com")
+mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
+mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
+mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
+mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
+mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
+mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")
+mintNFT("https://gateway.pinata.cloud/ipfs/QmV4rRPd7NUkcA9wkSDieDtWpPT8jXxTHQcDHMfT9E9YZF")

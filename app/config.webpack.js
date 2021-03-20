@@ -1,5 +1,6 @@
 /* eslint-disable */
 const path = require('path');
+const CreateRuntimeConfigPlugin = require('@kibalabs/build/scripts/plugins/createRuntimeConfigPlugin')
 
 module.exports = (config) => {
   config.resolve = config.resolve || {};
@@ -12,5 +13,9 @@ module.exports = (config) => {
     '@kibalabs/core-react': path.resolve('./node_modules', '@kibalabs/core-react'),
     '@kibalabs/ui-react': path.resolve('./node_modules', '@kibalabs/ui-react'),
   };
+  config.plugins = [
+    ...config.plugins,
+    new CreateRuntimeConfigPlugin({'KRT_CONTRACT_ADDRESS': process.env.KRT_CONTRACT_ADDRESS})
+  ];
   return config;
 };
