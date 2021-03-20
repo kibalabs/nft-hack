@@ -16,7 +16,7 @@ import { TokenPage } from './pages/TokenPage';
 import { buildNftHackTheme } from './theme';
 
 declare global {
-  interface Window {
+  export interface Window {
     KRT_CONTRACT_ADDRESS: string;
   }
 }

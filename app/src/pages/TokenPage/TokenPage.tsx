@@ -63,11 +63,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const onOpenseaClicked = () => {
-    window.open("https://testnets.opensea.io/assets/" + window.KRT_CONTRACT_ADDRESS + "/" + token.tokenId)
+    if (!token) {
+      return;
+    }
+    // @ts-ignore
+    window.open(`https://testnets.opensea.io/assets/${window.KRT_CONTRACT_ADDRESS}/${token.tokenId}`);
   };
 
-  const onRaribleClicked = () => {    
-    window.open("https://rinkeby.rarible.com/token/" + window.KRT_CONTRACT_ADDRESS + ":" + token.tokenId);
+  const onRaribleClicked = () => {
+    if (!token) {
+      return;
+    }
+    // @ts-ignore
+    window.open(`https://rinkeby.rarible.com/token/${window.KRT_CONTRACT_ADDRESS}:${token.tokenId}`);
   };
 
   const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
@@ -97,11 +105,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             </Box>
             <Spacing variant={PaddingSize.Wide3} />
             <Text>{`Token #${token.tokenId}`}</Text>
-            <Text variant='header1'>{token.metadata.name}</Text>            
+            <Text variant='header1'>{token.metadata.name}</Text>
             <Spacing variant={PaddingSize.Wide1} />
             <Text variant='header3'>{token.metadata.description}</Text>
             <Spacing variant={PaddingSize.Wide2} />
-            <Stack direction="horizontal">
+            <Stack direction={Direction.Horizontal}>
               <Button variant='secondary' onClicked={onOpenseaClicked} text='Open Sea' />
               <Button variant='secondary' onClicked={onRaribleClicked} text='Rarible' />
             </Stack>
