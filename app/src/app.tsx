@@ -2,12 +2,13 @@ import React from 'react';
 
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { Route, Router, useInitialization } from '@kibalabs/core-react';
-import { KibaApp } from '@kibalabs/ui-react';
+import { Alignment, KibaApp, LayerContainer } from '@kibalabs/ui-react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
 
 import { AccountControlProvider } from './accountsContext';
+import { MetaMaskConnection } from './components/MetaMaskConnection';
 import MDNFTContract from './contracts/MillionDollarNFT.json';
 import { GlobalsProvider } from './globalsContext';
 import { HomePage } from './pages/HomePage';
@@ -64,11 +65,21 @@ export const App = hot((): React.ReactElement => {
     <KibaApp theme={theme}>
       <GlobalsProvider globals={globals}>
         <AccountControlProvider accounts={accounts} onLinkAccountsClicked={onLinkAccountsClicked}>
-          <Router>
-            <Route path='/' page={HomePage} />
-            <Route default={true} page={NotFoundPage} />
-            <Route path='/tokens/:tokenId' page={TokenPage} />
-          </Router>
+          <LayerContainer>
+            <Router>
+              <Route path='/' page={HomePage} />
+              <Route default={true} page={NotFoundPage} />
+              <Route path='/tokens/:tokenId' page={TokenPage} />
+            </Router>
+            <LayerContainer.Layer
+              isFullHeight={false}
+              isFullWidth={false}
+              alignmentVertical={Alignment.End}
+              alignmentHorizontal={Alignment.Start}
+            >
+              <MetaMaskConnection />
+            </LayerContainer.Layer>
+          </LayerContainer>
         </AccountControlProvider>
       </GlobalsProvider>
     </KibaApp>

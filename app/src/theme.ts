@@ -24,6 +24,12 @@ export const buildNftHackTheme = (): ITheme => {
   };
   const boxThemes = {
     ...defaultTheme.boxes,
+    connectionOverlay: {
+      'background-color': 'rgba(255, 255, 255, 0.75)',
+      padding: '0.5em 1em',
+      'border-radius': '0 1em 0 0',
+      'backdrop-filter': 'blur(5px)',
+    },
   };
   const theme = buildTheme({
     colors,
