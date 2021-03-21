@@ -1,4 +1,4 @@
-import { buildTheme, ITheme, mergeTheme } from '@kibalabs/ui-react';
+import { buildTheme, ITheme, mergeTheme, mergeThemePartial } from '@kibalabs/ui-react';
 
 import { buildTokenBoxThemes } from './components/TokenBox';
 
@@ -21,9 +21,22 @@ export const buildNftHackTheme = (): ITheme => {
     light: {
       color: 'rgba(255, 255, 255, 0.95)',
     },
+    preheading: {
+      'text-transform': 'uppercase',
+      'font-weight': 'bold',
+    },
   };
   const boxThemes = {
     ...defaultTheme.boxes,
+    connectionOverlay: {
+      'background-color': 'rgba(255, 255, 255, 0.75)',
+      padding: '0.5em 1em',
+      'border-radius': '0 1em 0 0',
+      'backdrop-filter': 'blur(5px)',
+    },
+    tokenHeader: mergeThemePartial(defaultTheme.boxes.card, {
+      'border-radius': '0',
+    }),
   };
   const theme = buildTheme({
     colors,
