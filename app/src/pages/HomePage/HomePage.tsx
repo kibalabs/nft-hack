@@ -48,7 +48,7 @@ export const HomePage = (): React.ReactElement => {
   return (
     <React.Fragment>
       <Helmet>
-        <title>{'The Million Dollar NFT Page'}</title>
+        <title>{'The Million Dollar NFT Page - Own a piece of crypto history!'}</title>
       </Helmet>
       <LayerContainer>
         { (!tokenSupply || !tokens) ? (
