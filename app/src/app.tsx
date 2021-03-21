@@ -33,7 +33,7 @@ const getWeb3Connection = (): Web3 => {
 const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
-const contract = new web3.eth.Contract(MDNFTContract.abi, window.KRT_CONTRACT_ADDRESS);
+const contract = web3 ? new web3.eth.Contract(MDNFTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 

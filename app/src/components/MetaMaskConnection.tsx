@@ -16,7 +16,7 @@ export const MetaMaskConnection = (): React.ReactElement => {
   return (
     <Box variant='connectionOverlay'>
       { !accounts ? (
-        <LoadingSpinner />
+        <LoadingSpinner variant='small' />
       ) : (accounts.length === 0) ? (
         <Button
           variant={'primary'}
