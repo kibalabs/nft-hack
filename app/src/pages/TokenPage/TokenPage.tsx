@@ -2,7 +2,7 @@ import React from 'react';
 
 import { RestMethod } from '@kibalabs/core';
 import { useInitialization } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, ContainingView, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
@@ -92,12 +92,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             <LoadingSpinner />
           </React.Fragment>
         ) : (
-          <React.Fragment>
+          <React.Fragment>            
             <Box
               maxHeight='350px'
+              variant='card'
             >
               <Image
-                isFullWidth={true}
+                // isFullWidth={true}
+                isCenteredHorizontally={true}
                 fitType={'cover'}
                 source={token.metadata.imageUrl}
                 alternativeText={`${token.metadata.name} image`}
@@ -109,8 +111,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             <Spacing variant={PaddingSize.Wide1} />
             <Text variant='header3'>{token.metadata.description}</Text>
             <Spacing variant={PaddingSize.Wide2} />
-            <Stack direction={Direction.Horizontal}>
-              <Button variant='secondary' onClicked={onOpenseaClicked} text='Open Sea' />
+            <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+              <Button variant='secondary' onClicked={onOpenseaClicked} text='OpenSea' />
               <Button variant='secondary' onClicked={onRaribleClicked} text='Rarible' />
             </Stack>
             <Spacing variant={PaddingSize.Wide2} />

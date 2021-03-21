@@ -48,7 +48,7 @@ export const HomePage = (): React.ReactElement => {
   return (
     <React.Fragment>
       <Helmet>
-        <title>{'The Million NFT Page'}</title>
+        <title>{'The Million Dollar NFT Page'}</title>
       </Helmet>
       <LayerContainer>
         { (!tokenSupply || !tokens) ? (
@@ -60,7 +60,7 @@ export const HomePage = (): React.ReactElement => {
           <BackgroundView>
             <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
               <Spacing variant={PaddingSize.Wide3} />
-              <Text variant='header1'>The Million NFT Page</Text>
+              <Text variant='header1'>The Million Dollar NFT Page</Text>
               { !accounts ? (
                 <LoadingSpinner />
               ) : (accounts.length === 0) ? (

@@ -74,7 +74,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       >
         <TransformComponent>
           <FlexWrapContainer>
-            { Array(10).fill(null).map((_: unknown, index: number): React.ReactElement => (
+            { Array(100).fill(null).map((_: unknown, index: number): React.ReactElement => (
               <React.Fragment key={index}>
                 { props.tokens.map((token: Token): React.ReactElement => (
                   <TokenCard

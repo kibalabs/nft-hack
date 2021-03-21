@@ -16,7 +16,7 @@ contract MillionDollarNFT is ERC721, Ownable {
 
     mapping (address => bool) public admins;
     
-    constructor() public ERC721("MillionDollarNFT", "MDNFT") {
+    constructor() public ERC721("MillionDollarNFT", "MDNFT") { //💲💵💰
         admins[_msgSender()] = true;
     }
 

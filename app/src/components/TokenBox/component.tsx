@@ -26,7 +26,7 @@ const StyledTokenBox = styled.div<IStyledTokenBoxProps>`
   transition-duration: 0.3s;
   width: 300px;
   height: 200px;
-  zoom: 0.1;
+  zoom: 0.2;
 
   &:hover {
     ${(props: IStyledTokenBoxProps): string => themeToCss(props.theme.normal.hover?.background)};
