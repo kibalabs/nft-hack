@@ -2,7 +2,7 @@ import React from 'react';
 
 import { RestMethod } from '@kibalabs/core';
 import { useInitialization } from '@kibalabs/core-react';
-import { Alignment, Box, Button, ContainingView, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
@@ -92,7 +92,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             <LoadingSpinner />
           </React.Fragment>
         ) : (
-          <React.Fragment>            
+          <React.Fragment>
             <Box
               maxHeight='350px'
               variant='card'
