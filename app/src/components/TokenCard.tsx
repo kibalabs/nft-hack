@@ -1,12 +1,13 @@
 import React from 'react';
 
-import { Alignment, BackgroundView, Box, Direction, Image, LayerContainer, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Direction, HidingView, Image, LayerContainer, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { Token } from '../model';
 import { TokenBox } from './TokenBox';
 
 interface TokenCardProps {
   token: Token;
+  zoomLevel: number;
   onClicked: (token: Token) => void;
 }
 
@@ -31,6 +32,7 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
           isFullHeight={false}
           alignmentVertical={Alignment.End}
         >
+          {/* <HidingView isHidden={props.zoomLevel < 7}> */}
           <BackgroundView color='rgba(0, 0, 0, 0.5)'>
             <Box
               variant='padded'
@@ -45,6 +47,7 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
               </Stack>
             </Box>
           </BackgroundView>
+          {/* </HidingView> */}
         </LayerContainer.Layer>
       </LayerContainer>
     </TokenBox>

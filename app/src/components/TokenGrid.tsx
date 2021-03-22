@@ -24,8 +24,10 @@ const FlexWrapContainer = styled.div`
 export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   // const [isMoving, setIsMoving] = React.useState<boolean>(false);
   const isMovingRef = React.useRef<boolean>(false);
+  const zoomLevelRef = React.useRef<number>(1);
   const lastMoveStartRef = React.useRef<number | null>(null);
   const lastMoveEndRef = React.useRef<number | null>(null);
+  const [zoomLevel, setZoomLevel] = React.useState<number>(1);
 
   const onMovingStart = (): void => {
     isMovingRef.current = false;
@@ -35,11 +37,12 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   const onMovingStop = (): void => {
     isMovingRef.current = false;
     lastMoveEndRef.current = new Date().getTime();
+    setZoomLevel(zoomLevelRef.current);
   };
 
-  // const onZoomChange = (zoomInfo: object): void => {
-  //   setZoom(zoomInfo.scale);
-  // }
+  const onZoomChange = (zoomInfo: object): void => {
+    zoomLevelRef.current = zoomInfo.scale;
+  };
 
   const onTokenClicked = (token: Token): void => {
     if (isMovingRef.current) {
@@ -64,7 +67,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
         zoomIn={{ step: 100, animationTime: 100 }}
         zoomOut={{ step: 100, animationTime: 100 }}
         wheel={{ step: 100 }}
-        // onZoomChange={onZoomChange}
+        onZoomChange={onZoomChange}
         onWheelStart={onMovingStart}
         onWheelStop={onMovingStop}
         onPanningStart={onMovingStart}
@@ -79,7 +82,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
                 { props.tokens.map((token: Token): React.ReactElement => (
                   <TokenCard
                     key={token.tokenId}
-                    // zoom={zoom}
+                    // zoomLevel={zoomLevel}
                     token={token}
                     onClicked={onTokenClicked}
                   />

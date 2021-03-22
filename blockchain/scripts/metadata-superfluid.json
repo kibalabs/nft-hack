@@ -1,0 +1,5 @@
+{
+  "name" : "Superfluid",
+  "description" : "Superfluid is a new DeFi Primitive that automates recurring transactions by allowing tokens to flow seamlessly from one wallet to another on Ethereum. It enables a variety of functions: from money streaming to one-transaction reward distributions, smart contract callbacks, a user level batch-call system, and an SDK for dApps. NFTs for land ownership in Decentraland? Automatically get rent paid in a stream! If you transfer the NFT the stream redirects with it NFTs for music rights? Get royalties paid directly to the NFT holder. NFT of your favourite art? Get social token rewards from the artist!",
+  "image" : "https://www.superfluid.finance/superfluid-thumbnail.png"
+}
