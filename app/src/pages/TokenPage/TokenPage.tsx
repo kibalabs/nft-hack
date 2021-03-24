@@ -60,7 +60,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     // - Create a URL either on S3 or on IPFS
     // - const newMetadata = {"name" : name, "description" : description, "image" : image}
     // - const jsonTokenMetadata = JSON.stringify(metadata);
-    // - Run the code in onUpdateTokenUrlClicked()
+    // - Run the code in onUpdateTokenUrlClicked() 
 
     setToken(updatedToken);
   };
