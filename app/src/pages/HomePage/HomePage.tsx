@@ -20,7 +20,7 @@ enum ChainId {
 export const HomePage = (): React.ReactElement => {
   const { web3, requester, contract } = useGlobals();
   const navigator = useNavigator();
-  const [showBrowserError, setShowBrowserError] = React.useState<boolean>(false);
+  const [browserError, setBrowserError] = React.useState<string | null>(null);
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
   const [chainId, setChainId] = React.useState<number | null>(null);
@@ -42,27 +42,15 @@ export const HomePage = (): React.ReactElement => {
   }, [contract, requester]);
 
   React.useEffect((): void => {
-    if (!contract || chainId != ChainId.Rinkeby) { 
-      setShowBrowserError(true);
+    if (!contract) {
+      setBrowserError('We only support browsers with MetaMask.');
+    } else if (chainId !== ChainId.Rinkeby) {
+      setBrowserError('We do not support this chain, please switch to Rinkeby');
     } else {
       loadTokens();
-      setShowBrowserError(false);
+      setBrowserError(null);
     }
   }, [chainId, contract, loadTokens]);
-
-  const browserError = () => {
-    return (
-      <React.Fragment>
-        {!contract ? (
-          <Text>We only support browsers with MetaMask.</Text>
-        ) : (chainId != null && chainId != ChainId.Rinkeby) ? (
-          <Text>We do not support this chain, please switch to Rinkeby</Text>
-        ) : (
-          <Text>Unknown Error</Text>
-        )}
-      </React.Fragment>
-    )
-  };
 
   const onTokenClicked = (token: Token) => {
     navigator.navigateTo(`/tokens/${token.tokenId}`);
@@ -73,8 +61,8 @@ export const HomePage = (): React.ReactElement => {
       <Helmet>
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
-      { showBrowserError ? (
-        browserError()
+      { browserError !== null ? (
+        <Text>{browserError}</Text>
       ) : (!tokenSupply || !tokens) ? (
         <LoadingSpinner />
       ) : (
