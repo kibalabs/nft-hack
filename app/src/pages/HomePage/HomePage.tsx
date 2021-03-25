@@ -9,13 +9,23 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
 
+enum ChainId {
+  Mainnet = 1,
+  Ropsten = 3,
+  Rinkeby = 4,
+  Goerli = 5,
+  Kovan = 42,
+}
 
 export const HomePage = (): React.ReactElement => {
-  const { requester, contract } = useGlobals();
+  const { web3, requester, contract } = useGlobals();
   const navigator = useNavigator();
   const [showBrowserError, setShowBrowserError] = React.useState<boolean>(false);
   const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
+  const [chainId, setChainId] = React.useState<number | null>(null);
+
+  web3.eth.getChainId().then(setChainId);
 
   const loadTokens = React.useCallback(async (): Promise<void> => {
     const totalSupply = Number(await contract.methods.totalSupply().call());
@@ -32,13 +42,27 @@ export const HomePage = (): React.ReactElement => {
   }, [contract, requester]);
 
   React.useEffect((): void => {
-    if (!contract) {
+    if (!contract || chainId != ChainId.Rinkeby) { 
       setShowBrowserError(true);
     } else {
       loadTokens();
       setShowBrowserError(false);
     }
-  }, [contract, loadTokens]);
+  }, [chainId, contract, loadTokens]);
+
+  const browserError = () => {
+    return (
+      <React.Fragment>
+        {!contract ? (
+          <Text>We only support browsers with MetaMask.</Text>
+        ) : (chainId != null && chainId != ChainId.Rinkeby) ? (
+          <Text>We do not support this chain, please switch to Rinkeby</Text>
+        ) : (
+          <Text>Unknown Error</Text>
+        )}
+      </React.Fragment>
+    )
+  };
 
   const onTokenClicked = (token: Token) => {
     navigator.navigateTo(`/tokens/${token.tokenId}`);
@@ -50,7 +74,7 @@ export const HomePage = (): React.ReactElement => {
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
       { showBrowserError ? (
-        <Text>We only support browsers with MetaMask.</Text>
+        browserError()
       ) : (!tokenSupply || !tokens) ? (
         <LoadingSpinner />
       ) : (
