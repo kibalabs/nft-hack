@@ -9,12 +9,12 @@ import Web3 from 'web3';
 
 import { AccountControlProvider } from './accountsContext';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
-import MDNFTContract from './contracts/MillionDollarNFT.json';
+import MDTContract from './contracts/MillionDollarNFT.json';
 import { GlobalsProvider } from './globalsContext';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { TokenPage } from './pages/TokenPage';
-import { buildNftHackTheme } from './theme';
+import { buildMDTPTheme } from './theme';
 
 declare global {
   export interface Window {
@@ -30,10 +30,11 @@ const getWeb3Connection = (): Web3 => {
   return new Web3(window.ethereum);
 };
 
+
 const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
-const contract = web3 ? new web3.eth.Contract(MDNFTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
+const contract = web3 ? new web3.eth.Contract(MDTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 
@@ -44,7 +45,7 @@ const globals = {
   contract,
 };
 
-const theme = buildNftHackTheme();
+const theme = buildMDTPTheme();
 
 export const App = hot((): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<string[] | null>(null);

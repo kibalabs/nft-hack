@@ -3,7 +3,7 @@ import { buildTheme, ITheme, mergeTheme, mergeThemePartial } from '@kibalabs/ui-
 import { buildTokenBoxThemes } from './components/TokenBox';
 
 export const defaultTheme = buildTheme();
-export const buildNftHackTheme = (): ITheme => {
+export const buildMDTPTheme = (): ITheme => {
   const colors = {
     ...defaultTheme.colors,
     // brandPrimary: '#6F0000',
