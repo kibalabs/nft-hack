@@ -18,7 +18,7 @@ export const HomePage = (): React.ReactElement => {
   const [tokens, setTokens] = React.useState<Token[] | null>(null);
 
   const loadTokens = React.useCallback(async (): Promise<void> => {
-    const totalSupply = Number(await contract.methods.totalSupply().call());
+    const totalSupply = 1; //Number(await contract.methods.totalSupply().call());
     setTokenSupply(totalSupply);
     const retrievedTokens = await Promise.all(new Array(totalSupply).fill(null).map(async (_: unknown, index: number): Promise<Token> => {
       const tokenId = index + 1;

@@ -7,7 +7,7 @@ import { TokenBox } from './TokenBox';
 
 interface TokenCardProps {
   token: Token;
-  zoomLevel: number;
+  isZoomedIn: boolean;
   onClicked: (token: Token) => void;
 }
 
@@ -32,7 +32,7 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
           isFullHeight={false}
           alignmentVertical={Alignment.End}
         >
-          {/* <HidingView isHidden={props.zoomLevel < 7}> */}
+          <HidingView isHidden={!props.isZoomedIn}>
           <BackgroundView color='rgba(0, 0, 0, 0.5)'>
             <Box
               variant='padded'
@@ -47,7 +47,7 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
               </Stack>
             </Box>
           </BackgroundView>
-          {/* </HidingView> */}
+          </HidingView>
         </LayerContainer.Layer>
       </LayerContainer>
     </TokenBox>
