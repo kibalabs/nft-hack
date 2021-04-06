@@ -1,1 +1,1 @@
-CREATE DATABASE nfthackdb;
+CREATE DATABASE mdtpdb;
