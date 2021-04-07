@@ -70,7 +70,7 @@ class MdtpManager:
         tokenMetadataUrl = tokenMetadataUrlResponse[0].strip()
         tokenMetadataResponse = await self.requester.make_request(method='GET', url=tokenMetadataUrl)
         tokenMetadataJson = json.loads(tokenMetadataResponse.text)
-        ownerIdResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
+        ownerIdResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
         ownerId = ownerIdResponse[0].strip()
         title = tokenMetadataJson.get('title') or tokenMetadataJson.get('name') or ''
         # TODO(krishan711): pick a better default image
