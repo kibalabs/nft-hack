@@ -20,8 +20,6 @@ export const HomePage = (): React.ReactElement => {
   const { web3, contract, mdtpClient } = useGlobals();
   const navigator = useNavigator();
   const [browserError, setBrowserError] = React.useState<string | null>(null);
-  // const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
-  // const [tokens, setTokens] = React.useState<GridItem[] | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [chainId, setChainId] = React.useState<number | null>(null);
 
