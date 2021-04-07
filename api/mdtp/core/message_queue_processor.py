@@ -30,7 +30,6 @@ class MessageQueueProcessor:
                 time.sleep(30)
             else:
                 logging.info(f'MESSAGE - {message.command} {message.content}')
-                # await self.slackClient.post(text=f'MESSAGE - {message.command} {message.content}')
                 startTime = time.time()
                 statusCode = 200
                 try:
@@ -44,5 +43,3 @@ class MessageQueueProcessor:
                     # TODO(krish): should possibly reset the visibility timeout
                 duration = time.time() - startTime
                 logging.info(f'MESSAGE - {message.command} {message.content} - {statusCode} - {duration}')
-                if statusCode != 200:
-                    await self.slackClient.post(text=f'MESSAGE - {message.command} {message.content} - {statusCode} - {duration}')
