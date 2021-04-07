@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 from pydantic import dataclasses
 
@@ -8,6 +9,7 @@ class GridItem:
     tokenId: int
     network: str
     title: str
-    description: str
+    description: Optional[str]
     imageUrl: str
+    resizableImageUrl: Optional[str]
     ownerId: str

@@ -13,5 +13,6 @@ def grid_item_from_row(row: Mapping) -> GridItem:
         title=row[GridItemsTable.c.title],
         description=row[GridItemsTable.c.description],
         imageUrl=row[GridItemsTable.c.imageUrl],
+        resizableImageUrl=row[GridItemsTable.c.resizableImageUrl],
         ownerId=row[GridItemsTable.c.ownerId],
     )

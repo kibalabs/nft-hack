@@ -17,6 +17,7 @@ from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
 from mdtp.manager import MdtpManager
 from mdtp.eth_client import RestEthClient
+from mdtp.image_manager import ImageManager
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,7 +32,8 @@ requester = Requester()
 ethClient = RestEthClient(url='https://eth-rinkeby.alchemyapi.io/v2/Sg7ktQ7cAlWZ4Qk0193Gg5ccBJNpEMXA', requester=requester)
 with open('./MillionDollarNFT.json') as contractJsonFile:
     contractJson = json.load(contractJsonFile)
-manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, ethClient=ethClient, workQueue=workQueue, contractAddress='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', contractJson=contractJson)
+imageManager = ImageManager(requester=requester, sirvKey=os.environ['SIRV_KEY'], sirvSecret=os.environ['SIRV_SECRET'])
+manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, ethClient=ethClient, workQueue=workQueue, imageManager=imageManager, contractAddress='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', contractJson=contractJson)
 
 app = FastAPI()
 app.include_router(router=create_health_api())
