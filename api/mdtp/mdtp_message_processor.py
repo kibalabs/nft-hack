@@ -12,6 +12,6 @@ class MdtpMessageProcessor(MessageProcessor):
     async def process_message(self, message: SqsMessage) -> None:
         if message.command == UpdateTokensMessageContent._COMMAND:
             messageContent = UpdateTokensMessageContent.parse_obj(message.content)
-            await self.manager.update()
+            await self.manager.update_tokens()
             return
         raise KibaException(message='Message was unhandled')
