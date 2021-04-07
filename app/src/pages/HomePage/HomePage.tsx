@@ -5,6 +5,7 @@ import { useNavigator } from '@kibalabs/core-react';
 import { LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
+import { AboutIcon } from '../../components/AboutIcon';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
@@ -68,6 +69,7 @@ export const HomePage = (): React.ReactElement => {
       ) : (
         <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
       )}
+      <AboutIcon />
     </React.Fragment>
   );
 };

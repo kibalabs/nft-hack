@@ -68,7 +68,7 @@ export const App = hot((): React.ReactElement => {
       <GlobalsProvider globals={globals}>
         <AccountControlProvider accounts={accounts} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
-            <Router>              
+            <Router>
               <Route path='/' page={HomePage} />
               <Route default={true} page={NotFoundPage} />
               <Route path='/tokens/:tokenId' page={TokenPage} />

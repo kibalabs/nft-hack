@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Image, KibaIcon, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Button, Direction, KibaIcon, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 export const AboutPage = (): React.ReactElement => {
@@ -11,8 +11,7 @@ export const AboutPage = (): React.ReactElement => {
     navigator.navigateTo('/');
   };
 
-  let text = 
-  `
+  const text = `
   **What**
 
 [Milliondollartokenpage.com](http://milliondollartokenpage.com) is [milliondollarhomepage.com](http://milliondollarhomepage.com) in the crypto era.
@@ -48,7 +47,7 @@ Secondly, as an owner of this NFT, you can use external marketplaces like [opens
 We want you to spread the word to all your friends. So to sweeten the deal we're giving 10% of  purchasing fees when someone you recommended buys a block of pixels. This means that if a friend of yours buys 10 blocks for $1000 in total, then $100 of their cost will be reimbursed straight back to your wallet!
 
 So come along and join us by buying and sharing a piece of crypto history!
-  `
+  `;
 
   return (
     <React.Fragment>
@@ -59,12 +58,12 @@ So come along and join us by buying and sharing a piece of crypto history!
         <React.Fragment>
           <Spacing variant={PaddingSize.Wide3} />
           <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
-            <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>              
+            <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
               <Stack.Item alignment={Alignment.Start}>
                 <Button variant='secondary' onClicked={onBackClicked} text='Back' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
               </Stack.Item>
               <Text variant='header1'>{'About'}</Text>
-              <Markdown source={text} />             
+              <Markdown source={text} />
             </Stack>
           </ResponsiveContainingView>
           <Spacing variant={PaddingSize.Wide3} />
