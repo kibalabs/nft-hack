@@ -49,7 +49,7 @@ export const HomePage = (): React.ReactElement => {
   return (
     <React.Fragment>
       <Helmet>
-        <title>{'The Million Dollar GridItem Page - Own a piece of crypto history!'}</title>
+        <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
       { browserError !== null ? (
         <Text>{browserError}</Text>
