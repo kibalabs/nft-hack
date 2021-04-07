@@ -1,13 +1,12 @@
 import React from 'react';
 
-import { RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
 import { LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
+import { GridItem } from '../../client';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
-import { Token, TokenMetadata } from '../../model';
 
 enum ChainId {
   Mainnet = 1,
@@ -18,28 +17,21 @@ enum ChainId {
 }
 
 export const HomePage = (): React.ReactElement => {
-  const { web3, requester, contract } = useGlobals();
+  const { web3, contract, mdtpClient } = useGlobals();
   const navigator = useNavigator();
   const [browserError, setBrowserError] = React.useState<string | null>(null);
-  const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
-  const [tokens, setTokens] = React.useState<Token[] | null>(null);
+  // const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
+  // const [tokens, setTokens] = React.useState<GridItem[] | null>(null);
+  const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [chainId, setChainId] = React.useState<number | null>(null);
 
   web3.eth.getChainId().then(setChainId);
 
-  const loadTokens = React.useCallback(async (): Promise<void> => {
-    const totalSupply = Number(await contract.methods.totalSupply().call());
-    setTokenSupply(totalSupply);
-    const retrievedTokens = await Promise.all(new Array(totalSupply).fill(null).map(async (_: unknown, index: number): Promise<Token> => {
-      const tokenId = index + 1;
-      const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
-      const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
-      const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
-      const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
-      return new Token(tokenId, tokenMetadataUrl, tokenMetadata);
-    }));
-    setTokens(retrievedTokens);
-  }, [contract, requester]);
+  const loadGridItems = React.useCallback(async (): Promise<void> => {
+    mdtpClient.listGridItems().then((retrievedGridItems: GridItem[]): void => {
+      setGridItems(retrievedGridItems);
+    });
+  }, [mdtpClient]);
 
   React.useEffect((): void => {
     if (!contract) {
@@ -47,26 +39,26 @@ export const HomePage = (): React.ReactElement => {
     } else if (chainId !== ChainId.Rinkeby) {
       setBrowserError('We do not support this chain, please switch to Rinkeby');
     } else {
-      loadTokens();
+      loadGridItems();
       setBrowserError(null);
     }
-  }, [chainId, contract, loadTokens]);
+  }, [chainId, contract, loadGridItems]);
 
-  const onTokenClicked = (token: Token) => {
-    navigator.navigateTo(`/tokens/${token.tokenId}`);
+  const onGridItemClicked = (gridItem: GridItem) => {
+    navigator.navigateTo(`/tokens/${gridItem.tokenId}`);
   };
 
   return (
     <React.Fragment>
       <Helmet>
-        <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
+        <title>{'The Million Dollar GridItem Page - Own a piece of crypto history!'}</title>
       </Helmet>
       { browserError !== null ? (
         <Text>{browserError}</Text>
-      ) : (!tokenSupply || !tokens) ? (
+      ) : !gridItems ? (
         <LoadingSpinner />
       ) : (
-        <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
+        <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
       )}
     </React.Fragment>
   );

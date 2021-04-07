@@ -24,7 +24,7 @@ const StyledTokenBox = styled.div<IStyledTokenBoxProps>`
   justify-content: center;
   background-clip: border-box;
   transition-duration: 0.3s;
-  width: 300px;
+  width: 200px;
   height: 200px;
   zoom: 0.2;
 
