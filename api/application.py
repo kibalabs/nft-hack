@@ -29,7 +29,7 @@ sqsClient = boto3.client(service_name='sqs', region_name='eu-west-1', aws_access
 workQueue = SqsMessageQueue(sqsClient=sqsClient, queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue')
 
 requester = Requester()
-ethClient = RestEthClient(url='https://eth-rinkeby.alchemyapi.io/v2/Sg7ktQ7cAlWZ4Qk0193Gg5ccBJNpEMXA', requester=requester)
+ethClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
 with open('./MillionDollarNFT.json') as contractJsonFile:
     contractJson = json.load(contractJsonFile)
 imageManager = ImageManager(requester=requester, sirvKey=os.environ['SIRV_KEY'], sirvSecret=os.environ['SIRV_SECRET'])
