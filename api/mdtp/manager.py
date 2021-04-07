@@ -5,21 +5,24 @@ from typing import Sequence
 
 from web3 import Web3
 
+from mdtp.core.exceptions import NotFoundException
 from mdtp.core.requester import Requester
+from mdtp.core.sqs_message_queue import SqsMessageQueue
 from mdtp.eth_client import EthClientInterface
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
-from mdtp.core.exceptions import NotFoundException
 from mdtp.model import GridItem
+from mdtp.messages import UpdateTokensMessageContent
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, ethClient: EthClientInterface, contractAddress: str, contractJson: Dict):
+    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, ethClient: EthClientInterface, workQueue: SqsMessageQueue, contractAddress: str, contractJson: Dict):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
         self.saver = saver
         self.ethClient = ethClient
+        self.workQueue = workQueue
         self.contractAddress = contractAddress
         self.contractAbi = contractJson['abi']
         self.contract = self.w3.eth.contract(address='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', abi=self.contractAbi)
@@ -36,10 +39,12 @@ class MdtpManager:
         gridItems = await self.retriever.list_grid_items()
         return gridItems
 
-    async def update(self) -> None:
+    async def update_tokens_deferred(self) -> None:
+        await self.workQueue.send_message(message=UpdateTokensMessageContent().to_message())
+
+    async def update_tokens(self) -> None:
         tokenCountResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTotalSupplyMethodAbi, arguments={})
         tokenCount = tokenCountResponse[0]
-        print('tokenCount', tokenCount)
         for tokenIndex in range(tokenCount):
             await self.update_token(tokenId=(tokenIndex + 1))
 
