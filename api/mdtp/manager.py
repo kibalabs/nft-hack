@@ -13,16 +13,20 @@ from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import GridItem
 from mdtp.messages import UpdateTokensMessageContent
+from mdtp.messages import UploadTokenImageMessageContent
+from mdtp.image_manager import ImageManager
+from mdtp.core.util import date_util
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, ethClient: EthClientInterface, workQueue: SqsMessageQueue, contractAddress: str, contractJson: Dict):
+    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, ethClient: EthClientInterface, workQueue: SqsMessageQueue, imageManager: ImageManager, contractAddress: str, contractJson: Dict):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
         self.saver = saver
         self.ethClient = ethClient
         self.workQueue = workQueue
+        self.imageManager = imageManager
         self.contractAddress = contractAddress
         self.contractAbi = contractJson['abi']
         self.contract = self.w3.eth.contract(address='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', abi=self.contractAbi)
@@ -48,18 +52,40 @@ class MdtpManager:
         for tokenIndex in range(tokenCount):
             await self.update_token(tokenId=(tokenIndex + 1))
 
+    async def upload_token_image_deferred(self, tokenId: int) -> None:
+        await self.workQueue.send_message(message=UploadTokenImageMessageContent(tokenId=tokenId).to_message())
+
+    async def upload_token_image(self, tokenId: int) -> None:
+        logging.info(f'Uploading image for token {tokenId}')
+        network = 'rinkeby'
+        gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
+        dateString = date_util.datetime_to_string(dt=date_util.datetime_from_now(), dateFormat='%Y-%m-%d-%H-%M-%S-%f')
+        resizableImageUrl = await self.imageManager.upload_image_from_url(imageUrl=gridItem.imageUrl, filePath=f'/mdtp/tokens/{network}/{tokenId}/{dateString}')
+        await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
+
     async def update_token(self, tokenId: int) -> None:
-        logging.info(f'Updating token {tokenId}')
+        network = 'rinkeby'
+        logging.info(f'Updating token {network}/{tokenId}')
         tokenMetadataUrlResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
         tokenMetadataUrl = tokenMetadataUrlResponse[0].strip()
         tokenMetadataResponse = await self.requester.make_request(method='GET', url=tokenMetadataUrl)
         tokenMetadataJson = json.loads(tokenMetadataResponse.text)
-        network = 'rinkeby'
+        ownerIdResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
+        ownerId = ownerIdResponse[0].strip()
+        title = tokenMetadataJson.get('title') or tokenMetadataJson.get('name') or ''
+        # TODO(krishan711): pick a better default image
+        imageUrl = tokenMetadataJson.get('imageUrl') or tokenMetadataJson.get('image') or ''
+        description = tokenMetadataJson.get('description')
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
-            ownerIdResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
-            ownerId = ownerIdResponse[0].strip()
-            title = tokenMetadataJson.get('title') or tokenMetadataJson.get('name')
-            imageUrl = tokenMetadataJson.get('imageUrl') or tokenMetadataJson.get('image')
-            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=tokenMetadataJson.get('description'), imageUrl=imageUrl, ownerId=ownerId)
+            logging.info(f'Creating token {network}/{tokenId}')
+            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, ownerId=ownerId)
+            await self.upload_token_image_deferred(tokenId=tokenId)
+        resizableImageUrl = gridItem.resizableImageUrl
+        if gridItem.imageUrl != imageUrl:
+            resizableImageUrl = None
+            await self.upload_token_image_deferred(tokenId=tokenId)
+        if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.ownerId != ownerId:
+            logging.info(f'Saving token {network}/{tokenId}')
+            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, ownerId=ownerId)

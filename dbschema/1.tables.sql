@@ -3,8 +3,9 @@ CREATE TABLE tbl_grid_items (
     token_id INTEGER NOT NULL,
     network TEXT NOT NULL,
     title TEXT NOT NULL,
-    description TEXT NOT NULL,
+    description TEXT,
     image_url TEXT NOT NULL,
+    resizable_image_url TEXT,
     owner_id TEXT NOT NULL,
     last_transfer_date TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );

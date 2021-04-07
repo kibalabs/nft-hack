@@ -19,3 +19,6 @@ def datetime_from_string(dateString: str, dateFormat: str = JSON_DATE_FORMAT) ->
     except (TypeError, ValueError):
         raise DateConversionException(message=f'Invalid dateString passed to datetime_from_string: {dateString}')
     return dt
+
+def datetime_to_string(dt: datetime.datetime, dateFormat: str = JSON_DATE_FORMAT) -> str:
+    return dt.strftime(dateFormat)

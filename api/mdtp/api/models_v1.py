@@ -13,8 +13,9 @@ class ApiGridItem(BaseModel):
     tokenId: int
     network: str
     title: str
-    description: str
+    description: Optional[str]
     imageUrl: str
+    resizableImageUrl: Optional[str]
     ownerId: str
 
     @classmethod
@@ -26,6 +27,7 @@ class ApiGridItem(BaseModel):
             title=model.title,
             description=model.description,
             imageUrl=model.imageUrl,
+            resizableImageUrl=model.resizableImageUrl,
             ownerId=model.ownerId,
         )
 
