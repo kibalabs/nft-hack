@@ -20,7 +20,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return RetrieveGridItemResponse(gridItem=ApiGridItem.from_model(model=gridItem))
 
     @router.post('/update-tokens-deferred', response_model=UpdateTokensDeferredResponse)
-    async def update_tokens_deferred(rawRequest: Request, response: Response, request: UpdateTokensDeferredRequest) -> UpdateTokensDeferredResponse:
+    async def update_tokens_deferred(rawRequest: Request, response: Response) -> UpdateTokensDeferredResponse: # request: UpdateTokensDeferredRequest
         await manager.update_tokens_deferred()
         return UpdateTokensDeferredResponse()
 
