@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Box, Button, Direction, Image, LoadingSpinner, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Image, Stack, Text } from '@kibalabs/ui-react';
 
 import { useAccounts, useOnLinkAccountsClicked } from '../accountsContext';
 
@@ -16,7 +16,11 @@ export const MetaMaskConnection = (): React.ReactElement => {
   return (
     <Box variant='connectionOverlay'>
       { !accounts ? (
-        <LoadingSpinner variant='small' />
+        <Button
+          variant={'primary'}
+          text='Install Metamask'
+          target={'https://metamask.io/'}
+        />
       ) : (accounts.length === 0) ? (
         <Button
           variant={'primary'}

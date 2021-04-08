@@ -54,10 +54,18 @@ export const App = hot((): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<string[] | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
+    if (!web3) {
+      return;
+    }
+
     setAccounts(await web3.eth.requestAccounts());
   };
 
   const getAccounts = async (): Promise<void> => {
+    if (!web3) {
+      return;
+    }
+
     setAccounts(await web3.eth.getAccounts());
   };
 

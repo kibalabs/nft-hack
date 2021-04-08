@@ -19,11 +19,13 @@ enum ChainId {
 export const HomePage = (): React.ReactElement => {
   const { web3, contract, mdtpClient } = useGlobals();
   const navigator = useNavigator();
-  const [browserError, setBrowserError] = React.useState<string | null>(null);
+  const [errorText, setErrorText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [chainId, setChainId] = React.useState<number | null>(null);
 
-  web3.eth.getChainId().then(setChainId);
+  if (web3) {
+    web3.eth.getChainId().then(setChainId);
+  }
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     mdtpClient.listGridItems().then((retrievedGridItems: GridItem[]): void => {
@@ -32,13 +34,13 @@ export const HomePage = (): React.ReactElement => {
   }, [mdtpClient]);
 
   React.useEffect((): void => {
+    loadGridItems();
     if (!contract) {
-      setBrowserError('We only support browsers with MetaMask.');
+      setErrorText('Install Metamask to be able to buy a token!');
     } else if (chainId !== ChainId.Rinkeby) {
-      setBrowserError('We do not support this chain, please switch to Rinkeby');
+      setErrorText('We only support Rinkeby right now, please switch networks within Metamask and refresh');
     } else {
-      loadGridItems();
-      setBrowserError(null);
+      setErrorText(null);
     }
   }, [chainId, contract, loadGridItems]);
 
@@ -51,9 +53,8 @@ export const HomePage = (): React.ReactElement => {
       <Helmet>
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
-      { browserError !== null ? (
-        <Text>{browserError}</Text>
-      ) : !gridItems ? (
+      <Text>{errorText}</Text>
+      { gridItems === null ? (
         <LoadingSpinner />
       ) : (
         <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
