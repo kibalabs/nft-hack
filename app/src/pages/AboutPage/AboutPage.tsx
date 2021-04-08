@@ -55,20 +55,17 @@ So come along and join us by buying and sharing a piece of crypto history!
         <title>{'About | The Million Dollar Token Page'}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        <React.Fragment>
-          <Spacing variant={PaddingSize.Wide3} />
-          <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
-            <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
-              <Stack.Item alignment={Alignment.Start}>
-                <Button variant='secondary' onClicked={onBackClicked} text='Back' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
-              </Stack.Item>
-              <Text variant='header1'>{'About'}</Text>
-              <Markdown source={text} />
-            </Stack>
-          </ResponsiveContainingView>
-          <Spacing variant={PaddingSize.Wide3} />
-        </React.Fragment>
-        <Spacing variant={PaddingSize.Default} />
+        <Spacing variant={PaddingSize.Wide3} />
+        <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
+          <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
+            <Stack.Item alignment={Alignment.Start}>
+              <Button variant='secondary' onClicked={onBackClicked} text='Back' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
+            </Stack.Item>
+            <Text variant='header1'>{'About'}</Text>
+            <Markdown source={text} />
+          </Stack>
+        </ResponsiveContainingView>
+        <Spacing variant={PaddingSize.Wide3} />
       </Stack>
     </React.Fragment>
   );

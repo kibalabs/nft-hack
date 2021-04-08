@@ -2,7 +2,7 @@ import React from 'react';
 
 import { RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { LoadingSpinner, Text } from '@kibalabs/ui-react';
+import { LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { AboutIcon } from '../../components/AboutIcon';
@@ -62,14 +62,18 @@ export const HomePage = (): React.ReactElement => {
       <Helmet>
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
-      { browserError !== null ? (
-        <Text>{browserError}</Text>
-      ) : (!tokenSupply || !tokens) ? (
-        <LoadingSpinner />
-      ) : (
-        <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
-      )}
-      <AboutIcon />
+      <LayerContainer>
+        <LayerContainer.Layer>
+          { browserError !== null ? (
+            <Text>{browserError}</Text>
+          ) : (!tokenSupply || !tokens) ? (
+            <LoadingSpinner />
+          ) : (
+            <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
+          )}
+          <AboutIcon />
+        </LayerContainer.Layer>
+      </LayerContainer>
     </React.Fragment>
   );
 };
