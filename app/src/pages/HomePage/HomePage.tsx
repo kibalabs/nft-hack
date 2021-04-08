@@ -4,8 +4,8 @@ import { useNavigator } from '@kibalabs/core-react';
 import { LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
-import { AboutIcon } from '../../components/AboutIcon';
 import { GridItem } from '../../client';
+import { AboutIcon } from '../../components/AboutIcon';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
 
@@ -56,13 +56,13 @@ export const HomePage = (): React.ReactElement => {
       </Helmet>
       <LayerContainer>
         <LayerContainer.Layer>
-        <Text>{errorText}</Text>
-        { gridItems === null ? (
-          <LoadingSpinner />
-        ) : (
-          <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
-        )}
-        <AboutIcon />
+          <Text>{errorText}</Text>
+          { gridItems === null ? (
+            <LoadingSpinner />
+          ) : (
+            <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
+          )}
+          <AboutIcon />
         </LayerContainer.Layer>
       </LayerContainer>
     </React.Fragment>
