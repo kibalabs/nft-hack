@@ -1,14 +1,13 @@
 import React from 'react';
 
-import { RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
 import { LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { AboutIcon } from '../../components/AboutIcon';
+import { GridItem } from '../../client';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
-import { Token, TokenMetadata } from '../../model';
 
 enum ChainId {
   Mainnet = 1,
@@ -19,42 +18,35 @@ enum ChainId {
 }
 
 export const HomePage = (): React.ReactElement => {
-  const { web3, requester, contract } = useGlobals();
+  const { web3, contract, mdtpClient } = useGlobals();
   const navigator = useNavigator();
-  const [browserError, setBrowserError] = React.useState<string | null>(null);
-  const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
-  const [tokens, setTokens] = React.useState<Token[] | null>(null);
+  const [errorText, setErrorText] = React.useState<string | null>(null);
+  const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [chainId, setChainId] = React.useState<number | null>(null);
 
-  web3.eth.getChainId().then(setChainId);
+  if (web3) {
+    web3.eth.getChainId().then(setChainId);
+  }
 
-  const loadTokens = React.useCallback(async (): Promise<void> => {
-    const totalSupply = Number(await contract.methods.totalSupply().call());
-    setTokenSupply(totalSupply);
-    const retrievedTokens = await Promise.all(new Array(totalSupply).fill(null).map(async (_: unknown, index: number): Promise<Token> => {
-      const tokenId = index + 1;
-      const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
-      const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
-      const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
-      const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
-      return new Token(tokenId, tokenMetadataUrl, tokenMetadata);
-    }));
-    setTokens(retrievedTokens);
-  }, [contract, requester]);
+  const loadGridItems = React.useCallback(async (): Promise<void> => {
+    mdtpClient.listGridItems().then((retrievedGridItems: GridItem[]): void => {
+      setGridItems(retrievedGridItems);
+    });
+  }, [mdtpClient]);
 
   React.useEffect((): void => {
+    loadGridItems();
     if (!contract) {
-      setBrowserError('We only support browsers with MetaMask.');
+      setErrorText('Install Metamask to be able to buy a token!');
     } else if (chainId !== ChainId.Rinkeby) {
-      setBrowserError('We do not support this chain, please switch to Rinkeby');
+      setErrorText('We only support Rinkeby right now, please switch networks within Metamask and refresh');
     } else {
-      loadTokens();
-      setBrowserError(null);
+      setErrorText(null);
     }
-  }, [chainId, contract, loadTokens]);
+  }, [chainId, contract, loadGridItems]);
 
-  const onTokenClicked = (token: Token) => {
-    navigator.navigateTo(`/tokens/${token.tokenId}`);
+  const onGridItemClicked = (gridItem: GridItem) => {
+    navigator.navigateTo(`/tokens/${gridItem.tokenId}`);
   };
 
   return (
@@ -64,14 +56,13 @@ export const HomePage = (): React.ReactElement => {
       </Helmet>
       <LayerContainer>
         <LayerContainer.Layer>
-          { browserError !== null ? (
-            <Text>{browserError}</Text>
-          ) : (!tokenSupply || !tokens) ? (
-            <LoadingSpinner />
-          ) : (
-            <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
-          )}
-          <AboutIcon />
+        <Text>{errorText}</Text>
+        { gridItems === null ? (
+          <LoadingSpinner />
+        ) : (
+          <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
+        )}
+        <AboutIcon />
         </LayerContainer.Layer>
       </LayerContainer>
     </React.Fragment>

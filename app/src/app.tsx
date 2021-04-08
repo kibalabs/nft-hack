@@ -8,6 +8,7 @@ import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
 
 import { AccountControlProvider } from './accountsContext';
+import { MdtpClient } from './client/client';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
 import MDTContract from './contracts/MillionDollarNFT.json';
 import { GlobalsProvider } from './globalsContext';
@@ -36,6 +37,7 @@ const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const contract = web3 ? new web3.eth.Contract(MDTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
+const mdtpClient = new MdtpClient(requester);
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 
@@ -44,6 +46,7 @@ const globals = {
   requester,
   localStorageClient,
   contract,
+  mdtpClient,
 };
 
 const theme = buildMDTPTheme();
@@ -52,10 +55,18 @@ export const App = hot((): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<string[] | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
+    if (!web3) {
+      return;
+    }
+
     setAccounts(await web3.eth.requestAccounts());
   };
 
   const getAccounts = async (): Promise<void> => {
+    if (!web3) {
+      return;
+    }
+
     setAccounts(await web3.eth.getAccounts());
   };
 

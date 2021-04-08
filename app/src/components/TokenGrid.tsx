@@ -4,12 +4,12 @@ import { Box } from '@kibalabs/ui-react';
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import styled from 'styled-components';
 
-import { Token } from '../model';
+import { GridItem } from '../client';
 import { TokenCard } from './TokenCard';
 
 interface TokenGridProps {
-  tokens: Token[];
-  onTokenClicked: (token: Token) => void;
+  gridItems: GridItem[];
+  onGridItemClicked: (gridItem: GridItem) => void;
 }
 
 const FlexWrapContainer = styled.div`
@@ -41,7 +41,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   //   setZoom(zoomInfo.scale);
   // }
 
-  const onTokenClicked = (token: Token): void => {
+  const onGridItemClicked = (gridItem: GridItem): void => {
     if (isMovingRef.current) {
       return;
     }
@@ -53,7 +53,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
         return;
       }
     }
-    props.onTokenClicked(token);
+    props.onGridItemClicked(gridItem);
   };
 
   return (
@@ -76,12 +76,12 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
           <FlexWrapContainer>
             { Array(25).fill(null).map((_: unknown, index: number): React.ReactElement => (
               <React.Fragment key={index}>
-                { props.tokens.map((token: Token): React.ReactElement => (
+                { props.gridItems.map((gridItem: GridItem): React.ReactElement => (
                   <TokenCard
-                    key={token.tokenId}
+                    key={gridItem.gridItemId}
                     // zoom={zoom}
-                    token={token}
-                    onClicked={onTokenClicked}
+                    gridItem={gridItem}
+                    onClicked={onGridItemClicked}
                   />
                 ))}
               </React.Fragment>
