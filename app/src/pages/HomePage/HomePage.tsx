@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
+import { Alignment, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { GridItem } from '../../client';
@@ -55,13 +55,13 @@ export const HomePage = (): React.ReactElement => {
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
       <LayerContainer>
-        <LayerContainer.Layer>
-          <Text>{errorText}</Text>
-          { gridItems === null ? (
-            <LoadingSpinner />
-          ) : (
-            <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
-          )}
+        <Text>{errorText}</Text>
+        { gridItems === null ? (
+          <LoadingSpinner />
+        ) : (
+          <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
+        )}
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <AboutIcon />
         </LayerContainer.Layer>
       </LayerContainer>
