@@ -16,14 +16,22 @@ from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
 from mdtp.core.util import date_util
+from mdtp.core.s3_manager import S3Manager
+from mdtp.core.s3_manager import S3PresignedUpload
+
+_KILOBYTE = 1024
+_MEGABYTE = _KILOBYTE * 1024
+_CACHE_CONTROL_TEMPORARY_FILE = 'public,max-age=1'
+_CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, ethClient: EthClientInterface, workQueue: SqsMessageQueue, imageManager: ImageManager, contractAddress: str, contractJson: Dict):
+    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, ethClient: EthClientInterface, workQueue: SqsMessageQueue, imageManager: ImageManager, contractAddress: str, contractJson: Dict):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
         self.saver = saver
+        self.s3Manager = s3Manager
         self.ethClient = ethClient
         self.workQueue = workQueue
         self.imageManager = imageManager
@@ -42,6 +50,10 @@ class MdtpManager:
     async def list_grid_items(self) -> Sequence[GridItem]:
         gridItems = await self.retriever.list_grid_items()
         return gridItems
+
+    async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
+        presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/networks/rinkeby/tokens/{tokenId}/assets/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
+        return presignedUpload
 
     async def update_tokens_deferred(self) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent().to_message())

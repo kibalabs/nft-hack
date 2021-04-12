@@ -18,6 +18,7 @@ from mdtp.store.saver import MdtpSaver
 from mdtp.manager import MdtpManager
 from mdtp.eth_client import RestEthClient
 from mdtp.image_manager import ImageManager
+from mdtp.core.s3_manager import S3Manager
 
 logging.basicConfig(level=logging.INFO)
 
@@ -27,13 +28,15 @@ retriever = MdtpRetriever(database=database)
 
 sqsClient = boto3.client(service_name='sqs', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
 workQueue = SqsMessageQueue(sqsClient=sqsClient, queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue')
+s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
+s3Manager = S3Manager(s3Client=s3Client)
 
 requester = Requester()
 ethClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
 with open('./MillionDollarNFT.json') as contractJsonFile:
     contractJson = json.load(contractJsonFile)
 imageManager = ImageManager(requester=requester, sirvKey=os.environ['SIRV_KEY'], sirvSecret=os.environ['SIRV_SECRET'])
-manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, ethClient=ethClient, workQueue=workQueue, imageManager=imageManager, contractAddress='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', contractJson=contractJson)
+manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, ethClient=ethClient, workQueue=workQueue, imageManager=imageManager, contractAddress='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', contractJson=contractJson)
 
 app = FastAPI()
 app.include_router(router=create_health_api())

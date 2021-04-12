@@ -74,17 +74,13 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       >
         <TransformComponent>
           <FlexWrapContainer>
-            { Array(25).fill(null).map((_: unknown, index: number): React.ReactElement => (
-              <React.Fragment key={index}>
-                { props.gridItems.map((gridItem: GridItem): React.ReactElement => (
-                  <TokenCard
-                    key={gridItem.gridItemId}
-                    // zoom={zoom}
-                    gridItem={gridItem}
-                    onClicked={onGridItemClicked}
-                  />
-                ))}
-              </React.Fragment>
+            { props.gridItems.map((gridItem: GridItem): React.ReactElement => (
+              <TokenCard
+                key={gridItem.gridItemId}
+                // zoom={zoom}
+                gridItem={gridItem}
+                onClicked={onGridItemClicked}
+              />
             ))}
           </FlexWrapContainer>
         </TransformComponent>

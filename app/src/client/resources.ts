@@ -33,3 +33,20 @@ export class GridItem {
     );
   }
 }
+
+export class PresignedUpload {
+  readonly url: string;
+  readonly params: Record<string, string>;
+
+  public constructor(url: string, params: Record<string, string>) {
+    this.url = url;
+    this.params = params;
+  }
+
+  public static fromObject = (obj: Record<string, unknown>): PresignedUpload => {
+    return new PresignedUpload(
+      String(obj.url),
+      obj.params as Record<string, string>,
+    );
+  }
+}

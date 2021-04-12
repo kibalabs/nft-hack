@@ -6,6 +6,7 @@ import { Alignment, KibaApp, LayerContainer } from '@kibalabs/ui-react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
+import { provider as Web3Provider } from 'web3-core';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
@@ -20,6 +21,7 @@ import { buildMDTPTheme } from './theme';
 declare global {
   export interface Window {
     KRT_CONTRACT_ADDRESS: string;
+    ethereum?: Web3Provider;
   }
 }
 
@@ -36,7 +38,7 @@ const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const contract = web3 ? new web3.eth.Contract(MDTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
-const mdtpClient = new MdtpClient(requester);
+const mdtpClient = new MdtpClient(requester, 'http://localhost:5000');
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 

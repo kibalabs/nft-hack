@@ -24,4 +24,9 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         await manager.update_tokens_deferred()
         return UpdateTokensDeferredResponse()
 
+    @router.post('/tokens/{tokenId}/generate-image-upload', response_model=GenerateImageUploadForTokenResponse)
+    async def generate_image_upload_for_token(tokenId: int, rawRequest: Request, response: Response):
+        presignedUpload = await manager.generate_image_upload_for_token(tokenId=tokenId)
+        return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_presigned_upload(presignedUpload=presignedUpload))
+
     return router
