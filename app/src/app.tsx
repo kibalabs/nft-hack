@@ -6,6 +6,7 @@ import { Alignment, KibaApp, LayerContainer } from '@kibalabs/ui-react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
+import { provider as Web3Provider } from 'web3-core';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
@@ -20,6 +21,7 @@ import { buildMDTPTheme } from './theme';
 declare global {
   export interface Window {
     KRT_CONTRACT_ADDRESS: string;
+    ethereum?: Web3Provider;
   }
 }
 
@@ -45,6 +47,7 @@ const globals = {
   requester,
   localStorageClient,
   contract,
+  contractAddress: window.KRT_CONTRACT_ADDRESS,
   mdtpClient,
 };
 

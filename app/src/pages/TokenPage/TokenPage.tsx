@@ -6,6 +6,8 @@ import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, Lo
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
+import { PresignedUpload } from '../../client';
+import { Dropzone } from '../../components/dropzone';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
 
@@ -20,7 +22,7 @@ type Result = {
 }
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
-  const { contract, requester } = useGlobals();
+  const { contract, contractAddress, requester, mdtpClient } = useGlobals();
   const navigator = useNavigator();
   const [token, setToken] = React.useState<Token | null>(null);
   const [tokenOwner, setTokenOwner] = React.useState<string | null>(null);
@@ -29,6 +31,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
   const [newTokenSettingResult, setNewTokenSettingResult] = React.useState<Result | null>(null);
+  const [isUpdating, setIsUpdating] = React.useState<boolean>(false);
+  const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const accounts = useAccounts();
 
   useInitialization((): void => {
@@ -92,32 +96,38 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
   };
 
-  const onOpenseaClicked = () => {
-    if (!token) {
-      return;
-    }
-    // @ts-ignore
-    window.open(`https://testnets.opensea.io/assets/${window.KRT_CONTRACT_ADDRESS}/${token.tokenId}`);
-  };
-
-  const onRaribleClicked = () => {
-    if (!token) {
-      return;
-    }
-    // @ts-ignore
-    window.open(`https://rinkeby.rarible.com/token/${window.KRT_CONTRACT_ADDRESS}:${token.tokenId}`);
-  };
-
-  const onEtherscanClicked = () => {
-    if (!token) {
-      return;
-    }
-    // @ts-ignore
-    window.open(`https://rinkeby.etherscan.io/token/${window.KRT_CONTRACT_ADDRESS}?a=${token.tokenId}`);
-  };
-
   const onBackClicked = () => {
     navigator.navigateTo('/');
+  };
+
+  const onUpdateClicked = () => {
+    setIsUpdating(true);
+  };
+
+  const onImageFilesChosen = async (files: File[]): Promise<void> => {
+    // TODO(krishan711): ensure there is only one file
+    setIsUploadingImage(true);
+    mdtpClient.generateImageUploadForToken(Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
+      const file = files[0];
+      // @ts-ignore
+      const fileName = file.path.replace(/^\//g, '');
+      const formData = new FormData();
+      Object.keys(presignedUpload.params).forEach((key: string): void => {
+        formData.set(key, presignedUpload.params[key]);
+      });
+      // eslint-disable-next-line no-template-curly-in-string
+      formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
+      formData.set('content-type', file.type);
+      formData.append('file', file, file.name);
+      requester.makeFormRequest(presignedUpload.url, formData).then((): void => {
+        // eslint-disable-next-line no-template-curly-in-string
+        setNewImageUrl(`${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}`);
+        setIsUploadingImage(false);
+      });
+    }).catch((): void => {
+      setNewImageUrl('');
+      setIsUploadingImage(false);
+    });
   };
 
   const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
@@ -159,9 +169,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <Text>{token.metadata.description}</Text>
                 <Spacing variant={PaddingSize.Wide2} />
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  <Button variant='secondary' onClicked={onOpenseaClicked} text='OpenSea' />
-                  <Button variant='secondary' onClicked={onRaribleClicked} text='Rarible' />
-                  <Button variant='secondary' onClicked={onEtherscanClicked} text='Etherscan' />
+                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${token.tokenId}`} text='OpenSea' />
+                  <Button variant='secondary' target={`https://rinkeby.rarible.com/token/${contractAddress}:${token.tokenId}`} text='Rarible' />
+                  <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${token.tokenId}`} text='Etherscan' />
                 </Stack>
                 <Spacing variant={PaddingSize.Wide2} />
                 { (accounts === null || !tokenOwner) ? (
@@ -170,35 +180,47 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <React.Fragment>
                     <Text>You are the owner. Update your Token&apos;s metadata here:</Text>
                     <Spacing variant={PaddingSize.Default} />
-                    <Form onFormSubmitted={onUpdateMetadataClicked}>
-                      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-                        <SingleLineInput
-                          inputType={InputType.Text}
-                          value={newName}
-                          onValueChanged={setNewName}
-                          inputWrapperVariant={inputState}
-                          messageText={newTokenSettingResult?.message}
-                          placeholderText='Name'
-                        />
-                        <SingleLineInput
-                          inputType={InputType.Text}
-                          value={newDescription}
-                          onValueChanged={setNewDescription}
-                          inputWrapperVariant={inputState}
-                          messageText={newTokenSettingResult?.message}
-                          placeholderText='Description'
-                        />
-                        <SingleLineInput
-                          inputType={InputType.Url}
-                          value={newImageUrl}
-                          onValueChanged={setNewImageUrl}
-                          inputWrapperVariant={inputState}
-                          messageText={newTokenSettingResult?.message}
-                          placeholderText='Image URL'
-                        />
-                        <Button variant='primary' text='Update' buttonType='submit' />
-                      </Stack>
-                    </Form>
+                    { !isUpdating ? (
+                      <Button variant='primary' text='Update your token' onClicked={onUpdateClicked} />
+                    ) : (
+                      <Form onFormSubmitted={onUpdateMetadataClicked}>
+                        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+                          <SingleLineInput
+                            inputType={InputType.Text}
+                            value={newName}
+                            onValueChanged={setNewName}
+                            inputWrapperVariant={inputState}
+                            messageText={newTokenSettingResult?.message}
+                            placeholderText='Name'
+                          />
+                          <SingleLineInput
+                            inputType={InputType.Text}
+                            value={newDescription}
+                            onValueChanged={setNewDescription}
+                            inputWrapperVariant={inputState}
+                            messageText={newTokenSettingResult?.message}
+                            placeholderText='Description'
+                          />
+                          {isUploadingImage ? (
+                            <Text>Uploading image...</Text>
+                          ) : (
+                            <React.Fragment>
+                              <SingleLineInput
+                                inputType={InputType.Url}
+                                value={newImageUrl}
+                                onValueChanged={setNewImageUrl}
+                                inputWrapperVariant={inputState}
+                                messageText={newTokenSettingResult?.message}
+                                placeholderText='Image URL'
+                              />
+                              <Text variant='note'>OR</Text>
+                              <Dropzone onFilesChosen={onImageFilesChosen} />
+                            </React.Fragment>
+                          )}
+                          <Button variant='primary' text='Update' buttonType='submit' />
+                        </Stack>
+                      </Form>
+                    )}
                   </React.Fragment>
                 ) : (<Text>{`Owned by: ${tokenOwner}`}</Text>
                 )}

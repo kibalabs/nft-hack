@@ -12,6 +12,7 @@ from mdtp.core.slack_client import SlackClient
 from mdtp.core.sqs_message_queue import SqsMessageQueue
 from mdtp.core.message_queue_processor import MessageQueueProcessor
 from mdtp.core.requester import Requester
+from mdtp.core.s3_manager import S3Manager
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
 from mdtp.manager import MdtpManager
@@ -26,13 +27,15 @@ async def main():
 
     sqsClient = boto3.client(service_name='sqs', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     workQueue = SqsMessageQueue(sqsClient=sqsClient, queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue')
+    s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
+    s3Manager = S3Manager(s3Client=s3Client)
 
     requester = Requester()
     ethClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
     with open('./MillionDollarNFT.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
     imageManager = ImageManager(requester=requester, sirvKey=os.environ['SIRV_KEY'], sirvSecret=os.environ['SIRV_SECRET'])
-    manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, ethClient=ethClient, workQueue=workQueue, imageManager=imageManager, contractAddress='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', contractJson=contractJson)
+    manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, ethClient=ethClient, workQueue=workQueue, imageManager=imageManager, contractAddress='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', contractJson=contractJson)
 
     processor = MdtpMessageProcessor(manager=manager)
     slackClient = SlackClient(webhookUrl=os.environ['SLACK_WEBHOOK_URL'], requester=requester, defaultSender='worker', defaultChannel='mdtp-notifications')

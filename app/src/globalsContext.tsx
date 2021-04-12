@@ -13,6 +13,7 @@ export interface Globals {
   requester: Requester;
   localStorageClient: LocalStorageClient;
   contract: Contract;
+  contractAddress: string;
   mdtpClient: MdtpClient;
 }
 

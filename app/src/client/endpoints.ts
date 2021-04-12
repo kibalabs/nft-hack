@@ -23,3 +23,25 @@ export class ListGridItemsResponse extends ResponseData {
     );
   }
 }
+
+export class GenerateImageUploadForSiteVersionRequest extends RequestData {
+  public toObject = (): Record<string, unknown> => {
+    return {
+    };
+  }
+}
+
+export class GenerateImageUploadForSiteVersionResponse extends ResponseData {
+  readonly presignedUpload: Resources.PresignedUpload;
+
+  public constructor(presignedUpload: Resources.PresignedUpload) {
+    super();
+    this.presignedUpload = presignedUpload;
+  }
+
+  public static fromObject = (obj: Record<string, unknown>): GenerateImageUploadForSiteVersionResponse => {
+    return new GenerateImageUploadForSiteVersionResponse(
+      Resources.PresignedUpload.fromObject(obj.presignedUpload as Record<string, unknown>),
+    );
+  }
+}

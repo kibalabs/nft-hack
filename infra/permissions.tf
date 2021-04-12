@@ -69,3 +69,27 @@ resource "aws_iam_policy" "access_ethereum_node" {
     }]
   })
 }
+
+resource "aws_iam_policy" "write_to_image_bucket" {
+  name = "${local.project}-write-to-image-bucket"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "s3:DeleteObject",
+        "s3:DeleteObjectTagging",
+        "s3:DeleteObjectVersion",
+        "s3:PutObject",
+        "s3:PutObjectAcl",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectLegalHold"
+      ],
+      Resource = [
+        aws_s3_bucket.image_bucket.arn,
+        "${aws_s3_bucket.image_bucket.arn}/*",
+      ]
+    }]
+  })
+}

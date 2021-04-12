@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from pydantic import Json
 
 from mdtp.model import GridItem
+from mdtp.core.s3_manager import S3PresignedUpload
 
 class ApiGridItem(BaseModel):
     gridItemId: int
@@ -31,6 +32,17 @@ class ApiGridItem(BaseModel):
             ownerId=model.ownerId,
         )
 
+class ApiPresignedUpload(BaseModel):
+    url: str
+    params: Dict[str, str]
+
+    @classmethod
+    def from_presigned_upload(cls, presignedUpload: S3PresignedUpload):
+        return cls(
+            url=presignedUpload.url,
+            params={field.name: field.value for field in presignedUpload.fields},
+        )
+
 class ListGridItemsRequest(BaseModel):
     pass
 
@@ -49,3 +61,9 @@ class UpdateTokensDeferredRequest(BaseModel):
 
 class UpdateTokensDeferredResponse(BaseModel):
     pass
+
+class GenerateImageUploadForTokenRequest(BaseModel):
+    pass
+
+class GenerateImageUploadForTokenResponse(BaseModel):
+    presignedUpload: ApiPresignedUpload
