@@ -47,6 +47,7 @@ const globals = {
   requester,
   localStorageClient,
   contract,
+  contractAddress: window.KRT_CONTRACT_ADDRESS,
   mdtpClient,
 };
 

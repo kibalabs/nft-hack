@@ -22,7 +22,7 @@ type Result = {
 }
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
-  const { contract, requester, mdtpClient } = useGlobals();
+  const { contract, contractAddress, requester, mdtpClient } = useGlobals();
   const navigator = useNavigator();
   const [token, setToken] = React.useState<Token | null>(null);
   const [tokenOwner, setTokenOwner] = React.useState<string | null>(null);
@@ -109,6 +109,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setIsUploadingImage(true);
     mdtpClient.generateImageUploadForToken(Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
       const file = files[0];
+      // @ts-ignore
       const fileName = file.path.replace(/^\//g, '');
       const formData = new FormData();
       Object.keys(presignedUpload.params).forEach((key: string): void => {
@@ -168,9 +169,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <Text>{token.metadata.description}</Text>
                 <Spacing variant={PaddingSize.Wide2} />
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${window.KRT_CONTRACT_ADDRESS}/${token.tokenId}`} text='OpenSea' />
-                  <Button variant='secondary' target={`https://rinkeby.rarible.com/token/${window.KRT_CONTRACT_ADDRESS}:${token.tokenId}`} text='Rarible' />
-                  <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${window.KRT_CONTRACT_ADDRESS}?a=${token.tokenId}`} text='Etherscan' />
+                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${token.tokenId}`} text='OpenSea' />
+                  <Button variant='secondary' target={`https://rinkeby.rarible.com/token/${contractAddress}:${token.tokenId}`} text='Rarible' />
+                  <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${token.tokenId}`} text='Etherscan' />
                 </Stack>
                 <Spacing variant={PaddingSize.Wide2} />
                 { (accounts === null || !tokenOwner) ? (
