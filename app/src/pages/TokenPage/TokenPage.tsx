@@ -1,15 +1,15 @@
 import React from 'react';
 
-import { KibaResponse, RestMethod } from '@kibalabs/core';
+import { RestMethod } from '@kibalabs/core';
 import { useInitialization, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
+import { PresignedUpload } from '../../client';
+import { Dropzone } from '../../components/dropzone';
 import { useGlobals } from '../../globalsContext';
 import { Token, TokenMetadata } from '../../model';
-import { Dropzone } from '../../components/dropzone';
-import { PresignedUpload } from '../../client';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -102,10 +102,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   const onUpdateClicked = () => {
     setIsUpdating(true);
-  }
-
-  const asyncSleep = (sleepTime: number): Promise<void> => {
-    return new Promise((resolve) => setTimeout(resolve, sleepTime));
   };
 
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
@@ -123,14 +119,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       formData.set('content-type', file.type);
       formData.append('file', file, file.name);
       requester.makeFormRequest(presignedUpload.url, formData).then((): void => {
+        // eslint-disable-next-line no-template-curly-in-string
         setNewImageUrl(`${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}`);
         setIsUploadingImage(false);
-      })
+      });
     }).catch((): void => {
       setNewImageUrl('');
       setIsUploadingImage(false);
     });
-  }
+  };
 
   const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
