@@ -1,10 +1,11 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { LoadingSpinner, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { GridItem } from '../../client';
+import { AboutIcon } from '../../components/AboutIcon';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
 
@@ -36,9 +37,9 @@ export const HomePage = (): React.ReactElement => {
   React.useEffect((): void => {
     loadGridItems();
     if (!contract) {
-      setErrorText('Install Metamask to be able to buy a token!');
+      setErrorText('Install Metamask to buy a token!');
     } else if (chainId !== ChainId.Rinkeby) {
-      setErrorText('We only support Rinkeby right now, please switch networks within Metamask and refresh');
+      setErrorText('We currently only support Rinkeby, please switch networks within Metamask and refresh');
     } else {
       setErrorText(null);
     }
@@ -53,12 +54,23 @@ export const HomePage = (): React.ReactElement => {
       <Helmet>
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
-      <Text>{errorText}</Text>
-      { gridItems === null ? (
-        <LoadingSpinner />
-      ) : (
-        <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
-      )}
+      <LayerContainer>
+        { gridItems === null ? (
+          <LoadingSpinner />
+        ) : (
+          <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
+        )}
+        { errorText != null ? (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false}>
+            <Box variant='errorOverlay'>
+              <Text>{errorText}</Text>
+            </Box>
+          </LayerContainer.Layer>
+        ) : (<></>)}
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
+          <AboutIcon />
+        </LayerContainer.Layer>
+      </LayerContainer>
     </React.Fragment>
   );
 };

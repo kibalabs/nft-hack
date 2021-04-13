@@ -13,6 +13,7 @@ import { MdtpClient } from './client/client';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
 import MDTContract from './contracts/MillionDollarNFT.json';
 import { GlobalsProvider } from './globalsContext';
+import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { TokenPage } from './pages/TokenPage';
@@ -85,6 +86,7 @@ export const App = hot((): React.ReactElement => {
               <Route path='/' page={HomePage} />
               <Route default={true} page={NotFoundPage} />
               <Route path='/tokens/:tokenId' page={TokenPage} />
+              <Route path='/about' page={AboutPage} />
             </Router>
             <LayerContainer.Layer
               isFullHeight={false}

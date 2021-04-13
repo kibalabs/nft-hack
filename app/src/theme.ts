@@ -34,6 +34,18 @@ export const buildMDTPTheme = (): ITheme => {
       'border-radius': '0 1em 0 0',
       'backdrop-filter': 'blur(5px)',
     },
+    aboutOverlay: {
+      'background-color': 'rgba(255, 255, 255, 0.75)',
+      padding: '0.5em 1em',
+      'border-radius': '1em 0 0 0',
+      'backdrop-filter': 'blur(5px)',
+    },
+    errorOverlay: {
+      'background-color': 'rgba(255, 255, 255, 0.75)',
+      padding: '0.5em 1em',
+      'border-radius': '0 0 1em 0',
+      'backdrop-filter': 'blur(5px)',
+    },
     tokenHeader: mergeThemePartial(defaultTheme.boxes.card, {
       'border-radius': '0',
     }),
