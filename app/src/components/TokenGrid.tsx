@@ -7,19 +7,24 @@ import styled from 'styled-components';
 import { GridItem } from '../client';
 import { TokenCard } from './TokenCard';
 
+const tokenWidth = 10;
+const tokenHeight = 10;
+const tokenDuplication = 100; //400;
+const canvasWidth = 1400;
+
 interface TokenGridProps {
   gridItems: GridItem[];
   onGridItemClicked: (gridItem: GridItem) => void;
 }
 
-const FlexWrapContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
-  height: 100vh;
-  width: 100vw;
-  align-content: flex-start;
-`;
+// const FlexWrapContainer = styled.div`
+//   display: flex;
+//   flex-wrap: wrap;
+//   flex-direction: row;
+//   height: 100vh;
+//   width: 100vw;
+//   align-content: flex-start;
+// `;
 
 export type Point = {
   x: number;
@@ -28,12 +33,79 @@ export type Point = {
 
 const ORIGIN: Point = Object.freeze({x: 0, y: 0})
 
+const diffPoints = (point1: Point, point2: Point): Point => {
+  return {
+    x: point1.x - point2.x,
+    y: point1.y - point2.y,
+  }
+}
+
+const sumPoints = (point1: Point, point2: Point): Point => {
+  return {
+    x: point1.x + point2.x,
+    y: point1.y + point2.y,
+  }
+}
+
+const scalePoint = (point: Point, scale: number): Point => {
+  return {
+    x: point.x * scale,
+    y: point.y * scale,
+  }
+}
+
 export type CanvasState = {
   offset: Point;
   scale: number;
 }
 
 export const CanvasContext = React.createContext<CanvasState>({ offset: ORIGIN, scale: 1} )
+
+export const useMousePos = (elt): Point => {
+  const [mousePos, setmousePos] = React.useState<Point>(ORIGIN)
+
+  // const handleMouseMove = useCallback((evt) => {
+  //   if (elt.current) {
+  //     setmousePos({
+  //       x: evt.clientX - elt.current.offsetLeft,
+  //       y: evt.clientY - elt.current.offsetTop
+  //     })
+  //   }
+  // }, [elt])
+
+  React.useLayoutEffect(() => {
+    if(!elt.current) return
+
+    const handleMouseMove = (evt) => {
+      if (elt.current) {
+        setmousePos({
+          x: evt.clientX - elt.current.offsetLeft,
+          y: evt.clientY - elt.current.offsetTop
+        })
+      }
+    }
+
+    const node = elt.current
+    node.addEventListener('mousemove', handleMouseMove)
+    return () => {
+      node.removeEventListener('mousemove', handleMouseMove)
+    };
+  }, [elt])
+
+  return mousePos;
+}
+
+function usePrevious(value) {
+  // The ref object is a generic container whose current property is mutable ...
+  // ... and can hold any value, similar to an instance property on a class
+  const ref = React.useRef(value);
+  // Store current value in ref
+  React.useEffect(() => {
+    ref.current = value;
+  }, [value]); // Only re-run if value changes
+  // Return previous value (happens before update in useEffect above)
+  return ref.current;
+}
 
 export const usePan = (): [Point, (event: React.MouseEvent) => void] => {
   const [panState, setPanState] = React.useState<Point>(ORIGIN);
@@ -52,8 +124,10 @@ export const usePan = (): [Point, (event: React.MouseEvent) => void] => {
       const offset = {
         x: panState.x + delta.x,
         y: panState.y + delta.y,
+        // x: Math.max(0, panState.x + delta.x),
+        // y: Math.max(0, panState.y + delta.y),
       };
-      return offset
+      return offset;
     })
   }, []);
 
@@ -79,7 +153,7 @@ type ScaleOpts = {
 }
 
 const MIN_SCALE = 1
-const MAX_SCALE = 3
+const MAX_SCALE = 10
 
 export const useEventListener = <K extends keyof GlobalEventHandlersEventMap>(ref: React.RefObject<HTMLElement | null>, event: K, listener: (event: GlobalEventHandlersEventMap[K]) => void, options?: boolean | AddEventListenerOptions): void => {
   React.useEffect(() => {
@@ -127,142 +201,118 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>): number => {
 }
 
 export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
-  // const canvasState = React.useContext(CanvasContext)
-  // const ref = React.useRef<HTMLDivElement | null>(null)
-  // const [offset, startPan] = usePan()
-  // const scale = useScale(ref)
+  const canvasRef = React.useRef(null);
 
-  // return (
-  //   <Box isFullHeight={true} isFullWidth={true}>
-  //     <div onMouseDown={startPan} ref={ref} style={{
-  //       height: '100%',
-  //       width: '100%',
-  //       backgroundColor: '#f5f5f5',
-  //       backgroundImage: 'url(/assets/grid.svg)',
-  //       transform: `scale(${scale})`,
-  //       backgroundPosition: `${-offset.x}px ${-offset.y}px`
-  //     }}>
-  //       <Text>The desired user zoom level is {scale}.</Text>
-  //       <Text>The offset is {JSON.stringify(offset)}.</Text>
-  //       <FlexWrapContainer>
-  //         { Array(500).fill(null).map((_: unknown, index: number): React.ReactElement => (
-  //           <React.Fragment key={index}>
-  //             { props.tokens.map((token: Token): React.ReactElement => (
-  //               <TokenCard
-  //                 key={token.tokenId}
-  //                 // zoomLevel={zoomLevel}
-  //                 token={token}
-  //                 // onClicked={onTokenClicked}
-  //               />
-  //             ))}
-  //           </React.Fragment>
-  //         ))}
-  //       </FlexWrapContainer>
-  //     </div>
-  //   </Box>
-  // );
-
-  // const [isMoving, setIsMoving] = React.useState<boolean>(false);
-  const isMovingRef = React.useRef<boolean>(false);
-  const zoomLevelRef = React.useRef<number>(1);
-  const lastMoveStartRef = React.useRef<number | null>(null);
-  const lastMoveEndRef = React.useRef<number | null>(null);
-  const [zoomLevel, setZoomLevel] = React.useState<number>(1);
-  const canvasRef = React.useRef(null)
-
-  const onMovingStart = (): void => {
-    isMovingRef.current = false;
-    lastMoveStartRef.current = new Date().getTime();
-  };
-
-  const onMovingStop = (): void => {
-    isMovingRef.current = false;
-    lastMoveEndRef.current = new Date().getTime();
-    setZoomLevel(zoomLevelRef.current);
-  };
-
-  const onZoomChange = (zoomInfo: object): void => {
-    zoomLevelRef.current = zoomInfo.scale;
-  };
-
-  const onGridItemClicked = (gridItem: GridItem): void => {
-    if (isMovingRef.current) {
-      return;
-    }
-    if (lastMoveEndRef.current && lastMoveStartRef.current) {
-      const timeSinceLastMove = new Date().getTime() - lastMoveEndRef.current;
-      const timeSpentOnLastMove = lastMoveEndRef.current - lastMoveStartRef.current;
-      // NOTE(krishan711): guessed numbers for interaction lengths
-      if (timeSinceLastMove < 50 && timeSpentOnLastMove > 90) {
-        return;
-      }
-    }
-    props.onGridItemClicked(gridItem);
-  };
-
-  const drawDataURIOnCanvas = (strDataURI, context, x, y, w, h) => {
+  const drawImageOnCanvas = (imageUrl: string, context: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => {
     var img = new window.Image();
     img.addEventListener("load", function () {
       context.drawImage(img, x, y, w, h);
+      // context.drawImage(img, x * MAX_SCALE, y * MAX_SCALE, w * MAX_SCALE, h * MAX_SCALE);
     });
-    img.setAttribute("src", strDataURI);
+    img.setAttribute("src", `${imageUrl}?w=${w}&h=${h}`);
   }
 
-  const tokenWidth = 20;
-  const tokenHeight = 20;
-  const tokenDuplication = 2000;
-
-  const canvasWidth = 1600;
-  const canvasHeight = tokenHeight * ((props.tokens.length * tokenDuplication * tokenWidth) / canvasWidth)
+  const canvasHeight = tokenHeight * ((props.gridItems.length * tokenDuplication * tokenWidth) / canvasWidth)
 
   React.useEffect(() => {
+    const tokenCount = props.gridItems.length;
+    console.log('Total token count:', props.gridItems.length * tokenDuplication);
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
-    props.tokens.forEach((token: Token): void => {
-      Array(tokenDuplication).fill(null).forEach((_: unknown, index: number): void => {
-        const tokenIndex = ((token.tokenId - 1) * tokenDuplication) + index;
+    Array(tokenDuplication).fill(null).forEach((_: unknown, duplicationIndex: number): void => {
+      props.gridItems.forEach((gridItem: GridItem): void => {
+        const tokenIndex = (duplicationIndex * tokenCount) + gridItem.tokenId - 1;
         const x = (tokenIndex * tokenWidth) % canvasWidth;
         const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
-        console.log('tokenIndex', tokenIndex);
-        console.log('x, y', x, y);
-        drawDataURIOnCanvas(token.metadata.imageUrl, context, x, y, tokenWidth, tokenHeight);
-     });
+        drawImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, x, y, tokenWidth, tokenHeight);
+      });
     });
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+  }, [props.gridItems]);
 
-        // { props.tokens.map((token: Token): React.ReactElement => (
-        //   <TokenCard
-        //     key={token.tokenId}
-        //     isZoomedIn={zoomLevel > 7}
-        //     token={token}
-        //     onClicked={onTokenClicked}
-        //   />
-        // ))
-  }, []);
+  const [buffer, setBuffer] = React.useState(ORIGIN);
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const [panOffset, startPan] = usePan();
+  console.log('panOffset', panOffset);
+  const scale = useScale(ref);
+  console.log('scale', scale);
+
+  React.useLayoutEffect(() => {
+    const height = ref.current?.clientHeight ?? 0;
+    const width = ref.current?.clientWidth ?? 0;
+    setBuffer({
+      x: (width - width / scale) / 2,
+      y: (height - height / scale) / 2
+    })
+  }, [scale, setBuffer])
+
+  const onCanvasClicked = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+    console.log('onCanvasClicked', event, event.clientX, event.clientY);
+  }
+
+  const onCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+    console.log('onCanvasMouseDown', event);
+  }
+
+  const onCanvasMouseUp = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+    console.log('onCanvasMouseUp', event);
+  }
+
+  const mousePosRef = useMousePos(ref);
+  // console.log('mousePosRef', mousePosRef);
+  const lastOffset = usePrevious(panOffset);
+  console.log('lastOffset', lastOffset);
+  const lastScale = usePrevious(scale);
+  console.log('lastScale', lastScale);
+  const delta = diffPoints(panOffset, lastOffset);
+  console.log('delta', delta);
+
+  // Since scale also affects offset, we track our own "real" offset that's changed by both panning and zooming.
+  const adjustedOffset = React.useRef<Point>(panOffset);
+  console.log('adjustedOffset1', JSON.stringify(adjustedOffset.current));
+
+  // if (lastScale === scale) {
+  //   // No change in scale—just apply the delta between the last and new offset to the adjusted offset.
+  //   adjustedOffset.current = sumPoints(adjustedOffset.current, scalePoint(delta, scale));
+  //   console.log('adjustedOffset2', JSON.stringify(adjustedOffset.current));
+  // } else {
+  //   // The scale has changed—adjust the offset to compensate for the change in relative position of the pointer to the canvas.
+  //   const lastMouse = scalePoint(mousePosRef, lastScale);
+  //   const newMouse = scalePoint(mousePosRef, scale);
+  //   const mouseOffset = diffPoints(lastMouse, newMouse);
+  //   adjustedOffset.current = sumPoints(adjustedOffset.current, mouseOffset);
+  //   console.log('adjustedOffset3', JSON.stringify(adjustedOffset.current));
+  // }
+  console.log('adjustedOffset4', JSON.stringify(adjustedOffset.current));
 
   return (
-    <Box isFullHeight={true} isFullWidth={true}>
-      <TransformWrapper
-        defaultScale={1}
-        options={{ minScale: 1, maxScale: 8 }}
-        zoomIn={{ step: 100, animationTime: 100 }}
-        zoomOut={{ step: 100, animationTime: 100 }}
-        wheel={{ step: 100 }}
-        onZoomChange={onZoomChange}
-        onWheelStart={onMovingStart}
-        onWheelStop={onMovingStop}
-        onPanningStart={onMovingStart}
-        onPanningStop={onMovingStop}
-        onPinchingStart={onMovingStart}
-        onPinchingStop={onMovingStop}
+    <div
+      ref={ref}
+      style={{width: `${canvasWidth}px`, height: `max(300px, ${canvasHeight}px)`, overflow: 'hidden', backgroundColor: 'grey', margin: 'auto'}}
+      onMouseDown={startPan}
+    >
+      <div
+        style={{
+          width: `${canvasWidth}px`,
+          height: `${canvasHeight}px`,
+          transform: `translate(${-adjustedOffset.current.x}px, ${-adjustedOffset.current.y}px) scale(${scale})`,
+          overflow: 'hidden',
+          backgroundColor: 'yellow',
+          // bottom: buffer.y,
+          // left: buffer.x,
+          // right: buffer.x,
+          // top: buffer.y
+        }}
       >
-        <TransformComponent>
-          <FlexWrapContainer>
-            <canvas ref={canvasRef} style={{width: `${canvasWidth}px`, height: `${canvasHeight}px`}} />
-          </FlexWrapContainer>
-        </TransformComponent>
-      </TransformWrapper>
-    </Box>
+        <canvas
+          ref={canvasRef}
+          style={{width: `${canvasWidth}px`, height: `${canvasHeight}px` }}
+          onMouseDown={onCanvasMouseDown}
+          onMouseUp={onCanvasMouseUp}
+          onClick={onCanvasClicked}
+          width={canvasWidth}
+          height={canvasHeight}
+        />
+      </div>
+    </div>
   );
 };
