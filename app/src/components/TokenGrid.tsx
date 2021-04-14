@@ -4,12 +4,12 @@ import { Box, Text } from '@kibalabs/ui-react';
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
 import styled from 'styled-components';
 
-import { Token } from '../model';
+import { GridItem } from '../client';
 import { TokenCard } from './TokenCard';
 
 interface TokenGridProps {
-  tokens: Token[];
-  onTokenClicked: (token: Token) => void;
+  gridItems: GridItem[];
+  onGridItemClicked: (gridItem: GridItem) => void;
 }
 
 const FlexWrapContainer = styled.div`
@@ -185,7 +185,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
     zoomLevelRef.current = zoomInfo.scale;
   };
 
-  const onTokenClicked = (token: Token): void => {
+  const onGridItemClicked = (gridItem: GridItem): void => {
     if (isMovingRef.current) {
       return;
     }
@@ -197,7 +197,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
         return;
       }
     }
-    props.onTokenClicked(token);
+    props.onGridItemClicked(gridItem);
   };
 
   const drawDataURIOnCanvas = (strDataURI, context, x, y, w, h) => {
@@ -259,18 +259,6 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       >
         <TransformComponent>
           <FlexWrapContainer>
-            {/* { Array(2000).fill(null).map((_: unknown, index: number): React.ReactElement => (
-              <React.Fragment key={index}>
-                { props.tokens.map((token: Token): React.ReactElement => (
-                  <TokenCard
-                    key={token.tokenId}
-                    isZoomedIn={zoomLevel > 7}
-                    token={token}
-                    onClicked={onTokenClicked}
-                  />
-                ))}
-              </React.Fragment>
-            ))} */}
             <canvas ref={canvasRef} style={{width: `${canvasWidth}px`, height: `${canvasHeight}px`}} />
           </FlexWrapContainer>
         </TransformComponent>

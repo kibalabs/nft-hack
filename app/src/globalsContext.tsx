@@ -5,12 +5,16 @@ import { IMultiAnyChildProps } from '@kibalabs/core-react';
 import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
+import { MdtpClient } from './client';
+
 
 export interface Globals {
   web3: Web3;
   requester: Requester;
   localStorageClient: LocalStorageClient;
   contract: Contract;
+  contractAddress: string;
+  mdtpClient: MdtpClient;
 }
 
 export const GlobalsContext = React.createContext<Globals | null>(null);

@@ -2,19 +2,22 @@ import React from 'react';
 
 import { Alignment, BackgroundView, Box, Direction, HidingView, Image, LayerContainer, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
-import { Token } from '../model';
+import { GridItem } from '../client';
 import { TokenBox } from './TokenBox';
 
 interface TokenCardProps {
-  token: Token;
   isZoomedIn: boolean;
-  onClicked: (token: Token) => void;
+  gridItem: GridItem;
+  onClicked: (gridItem: GridItem) => void;
 }
 
 export const TokenCard = (props: TokenCardProps): React.ReactElement => {
   const onClicked = (): void => {
-    props.onClicked(props.token);
+    props.onClicked(props.gridItem);
   };
+
+  const imageUrl = props.gridItem.resizableImageUrl || props.gridItem.imageUrl;
+  const sizedImageUrl = `${imageUrl}?w=50&h=50`;
 
   return (
     <TokenBox
@@ -25,8 +28,8 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
           isFullHeight={true}
           isFullWidth={true}
           fitType={'cover'}
-          source={props.token.metadata.imageUrl}
-          alternativeText={`${props.token.metadata.name} image`}
+          source={sizedImageUrl}
+          alternativeText={`${props.gridItem.title} image`}
         />
         <LayerContainer.Layer
           isFullHeight={false}
@@ -43,7 +46,7 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
                 childAlignment={Alignment.Center}
                 contentAlignment={Alignment.Center}
               >
-                <Text variant='light' alignment={TextAlignment.Center}>{`#${props.token.tokenId} ${props.token.metadata.name}`}</Text>
+                <Text variant='light' alignment={TextAlignment.Center}>{`#${props.gridItem.gridItemId} ${props.gridItem.title}`}</Text>
               </Stack>
             </Box>
           </BackgroundView>

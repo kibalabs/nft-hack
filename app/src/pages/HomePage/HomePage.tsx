@@ -1,61 +1,76 @@
 import React from 'react';
 
-import { RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { LoadingSpinner, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
+import { GridItem } from '../../client';
+import { AboutIcon } from '../../components/AboutIcon';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
-import { Token, TokenMetadata } from '../../model';
 
+enum ChainId {
+  Mainnet = 1,
+  Ropsten = 3,
+  Rinkeby = 4,
+  Goerli = 5,
+  Kovan = 42,
+}
 
 export const HomePage = (): React.ReactElement => {
-  const { requester, contract } = useGlobals();
+  const { web3, contract, mdtpClient } = useGlobals();
   const navigator = useNavigator();
-  const [showBrowserError, setShowBrowserError] = React.useState<boolean>(false);
-  const [tokenSupply, setTokenSupply] = React.useState<number | null>(null);
-  const [tokens, setTokens] = React.useState<Token[] | null>(null);
+  const [errorText, setErrorText] = React.useState<string | null>(null);
+  const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
+  const [chainId, setChainId] = React.useState<number | null>(null);
 
-  const loadTokens = React.useCallback(async (): Promise<void> => {
-    const totalSupply = 1; //Number(await contract.methods.totalSupply().call());
-    setTokenSupply(totalSupply);
-    const retrievedTokens = await Promise.all(new Array(totalSupply).fill(null).map(async (_: unknown, index: number): Promise<Token> => {
-      const tokenId = index + 1;
-      const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
-      const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
-      const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
-      const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
-      return new Token(tokenId, tokenMetadataUrl, tokenMetadata);
-    }));
-    setTokens(retrievedTokens);
-  }, [contract, requester]);
+  if (web3) {
+    web3.eth.getChainId().then(setChainId);
+  }
+
+  const loadGridItems = React.useCallback(async (): Promise<void> => {
+    mdtpClient.listGridItems().then((retrievedGridItems: GridItem[]): void => {
+      setGridItems(retrievedGridItems);
+    });
+  }, [mdtpClient]);
 
   React.useEffect((): void => {
+    loadGridItems();
     if (!contract) {
-      setShowBrowserError(true);
+      setErrorText('Install Metamask to buy a token!');
+    } else if (chainId !== ChainId.Rinkeby) {
+      setErrorText('We currently only support Rinkeby, please switch networks within Metamask and refresh');
     } else {
-      loadTokens();
-      setShowBrowserError(false);
+      setErrorText(null);
     }
-  }, [contract, loadTokens]);
+  }, [chainId, contract, loadGridItems]);
 
-  const onTokenClicked = (token: Token) => {
-    navigator.navigateTo(`/tokens/${token.tokenId}`);
+  const onGridItemClicked = (gridItem: GridItem) => {
+    navigator.navigateTo(`/tokens/${gridItem.tokenId}`);
   };
 
   return (
     <React.Fragment>
       <Helmet>
-        <title>{'The Million Dollar NFT Page - Own a piece of crypto history!'}</title>
+        <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
-      { showBrowserError ? (
-        <Text>We only support browsers with MetaMask.</Text>
-      ) : (!tokenSupply || !tokens) ? (
-        <LoadingSpinner />
-      ) : (
-        <TokenGrid tokens={tokens} onTokenClicked={onTokenClicked} />
-      )}
+      <LayerContainer>
+        { gridItems === null ? (
+          <LoadingSpinner />
+        ) : (
+          <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
+        )}
+        { errorText != null ? (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false}>
+            <Box variant='errorOverlay'>
+              <Text>{errorText}</Text>
+            </Box>
+          </LayerContainer.Layer>
+        ) : (<></>)}
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
+          <AboutIcon />
+        </LayerContainer.Layer>
+      </LayerContainer>
     </React.Fragment>
   );
 };

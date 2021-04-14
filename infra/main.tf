@@ -15,3 +15,7 @@ provider "aws" {
   region = "eu-west-1"
   profile = "kiba"
 }
+
+locals {
+  project = "mdtp"
+}

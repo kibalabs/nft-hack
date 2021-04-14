@@ -6,19 +6,23 @@ import { Alignment, KibaApp, LayerContainer } from '@kibalabs/ui-react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
 import Web3 from 'web3';
+import { provider as Web3Provider } from 'web3-core';
 
 import { AccountControlProvider } from './accountsContext';
+import { MdtpClient } from './client/client';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
-import MDNFTContract from './contracts/MillionDollarNFT.json';
+import MDTContract from './contracts/MillionDollarNFT.json';
 import { GlobalsProvider } from './globalsContext';
+import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { TokenPage } from './pages/TokenPage';
-import { buildNftHackTheme } from './theme';
+import { buildMDTPTheme } from './theme';
 
 declare global {
   export interface Window {
     KRT_CONTRACT_ADDRESS: string;
+    ethereum?: Web3Provider;
   }
 }
 
@@ -30,10 +34,12 @@ const getWeb3Connection = (): Web3 => {
   return new Web3(window.ethereum);
 };
 
+
 const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
-const contract = web3 ? new web3.eth.Contract(MDNFTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
+const contract = web3 ? new web3.eth.Contract(MDTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
+const mdtpClient = new MdtpClient(requester);
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 
@@ -42,18 +48,28 @@ const globals = {
   requester,
   localStorageClient,
   contract,
+  contractAddress: window.KRT_CONTRACT_ADDRESS,
+  mdtpClient,
 };
 
-const theme = buildNftHackTheme();
+const theme = buildMDTPTheme();
 
 export const App = hot((): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<string[] | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
+    if (!web3) {
+      return;
+    }
+
     setAccounts(await web3.eth.requestAccounts());
   };
 
   const getAccounts = async (): Promise<void> => {
+    if (!web3) {
+      return;
+    }
+
     setAccounts(await web3.eth.getAccounts());
   };
 
@@ -70,6 +86,7 @@ export const App = hot((): React.ReactElement => {
               <Route path='/' page={HomePage} />
               <Route default={true} page={NotFoundPage} />
               <Route path='/tokens/:tokenId' page={TokenPage} />
+              <Route path='/about' page={AboutPage} />
             </Router>
             <LayerContainer.Layer
               isFullHeight={false}

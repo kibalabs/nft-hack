@@ -3,7 +3,7 @@ import { buildTheme, ITheme, mergeTheme, mergeThemePartial } from '@kibalabs/ui-
 import { buildTokenBoxThemes } from './components/TokenBox';
 
 export const defaultTheme = buildTheme();
-export const buildNftHackTheme = (): ITheme => {
+export const buildMDTPTheme = (): ITheme => {
   const colors = {
     ...defaultTheme.colors,
     // brandPrimary: '#6F0000',
@@ -32,6 +32,18 @@ export const buildNftHackTheme = (): ITheme => {
       'background-color': 'rgba(255, 255, 255, 0.75)',
       padding: '0.5em 1em',
       'border-radius': '0 1em 0 0',
+      'backdrop-filter': 'blur(5px)',
+    },
+    aboutOverlay: {
+      'background-color': 'rgba(255, 255, 255, 0.75)',
+      padding: '0.5em 1em',
+      'border-radius': '1em 0 0 0',
+      'backdrop-filter': 'blur(5px)',
+    },
+    errorOverlay: {
+      'background-color': 'rgba(255, 255, 255, 0.75)',
+      padding: '0.5em 1em',
+      'border-radius': '0 0 1em 0',
       'backdrop-filter': 'blur(5px)',
     },
     tokenHeader: mergeThemePartial(defaultTheme.boxes.card, {
