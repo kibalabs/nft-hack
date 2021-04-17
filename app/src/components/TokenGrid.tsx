@@ -1,11 +1,8 @@
 import React from 'react';
 
-import { Box, Text } from '@kibalabs/ui-react';
-import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch';
-import styled from 'styled-components';
+import { useEventListener } from '@kibalabs/core-react';
 
 import { GridItem } from '../client';
-import { TokenCard } from './TokenCard';
 
 const tokenWidth = 10;
 const tokenHeight = 10;
@@ -16,15 +13,6 @@ interface TokenGridProps {
   gridItems: GridItem[];
   onGridItemClicked: (gridItem: GridItem) => void;
 }
-
-// const FlexWrapContainer = styled.div`
-//   display: flex;
-//   flex-wrap: wrap;
-//   flex-direction: row;
-//   height: 100vh;
-//   width: 100vw;
-//   align-content: flex-start;
-// `;
 
 export type Point = {
   x: number;
@@ -61,49 +49,28 @@ export type CanvasState = {
 
 export const CanvasContext = React.createContext<CanvasState>({ offset: ORIGIN, scale: 1} )
 
-export const useMousePos = (elt): Point => {
-  const [mousePos, setmousePos] = React.useState<Point>(ORIGIN)
+export const useMousePositionRef = (elementRef: React.RefObject<HTMLElement>): React.RefObject<Point> => {
+  const mousePositionRef = React.useRef<Point>(ORIGIN);
 
-  // const handleMouseMove = useCallback((evt) => {
-  //   if (elt.current) {
-  //     setmousePos({
-  //       x: evt.clientX - elt.current.offsetLeft,
-  //       y: evt.clientY - elt.current.offsetTop
-  //     })
-  //   }
-  // }, [elt])
-
-  React.useLayoutEffect(() => {
-    if(!elt.current) return
-
-    const handleMouseMove = (evt) => {
-      if (elt.current) {
-        setmousePos({
-          x: evt.clientX - elt.current.offsetLeft,
-          y: evt.clientY - elt.current.offsetTop
-        })
-      }
+  const handleMouseMove = React.useCallback((event: Event) => {
+    if (elementRef.current) {
+      mousePositionRef.current = {
+        x: event.clientX - elementRef.current.offsetLeft,
+        y: event.clientY - elementRef.current.offsetTop
+      };
     }
+  }, [elementRef])
 
-    const node = elt.current
-    node.addEventListener('mousemove', handleMouseMove)
-    return () => {
-      node.removeEventListener('mousemove', handleMouseMove)
-    };
-  }, [elt])
+  useEventListener(elementRef.current, 'mousemove', handleMouseMove);
 
-  return mousePos;
+  return mousePositionRef;
 }
 
 function usePrevious(value) {
-  // The ref object is a generic container whose current property is mutable ...
-  // ... and can hold any value, similar to an instance property on a class
   const ref = React.useRef(value);
-  // Store current value in ref
   React.useEffect(() => {
     ref.current = value;
-  }, [value]); // Only re-run if value changes
-  // Return previous value (happens before update in useEffect above)
+  }, [value]);
   return ref.current;
 }
 
@@ -144,6 +111,7 @@ export const usePan = (): [Point, (event: React.MouseEvent) => void] => {
       y: mouseEvent.pageY,
     };
   }, [pan, endPan]);
+
   return [panState, startPan]
 }
 
@@ -152,24 +120,12 @@ type ScaleOpts = {
   interval: number;
 }
 
-const MIN_SCALE = 1
-const MAX_SCALE = 10
-
-export const useEventListener = <K extends keyof GlobalEventHandlersEventMap>(ref: React.RefObject<HTMLElement | null>, event: K, listener: (event: GlobalEventHandlersEventMap[K]) => void, options?: boolean | AddEventListenerOptions): void => {
-  React.useEffect(() => {
-    const node = ref.current
-    if (!node) {
-      return
-    }
-    const listenerWrapper = ((e: GlobalEventHandlersEventMap[K]) =>
-      listener(e)) as EventListener
-    node.addEventListener(event, listenerWrapper, options)
-    return () => node.removeEventListener(event, listenerWrapper)
-  }, [ref, event, listener, options])
-}
+const MIN_SCALE = 1;
+const MAX_SCALE = 10;
 
 export const useScale = (ref: React.RefObject<HTMLElement | null>): number => {
   const [scale, setScale] = React.useState(1)
+
   const updateScale = ({direction, interval}: ScaleOpts) => {
     setScale(currentScale => {
       let scale: number
@@ -188,8 +144,8 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>): number => {
       return scale
     })
   }
-  // Set up an event listener such that on `wheel`, we call `updateScale`.
-  useEventListener(ref, 'wheel', e => {
+
+  useEventListener(ref.current, 'wheel', e => {
     e.preventDefault()
     updateScale({
       direction: e.deltaY > 0 ? 'up' : 'down',
@@ -201,7 +157,9 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>): number => {
 }
 
 export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
-  const canvasRef = React.useRef(null);
+  console.log('------------ rendering -------------');
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
   const drawImageOnCanvas = (imageUrl: string, context: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => {
     var img = new window.Image();
@@ -212,7 +170,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
     img.setAttribute("src", `${imageUrl}?w=${w}&h=${h}`);
   }
 
-  const canvasHeight = tokenHeight * ((props.gridItems.length * tokenDuplication * tokenWidth) / canvasWidth)
+  const canvasHeight = tokenHeight * Math.ceil((props.gridItems.length * tokenDuplication * tokenWidth) / canvasWidth);
 
   React.useEffect(() => {
     const tokenCount = props.gridItems.length;
@@ -230,85 +188,88 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   }, [props.gridItems]);
 
   const [buffer, setBuffer] = React.useState(ORIGIN);
-  const ref = React.useRef<HTMLDivElement | null>(null);
   const [panOffset, startPan] = usePan();
-  console.log('panOffset', panOffset);
-  const scale = useScale(ref);
-  console.log('scale', scale);
+  const scale = useScale(containerRef);
+  const mousePositionRef = useMousePositionRef(containerRef);
 
   React.useLayoutEffect(() => {
-    const height = ref.current?.clientHeight ?? 0;
-    const width = ref.current?.clientWidth ?? 0;
+    const height = containerRef.current?.clientHeight ?? 0;
+    const width = containerRef.current?.clientWidth ?? 0;
     setBuffer({
       x: (width - width / scale) / 2,
       y: (height - height / scale) / 2
     })
   }, [scale, setBuffer])
 
-  const onCanvasClicked = (event: React.MouseEvent<HTMLCanvasElement>): void => {
-    console.log('onCanvasClicked', event, event.clientX, event.clientY);
-  }
-
-  const onCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>): void => {
-    console.log('onCanvasMouseDown', event);
-  }
-
-  const onCanvasMouseUp = (event: React.MouseEvent<HTMLCanvasElement>): void => {
-    console.log('onCanvasMouseUp', event);
-  }
-
-  const mousePosRef = useMousePos(ref);
-  // console.log('mousePosRef', mousePosRef);
-  const lastOffset = usePrevious(panOffset);
-  console.log('lastOffset', lastOffset);
-  const lastScale = usePrevious(scale);
-  console.log('lastScale', lastScale);
-  const delta = diffPoints(panOffset, lastOffset);
-  console.log('delta', delta);
-
-  // Since scale also affects offset, we track our own "real" offset that's changed by both panning and zooming.
-  const adjustedOffset = React.useRef<Point>(panOffset);
-  console.log('adjustedOffset1', JSON.stringify(adjustedOffset.current));
-
-  // if (lastScale === scale) {
-  //   // No change in scale—just apply the delta between the last and new offset to the adjusted offset.
-  //   adjustedOffset.current = sumPoints(adjustedOffset.current, scalePoint(delta, scale));
-  //   console.log('adjustedOffset2', JSON.stringify(adjustedOffset.current));
-  // } else {
-  //   // The scale has changed—adjust the offset to compensate for the change in relative position of the pointer to the canvas.
-  //   const lastMouse = scalePoint(mousePosRef, lastScale);
-  //   const newMouse = scalePoint(mousePosRef, scale);
-  //   const mouseOffset = diffPoints(lastMouse, newMouse);
-  //   adjustedOffset.current = sumPoints(adjustedOffset.current, mouseOffset);
-  //   console.log('adjustedOffset3', JSON.stringify(adjustedOffset.current));
+  // const onCanvasClicked = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+  //   console.log('onCanvasClicked', event, event.clientX, event.clientY);
   // }
-  console.log('adjustedOffset4', JSON.stringify(adjustedOffset.current));
+
+  // const onCanvasMouseDown = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+  //   console.log('onCanvasMouseDown', event);
+  // }
+
+  // const onCanvasMouseUp = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+  //   console.log('onCanvasMouseUp', event);
+  // }
+
+  const lastOffset = usePrevious(panOffset);
+  const lastScale = usePrevious(scale);
+  const delta = diffPoints(panOffset, lastOffset);
+
+  const adjustedOffsetRef = React.useRef<Point>(panOffset);
+  const test = React.useRef<number>(0);
+
+  if (scale !== lastScale) {
+    const lastMouse = scalePoint(mousePositionRef.current, 1.0 / lastScale);
+    const newMouse = scalePoint(mousePositionRef.current, 1.0 / scale);
+    const mouseOffset = diffPoints(lastMouse, newMouse);
+    adjustedOffsetRef.current = sumPoints(adjustedOffsetRef.current, mouseOffset);
+  }
+
+  if (delta.x !== 0 || delta.y !== 0) {
+    adjustedOffsetRef.current = sumPoints(adjustedOffsetRef.current, scalePoint(delta, 1.0 / scale));
+    test.current = test.current + 1;
+  }
+
+  console.log('adjustedOffsetRef', JSON.stringify(adjustedOffsetRef.current));
+  console.log('test4', JSON.stringify(test.current));
 
   return (
     <div
-      ref={ref}
-      style={{width: `${canvasWidth}px`, height: `max(300px, ${canvasHeight}px)`, overflow: 'hidden', backgroundColor: 'grey', margin: 'auto'}}
+      ref={containerRef}
+      style={{
+        width: `${canvasWidth}px`,
+        height: `${canvasHeight}px)`,
+        overflow: 'hidden',
+        backgroundColor: 'grey',
+        margin: 'auto',
+      }}
       onMouseDown={startPan}
     >
       <div
         style={{
           width: `${canvasWidth}px`,
           height: `${canvasHeight}px`,
-          transform: `translate(${-adjustedOffset.current.x}px, ${-adjustedOffset.current.y}px) scale(${scale})`,
+          transform: `translate(${-adjustedOffsetRef.current.x * scale}px, ${-adjustedOffsetRef.current.y * scale}px) scale(${scale})`,
+          transformOrigin: 'left top',
           overflow: 'hidden',
           backgroundColor: 'yellow',
-          // bottom: buffer.y,
-          // left: buffer.x,
-          // right: buffer.x,
-          // top: buffer.y
+          bottom: buffer.y,
+          left: buffer.x,
+          right: buffer.x,
+          top: buffer.y
         }}
       >
         <canvas
           ref={canvasRef}
-          style={{width: `${canvasWidth}px`, height: `${canvasHeight}px` }}
-          onMouseDown={onCanvasMouseDown}
-          onMouseUp={onCanvasMouseUp}
-          onClick={onCanvasClicked}
+          style={{
+            width: `${canvasWidth}px`,
+            height: `${canvasHeight}px`,
+          }}
+          // onMouseDown={onCanvasMouseDown}
+          // onMouseUp={onCanvasMouseUp}
+          // onClick={onCanvasClicked}
           width={canvasWidth}
           height={canvasHeight}
         />
