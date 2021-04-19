@@ -9,8 +9,7 @@ import { useScale } from '../util/useScale';
 
 const tokenWidth = 10;
 const tokenHeight = 10;
-const tokenDuplication = 100; // 400;
-const canvasWidth = 1400;
+const canvasWidth = 1000;
 
 interface TokenGridProps {
   gridItems: GridItem[];
@@ -20,6 +19,15 @@ interface TokenGridProps {
 const MIN_SCALE = 1;
 const MAX_SCALE = 10;
 
+const truncateScale = (scale: number): number => {
+  if (scale < 5) {
+    return 1;
+  }
+  if (scale < 10) {
+    return 5;
+  }
+  return 10;
+}
 
 export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   // console.log('------------ rendering -------------');
@@ -36,49 +44,89 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
 
   const adjustedOffsetRef = React.useRef<Point>(panOffset);
   const test = React.useRef<number>(0);
+  const scales = React.useRef<Map<Point, number>>(new Map());
+  const images1 = React.useRef<Map<Point, number>>(new Map());
+  // const images5 = React.useRef<Map<Point, number>>(new Map());
+  // const images10 = React.useRef<Map<Point, number>>(new Map());
+
+  const canvasHeight = tokenHeight * Math.ceil((props.gridItems.length * tokenWidth) / canvasWidth);
+
+  const drawImageOnCanvas = (imageUrl: string, context: CanvasRenderingContext2D, tokenIndex: number, scale: number) => {
+    const x = (tokenIndex * tokenWidth) % canvasWidth;
+    const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
+
+    const actualScale = truncateScale(scale);
+    const imagesMap: Map<Point, number> = images1.current;
+
+    let currentScale = scales.current[tokenIndex];
+    if (currentScale === actualScale) {
+      return;
+    }
+    let image = imagesMap[tokenIndex];
+    if (!image) {
+      image = new window.Image();
+      image.addEventListener('load', () => {
+        context.drawImage(image, x * MAX_SCALE, y * MAX_SCALE, tokenWidth * MAX_SCALE, tokenHeight * MAX_SCALE);
+      });
+    }
+
+    console.log('drawImageOnCanvas', tokenIndex, scale);
+    image.setAttribute('src', `${imageUrl}?w=${tokenWidth * actualScale}&h=${tokenHeight * actualScale}`);
+    imagesMap[tokenIndex] = image;
+    scales.current[tokenIndex] = actualScale;
+  };
+
+  React.useEffect((): void => {
+    console.log('Total token count:', props.gridItems.length);
+    const context = canvasRef.current.getContext('2d');
+    props.gridItems.forEach((gridItem: GridItem): void => {
+      const tokenIndex = gridItem.tokenId - 1;
+      drawImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, tokenIndex, 1);
+      scales.current[tokenIndex] = 1;
+    });
+  }, [props.gridItems]);
+
+  const setAdjustedOffset = (point: Point): void => {
+    console.log('setAdjustedOffset', scale, point);
+
+    adjustedOffsetRef.current = point;
+
+    if (truncateScale(scale) !== truncateScale(lastScale)) {
+      // const topLeft = scalePoint(point, 1.0 / tokenWidth);
+      // const bottomRight = scalePoint(sumPoints(point, scalePoint({x: canvasWidth, y: canvasHeight}, 1.0 / scale)), 1.0 / tokenWidth);
+      const minX = Math.floor(point.x / tokenWidth);
+      const minY = Math.floor(point.y / tokenHeight);
+      const maxX = Math.floor((point.x + (canvasWidth / scale)) / tokenWidth);
+      const maxY = Math.floor((point.y + (canvasHeight / scale)) / tokenHeight);
+      const context = canvasRef.current.getContext('2d');
+      console.log('minX, minY, maxX, maxY', minX, minY, maxX, maxY);
+      for (var x = minX; x <= maxX; x++) {
+        for (var y = minY; y <= maxY; y++) {
+          const tokenIndex = x + (y * (canvasWidth / tokenWidth));
+          if (tokenIndex > 0 && tokenIndex < props.gridItems.length) {
+            const gridItem = props.gridItems[tokenIndex];
+            // console.log('tokenIndex', tokenIndex);
+            drawImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, tokenIndex, 1);
+          }
+        }
+      }
+    }
+  };
 
   if (scale !== lastScale) {
     const lastMouse = scalePoint(mousePositionRef.current, 1.0 / lastScale);
     const newMouse = scalePoint(mousePositionRef.current, 1.0 / scale);
     const mouseOffset = diffPoints(lastMouse, newMouse);
-    adjustedOffsetRef.current = sumPoints(adjustedOffsetRef.current, mouseOffset);
+    setAdjustedOffset(sumPoints(adjustedOffsetRef.current, mouseOffset));
   }
 
   if (delta.x !== 0 || delta.y !== 0) {
-    adjustedOffsetRef.current = sumPoints(adjustedOffsetRef.current, scalePoint(delta, 1.0 / scale));
+    setAdjustedOffset(sumPoints(adjustedOffsetRef.current, scalePoint(delta, 1.0 / scale)));
     test.current += 1;
   }
 
   // console.log('adjustedOffsetRef', JSON.stringify(adjustedOffsetRef.current));
   // console.log('test4', JSON.stringify(test.current));
-
-  const drawImageOnCanvas = (imageUrl: string, context: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) => {
-    const img = new window.Image();
-    img.addEventListener('load', () => {
-      console.log('drawImageOnCanvas', x, y, w, h);
-      console.log('drawImageOnCanvas scaled', x * MAX_SCALE, y * MAX_SCALE, w * MAX_SCALE, h * MAX_SCALE);
-      // context.drawImage(img, x, y, w, h);
-      context.drawImage(img, x * MAX_SCALE, y * MAX_SCALE, w * MAX_SCALE, h * MAX_SCALE);
-    });
-    img.setAttribute('src', `${imageUrl}?w=${w * MAX_SCALE}&h=${h * MAX_SCALE}`);
-  };
-
-  const canvasHeight = tokenHeight * Math.ceil((props.gridItems.length * tokenDuplication * tokenWidth) / canvasWidth);
-
-  React.useEffect(() => {
-    const tokenCount = props.gridItems.length;
-    console.log('Total token count:', props.gridItems.length * tokenDuplication);
-    const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
-    Array(tokenDuplication).fill(null).forEach((_: unknown, duplicationIndex: number): void => {
-      props.gridItems.forEach((gridItem: GridItem): void => {
-        const tokenIndex = (duplicationIndex * tokenCount) + gridItem.tokenId - 1;
-        const x = (tokenIndex * tokenWidth) % canvasWidth;
-        const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
-        drawImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, x, y, tokenWidth, tokenHeight);
-      });
-    });
-  }, [props.gridItems]);
 
   return (
     <div
