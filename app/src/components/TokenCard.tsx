@@ -36,20 +36,20 @@ export const TokenCard = (props: TokenCardProps): React.ReactElement => {
           alignmentVertical={Alignment.End}
         >
           <HidingView isHidden={!props.isZoomedIn}>
-          <BackgroundView color='rgba(0, 0, 0, 0.5)'>
-            <Box
-              variant='padded'
-              isFullWidth={true}
-            >
-              <Stack
-                direction={Direction.Vertical}
-                childAlignment={Alignment.Center}
-                contentAlignment={Alignment.Center}
+            <BackgroundView color='rgba(0, 0, 0, 0.5)'>
+              <Box
+                variant='padded'
+                isFullWidth={true}
               >
-                <Text variant='light' alignment={TextAlignment.Center}>{`#${props.gridItem.gridItemId} ${props.gridItem.title}`}</Text>
-              </Stack>
-            </Box>
-          </BackgroundView>
+                <Stack
+                  direction={Direction.Vertical}
+                  childAlignment={Alignment.Center}
+                  contentAlignment={Alignment.Center}
+                >
+                  <Text variant='light' alignment={TextAlignment.Center}>{`#${props.gridItem.gridItemId} ${props.gridItem.title}`}</Text>
+                </Stack>
+              </Box>
+            </BackgroundView>
           </HidingView>
         </LayerContainer.Layer>
       </LayerContainer>

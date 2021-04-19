@@ -22,11 +22,6 @@ export const HomePage = (): React.ReactElement => {
   const navigator = useNavigator();
   const [errorText, setErrorText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
-  const [chainId, setChainId] = React.useState<number | null>(null);
-
-  if (web3) {
-    web3.eth.getChainId().then(setChainId);
-  }
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     mdtpClient.listGridItems().then((retrievedGridItems: GridItem[]): void => {
@@ -36,14 +31,18 @@ export const HomePage = (): React.ReactElement => {
 
   React.useEffect((): void => {
     loadGridItems();
-    if (!contract) {
-      setErrorText('Install Metamask to buy a token!');
-    } else if (chainId !== ChainId.Rinkeby) {
-      setErrorText('We currently only support Rinkeby, please switch networks within Metamask and refresh');
-    } else {
-      setErrorText(null);
+    if (web3) {
+      web3.eth.getChainId().then((chainId: number): void => {
+        if (!contract) {
+          setErrorText('Install Metamask to buy a token!');
+        } else if (chainId !== ChainId.Rinkeby) {
+          setErrorText('We currently only support Rinkeby, please switch networks within Metamask and refresh');
+        } else {
+          setErrorText(null);
+        }
+      });
     }
-  }, [chainId, contract, loadGridItems]);
+  }, [contract, loadGridItems]);
 
   const onGridItemClicked = (gridItem: GridItem) => {
     navigator.navigateTo(`/tokens/${gridItem.tokenId}`);
