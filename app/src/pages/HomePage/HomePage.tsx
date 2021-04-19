@@ -60,13 +60,13 @@ export const HomePage = (): React.ReactElement => {
         ) : (
           <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
         )}
-        { errorText != null ? (
+        { errorText && (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false}>
             <Box variant='errorOverlay'>
               <Text>{errorText}</Text>
             </Box>
           </LayerContainer.Layer>
-        ) : (<></>)}
+        )}
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <AboutIcon />
         </LayerContainer.Layer>
