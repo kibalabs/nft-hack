@@ -31,6 +31,7 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: num
   useEventListener(ref.current, 'wheel', (e) => {
     e.preventDefault();
     updateScale({
+      // @ts-ignore
       direction: e.deltaY > 0 ? 'up' : 'down',
       interval: 0.1,
     });
