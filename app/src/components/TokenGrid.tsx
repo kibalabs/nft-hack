@@ -170,7 +170,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
 
   React.useLayoutEffect((): void => {
     setAdjustedOffset(adjustedOffsetRef.current);
-  }, [windowSize]);
+  }, [windowSize, setAdjustedOffset]);
 
   return (
     <div
