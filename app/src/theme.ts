@@ -50,15 +50,15 @@ export const buildMDTPTheme = (): ITheme => {
       normal: {
         default: {
           background: {
-            "background-color": 'rgba(255, 255, 255, 0.75)',
-            "backdrop-filter": overlayBoxTheme['backdrop-filter'],
+            'background-color': 'rgba(255, 255, 255, 0.75)',
+            'backdrop-filter': overlayBoxTheme['backdrop-filter'],
           },
         },
         hover: {
           background: {
-            "background-color": 'rgba(255, 255, 255, 0.5)',
-          }
-        }
+            'background-color': 'rgba(255, 255, 255, 0.5)',
+          },
+        },
       },
     },
   };

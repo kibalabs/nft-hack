@@ -1,19 +1,19 @@
 import React from 'react';
 
 import { useDebouncedCallback, usePreviousValue, useWindowSize } from '@kibalabs/core-react';
+import { Alignment, LayerContainer } from '@kibalabs/ui-react';
 
 import { GridItem } from '../client';
 import { arePointsEqual, diffPoints, floorPoint, ORIGIN_POINT, Point, PointRange, scalePoint, sumPoints } from '../util/pointUtil';
 import { useMousePositionRef } from '../util/useMousePositionRef';
 import { usePan } from '../util/usePan';
 import { useScale } from '../util/useScale';
-import { Alignment, LayerContainer } from '@kibalabs/ui-react';
 import { GridControl } from './GridControl';
 
 const tokenWidth = 10;
 const tokenHeight = 10;
-// const canvasWidth = 1000;
-const canvasWidth = 300;
+const canvasWidth = 1000;
+// const canvasWidth = 300;
 
 interface TokenGridProps {
   gridItems: GridItem[];

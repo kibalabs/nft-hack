@@ -22,7 +22,7 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: num
       // if (direction === 'down' && currentScale - interval > minScale) {
       //   newScale = currentScale - interval;
       // } else
-       if (direction === 'down') {
+      if (direction === 'down') {
         newScale = Math.max(currentScale - interval, minScale);
       }
       return newScale;
@@ -40,7 +40,7 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: num
 
   const setScaleManually = (newScale: number): void => {
     setScale(Math.min(Math.max(newScale, minScale), maxScale));
-  }
+  };
 
   return [scale, setScaleManually];
 };

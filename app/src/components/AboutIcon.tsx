@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, KibaIcon, PaddingSize, Stack } from '@kibalabs/ui-react';
+import { Box, Button, KibaIcon, PaddingSize } from '@kibalabs/ui-react';
 
 export const AboutIcon = (): React.ReactElement => {
   const navigator = useNavigator();
