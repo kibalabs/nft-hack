@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
@@ -19,7 +18,6 @@ enum ChainId {
 
 export const HomePage = (): React.ReactElement => {
   const { web3, contract, mdtpClient } = useGlobals();
-  const navigator = useNavigator();
   const [errorText, setErrorText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
 
@@ -53,7 +51,7 @@ export const HomePage = (): React.ReactElement => {
   }, [web3, contract, loadGridItems]);
 
   const onGridItemClicked = (gridItem: GridItem) => {
-    navigator.navigateTo(`/tokens/${gridItem.tokenId}`);
+    window.open(`/tokens/${gridItem.tokenId}`, '_blank');
   };
 
   return (
@@ -69,7 +67,7 @@ export const HomePage = (): React.ReactElement => {
         )}
         { errorText && (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false}>
-            <Box variant='errorOverlay'>
+            <Box variant='overlay-bottomRightCutoff'>
               <Text>{errorText}</Text>
             </Box>
           </LayerContainer.Layer>
