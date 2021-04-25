@@ -7,22 +7,23 @@ type ScaleOpts = {
   interval: number;
 }
 
-export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: number, maxScale: number): number => {
+export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: number, maxScale: number): [number, (newScale: number) => void] => {
   const [scale, setScale] = React.useState<number>(1);
 
   const updateScale = ({ direction, interval }: ScaleOpts) => {
     setScale((currentScale: number): number => {
-      let newScale: number;
-      if (direction === 'up' && currentScale + interval < maxScale) {
-        newScale = currentScale + interval;
-      } else if (direction === 'up') {
-        newScale = maxScale;
-      } else if (direction === 'down' && currentScale - interval > minScale) {
-        newScale = currentScale - interval;
-      } else if (direction === 'down') {
-        newScale = minScale;
-      } else {
-        newScale = currentScale;
+      let newScale = currentScale;
+      // if (direction === 'up' && currentScale + interval < maxScale) {
+      //   newScale = currentScale + interval;
+      // } else
+      if (direction === 'up') {
+        newScale = Math.min(currentScale + interval, maxScale);
+      } else
+      // if (direction === 'down' && currentScale - interval > minScale) {
+      //   newScale = currentScale - interval;
+      // } else
+       if (direction === 'down') {
+        newScale = Math.max(currentScale - interval, minScale);
       }
       return newScale;
     });
@@ -37,5 +38,9 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: num
     });
   });
 
-  return scale;
+  const setScaleManually = (newScale: number): void => {
+    setScale(Math.min(Math.max(newScale, minScale), maxScale));
+  }
+
+  return [scale, setScaleManually];
 };

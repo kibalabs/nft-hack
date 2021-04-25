@@ -67,7 +67,7 @@ export const HomePage = (): React.ReactElement => {
         )}
         { errorText && (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false}>
-            <Box variant='errorOverlay'>
+            <Box variant='overlay-bottomRightCutoff'>
               <Text>{errorText}</Text>
             </Box>
           </LayerContainer.Layer>

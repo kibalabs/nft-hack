@@ -11,10 +11,8 @@ export const AboutIcon = (): React.ReactElement => {
   };
 
   return (
-    <Stack direction={Direction.Horizontal} contentAlignment={Alignment.End}>
-      <Box variant='aboutOverlay'>
-        <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-help' />} onClicked={onAboutClicked} />
-      </Box>
-    </Stack>
+    <Box variant='overlay-topLeftCutoff'>
+      <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-help' />} onClicked={onAboutClicked} />
+    </Box>
   );
 };

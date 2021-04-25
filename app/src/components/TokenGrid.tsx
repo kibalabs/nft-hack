@@ -7,6 +7,8 @@ import { arePointsEqual, diffPoints, floorPoint, ORIGIN_POINT, Point, PointRange
 import { useMousePositionRef } from '../util/useMousePositionRef';
 import { usePan } from '../util/usePan';
 import { useScale } from '../util/useScale';
+import { Alignment, LayerContainer } from '@kibalabs/ui-react';
+import { GridControl } from './GridControl';
 
 const tokenWidth = 10;
 const tokenHeight = 10;
@@ -38,7 +40,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
 
   const [panOffset, startPan] = usePan();
   const lastPanOffset = usePreviousValue(panOffset);
-  const scale = useScale(containerRef, MIN_SCALE, MAX_SCALE);
+  const [scale, setScale] = useScale(containerRef, MIN_SCALE, MAX_SCALE);
   const lastScale = usePreviousValue(scale);
   const mousePositionRef = useMousePositionRef(containerRef);
   const adjustedOffsetRef = React.useRef<Point>(panOffset);
@@ -154,6 +156,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
 
   React.useEffect((): void => {
     if (scale !== lastScale) {
+      // TODO(krishan711): when scaling with the buttons the mouse position should not be used
       const lastMouse = scalePoint(mousePositionRef.current, 1.0 / lastScale);
       const newMouse = scalePoint(mousePositionRef.current, 1.0 / scale);
       const mouseOffset = diffPoints(lastMouse, newMouse);
@@ -173,35 +176,43 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   }, [windowSize, setAdjustedOffset]);
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        backgroundColor: '#111111',
-        margin: 'auto',
-      }}
-      onMouseDown={startPan}
-    >
+    <LayerContainer>
       <div
+        ref={containerRef}
         style={{
-          width: `${canvasWidth * MAX_SCALE}px`,
-          height: `${canvasHeight * MAX_SCALE}px`,
-          transform: `translate(${-adjustedOffsetRef.current.x * scale}px, ${-adjustedOffsetRef.current.y * scale}px) scale(${scale / MAX_SCALE})`,
-          transformOrigin: 'left top',
+          width: '100%',
+          height: '100%',
           overflow: 'hidden',
-          backgroundColor: 'yellow',
+          backgroundColor: '#111111',
+          margin: 'auto',
         }}
-        onMouseDown={onCanvasMouseDown}
-        onMouseUp={onCanvasMouseUp}
       >
-        <canvas
-          ref={canvasRef}
-          width={`${canvasWidth * MAX_SCALE}px`}
-          height={`${canvasHeight * MAX_SCALE}px`}
-        />
+        <div
+          style={{
+            width: `${canvasWidth * MAX_SCALE}px`,
+            height: `${canvasHeight * MAX_SCALE}px`,
+            transform: `translate(${-adjustedOffsetRef.current.x * scale}px, ${-adjustedOffsetRef.current.y * scale}px) scale(${scale / MAX_SCALE})`,
+            transformOrigin: 'left top',
+            overflow: 'hidden',
+            backgroundColor: 'yellow',
+          }}
+          onMouseDown={startPan}
+        >
+          <canvas
+            ref={canvasRef}
+            width={`${canvasWidth * MAX_SCALE}px`}
+            height={`${canvasHeight * MAX_SCALE}px`}
+            onMouseDown={onCanvasMouseDown}
+            onMouseUp={onCanvasMouseUp}
+          />
+        </div>
       </div>
-    </div>
+      <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Start}>
+        <GridControl
+          onZoomInClicked={(): void => setScale(scale + 1)}
+          onZoomOutClicked={(): void => setScale(scale - 1)}
+        />
+      </LayerContainer.Layer>
+    </LayerContainer>
   );
 };

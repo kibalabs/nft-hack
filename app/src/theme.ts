@@ -1,10 +1,12 @@
-import { buildTheme, ITheme, mergeTheme, mergeThemePartial } from '@kibalabs/ui-react';
+import { RecursivePartial } from '@kibalabs/core';
+import { buildTheme, IIconButtonTheme, ITheme, mergeTheme, mergeThemePartial, ThemeMap } from '@kibalabs/ui-react';
 
 export const defaultTheme = buildTheme();
 export const buildMDTPTheme = (): ITheme => {
   const colors = {
     ...defaultTheme.colors,
   };
+
   const textThemes = {
     ...defaultTheme.texts,
     default: mergeTheme(defaultTheme.texts.default, {
@@ -19,30 +21,48 @@ export const buildMDTPTheme = (): ITheme => {
       'font-weight': 'bold',
     },
   };
+
+  const overlayBoxTheme = {
+    'background-color': 'rgba(255, 255, 255, 0.75)',
+    padding: '0.5em 1em',
+    'backdrop-filter': 'blur(3px)',
+  };
+
   const boxThemes = {
     ...defaultTheme.boxes,
-    connectionOverlay: {
-      'background-color': 'rgba(255, 255, 255, 0.75)',
-      padding: '0.5em 1em',
+    overlay: overlayBoxTheme,
+    topRightCutoff: {
       'border-radius': '0 1em 0 0',
-      'backdrop-filter': 'blur(5px)',
     },
-    aboutOverlay: {
-      'background-color': 'rgba(255, 255, 255, 0.75)',
-      padding: '0.5em 1em',
+    topLeftCutoff: {
       'border-radius': '1em 0 0 0',
-      'backdrop-filter': 'blur(5px)',
     },
-    errorOverlay: {
-      'background-color': 'rgba(255, 255, 255, 0.75)',
-      padding: '0.5em 1em',
+    bottomRightCutoff: {
       'border-radius': '0 0 1em 0',
-      'backdrop-filter': 'blur(5px)',
     },
     tokenHeader: mergeThemePartial(defaultTheme.boxes.card, {
       'border-radius': '0',
     }),
   };
+
+  const iconButtonThemes: RecursivePartial<ThemeMap<IIconButtonTheme>> = {
+    default: {
+      normal: {
+        default: {
+          background: {
+            "background-color": 'rgba(255, 255, 255, 0.75)',
+            "backdrop-filter": overlayBoxTheme['backdrop-filter'],
+          },
+        },
+        hover: {
+          background: {
+            "background-color": 'rgba(255, 255, 255, 0.5)',
+          }
+        }
+      },
+    },
+  };
+
   const theme = buildTheme({
     colors,
     fonts: {
@@ -52,6 +72,7 @@ export const buildMDTPTheme = (): ITheme => {
     },
     texts: textThemes,
     boxes: boxThemes,
+    iconButtons: iconButtonThemes,
   });
   return theme;
 };
