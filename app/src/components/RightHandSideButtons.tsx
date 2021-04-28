@@ -12,9 +12,9 @@ export const RightHandSideButtons = (): React.ReactElement => {
 
   return (
     <Box variant='overlay-topLeftCutoff'>
-      <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-cart' />} target={"https://testnets.opensea.io/collection/mdtp-test-2?embed=true"} />
+      <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-cart' />} target={'https://testnets.opensea.io/collection/mdtp-test-2?embed=true'} />
       <Spacing variant={PaddingSize.Narrow} />
-      <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-help' />} onClicked={onAboutClicked} />          
+      <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-help' />} onClicked={onAboutClicked} />
     </Box>
   );
 };

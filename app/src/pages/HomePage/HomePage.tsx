@@ -1,13 +1,12 @@
 import React from 'react';
 
-import { Alignment, Box, Button, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { GridItem } from '../../client';
 import { RightHandSideButtons } from '../../components/RightHandSideButtons';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
-import { MarketplaceIcon } from '../../components/MarketplaceIcon';
 
 enum ChainId {
   Mainnet = 1,
@@ -67,13 +66,13 @@ export const HomePage = (): React.ReactElement => {
           <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
         )}
         { errorText && (
-          <LayerContainer.Layer isFullHeight={false} isFullWidth={false}>
-            <Box variant='overlay-bottomRightCutoff'>
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.Center}>
+            <Box variant='overlay'>
               <Text>{errorText}</Text>
             </Box>
           </LayerContainer.Layer>
         )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>                    
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <RightHandSideButtons />
         </LayerContainer.Layer>
       </LayerContainer>
