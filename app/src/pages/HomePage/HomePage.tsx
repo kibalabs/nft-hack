@@ -4,9 +4,9 @@ import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/
 import { Helmet } from 'react-helmet';
 
 import { GridItem } from '../../client';
-import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { RightHandSideButtons } from '../../components/RightHandSideButtons';
 import { TokenGrid } from '../../components/TokenGrid';
+import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 
 enum ChainId {
@@ -73,9 +73,11 @@ export const HomePage = (): React.ReactElement => {
             </Box>
           </LayerContainer.Layer>
         )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-          <WelcomeOverlay />
-        </LayerContainer.Layer>
+        { true && (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+            <WelcomeOverlay />
+          </LayerContainer.Layer>
+        )}
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <RightHandSideButtons />
         </LayerContainer.Layer>
