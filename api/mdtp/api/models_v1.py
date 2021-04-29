@@ -32,6 +32,19 @@ class ApiGridItem(BaseModel):
             ownerId=model.ownerId,
         )
 
+class ApiStatItem(BaseModel):
+    statItemId: int
+    title: str
+    data: str
+
+    @classmethod
+    def from_model(cls, model: GridItem):
+        return cls(
+            statItemId=model.statItemId,
+            title=model.title,
+            data=model.data,
+        )
+
 class ApiPresignedUpload(BaseModel):
     url: str
     params: Dict[str, str]
@@ -48,6 +61,12 @@ class ListGridItemsRequest(BaseModel):
 
 class ListGridItemsResponse(BaseModel):
     gridItems: List[ApiGridItem]
+
+class ListStatItemsRequest(BaseModel):
+    pass
+
+class ListStatItemsResponse(BaseModel):
+    statItems: List[ApiStatItem]
 
 class RetrieveGridItemRequest(BaseModel):
     tokenId: int

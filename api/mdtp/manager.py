@@ -50,6 +50,10 @@ class MdtpManager:
     async def list_grid_items(self) -> Sequence[GridItem]:
         gridItems = await self.retriever.list_grid_items()
         return gridItems
+    
+    async def list_stat_items(self) -> Sequence[StatItem]:
+        statItems = await self.retriever.list_stat_items()
+        return statItems
 
     async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/networks/rinkeby/tokens/{tokenId}/assets/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
