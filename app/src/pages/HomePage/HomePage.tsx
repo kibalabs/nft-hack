@@ -18,7 +18,7 @@ enum ChainId {
 }
 
 export const HomePage = (): React.ReactElement => {
-  const { web3, contract, mdtpClient } = useGlobals();  
+  const { web3, contract, mdtpClient } = useGlobals();
   const [errorText, setErrorText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
 
@@ -74,7 +74,7 @@ export const HomePage = (): React.ReactElement => {
           </LayerContainer.Layer>
         )}
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-          <WelcomeOverlay/>
+          <WelcomeOverlay />
         </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <RightHandSideButtons />
