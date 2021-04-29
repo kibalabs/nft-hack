@@ -4,7 +4,8 @@ import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/
 import { Helmet } from 'react-helmet';
 
 import { GridItem } from '../../client';
-import { RightHandSideButtons } from '../../components/RightHandSideButtons';
+import { StatsOverlay } from '../../components/StatsOverlay';
+import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
 
@@ -72,8 +73,11 @@ export const HomePage = (): React.ReactElement => {
             </Box>
           </LayerContainer.Layer>
         )}
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
+          <StatsOverlay />
+        </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
-          <RightHandSideButtons />
+          <ButtonsOverlay />
         </LayerContainer.Layer>
       </LayerContainer>
     </React.Fragment>
