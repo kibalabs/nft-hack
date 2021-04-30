@@ -39,15 +39,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     loadToken();
   });
 
-  const loadToken = async (): Promise<void> => {    
+  const loadToken = async (): Promise<void> => {
     const tokenId = Number(props.tokenId);
-    const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();    
+    const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();
     setTokenOwner(receivedTokenOwner);
     const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
     const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
     const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
     const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
-    const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);    
+    const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
     setToken(retrievedToken);
   };
 
@@ -158,13 +158,13 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <Spacing variant={PaddingSize.Wide1} />
                 <Text variant='header3'>{`TOKEN #${token.tokenId}`}</Text>
                 <Spacing variant={PaddingSize.Wide1} />
-                <Text variant='preheading'>{`Name:`}</Text>
+                <Text variant='preheading'>{'Name:'}</Text>
                 <Text variant='header1'>{`${token.metadata.name}`}</Text>
                 <Spacing variant={PaddingSize.Wide1} />
                 <Text>{`DESCRIPTION: ${token.metadata.description}`}</Text>
                 <Spacing variant={PaddingSize.Wide2} />
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${token.tokenId}`} text='OpenSea' />                  
+                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${token.tokenId}`} text='OpenSea' />
                   <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${token.tokenId}`} text='Etherscan' />
                 </Stack>
                 <Spacing variant={PaddingSize.Wide2} />
