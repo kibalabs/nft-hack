@@ -39,15 +39,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     loadToken();
   });
 
-  const loadToken = async (): Promise<void> => {
+  const loadToken = async (): Promise<void> => {    
     const tokenId = Number(props.tokenId);
-    const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();
+    const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();    
     setTokenOwner(receivedTokenOwner);
     const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
     const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
     const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
     const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
-    const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
+    const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);    
     setToken(retrievedToken);
   };
 
@@ -145,32 +145,26 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <Box
-              maxHeight='350px'
-              variant='tokenHeader'
-            >
-              <Image
-                // isFullWidth={true}
-                isCenteredHorizontally={true}
-                fitType={'cover'}
-                source={token.metadata.imageUrl}
-                alternativeText={`${token.metadata.name} image`}
-              />
-            </Box>
             <Spacing variant={PaddingSize.Wide3} />
             <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
               <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
                 <Stack.Item alignment={Alignment.Start}>
                   <Button variant='secondary' onClicked={onBackClicked} text='Back' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
                 </Stack.Item>
-                <Text variant='preheading'>{`Token #${token.tokenId}`}</Text>
-                <Text variant='header1'>{token.metadata.name}</Text>
+                <Spacing variant={PaddingSize.Wide2} />
+                <Box maxHeight='250px' variant='tokenHeader'>
+                  <Image isCenteredHorizontally={true} fitType={'cover'} source={token.metadata.imageUrl} alternativeText={`${token.metadata.name} image`} />
+                </Box>
                 <Spacing variant={PaddingSize.Wide1} />
-                <Text>{token.metadata.description}</Text>
+                <Text variant='header3'>{`TOKEN #${token.tokenId}`}</Text>
+                <Spacing variant={PaddingSize.Wide1} />
+                <Text variant='preheading'>{`Name:`}</Text>
+                <Text variant='header1'>{`${token.metadata.name}`}</Text>
+                <Spacing variant={PaddingSize.Wide1} />
+                <Text>{`DESCRIPTION: ${token.metadata.description}`}</Text>
                 <Spacing variant={PaddingSize.Wide2} />
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${token.tokenId}`} text='OpenSea' />
-                  <Button variant='secondary' target={`https://rinkeby.rarible.com/token/${contractAddress}:${token.tokenId}`} text='Rarible' />
+                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${token.tokenId}`} text='OpenSea' />                  
                   <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${token.tokenId}`} text='Etherscan' />
                 </Stack>
                 <Spacing variant={PaddingSize.Wide2} />
