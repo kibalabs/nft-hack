@@ -16,7 +16,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Spacing variant={PaddingSize.Wide} />
       <Text variant='header6' alignment={TextAlignment.Center}>{'Welcome!'}</Text>
       <Spacing variant={PaddingSize.Wide} />
-      <Text variant='paragraph' alignment={TextAlignment.Center}>{'We are excited to have you here, if its your first time then click More and we will show you around. If you already know how everything works then just click Done and have fun exploring. =)'}</Text>
+      <Text variant='paragraph' alignment={TextAlignment.Center}>{'We are excited to have you here, if its your first time then click More and we will show you around. If you already know how everything works then just click Done and have fun exploring =)'}</Text>
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='More' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(2) } />
@@ -44,7 +44,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Spacing variant={PaddingSize.Wide} />
       <Text variant='header6' alignment={TextAlignment.Center}>{'Interact'}</Text>
       <Spacing variant={PaddingSize.Wide} />
-      <Text variant='paragraph' alignment={TextAlignment.Center}>{'Zoom with the mouse or + and - buttons to see down to the pixel level and select a token to go to its own personal page, where you can view owner details or edit those you own once connected to Metamask.'}</Text>
+      <Text variant='paragraph' alignment={TextAlignment.Center}>{'Zoom with the mouse or + and - buttons to see down to the pixel level. Select a token to go to its token page, where you can view its details and edit it if you own it and have your Metamask account connected.'}</Text>
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='Next' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(4) } />
@@ -57,7 +57,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Spacing variant={PaddingSize.Wide} />
       <Text variant='header6' alignment={TextAlignment.Center}>{'Trade'}</Text>
       <Spacing variant={PaddingSize.Wide} />
-      <Text variant='paragraph' alignment={TextAlignment.Center}>{'Buy pixel blocks as NFTs through our marketplace by selecting the cart symbol. NFT blocks that you own are stored in your Ethereum address and can be re-sold at potentially higher prices on the secondary market.'}</Text>
+      <Text variant='paragraph' alignment={TextAlignment.Center}>{'Buy pixel blocks as NFTs through our marketplace by selecting the cart symbol. NFT blocks that you own are stored in your Ethereum address and can be re-sold at potentially higher prices in the marketplace.'}</Text>
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='Next' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(5) } />
@@ -70,7 +70,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Spacing variant={PaddingSize.Wide} />
       <Text variant='header6' alignment={TextAlignment.Center}>{'Share'}</Text>
       <Spacing variant={PaddingSize.Wide} />
-      <Text variant='paragraph' alignment={TextAlignment.Center}>{'Share us with your friends and attach your Ethereum address to get 10% kickback on any purchase that they make. So if they buy an NFT for $100 then you get $10 back for recommending.'}</Text>
+      <Text variant='paragraph' alignment={TextAlignment.Center}>{'Share with your friends and attach your Ethereum address to get 10% kickback on any purchase that they make. So if they buy an NFT for $100 then you get $10 back for recommending.'}</Text>
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='Next' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(6) } />
