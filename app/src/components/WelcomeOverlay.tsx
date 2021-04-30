@@ -11,6 +11,10 @@ export const WelcomeOverlay = (): React.ReactElement => {
     navigator.navigateTo('/about');
   };
 
+  if (localStorage.welcomeComplete && overlayScreenNumber > 0) {
+    setOverlayScreenNumber(0);
+  }
+
   const OverlayScreen1 = (): React.ReactElement => (
     <>
       <Spacing variant={PaddingSize.Wide} />
@@ -21,7 +25,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='More' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(2) } />
         <Stack.Item growthFactor={0.1} />
-        <Button variant={'primary'} text='Done' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(0) } />
+        <Button variant={'primary'} text='Done' iconGutter={PaddingSize.None} onClicked={ () => { setOverlayScreenNumber(0); localStorage.welcomeComplete = true; } } />
       </Stack>
     </>
   );
@@ -35,7 +39,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='Next' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(3) } />
-      </Stack>      
+      </Stack>
     </>
   );
 
@@ -48,7 +52,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='Next' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(4) } />
-      </Stack>      
+      </Stack>
     </>
   );
 
@@ -61,7 +65,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='Next' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(5) } />
-      </Stack>      
+      </Stack>
     </>
   );
 
@@ -74,7 +78,7 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
         <Button variant={'primary'} text='Next' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(6) } />
-      </Stack>      
+      </Stack>
     </>
   );
 
@@ -86,10 +90,10 @@ export const WelcomeOverlay = (): React.ReactElement => {
       <Text variant='paragraph' alignment={TextAlignment.Center}>{'If you are still unsure about anything select ? for more on our about page. Otherwise, interact, trade and share, and be a part of making crypto history!'}</Text>
       <Spacing variant={PaddingSize.Wide} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
-        <Button variant={'primary'} text='Done' iconGutter={PaddingSize.None} onClicked={ () => setOverlayScreenNumber(0) } />
+        <Button variant={'primary'} text='Done' iconGutter={PaddingSize.None} onClicked={ () => { setOverlayScreenNumber(0); localStorage.welcomeComplete = true; } } />
         <Stack.Item growthFactor={0.1} />
         <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-help' />} onClicked={onAboutClicked} />
-      </Stack>      
+      </Stack>
     </>
   );
 

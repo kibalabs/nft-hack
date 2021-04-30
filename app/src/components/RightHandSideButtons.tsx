@@ -7,6 +7,7 @@ export const RightHandSideButtons = (): React.ReactElement => {
   const navigator = useNavigator();
 
   const onAboutClicked = () => {
+    localStorage.removeItem("welcomeComplete");
     navigator.navigateTo('/about');
   };
 
