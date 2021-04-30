@@ -204,6 +204,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
             height={`${canvasHeight * MAX_SCALE}px`}
             onMouseDown={onCanvasMouseDown}
             onMouseUp={onCanvasMouseUp}
+            style={{ cursor: "pointer" }}
           />
         </div>
       </div>
