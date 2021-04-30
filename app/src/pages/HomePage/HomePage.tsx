@@ -7,6 +7,7 @@ import { GridItem } from '../../client';
 import { StatsOverlay } from '../../components/StatsOverlay';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
+import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 
 enum ChainId {
@@ -75,6 +76,9 @@ export const HomePage = (): React.ReactElement => {
         )}
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
           <StatsOverlay />
+        </LayerContainer.Layer>
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+          <WelcomeOverlay />
         </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <ButtonsOverlay />
