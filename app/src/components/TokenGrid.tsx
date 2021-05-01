@@ -51,6 +51,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   const lastMouseMovePointRef = React.useRef<Point | null>(null);
   const [setRedrawCallback, clearRedrawCallback] = useDebouncedCallback(350);
   const windowSize = useWindowSize();
+  const [isMoving, setIsMoving] = React.useState<boolean>(false);
 
   const canvasHeight = tokenHeight * Math.ceil((props.gridItems.length * tokenWidth) / canvasWidth);
 
@@ -136,19 +137,27 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
     lastMouseMovePointRef.current = { x: event.pageX - event.currentTarget.offsetLeft, y: event.pageY - event.currentTarget.offsetTop };
   };
 
-  const onCanvasMouseUp = (event: React.MouseEvent<HTMLElement>): void => {
-    if (!lastMouseMovePointRef.current || !lastMouseMoveTimeRef.current) {
+  const onCanvasMouseMove = (event: React.MouseEvent<HTMLElement>): void => {
+    if (!lastMouseMovePointRef.current || !lastMouseMoveTimeRef.current || isMoving) {
       return;
     }
     const timeDiff = new Date().getTime() - lastMouseMoveTimeRef.current.getTime();
     const endPoint = { x: event.pageX - event.currentTarget.offsetLeft, y: event.pageY - event.currentTarget.offsetTop };
     const pointDiff = diffPoints(endPoint, lastMouseMovePointRef.current);
 
-    if (timeDiff < 700 && Math.abs(pointDiff.x) < 15 && Math.abs(pointDiff.y) < 15) {
+    if (timeDiff > 700 || Math.abs(pointDiff.x) > 15 || Math.abs(pointDiff.y) > 15) {
+      setIsMoving(true);
+    }
+  };
+
+  const onCanvasMouseUp = (event: React.MouseEvent<HTMLElement>): void => {
+    if (!isMoving) {
+      const endPoint = { x: event.pageX - event.currentTarget.offsetLeft, y: event.pageY - event.currentTarget.offsetTop };
       const targetPoint = sumPoints(endPoint, scalePoint(adjustedOffsetRef.current, scale));
       const tokenIndex = Math.floor((targetPoint.x / (scale * tokenWidth)) + (Math.floor(targetPoint.y / (scale * tokenHeight)) * (canvasWidth / tokenWidth)));
       props.onGridItemClicked(props.gridItems[tokenIndex]);
     }
+    setIsMoving(false);
 
     lastMouseMoveTimeRef.current = null;
     lastMouseMovePointRef.current = null;
@@ -204,7 +213,8 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
             height={`${canvasHeight * MAX_SCALE}px`}
             onMouseDown={onCanvasMouseDown}
             onMouseUp={onCanvasMouseUp}
-            style={{ cursor: 'pointer' }}
+            onMouseMove={onCanvasMouseMove}
+            style={{ cursor: isMoving ? 'move' : 'pointer' }}
           />
         </div>
       </div>
