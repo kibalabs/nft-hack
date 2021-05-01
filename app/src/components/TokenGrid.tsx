@@ -40,7 +40,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
 
   const [panOffset, startPan] = usePan();
   const lastPanOffset = usePreviousValue(panOffset);
-  const [scale, setScale] = useScale(containerRef, MIN_SCALE, MAX_SCALE, 0.5, true);
+  const [scale, setScale] = useScale(containerRef, MIN_SCALE, MAX_SCALE, 0.3, true);
   const lastScale = usePreviousValue(scale);
   const mousePositionRef = useMousePositionRef(containerRef);
   const adjustedOffsetRef = React.useRef<Point>(panOffset);
