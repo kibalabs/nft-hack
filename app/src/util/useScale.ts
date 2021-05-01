@@ -2,8 +2,9 @@ import React from 'react';
 
 import { useEventListener } from '@kibalabs/core-react';
 
-export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: number, maxScale: number): [number, (newScale: number) => void] => {
+export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: number, maxScale: number, scaleRate = 0.1, shouldInvert = false): [number, (newScale: number) => void] => {
   const [scale, setScale] = React.useState<number>(1);
+  const increment = shouldInvert ? -scaleRate : scaleRate;
 
   const constrainScale = (newScale: number): number => {
     return Math.min(Math.max(newScale, minScale), maxScale);
@@ -19,10 +20,10 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: num
       let newScale = currentScale;
       // @ts-ignore
       if (e.deltaY > 0) {
-        newScale = currentScale + 0.1;
+        newScale = currentScale + increment;
       // @ts-ignore
       } else if (e.deltaY < 0) {
-        newScale = currentScale - 0.1;
+        newScale = currentScale - increment;
       }
       return constrainScale(newScale);
     });
