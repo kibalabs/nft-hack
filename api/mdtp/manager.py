@@ -55,6 +55,13 @@ class MdtpManager:
         statItems = await self.retriever.list_stat_items()
         return statItems
 
+    """
+    url = "https://api.opensea.io/api/v1/collections"
+    querystring = {"asset_owner":"0xb7f7f6c52f2e2fdb1963eab30438024864c313f6","offset":"0","limit":"300"}
+    response = requests.request("GET", url, params=querystring)
+    print(response.text)
+    """
+
     async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/networks/rinkeby/tokens/{tokenId}/assets/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
