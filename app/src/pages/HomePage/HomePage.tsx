@@ -25,8 +25,8 @@ export const HomePage = (): React.ReactElement => {
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     mdtpClient.listGridItems().then((retrievedGridItems: GridItem[]): void => {
       const sortedGridItems = retrievedGridItems.sort((gridItem1: GridItem, gridItem2: GridItem): number => gridItem1.gridItemId - gridItem2.gridItemId);
-      setGridItems(Array(10000).fill(null).map((_: unknown, index: number): GridItem => {
-      // setGridItems(Array(1000).fill(null).map((_: unknown, index: number): GridItem => {
+      // setGridItems(Array(10000).fill(null).map((_: unknown, index: number): GridItem => {
+      setGridItems(Array(1000).fill(null).map((_: unknown, index: number): GridItem => {
         const originalGridItem = sortedGridItems[index % sortedGridItems.length];
         const gridItem = Object.assign(Object.create(Object.getPrototypeOf(originalGridItem)), originalGridItem);
         gridItem.gridItemId = index;

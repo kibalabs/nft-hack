@@ -210,6 +210,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       </div>
       <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Start}>
         <GridControl
+          zoomLevel={`${Math.floor(100 * (scale / MAX_SCALE))}%`}
           onZoomInClicked={(): void => setScale(scale + 1)}
           onZoomOutClicked={(): void => setScale(scale - 1)}
         />
