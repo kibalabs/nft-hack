@@ -16,7 +16,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     # TODO(krishan711): this can nicely be a GET once we have query params
     @router.post('/retrieve-grid-item', response_model=RetrieveGridItemResponse)
     async def retrieve_grid_item(rawRequest: Request, response: Response, request: RetrieveGridItemRequest) -> RetrieveGridItemResponse:
-        gridItem = await manager.retrieve_grid_item(network=request.network, tokenId=request.tokenId)
+        gridItem = await manager.retrieve_grid_item(tokenId=request.tokenId)
         return RetrieveGridItemResponse(gridItem=ApiGridItem.from_model(model=gridItem))
 
     @router.post('/update-tokens-deferred', response_model=UpdateTokensDeferredResponse)
