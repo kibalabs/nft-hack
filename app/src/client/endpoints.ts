@@ -34,7 +34,7 @@ export class RetrieveGridItemRequest extends RequestData {
 
   public toObject = (): Record<string, unknown> => {
     return {
-      tokenId: this.tokenId
+      tokenId: this.tokenId,
     };
   }
 }
