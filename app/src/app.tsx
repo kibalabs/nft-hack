@@ -39,7 +39,7 @@ const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const contract = web3 ? new web3.eth.Contract(MDTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
-const mdtpClient = new MdtpClient(requester, 'http://localhost:5000');
+const mdtpClient = new MdtpClient(requester);
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 
