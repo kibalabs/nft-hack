@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { RestMethod } from '@kibalabs/core';
 import { useInitialization, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
@@ -9,7 +8,6 @@ import { useAccounts } from '../../accountsContext';
 import { GridItem, PresignedUpload } from '../../client';
 import { Dropzone } from '../../components/dropzone';
 import { useGlobals } from '../../globalsContext';
-import { Token, TokenMetadata } from '../../model';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -24,10 +22,7 @@ type Result = {
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, contractAddress, requester, mdtpClient } = useGlobals();
   const navigator = useNavigator();
-  // const [token, setToken] = React.useState<Token | null>(null);
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
-  // const [tokenOwner, setTokenOwner] = React.useState<string | null>(null);
-  const [newTokenUrl, setNewTokenUrl] = React.useState<string | null>(null);
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
@@ -37,9 +32,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const accounts = useAccounts();
 
-  useInitialization((): void => {
+  React.useEffect((): void => {
     loadToken();
-  });
+  }, [props.tokenId]);
 
   const loadToken = async (): Promise<void> => {
     const tokenId = Number(props.tokenId);
@@ -115,8 +110,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
-
-  console.log('accounts', accounts);
 
   return (
     <React.Fragment>
