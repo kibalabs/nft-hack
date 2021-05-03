@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useInitialization, useNavigator } from '@kibalabs/core-react';
+import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
@@ -32,16 +32,16 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const accounts = useAccounts();
 
-  React.useEffect((): void => {
-    loadToken();
-  }, [props.tokenId]);
-
-  const loadToken = async (): Promise<void> => {
+  const loadToken = React.useCallback(async (): Promise<void> => {
     const tokenId = Number(props.tokenId);
     mdtpClient.retrieveGridItem(tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
     });
-  };
+  }, [props.tokenId, mdtpClient]);
+
+  React.useEffect((): void => {
+    loadToken();
+  }, [loadToken]);
 
   const onUpdateMetadataClicked = async (): Promise<void> => {
     if (!gridItem) {
