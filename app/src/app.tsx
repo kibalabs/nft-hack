@@ -22,6 +22,7 @@ import { buildMDTPTheme } from './theme';
 declare global {
   export interface Window {
     KRT_CONTRACT_ADDRESS: string;
+    KRT_API_URL?: string;
     ethereum?: Web3Provider;
   }
 }
@@ -39,7 +40,7 @@ const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const contract = web3 ? new web3.eth.Contract(MDTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
-const mdtpClient = new MdtpClient(requester);
+const mdtpClient = new MdtpClient(requester, window.KRT_API_URL);
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 
@@ -50,6 +51,7 @@ const globals = {
   contract,
   contractAddress: window.KRT_CONTRACT_ADDRESS,
   mdtpClient,
+  network: 'rinkeby',
 };
 
 const theme = buildMDTPTheme();

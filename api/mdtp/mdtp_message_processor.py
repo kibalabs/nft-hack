@@ -13,10 +13,10 @@ class MdtpMessageProcessor(MessageProcessor):
     async def process_message(self, message: SqsMessage) -> None:
         if message.command == UpdateTokensMessageContent._COMMAND:
             messageContent = UpdateTokensMessageContent.parse_obj(message.content)
-            await self.manager.update_tokens()
+            await self.manager.update_tokens(networkId=messageContent.networkId)
             return
         if message.command == UploadTokenImageMessageContent._COMMAND:
             messageContent = UploadTokenImageMessageContent.parse_obj(message.content)
-            await self.manager.upload_token_image(tokenId=messageContent.tokenId)
+            await self.manager.upload_token_image(networkId=messageContent.networkId, tokenId=messageContent.tokenId)
             return
         raise KibaException(message='Message was unhandled')

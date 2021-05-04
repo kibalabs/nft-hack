@@ -15,6 +15,7 @@ export interface Globals {
   contract: Contract;
   contractAddress: string;
   mdtpClient: MdtpClient;
+  network: string;
 }
 
 export const GlobalsContext = React.createContext<Globals | null>(null);

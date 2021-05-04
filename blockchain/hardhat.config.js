@@ -14,6 +14,10 @@ module.exports = {
       rinkeby: {
          url: ALCHEMY_URL,
          accounts: [PRIVATE_KEY]
+      },
+      matic: {
+         url: "https://rpc-mumbai.maticvigil.com",
+         accounts: [PRIVATE_KEY]
       }
    },
    etherscan: {

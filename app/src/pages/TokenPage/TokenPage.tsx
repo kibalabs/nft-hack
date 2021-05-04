@@ -20,7 +20,7 @@ type Result = {
 }
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
-  const { contract, contractAddress, requester, mdtpClient } = useGlobals();
+  const { contract, contractAddress, requester, mdtpClient, network } = useGlobals();
   const navigator = useNavigator();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
@@ -34,7 +34,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     const tokenId = Number(props.tokenId);
-    mdtpClient.retrieveGridItem(tokenId).then((retrievedGridItem: GridItem): void => {
+    mdtpClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
     });
   }, [props.tokenId, mdtpClient]);
@@ -86,7 +86,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
     // TODO(krishan711): ensure there is only one file
     setIsUploadingImage(true);
-    mdtpClient.generateImageUploadForToken(Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
+    mdtpClient.generateImageUploadForToken(network, Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
       const file = files[0];
       // @ts-ignore
       const fileName = file.path.replace(/^\//g, '');
