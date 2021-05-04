@@ -64,6 +64,22 @@ export const buildMDTPTheme = (): ITheme => {
         },
       },
     },
+    secondary: {
+      normal: {
+        default: {
+          background: {
+            'background-color': 'transparent',
+            'border-width': '0',
+            'backdrop-filter': 'none',
+          },
+        },
+        hover: {
+          background: {
+            'background-color': 'rgba(255, 255, 255, 0.5)',
+          },
+        },
+      },
+    },
   };
 
   const theme = buildTheme({
