@@ -24,6 +24,36 @@ export class ListGridItemsResponse extends ResponseData {
   }
 }
 
+export class RetrieveGridItemRequest extends RequestData {
+  readonly tokenId: number;
+
+  public constructor(tokenId: number) {
+    super();
+    this.tokenId = tokenId;
+  }
+
+  public toObject = (): Record<string, unknown> => {
+    return {
+      tokenId: this.tokenId,
+    };
+  }
+}
+
+export class RetrieveGridItemResponse extends ResponseData {
+  readonly gridItem: Resources.GridItem;
+
+  public constructor(gridItem: Resources.GridItem) {
+    super();
+    this.gridItem = gridItem;
+  }
+
+  public static fromObject = (obj: Record<string, unknown>): RetrieveGridItemResponse => {
+    return new RetrieveGridItemResponse(
+      Resources.GridItem.fromObject(obj.gridItem as Record<string, unknown>),
+    );
+  }
+}
+
 export class GenerateImageUploadForSiteVersionRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {

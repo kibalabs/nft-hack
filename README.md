@@ -9,8 +9,7 @@ Figma: https://www.figma.com/file/bcJ986kLJy9OxW0mTQEDG8/Main?node-id=0%3A1
 Current contract address: 0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3
 Current contract url: https://rinkeby.etherscan.io/address/0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3
 
-Krish test address: 0xCE11D6fb4f1e006E5a348230449Dc387fde850CC
-Arthur test address: 0xee3BB58138f87175F2ad024B248F028ED9c459ad
+MDTP address: 0xCE11D6fb4f1e006E5a348230449Dc387fde850CC
 
 ## Running locally
 
