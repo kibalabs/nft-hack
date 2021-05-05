@@ -7,21 +7,28 @@ import { useGlobals } from '../globalsContext';
 
 export const StatsOverlay = (): React.ReactElement => {
   const { mdtpClient } = useGlobals();
+  const [marketCap, setMarketCap] = React.useState<string>('0');
+  const [totalSales, setTotalSales] = React.useState<string>('0');
+  const [averagePrice, setAveragePrice] = React.useState<string>('0');
 
   const updateSats = () => {
     console.log("Stats func on front-end");
-    mdtpClient.listStatItems().then((retrievedStatItems: StatItem[]): void => {})
+    mdtpClient.listStatItems().then((retrievedStatItems: StatItem[]): void => {      
+      setMarketCap(retrievedStatItems[0].data)
+      setTotalSales(retrievedStatItems[1].data)
+      setAveragePrice(retrievedStatItems[2].data)
+    })
   };
 
   return (
     <Box variant='overlay-bottomLeftCutoff' width={'200px'}>
       <Text variant='header6'>{'Stats'}</Text>
       <Text variant='paragraph'>{'Market Cap:'}</Text>
-      <Text variant='italic'>{'161.71KΞ ($441.43M)'}</Text>
+      <Text variant='italic'>{`${marketCap}Ξ ($441.43M)`}</Text>
       <Text variant='paragraph'>{'Total sales:'}</Text>
-      <Text variant='italic'>{'9,062'}</Text>
+      <Text variant='italic'>{`${totalSales}`}</Text>
       <Text variant='paragraph'>{'Average price:'}</Text>
-      <Text variant='italic'>{'21.49 ETH ($58,662.11 USD)'}</Text>
+      <Text variant='italic'>{`${averagePrice}Ξ ($58,662.11)`}</Text>
       {/* <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-cart' />} target={'https://testnets.opensea.io/collection/mdtp-test-2?embed=true'} /> */}
       <Button variant={'primary'} text='UpdateSats' iconGutter={PaddingSize.None} onClicked={updateSats} />
       <Spacing variant={PaddingSize.Narrow} />      

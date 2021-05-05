@@ -52,22 +52,15 @@ class MdtpManager:
         gridItems = await self.retriever.list_grid_items()
         return gridItems
     
-    async def list_stat_items(self) -> Sequence[StatItem]:    
-        logging.info(f'Stat Items Called!')    
-        contract = '0xb7f7f6c52f2e2fdb1963eab30438024864c313f6'
+    async def list_stat_items(self) -> Sequence[StatItem]:            
+        contract = '0xb7f7f6c52f2e2fdb1963eab30438024864c313f6' #TODO: Set correctly
         response = await self.requester.get(url=f'https://api.opensea.io/api/v1/collections?asset_owner={contract}&offset=0&limit=300')        
-        responseJson = response.json()        
-        stats = responseJson[0].get('stats')
-        logging.info(stats)
-        marketCap = stats.get('market_cap')
-        logging.info(marketCap)        
-        statItem = StatItem(
-          statItemId=1,
-          title='market_cap',
-          data=marketCap,
-        )
-        logging.info(statItem)   
-        statItems = Sequence[statItem]
+        responseJson = response.json() 
+        stats = responseJson[0].get('stats')        
+        marketCapStat = StatItem(statItemId=0, title='market_cap', data=stats.get('market_cap'))
+        totalSalesStat = StatItem(statItemId=1, title='total_sales', data=stats.get('total_sales'))
+        averagePriceStat = StatItem(statItemId=2, title='average_price', data=stats.get('average_price'))
+        statItems = [marketCapStat, totalSalesStat, averagePriceStat]
         return statItems
 
     async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:

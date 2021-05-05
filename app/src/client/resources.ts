@@ -45,13 +45,13 @@ export class StatItem {
     this.data = data;
   }
 
-  // public static fromObject = (obj: Record<string, unknown>): StatItem => {
-  //   return new StatItem(
-  //     Number(obj.statItemId),
-  //     String(obj.title),
-  //     String(obj.data),
-  //   );
-  // }
+  public static fromObject = (obj: Record<string, unknown>): StatItem => {
+    return new StatItem(
+      Number(obj.statItemId),
+      String(obj.title),
+      String(obj.data),
+    );
+  }
 }
 
 export class PresignedUpload {
