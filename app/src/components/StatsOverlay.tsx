@@ -1,8 +1,17 @@
 import React from 'react';
 
-import { Text, Box, PaddingSize, Spacing } from '@kibalabs/ui-react';
+import { Text, Box, PaddingSize, Spacing, Button } from '@kibalabs/ui-react';
+
+import { StatItem } from '../client';
+import { useGlobals } from '../globalsContext';
 
 export const StatsOverlay = (): React.ReactElement => {
+  const { mdtpClient } = useGlobals();
+
+  const updateSats = () => {
+    console.log("Stats func on front-end");
+    mdtpClient.listStatItems().then((retrievedStatItems: StatItem[]): void => {})
+  };
 
   return (
     <Box variant='overlay-bottomLeftCutoff' width={'200px'}>
@@ -14,6 +23,7 @@ export const StatsOverlay = (): React.ReactElement => {
       <Text variant='paragraph'>{'Average price:'}</Text>
       <Text variant='italic'>{'21.49 ETH ($58,662.11 USD)'}</Text>
       {/* <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-cart' />} target={'https://testnets.opensea.io/collection/mdtp-test-2?embed=true'} /> */}
+      <Button variant={'primary'} text='UpdateSats' iconGutter={PaddingSize.None} onClicked={updateSats} />
       <Spacing variant={PaddingSize.Narrow} />      
     </Box>
   );

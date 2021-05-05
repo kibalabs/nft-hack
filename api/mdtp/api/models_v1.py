@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from pydantic import Json
 
 from mdtp.model import GridItem
+from mdtp.model import StatItem
 from mdtp.core.s3_manager import S3PresignedUpload
 
 class ApiGridItem(BaseModel):
@@ -38,7 +39,7 @@ class ApiStatItem(BaseModel):
     data: str
 
     @classmethod
-    def from_model(cls, model: GridItem):
+    def from_model(cls, model: StatItem):
         return cls(
             statItemId=model.statItemId,
             title=model.title,

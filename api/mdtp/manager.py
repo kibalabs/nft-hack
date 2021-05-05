@@ -12,6 +12,7 @@ from mdtp.eth_client import EthClientInterface
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import GridItem
+from mdtp.model import StatItem
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
@@ -51,16 +52,23 @@ class MdtpManager:
         gridItems = await self.retriever.list_grid_items()
         return gridItems
     
-    async def list_stat_items(self) -> Sequence[StatItem]:
-        statItems = await self.retriever.list_stat_items()
+    async def list_stat_items(self) -> Sequence[StatItem]:    
+        logging.info(f'Stat Items Called!')    
+        contract = '0xb7f7f6c52f2e2fdb1963eab30438024864c313f6'
+        response = await self.requester.get(url=f'https://api.opensea.io/api/v1/collections?asset_owner={contract}&offset=0&limit=300')        
+        responseJson = response.json()        
+        stats = responseJson[0].get('stats')
+        logging.info(stats)
+        marketCap = stats.get('market_cap')
+        logging.info(marketCap)        
+        statItem = StatItem(
+          statItemId=1,
+          title='market_cap',
+          data=marketCap,
+        )
+        logging.info(statItem)   
+        statItems = Sequence[statItem]
         return statItems
-
-    """
-    url = "https://api.opensea.io/api/v1/collections"
-    querystring = {"asset_owner":"0xb7f7f6c52f2e2fdb1963eab30438024864c313f6","offset":"0","limit":"300"}
-    response = requests.request("GET", url, params=querystring)
-    print(response.text)
-    """
 
     async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/networks/rinkeby/tokens/{tokenId}/assets/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)

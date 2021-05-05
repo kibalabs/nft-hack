@@ -24,6 +24,28 @@ export class ListGridItemsResponse extends ResponseData {
   }
 }
 
+export class ListStatItemsRequest extends RequestData {
+  public toObject = (): Record<string, unknown> => {
+    return {
+    };
+  }
+}
+
+export class ListStatItemsResponse extends ResponseData {
+  readonly statItems: Resources.StatItem[];
+
+  public constructor(statItems: Resources.StatItem[]) {
+    super();
+    this.statItems = statItems;
+  }
+
+  public static fromObject = (obj: Record<string, unknown>): ListStatItemsResponse => {
+    return new ListStatItemsResponse(
+      (obj.statItems as Record<string, unknown>[]).map((entry: Record<string, unknown>): Resources.StatItem => Resources.StatItem.fromObject(entry)),
+    );
+  }
+}
+
 export class GenerateImageUploadForSiteVersionRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {

@@ -16,6 +16,14 @@ export class MdtpClient extends ServiceClient {
     return response.gridItems;
   }
 
+  public listStatItems = async (): Promise<Resources.StatItem[]> => {
+    const method = RestMethod.GET;
+    const path = 'v1/stat-items';
+    const request = new Endpoints.ListStatItemsRequest();
+    const response = await this.makeRequest(method, path, request, Endpoints.ListStatItemsResponse);
+    return response.statItems;
+  }
+
   public generateImageUploadForToken = async (tokenId: number): Promise<Resources.PresignedUpload> => {
     const method = RestMethod.POST;
     const path = `v1/tokens/${tokenId}/generate-image-upload`;
