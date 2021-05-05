@@ -16,6 +16,14 @@ export class MdtpClient extends ServiceClient {
     return response.gridItems;
   }
 
+  public retrieveGridItem = async (tokenId: number): Promise<Resources.GridItem> => {
+    const method = RestMethod.POST;
+    const path = 'v1/retrieve-grid-item';
+    const request = new Endpoints.RetrieveGridItemRequest(tokenId);
+    const response = await this.makeRequest(method, path, request, Endpoints.RetrieveGridItemResponse);
+    return response.gridItem;
+  }
+
   public listStatItems = async (): Promise<Resources.StatItem[]> => {
     const method = RestMethod.GET;
     const path = 'v1/stat-items';

@@ -71,7 +71,6 @@ class ListStatItemsResponse(BaseModel):
 
 class RetrieveGridItemRequest(BaseModel):
     tokenId: int
-    network: str
 
 class RetrieveGridItemResponse(BaseModel):
     gridItem: ApiGridItem

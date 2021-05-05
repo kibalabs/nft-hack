@@ -1,15 +1,13 @@
 import React from 'react';
 
-import { RestMethod } from '@kibalabs/core';
-import { useInitialization, useNavigator } from '@kibalabs/core-react';
+import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
-import { PresignedUpload } from '../../client';
+import { GridItem, PresignedUpload } from '../../client';
 import { Dropzone } from '../../components/dropzone';
 import { useGlobals } from '../../globalsContext';
-import { Token, TokenMetadata } from '../../model';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -24,75 +22,56 @@ type Result = {
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, contractAddress, requester, mdtpClient } = useGlobals();
   const navigator = useNavigator();
-  const [token, setToken] = React.useState<Token | null>(null);
-  const [tokenOwner, setTokenOwner] = React.useState<string | null>(null);
-  const [newTokenUrl, setNewTokenUrl] = React.useState<string | null>(null);
-  const [newName, setNewName] = React.useState<string | null>(null);
+  const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
+  const [newTitle, setNewTitle] = React.useState<string | null>(null);
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
   const [newTokenSettingResult, setNewTokenSettingResult] = React.useState<Result | null>(null);
+  const [hasStartedUpdated, setHasStartedUpdating] = React.useState<boolean>(false);
   const [isUpdating, setIsUpdating] = React.useState<boolean>(false);
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const accounts = useAccounts();
 
-  useInitialization((): void => {
-    loadToken();
-  });
-
-  const loadToken = async (): Promise<void> => {
+  const loadToken = React.useCallback(async (): Promise<void> => {
     const tokenId = Number(props.tokenId);
-    const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();
-    setTokenOwner(receivedTokenOwner);
-    const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
-    const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
-    const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
-    const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
-    const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
-    setToken(retrievedToken);
-  };
+    mdtpClient.retrieveGridItem(tokenId).then((retrievedGridItem: GridItem): void => {
+      setGridItem(retrievedGridItem);
+    });
+  }, [props.tokenId, mdtpClient]);
+
+  React.useEffect((): void => {
+    loadToken();
+  }, [loadToken]);
 
   const onUpdateMetadataClicked = async (): Promise<void> => {
-    if (!token) {
+    if (!gridItem) {
       return;
     }
 
-    const tokenId = Number(props.tokenId);
-    const name = newName != null ? newName : token.metadata.name;
-    const description = newDescription != null ? newDescription : token.metadata.description;
-    const image = newImageUrl != null ? newImageUrl : token.metadata.imageUrl;
-    const tokenMetadata = new TokenMetadata(name, description, image);
-    const updatedToken = new Token(tokenId, 'tokenMetadataUrl', tokenMetadata);
+    setIsUpdating(true);
+    // const title = newTitle != null ? newTitle : gridItem.title;
+    // const description = newDescription != null ? newDescription : gridItem.description;
+    // const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
+    // TODO(krishan711): upload this new metadata somewhere and set it as tokenMetadataUrl
+    const tokenMetadataUrl = await contract.methods.tokenURI(gridItem.tokenId).call();
 
-    // TODO:
-    // - Create a URL either on S3 or on IPFS
-    // - const newMetadata = {"name" : name, "description" : description, "image" : image}
-    // - const jsonTokenMetadata = JSON.stringify(metadata);
-    // - Run the code in onUpdateTokenUrlClicked()
-
-    // HACK to fix linting errors - I don't want to start commenting a bunch of temporarily unused code
-    if (tokenId === 10000) {
-      setNewTokenUrl('new');
-      onUpdateTokenUrlClicked();
-    }
-    setToken(updatedToken);
-  };
-
-  // TODO: Merge in the following function into onUpdateMetadataClicked() such that we are creating a new Token URL every time...
-  const onUpdateTokenUrlClicked = async (): Promise<void> => {
     setNewTokenSettingResult(null);
     const tokenId = Number(props.tokenId);
     try {
-      await contract.methods.setTokenURI(tokenId, newTokenUrl)
-        .send({ from: tokenOwner })
+      await contract.methods.setTokenURI(tokenId, tokenMetadataUrl)
+        .send({ from: gridItem.ownerId })
         .on('transactionHash', (transactionHash: string) => {
           setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transactionHash}.` });
+          setIsUpdating(false);
         })
         .on('confirmation', () => { // confirmationNumber, receipt
           setNewTokenSettingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
           loadToken();
+          setIsUpdating(false);
         });
     } catch (error) {
       setNewTokenSettingResult({ isSuccess: false, isPending: false, message: error.message });
+      setIsUpdating(false);
     }
   };
 
@@ -101,7 +80,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const onUpdateClicked = () => {
-    setIsUpdating(true);
+    setHasStartedUpdating(true);
   };
 
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
@@ -138,7 +117,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         <title>{'Token | The Million Dollar Token Page'}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        { !token ? (
+        { !gridItem ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />
@@ -153,36 +132,36 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 </Stack.Item>
                 <Spacing variant={PaddingSize.Wide2} />
                 <Box maxHeight='250px' variant='tokenHeader'>
-                  <Image isCenteredHorizontally={true} fitType={'cover'} source={token.metadata.imageUrl} alternativeText={`${token.metadata.name} image`} />
+                  <Image isCenteredHorizontally={true} fitType={'cover'} source={gridItem.imageUrl} alternativeText={`${gridItem.title} image`} />
                 </Box>
                 <Spacing variant={PaddingSize.Wide1} />
-                <Text variant='header3'>{`TOKEN #${token.tokenId}`}</Text>
+                <Text variant='header3'>{`TOKEN #${gridItem.tokenId}`}</Text>
                 <Spacing variant={PaddingSize.Wide1} />
                 <Text variant='preheading'>{'Name:'}</Text>
-                <Text variant='header1'>{`${token.metadata.name}`}</Text>
+                <Text variant='header1'>{`${gridItem.title}`}</Text>
                 <Spacing variant={PaddingSize.Wide1} />
-                <Text>{`DESCRIPTION: ${token.metadata.description}`}</Text>
+                <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
                 <Spacing variant={PaddingSize.Wide2} />
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${token.tokenId}`} text='OpenSea' />
-                  <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${token.tokenId}`} text='Etherscan' />
+                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='OpenSea' />
+                  <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='Etherscan' />
                 </Stack>
                 <Spacing variant={PaddingSize.Wide2} />
-                { (accounts === null || !tokenOwner) ? (
+                { (accounts === null || !gridItem.tokenId) ? (
                   <LoadingSpinner />
-                ) : (accounts.includes(tokenOwner)) ? (
+                ) : (accounts.includes(gridItem.ownerId)) ? (
                   <React.Fragment>
                     <Text>You are the owner. Update your Token&apos;s metadata here:</Text>
                     <Spacing variant={PaddingSize.Default} />
-                    { !isUpdating ? (
+                    { !hasStartedUpdated ? (
                       <Button variant='primary' text='Update your token' onClicked={onUpdateClicked} />
                     ) : (
-                      <Form onFormSubmitted={onUpdateMetadataClicked}>
+                      <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
                         <Stack direction={Direction.Vertical} shouldAddGutters={true}>
                           <SingleLineInput
                             inputType={InputType.Text}
-                            value={newName}
-                            onValueChanged={setNewName}
+                            value={newTitle}
+                            onValueChanged={setNewTitle}
                             inputWrapperVariant={inputState}
                             messageText={newTokenSettingResult?.message}
                             placeholderText='Name'
@@ -216,7 +195,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                       </Form>
                     )}
                   </React.Fragment>
-                ) : (<Text>{`Owned by: ${tokenOwner}`}</Text>
+                ) : (<Text>{`Owned by: ${gridItem.ownerId}`}</Text>
                 )}
               </Stack>
             </ResponsiveContainingView>

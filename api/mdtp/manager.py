@@ -44,8 +44,8 @@ class MdtpManager:
         self.contractTokenUriAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'tokenURI'][0]
         self.contractOwnerOfAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'ownerOf'][0]
 
-    async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
-        gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
+    async def retrieve_grid_item(self, tokenId: int) -> GridItem:
+        gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network='rinkeby')
         return gridItem
 
     async def list_grid_items(self) -> Sequence[GridItem]:
@@ -104,7 +104,7 @@ class MdtpManager:
         tokenMetadataResponse = await self.requester.make_request(method='GET', url=tokenMetadataUrl)
         tokenMetadataJson = json.loads(tokenMetadataResponse.text)
         ownerIdResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
-        ownerId = ownerIdResponse[0].strip()
+        ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
         title = tokenMetadataJson.get('title') or tokenMetadataJson.get('name') or ''
         # TODO(krishan711): pick a better default image
         imageUrl = tokenMetadataJson.get('imageUrl') or tokenMetadataJson.get('image') or ''
