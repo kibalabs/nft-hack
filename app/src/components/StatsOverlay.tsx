@@ -14,9 +14,11 @@ export const StatsOverlay = (): React.ReactElement => {
   const updateSats = () => {
     console.log("Stats func on front-end");
     mdtpClient.listStatItems().then((retrievedStatItems: StatItem[]): void => {      
-      setMarketCap(retrievedStatItems[0].data)
-      setTotalSales(retrievedStatItems[1].data)
-      setAveragePrice(retrievedStatItems[2].data) 
+      for (var i = 0; i < retrievedStatItems.length; i++) {        
+        if (retrievedStatItems[i].title === 'market_cap') setMarketCap(retrievedStatItems[i].data);
+        if (retrievedStatItems[i].title === 'total_sales') setTotalSales(retrievedStatItems[i].data);
+        if (retrievedStatItems[i].title === 'average_price') setAveragePrice(retrievedStatItems[i].data);
+      }
     })
   };
 
