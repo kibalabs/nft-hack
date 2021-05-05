@@ -16,7 +16,7 @@ export const StatsOverlay = (): React.ReactElement => {
     mdtpClient.listStatItems().then((retrievedStatItems: StatItem[]): void => {      
       setMarketCap(retrievedStatItems[0].data)
       setTotalSales(retrievedStatItems[1].data)
-      setAveragePrice(retrievedStatItems[2].data)
+      setAveragePrice(retrievedStatItems[2].data) 
     })
   };
 

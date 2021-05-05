@@ -52,11 +52,16 @@ class MdtpManager:
         gridItems = await self.retriever.list_grid_items()
         return gridItems
     
-    async def list_stat_items(self) -> Sequence[StatItem]:            
-        contract = '0xb7f7f6c52f2e2fdb1963eab30438024864c313f6' #TODO: Set correctly
-        response = await self.requester.get(url=f'https://api.opensea.io/api/v1/collections?asset_owner={contract}&offset=0&limit=300')        
-        responseJson = response.json() 
-        stats = responseJson[0].get('stats')        
+    async def list_stat_items(self) -> Sequence[StatItem]:
+        owner_contract = '0xce11d6fb4f1e006e5a348230449dc387fde850cc' # API requires us to look at the owner
+        token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3' # token contract address
+        response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')        
+        responseJson = response.json()
+        stats = None        
+        for responseElem in responseJson:
+          if responseElem.get('primary_asset_contracts')[0].get('address') == token_contract:
+            stats = responseElem.get('stats')
+            break        
         marketCapStat = StatItem(statItemId=0, title='market_cap', data=stats.get('market_cap'))
         totalSalesStat = StatItem(statItemId=1, title='total_sales', data=stats.get('total_sales'))
         averagePriceStat = StatItem(statItemId=2, title='average_price', data=stats.get('average_price'))
