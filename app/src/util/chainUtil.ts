@@ -8,15 +8,15 @@ export enum ChainId {
   Mumbai = 80001,
 }
 
-const chainIdNetworkMap: Record<ChainId, string> = {
+const validChainIdNetworkMap: Record<number, string> = {
   [ChainId.Rinkeby]: 'rinkeby',
   [ChainId.Mumbai]: 'mumbai',
 };
 
 export const getNetwork = (chainId: ChainId): string | null => {
-  return chainIdNetworkMap[chainId] || 'rinkeby';
+  return validChainIdNetworkMap[chainId] || 'rinkeby';
 };
 
 export const isValidChain = (chainId: ChainId): boolean => {
-  return chainIdNetworkMap[chainId] !== undefined;
+  return validChainIdNetworkMap[chainId] !== undefined;
 };
