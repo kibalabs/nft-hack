@@ -26,11 +26,11 @@ export const StatsOverlay = (): React.ReactElement => {
     <Box variant='overlay-bottomLeftCutoff' width={'200px'}>
       <Text variant='header6'>{'Stats'}</Text>
       <Text variant='paragraph'>{'Market Cap:'}</Text>
-      <Text variant='italic'>{`${marketCap}Ξ ($441.43M)`}</Text>
+      <Text variant='italic'>{`${marketCap}Ξ ($?M)`}</Text>
       <Text variant='paragraph'>{'Total sales:'}</Text>
       <Text variant='italic'>{`${totalSales}`}</Text>
       <Text variant='paragraph'>{'Average price:'}</Text>
-      <Text variant='italic'>{`${averagePrice}Ξ ($58,662.11)`}</Text>
+      <Text variant='italic'>{`${averagePrice}Ξ ($?)`}</Text>
       {/* <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-cart' />} target={'https://testnets.opensea.io/collection/mdtp-test-2?embed=true'} /> */}
       <Button variant={'primary'} text='UpdateSats' iconGutter={PaddingSize.None} onClicked={updateSats} />
       <Spacing variant={PaddingSize.Narrow} />      
