@@ -3,9 +3,11 @@ import React from 'react';
 import { Alignment, Box, Button, Direction, Image, Stack, Text } from '@kibalabs/ui-react';
 
 import { useAccounts, useOnLinkAccountsClicked } from '../accountsContext';
+import { useGlobals } from '../globalsContext';
 
 
 export const MetaMaskConnection = (): React.ReactElement => {
+  const { network } = useGlobals();
   const accounts = useAccounts();
   const onLinkAccountsClicked = useOnLinkAccountsClicked();
 
@@ -38,6 +40,7 @@ export const MetaMaskConnection = (): React.ReactElement => {
             <Image source='/assets/connected.svg' alternativeText={'Connected indicator'} />
           </Box>
           <Text variant='note'>{`${accounts.length} connected ${accounts.length > 1 ? 'accounts' : 'account'}`}</Text>
+          <Text variant='note'>{`(${network})`}</Text>
         </Stack>
       )}
     </Box>
