@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Text, Box, PaddingSize, Spacing, Button } from '@kibalabs/ui-react';
+import { Box, PaddingSize, Spacing, Text } from '@kibalabs/ui-react';
 
 import { StatItem } from '../client';
 import { useGlobals } from '../globalsContext';
@@ -11,16 +11,19 @@ export const StatsOverlay = (): React.ReactElement => {
   const [totalSales, setTotalSales] = React.useState<string>('0');
   const [averagePrice, setAveragePrice] = React.useState<string>('0');
 
-  const updateSats = () => {
-    console.log("Stats func on front-end");
-    mdtpClient.listStatItems().then((retrievedStatItems: StatItem[]): void => {      
-      for (var i = 0; i < retrievedStatItems.length; i++) {        
+  const updateStats = React.useCallback(async (): Promise<void> => {
+    mdtpClient.listStatItems().then((retrievedStatItems: StatItem[]): void => {
+      for (let i = 0; i < retrievedStatItems.length; i += 1) {
         if (retrievedStatItems[i].title === 'market_cap') setMarketCap(retrievedStatItems[i].data);
         if (retrievedStatItems[i].title === 'total_sales') setTotalSales(retrievedStatItems[i].data);
         if (retrievedStatItems[i].title === 'average_price') setAveragePrice(retrievedStatItems[i].data);
       }
-    })
-  };
+    });
+  }, [mdtpClient]);
+
+  React.useEffect((): void => {
+    updateStats();
+  }, [updateStats]);
 
   return (
     <Box variant='overlay-bottomLeftCutoff' width={'200px'}>
@@ -31,9 +34,7 @@ export const StatsOverlay = (): React.ReactElement => {
       <Text variant='italic'>{`${totalSales}`}</Text>
       <Text variant='paragraph'>{'Average price:'}</Text>
       <Text variant='italic'>{`${averagePrice}Ξ ($?)`}</Text>
-      {/* <Button variant={'primary'} text='' iconGutter={PaddingSize.None} iconRight={<KibaIcon iconId='ion-cart' />} target={'https://testnets.opensea.io/collection/mdtp-test-2?embed=true'} /> */}
-      <Button variant={'primary'} text='UpdateSats' iconGutter={PaddingSize.None} onClicked={updateSats} />
-      <Spacing variant={PaddingSize.Narrow} />      
+      <Spacing variant={PaddingSize.Narrow} />
     </Box>
   );
 };
