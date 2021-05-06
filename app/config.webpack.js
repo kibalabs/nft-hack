@@ -15,7 +15,10 @@ module.exports = (config) => {
   };
   config.plugins = [
     ...config.plugins,
-    new CreateRuntimeConfigPlugin({'KRT_CONTRACT_ADDRESS': process.env.KRT_CONTRACT_ADDRESS})
+    new CreateRuntimeConfigPlugin({
+      'KRT_CONTRACT_ADDRESS': process.env.KRT_CONTRACT_ADDRESS,
+      'KRT_API_URL': process.env.KRT_API_URL,
+    })
   ];
   return config;
 };

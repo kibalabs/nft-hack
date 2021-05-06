@@ -6,6 +6,7 @@ import Web3 from 'web3';
 import { Contract } from 'web3-eth-contract';
 
 import { MdtpClient } from './client';
+import { ChainId } from './util/chainUtil';
 
 
 export interface Globals {
@@ -14,7 +15,9 @@ export interface Globals {
   localStorageClient: LocalStorageClient;
   contract: Contract;
   contractAddress: string;
-  mdtpClient: MdtpClient;
+  apiClient: MdtpClient;
+  network: string;
+  chainId: ChainId;
 }
 
 export const GlobalsContext = React.createContext<Globals | null>(null);

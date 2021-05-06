@@ -8,33 +8,33 @@ export class MdtpClient extends ServiceClient {
     super(requester, baseUrl || 'https://mdtp-api.kibalabs.com');
   }
 
-  public listGridItems = async (): Promise<Resources.GridItem[]> => {
+  public listGridItems = async (network: string): Promise<Resources.GridItem[]> => {
     const method = RestMethod.GET;
-    const path = 'v1/grid-items';
+    const path = `v1/networks/${network}/grid-items`;
     const request = new Endpoints.ListGridItemsRequest();
     const response = await this.makeRequest(method, path, request, Endpoints.ListGridItemsResponse);
     return response.gridItems;
   }
 
-  public retrieveGridItem = async (tokenId: number): Promise<Resources.GridItem> => {
+  public retrieveGridItem = async (network: string, tokenId: number): Promise<Resources.GridItem> => {
     const method = RestMethod.POST;
-    const path = 'v1/retrieve-grid-item';
+    const path = `v1/networks/${network}/retrieve-grid-item`;
     const request = new Endpoints.RetrieveGridItemRequest(tokenId);
     const response = await this.makeRequest(method, path, request, Endpoints.RetrieveGridItemResponse);
     return response.gridItem;
   }
 
-  public listStatItems = async (): Promise<Resources.StatItem[]> => {
+  public listStatItems = async (network: string): Promise<Resources.StatItem[]> => {
     const method = RestMethod.GET;
-    const path = 'v1/stat-items';
+    const path = `v1/networks/${network}/stat-items`;
     const request = new Endpoints.ListStatItemsRequest();
     const response = await this.makeRequest(method, path, request, Endpoints.ListStatItemsResponse);
     return response.statItems;
   }
 
-  public generateImageUploadForToken = async (tokenId: number): Promise<Resources.PresignedUpload> => {
+  public generateImageUploadForToken = async (network: string, tokenId: number): Promise<Resources.PresignedUpload> => {
     const method = RestMethod.POST;
-    const path = `v1/tokens/${tokenId}/generate-image-upload`;
+    const path = `v1/networks/${network}/tokens/${tokenId}/generate-image-upload`;
     const request = new Endpoints.GenerateImageUploadForSiteVersionRequest();
     const response = await this.makeRequest(method, path, request, Endpoints.GenerateImageUploadForSiteVersionResponse);
     return response.presignedUpload;

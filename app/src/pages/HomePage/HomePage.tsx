@@ -9,22 +9,19 @@ import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
-
-enum ChainId {
-  Mainnet = 1,
-  Ropsten = 3,
-  Rinkeby = 4,
-  Goerli = 5,
-  Kovan = 42,
-}
+import { isValidChain } from '../../util/chainUtil';
 
 export const HomePage = (): React.ReactElement => {
-  const { web3, contract, mdtpClient } = useGlobals();
+  const { chainId, contract, apiClient, network } = useGlobals();
   const [errorText, setErrorText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
-    mdtpClient.listGridItems().then((retrievedGridItems: GridItem[]): void => {
+    apiClient.listGridItems(network).then((retrievedGridItems: GridItem[]): void => {
+      if (retrievedGridItems.length === 0) {
+        setGridItems([]);
+        return;
+      }
       const sortedGridItems = retrievedGridItems.sort((gridItem1: GridItem, gridItem2: GridItem): number => gridItem1.gridItemId - gridItem2.gridItemId);
       setGridItems(Array(10000).fill(null).map((_: unknown, index: number): GridItem => {
       // setGridItems(Array(1000).fill(null).map((_: unknown, index: number): GridItem => {
@@ -35,22 +32,18 @@ export const HomePage = (): React.ReactElement => {
       }));
       // setGridItems(retrievedGridItems);
     });
-  }, [mdtpClient]);
+  }, [network, apiClient]);
 
   React.useEffect((): void => {
     loadGridItems();
-    if (web3) {
-      web3.eth.getChainId().then((chainId: number): void => {
-        if (!contract) {
-          setErrorText('Install Metamask to buy a token!');
-        } else if (chainId !== ChainId.Rinkeby) {
-          setErrorText('We currently only support Rinkeby, please switch networks within Metamask and refresh');
-        } else {
-          setErrorText(null);
-        }
-      });
+    if (!contract) {
+      setErrorText('Install Metamask to buy a token!');
+    } else if (!isValidChain(chainId)) {
+      setErrorText('We currently only support Rinkeby and Mumbai. Please switch networks in Metamask and refresh');
+    } else {
+      setErrorText(null);
     }
-  }, [web3, contract, loadGridItems]);
+  }, [chainId, contract, loadGridItems]);
 
   const onGridItemClicked = (gridItem: GridItem) => {
     window.open(`/tokens/${gridItem.tokenId}`, '_blank');

@@ -19,6 +19,8 @@ from mdtp.image_manager import ImageManager
 from mdtp.core.util import date_util
 from mdtp.core.s3_manager import S3Manager
 from mdtp.core.s3_manager import S3PresignedUpload
+from mdtp.core.store.retriever import StringFieldFilter
+from mdtp.store.schema import GridItemsTable
 
 _KILOBYTE = 1024
 _MEGABYTE = _KILOBYTE * 1024
@@ -44,66 +46,72 @@ class MdtpManager:
         self.contractTokenUriAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'tokenURI'][0]
         self.contractOwnerOfAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'ownerOf'][0]
 
-    async def retrieve_grid_item(self, tokenId: int) -> GridItem:
-        gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network='rinkeby')
+    async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
+        gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         return gridItem
 
-    async def list_grid_items(self) -> Sequence[GridItem]:
-        gridItems = await self.retriever.list_grid_items()
+    async def list_grid_items(self, network: str) -> Sequence[GridItem]:
+        gridItems = await self.retriever.list_grid_items(fieldFilters=[StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)])
         return gridItems
 
-    async def list_stat_items(self) -> Sequence[StatItem]:
-        # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
-        # so we have to loop through their owned assets' contracts to find the correct one
-        owner_contract = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
-        token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3'
-        response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')
-        responseJson = response.json()
-        statsDict = None
-        for responseElem in responseJson: #
-          if responseElem.get('primary_asset_contracts')[0].get('address') == token_contract:
-            statsDict = responseElem.get('stats')
-            break
+    async def list_stat_items(self, network: str) -> Sequence[StatItem]:
         statItems = []
-        counter = 0
-        for statKey in statsDict.keys():
-          statItems.append(StatItem(statItemId=counter, title=statKey, data=statsDict.get(statKey)))
-          counter += 1
+        if network == 'rinkeby':
+            # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
+            # so we have to loop through their owned assets' contracts to find the correct one
+            owner_contract = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
+            token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3'
+            response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')
+            responseJson = response.json()
+            statsDict = None
+            for responseElem in responseJson:
+                if responseElem.get('primary_asset_contracts')[0].get('address') == token_contract:
+                    statsDict = responseElem.get('stats')
+                    break
+            if statsDict:
+                counter = 0
+                for statKey in statsDict.keys():
+                    statItems.append(StatItem(statItemId=counter, title=statKey, data=statsDict.get(statKey)))
+                    counter += 1
         return statItems
 
-    async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
-        presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/networks/rinkeby/tokens/{tokenId}/assets/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
+    async def generate_image_upload_for_token(self, network: str, tokenId: int) -> S3PresignedUpload:
+        presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/networks/{network}/tokens/{tokenId}/assets/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
 
-    async def update_tokens_deferred(self) -> None:
-        await self.workQueue.send_message(message=UpdateTokensMessageContent().to_message())
+    async def update_tokens_deferred(self, network: str) -> None:
+        await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message())
 
-    async def update_tokens(self) -> None:
-        tokenCountResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTotalSupplyMethodAbi, arguments={})
-        tokenCount = tokenCountResponse[0]
-        for tokenIndex in range(tokenCount):
-            await self.update_token(tokenId=(tokenIndex + 1))
+    async def update_tokens(self, network: str) -> None:
+        if network == 'rinkeby':
+            tokenCountResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTotalSupplyMethodAbi, arguments={})
+            tokenCount = tokenCountResponse[0]
+            for tokenIndex in range(tokenCount):
+                await self.update_token(network=network, tokenId=(tokenIndex + 1))
+        else:
+            raise Exception('Unknown network')
 
-    async def upload_token_image_deferred(self, tokenId: int) -> None:
-        await self.workQueue.send_message(message=UploadTokenImageMessageContent(tokenId=tokenId).to_message())
+    async def upload_token_image_deferred(self, network: str, tokenId: int) -> None:
+        await self.workQueue.send_message(message=UploadTokenImageMessageContent(network=network, tokenId=tokenId).to_message())
 
-    async def upload_token_image(self, tokenId: int) -> None:
+    async def upload_token_image(self, network: str, tokenId: int) -> None:
         logging.info(f'Uploading image for token {tokenId}')
-        network = 'rinkeby'
-        gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
+        gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         dateString = date_util.datetime_to_string(dt=date_util.datetime_from_now(), dateFormat='%Y-%m-%d-%H-%M-%S-%f')
         resizableImageUrl = await self.imageManager.upload_image_from_url(imageUrl=gridItem.imageUrl, filePath=f'/mdtp/tokens/{network}/{tokenId}/{dateString}')
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
 
-    async def update_token(self, tokenId: int) -> None:
-        network = 'rinkeby'
+    async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
-        tokenMetadataUrlResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
+        if network == 'rinkeby':
+            tokenMetadataUrlResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
+            ownerIdResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
+            ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
+        else:
+            raise Exception('Unknown network')
         tokenMetadataUrl = tokenMetadataUrlResponse[0].strip()
         tokenMetadataResponse = await self.requester.make_request(method='GET', url=tokenMetadataUrl)
         tokenMetadataJson = json.loads(tokenMetadataResponse.text)
-        ownerIdResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
-        ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
         title = tokenMetadataJson.get('title') or tokenMetadataJson.get('name') or ''
         # TODO(krishan711): pick a better default image
         imageUrl = tokenMetadataJson.get('imageUrl') or tokenMetadataJson.get('image') or ''

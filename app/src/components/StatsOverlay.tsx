@@ -6,20 +6,20 @@ import { StatItem } from '../client';
 import { useGlobals } from '../globalsContext';
 
 export const StatsOverlay = (): React.ReactElement => {
-  const { mdtpClient } = useGlobals();
+  const { apiClient, network } = useGlobals();
   const [marketCap, setMarketCap] = React.useState<string>('0');
   const [totalSales, setTotalSales] = React.useState<string>('0');
   const [averagePrice, setAveragePrice] = React.useState<string>('0');
 
   const updateStats = React.useCallback(async (): Promise<void> => {
-    mdtpClient.listStatItems().then((retrievedStatItems: StatItem[]): void => {
+    apiClient.listStatItems(network).then((retrievedStatItems: StatItem[]): void => {
       for (let i = 0; i < retrievedStatItems.length; i += 1) {
         if (retrievedStatItems[i].title === 'market_cap') setMarketCap(retrievedStatItems[i].data);
         if (retrievedStatItems[i].title === 'total_sales') setTotalSales(retrievedStatItems[i].data);
         if (retrievedStatItems[i].title === 'average_price') setAveragePrice(retrievedStatItems[i].data);
       }
     });
-  }, [mdtpClient]);
+  }, [apiClient, network]);
 
   React.useEffect((): void => {
     updateStats();
