@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigator } from '@kibalabs/core-react';
 import { Box, Button, KibaIcon, PaddingSize, Spacing } from '@kibalabs/ui-react';
 
-export const RightHandSideButtons = (): React.ReactElement => {
+export const ButtonsOverlay = (): React.ReactElement => {
   const navigator = useNavigator();
 
   const onAboutClicked = () => {

@@ -12,6 +12,7 @@ from mdtp.eth_client import EthClientInterface
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import GridItem
+from mdtp.model import StatItem
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
@@ -50,6 +51,25 @@ class MdtpManager:
     async def list_grid_items(self) -> Sequence[GridItem]:
         gridItems = await self.retriever.list_grid_items()
         return gridItems
+
+    async def list_stat_items(self) -> Sequence[StatItem]:
+        # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
+        # so we have to loop through their owned assets' contracts to find the correct one
+        owner_contract = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
+        token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3'
+        response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')
+        responseJson = response.json()
+        statsDict = None
+        for responseElem in responseJson: #
+          if responseElem.get('primary_asset_contracts')[0].get('address') == token_contract:
+            statsDict = responseElem.get('stats')
+            break
+        statItems = []
+        counter = 0
+        for statKey in statsDict.keys():
+          statItems.append(StatItem(statItemId=counter, title=statKey, data=statsDict.get(statKey)))
+          counter += 1
+        return statItems
 
     async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/networks/rinkeby/tokens/{tokenId}/assets/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
