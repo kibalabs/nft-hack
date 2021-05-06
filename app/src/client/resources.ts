@@ -34,6 +34,26 @@ export class GridItem {
   }
 }
 
+export class StatItem {
+  readonly statItemId: number;
+  readonly title: string;
+  readonly data: string;
+
+  public constructor(statItemId: number, title: string, data: string) {
+    this.statItemId = statItemId;
+    this.title = title;
+    this.data = data;
+  }
+
+  public static fromObject = (obj: Record<string, unknown>): StatItem => {
+    return new StatItem(
+      Number(obj.statItemId),
+      String(obj.title),
+      String(obj.data),
+    );
+  }
+}
+
 export class PresignedUpload {
   readonly url: string;
   readonly params: Record<string, string>;

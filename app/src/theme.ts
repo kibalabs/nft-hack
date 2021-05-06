@@ -40,6 +40,9 @@ export const buildMDTPTheme = (): ITheme => {
     bottomRightCutoff: {
       'border-radius': '0 0 1em 0',
     },
+    bottomLeftCutoff: {
+      'border-radius': '0 0 0 1em',
+    },
     tokenHeader: mergeThemePartial(defaultTheme.boxes.card, {
       'border-radius': '0',
     }),

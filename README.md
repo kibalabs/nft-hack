@@ -32,14 +32,15 @@ docker rm mdtpdb || true
 docker run --name mdtpdb -d -p 5432:5432 -e POSTGRES_PASSWORD=password postgres:12.5
 ```
 
-Run the scripts in ./dbschema in order (0, 1, 2).
-
 You should be able to login to your postgres (on something like https://tableplus.com/) with the credentials:
-host: `127.0.0.1`
-port: `5432`
-username: `postgres`
-password: `password`
-database: `mdtpdb`
+```
+host: 127.0.0.1
+port: 5432
+username: postgres
+password: password
+database: mdtpdb
+```
+Run the scripts in ./dbschema in order (0, 1, 2) within the SQL tab of TablePlus
 
 ### API
 
@@ -52,6 +53,7 @@ python3 -m venv .env
 ```
 source ./dbschema/export_db.vars
 cd ./api
+source .env/bin/activate
 pip install -r requirements.txt
 ./start-api-dev.sh
 ```

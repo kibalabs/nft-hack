@@ -13,3 +13,9 @@ class GridItem:
     imageUrl: str
     resizableImageUrl: Optional[str]
     ownerId: str
+
+@dataclasses.dataclass
+class StatItem:
+    statItemId: int
+    title: str
+    data: str
