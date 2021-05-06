@@ -4,8 +4,8 @@ import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/
 import { Helmet } from 'react-helmet';
 
 import { GridItem } from '../../client';
-import { StatsOverlay } from '../../components/StatsOverlay';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
+import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
