@@ -51,25 +51,24 @@ class MdtpManager:
     async def list_grid_items(self) -> Sequence[GridItem]:
         gridItems = await self.retriever.list_grid_items()
         return gridItems
-    
+
     async def list_stat_items(self) -> Sequence[StatItem]:
-        owner_contract = '0xce11d6fb4f1e006e5a348230449dc387fde850cc' # API requires us to look at the owner
-        token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3' # token contract address
-        response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')        
-        
+        # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
+        # so we have to loop through their owned assets' contracts to find the correct one
+        owner_contract = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
+        token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3'
+        response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')
         responseJson = response.json()
-        statsDict = None        
-        for responseElem in responseJson: # loop through contracts to find the correct one
+        statsDict = None
+        for responseElem in responseJson: #
           if responseElem.get('primary_asset_contracts')[0].get('address') == token_contract:
             statsDict = responseElem.get('stats')
             break
-        
         statItems = []
         counter = 0
-        for statKey in statsDict.keys(): # loop through dictionary to create our return list
+        for statKey in statsDict.keys():
           statItems.append(StatItem(statItemId=counter, title=statKey, data=statsDict.get(statKey)))
           counter += 1
-        
         return statItems
 
     async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
