@@ -30,6 +30,7 @@ generated/
 dist/
 build/
 tmp/
+output/
 
 # Python
 __pycache__/

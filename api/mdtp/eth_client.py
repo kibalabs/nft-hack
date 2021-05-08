@@ -57,6 +57,9 @@ class Web3EthClient(EthClientInterface):
     async def get_block(self, blockNumber: int) -> BlockData:
         return self.w3.eth.get_block(blockNumber)
 
+    async def get_transaction_count(self, address: str) -> int:
+        return self.w3.eth.get_transaction_count(address)
+
     async def get_transaction(self, transactionHash: str) -> TxData:
         return self.w3.eth.get_transaction(transactionHash)
 
@@ -99,6 +102,10 @@ class RestEthClient(EthClientInterface):
         response = await self._make_request(method='eth_getBlockByNumber', params=[hex(blockNumber), False])
         return method_formatters.PYTHONIC_RESULT_FORMATTERS['eth_getBlockByNumber'](response['result'])
 
+    async def get_transaction_count(self, address: str) -> TxData:
+        response = await self._make_request(method='eth_getTransactionCount', params=[address])
+        return method_formatters.PYTHONIC_RESULT_FORMATTERS['eth_getTransactionCount'](response['result'])
+
     async def get_transaction(self, transactionHash: str) -> TxData:
         response = await self._make_request(method='eth_getTransactionByHash', params=[transactionHash])
         return method_formatters.PYTHONIC_RESULT_FORMATTERS['eth_getTransactionByHash'](response['result'])
@@ -132,3 +139,27 @@ class RestEthClient(EthClientInterface):
         outputTypes = get_abi_output_types(abi=functionAbi)
         outputData = self.w3.codec.decode_abi(types=outputTypes, data=HexBytes(response['result']))
         return list(outputData)
+
+    def get_transaction_params(self, toAddress: str, contractAbi: ABI, functionAbi: ABIFunction, nonce: int, gasPrice: int = 2000000000000, gas: int = 90000, fromAddress: Optional[str] = None, arguments: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
+        data = encode_transaction_data(web3=self.w3, fn_identifier=functionAbi['name'], contract_abi=contractAbi, fn_abi=functionAbi, kwargs=(arguments or {}))
+        params = {
+            'from': fromAddress or '0x0000000000000000000000000000000000000000',
+            'to': toAddress,
+            'data': data,
+            'gas': gas,
+            'gasPrice': gasPrice,
+            'nonce': nonce,
+        }
+        return params
+
+    async def send_raw_transaction(self, transactionData: str, functionAbi: ABIFunction) -> List[Any]:
+        response = await self._make_request(method='eth_sendRawTransaction', params=[transactionData])
+        outputTypes = get_abi_output_types(abi=functionAbi)
+        outputData = self.w3.codec.decode_abi(types=outputTypes, data=HexBytes(response['result']))
+        return list(outputData)
+
+    async def send_transaction(self, toAddress: str, contractAbi: ABI, functionAbi: ABIFunction, nonce: int, privateKey: str, gasPrice: int = 2000000000000, gas: int = 90000, fromAddress: Optional[str] = None, arguments: Optional[Dict[str, Any]] = None) -> List[Any]:
+        params = self.get_transaction_params(toAddress=toAddress, nonce=nonce, fromAddress=fromAddress, contractAbi=contractAbi, functionAbi=functionAbi, arguments=arguments, gas=500000, gasPrice=1000000000)
+        signedParams = self.w3.eth.account.sign_transaction(transaction_dict=params, private_key=privateKey)
+        output = await self.send_raw_transaction(transactionData=signedParams.rawTransaction.hex(), functionAbi=functionAbi)
+        return output

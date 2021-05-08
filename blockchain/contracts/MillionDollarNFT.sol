@@ -15,7 +15,7 @@ contract MillionDollarNFT is ERC721, Ownable {
     Counters.Counter private _tokenIds;
 
     mapping (address => bool) public admins;
-    
+
     constructor() public ERC721("MillionDollarNFT", "MDNFT") { //💲💵💰
         admins[_msgSender()] = true;
     }
@@ -30,7 +30,7 @@ contract MillionDollarNFT is ERC721, Ownable {
         _;
     }
 
-    function mintNFT(address recipient, string memory tokenURI) public onlyAdmin returns (uint256){
+    function mintNFT(address recipient, string memory tokenURI) public onlyAdmin returns (uint256) {
         // TODO(krishan711): prevent more than 1000000
         _tokenIds.increment();
 
