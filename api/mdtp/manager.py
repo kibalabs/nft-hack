@@ -2,6 +2,7 @@ import json
 import logging
 from typing import Dict
 from typing import Sequence
+import uuid
 
 from web3 import Web3
 
@@ -78,8 +79,20 @@ class MdtpManager:
         return statItems
 
     async def generate_image_upload_for_token(self, network: str, tokenId: int) -> S3PresignedUpload:
-        presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/networks/{network}/tokens/{tokenId}/assets/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
+        presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
+
+    async def upload_metadata_for_token(self, network: str, tokenId: int, name: str, description: str, imageUrl: str) -> str:
+        data = {
+            'name': name or '',
+            'description': description or '',
+            # TODO(krishan711): make a better default
+            'imageUrl': imageUrl or '',
+        }
+        dataId = str(uuid.uuid4()).replace('-', '')
+        target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/d/{dataId}.json'
+        await self.s3Manager.write_file(content=json.dumps(data).encode(), targetPath=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE, contentType='application/json')
+        return target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
 
     async def update_tokens_deferred(self, network: str) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message())
@@ -95,7 +108,7 @@ class MdtpManager:
             raise Exception('Unknown network')
         tokenCountResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTotalSupplyMethodAbi, arguments={})
         tokenCount = tokenCountResponse[0]
-        for tokenIndex in range(8815, tokenCount):
+        for tokenIndex in range(tokenCount):
             await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
     async def upload_token_image_deferred(self, network: str, tokenId: int) -> None:

@@ -35,8 +35,16 @@ export class MdtpClient extends ServiceClient {
   public generateImageUploadForToken = async (network: string, tokenId: number): Promise<Resources.PresignedUpload> => {
     const method = RestMethod.POST;
     const path = `v1/networks/${network}/tokens/${tokenId}/generate-image-upload`;
-    const request = new Endpoints.GenerateImageUploadForSiteVersionRequest();
-    const response = await this.makeRequest(method, path, request, Endpoints.GenerateImageUploadForSiteVersionResponse);
+    const request = new Endpoints.GenerateImageUploadForTokenRequest();
+    const response = await this.makeRequest(method, path, request, Endpoints.GenerateImageUploadForTokenResponse);
     return response.presignedUpload;
+  }
+
+  public uploadMetadataForToken = async (network: string, tokenId: number, name: string, description: string, imageUrl: string): Promise<string> => {
+    const method = RestMethod.POST;
+    const path = `v1/networks/${network}/tokens/${tokenId}/upload-metadata`;
+    const request = new Endpoints.UploadMetadataForTokenRequest(name, description, imageUrl);
+    const response = await this.makeRequest(method, path, request, Endpoints.UploadMetadataForTokenResponse);
+    return response.url;
   }
 }
