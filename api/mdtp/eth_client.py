@@ -91,7 +91,7 @@ class RestEthClient(EthClientInterface):
         response = await self.requester.post_json(url=self.url, dataDict={'jsonrpc':'2.0', 'method': method, 'params': params, 'id': 0}, timeout=100)
         jsonResponse = response.json()
         if jsonResponse.get('error'):
-            raise BadRequestException(message=jsonResponse['error']['message'])
+            raise BadRequestException(message=jsonResponse['error'].get('message') or jsonResponse['error'].get('details') or json.dumps(jsonResponse['error']))
         return jsonResponse
 
     async def get_latest_block_number(self) -> int:
@@ -103,7 +103,7 @@ class RestEthClient(EthClientInterface):
         return method_formatters.PYTHONIC_RESULT_FORMATTERS['eth_getBlockByNumber'](response['result'])
 
     async def get_transaction_count(self, address: str) -> TxData:
-        response = await self._make_request(method='eth_getTransactionCount', params=[address])
+        response = await self._make_request(method='eth_getTransactionCount', params=[address, 'latest'])
         return method_formatters.PYTHONIC_RESULT_FORMATTERS['eth_getTransactionCount'](response['result'])
 
     async def get_transaction(self, transactionHash: str) -> TxData:
@@ -159,7 +159,7 @@ class RestEthClient(EthClientInterface):
         return list(outputData)
 
     async def send_transaction(self, toAddress: str, contractAbi: ABI, functionAbi: ABIFunction, nonce: int, privateKey: str, gasPrice: int = 2000000000000, gas: int = 90000, fromAddress: Optional[str] = None, arguments: Optional[Dict[str, Any]] = None) -> List[Any]:
-        params = self.get_transaction_params(toAddress=toAddress, nonce=nonce, fromAddress=fromAddress, contractAbi=contractAbi, functionAbi=functionAbi, arguments=arguments, gas=500000, gasPrice=1000000000)
+        params = self.get_transaction_params(toAddress=toAddress, contractAbi=contractAbi, functionAbi=functionAbi, nonce=nonce, gasPrice=gasPrice, gas=gas, fromAddress=fromAddress, arguments=arguments)
         signedParams = self.w3.eth.account.sign_transaction(transaction_dict=params, private_key=privateKey)
         output = await self.send_raw_transaction(transactionData=signedParams.rawTransaction.hex(), functionAbi=functionAbi)
         return output

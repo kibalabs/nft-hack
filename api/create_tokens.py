@@ -13,6 +13,8 @@ from mdtp.core.requester import Requester
 from mdtp.core.s3_manager import S3Manager
 from mdtp.eth_client import RestEthClient
 
+GWEI = 1000000000
+
 def crop(imagePath: str, outputDirectory: str, height: int, width: int):
     if not os.path.exists(outputDirectory):
         os.makedirs(outputDirectory)
@@ -31,8 +33,10 @@ def crop(imagePath: str, outputDirectory: str, height: int, width: int):
 @click.option('-i', '--image-path', 'imagePath', required=True, type=str)
 @click.option('-n', '--name', 'name', required=True, type=str)
 async def run(imagePath: str, name: str):
-    CONTRACT_ADDRESS = os.environ['CONTRACT_ADDRESS']
-    ALCHEMY_URL = os.environ['ALCHEMY_URL']
+    # CONTRACT_ADDRESS = os.environ['RINKEBY_CONTRACT_ADDRESS']
+    CONTRACT_ADDRESS = os.environ['MUMBAI_CONTRACT_ADDRESS']
+    # ETH_CLIENT_URL = os.environ['ALCHEMY_URL']
+    ETH_CLIENT_URL = 'https://matic-mumbai.chainstacklabs.com'
     ACCOUNT_ADDRESS = os.environ['ACCOUNT_ADDRESS']
     PRIVATE_KEY = os.environ['PRIVATE_KEY']
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
@@ -50,24 +54,23 @@ async def run(imagePath: str, name: str):
     #     await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{name}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
     w3 = Web3()
     requester = Requester()
-    ethClient = RestEthClient(url=ALCHEMY_URL, requester=requester)
+    ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
     with open('./MillionDollarNFT.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
     contractAbi = contractJson['abi']
     contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=contractAbi)
-    # contractMintNFTMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'mintNFT'][0]
+    contractMintNFTMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'mintNFT'][0]
     contractTotalSupplyMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'totalSupply'][0]
     contractTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'tokenURI'][0]
     contractSetTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'setTokenURI'][0]
     nonce = await ethClient.get_transaction_count(address=ACCOUNT_ADDRESS)
+    print('nonce', nonce)
     nonceIncrement = 0
-    currentTokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
-    for index in range(10000):
+    tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
+    for index in range(8990, 10000):
         tokenId = index + 1
-        if tokenId == 25:
-            continue
         tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
-        if index < currentTokenCount:
+        if tokenId <= tokenCount:
             currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
             if currentTokenUri != tokenUri:
                 print(f'Updating token {tokenId}', nonce + nonceIncrement)
@@ -75,17 +78,16 @@ async def run(imagePath: str, name: str):
                     'tokenId': tokenId,
                     'tokenURI': tokenUri,
                 }
-                output = await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=500000, gasPrice=1000000000, privateKey=PRIVATE_KEY)
+                output = await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=50000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
                 nonceIncrement += 1
         else:
             print(f'Creating token {tokenId}', nonce + nonceIncrement)
-            # data = {
-            #     'recipient': ACCOUNT_ADDRESS,
-            #     'tokenURI': tokenUri,
-            # }
-            # output = await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractMintNFTMethodAbi, arguments=data, gas=500000, gasPrice=1000000000, privateKey=PRIVATE_KEY)
-            # nonceIncrement += 1
-            return
+            data = {
+                'recipient': ACCOUNT_ADDRESS,
+                'tokenURI': tokenUri,
+            }
+            output = await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractMintNFTMethodAbi, arguments=data, gas=300000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+            nonceIncrement += 1
     await requester.close_connections()
 
 
