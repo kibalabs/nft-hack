@@ -29,16 +29,18 @@ _CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, ethClient: EthClientInterface, workQueue: SqsMessageQueue, imageManager: ImageManager, contractAddress: str, contractJson: Dict):
+    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, rinkebyEthClient: EthClientInterface, mumbaiEthClient: EthClientInterface, workQueue: SqsMessageQueue, imageManager: ImageManager, rinkebyContractAddress: str, mumbaiContractAddress: str, contractJson: Dict):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
         self.saver = saver
         self.s3Manager = s3Manager
-        self.ethClient = ethClient
+        self.rinkebyEthClient = rinkebyEthClient
+        self.mumbaiEthClient = mumbaiEthClient
         self.workQueue = workQueue
         self.imageManager = imageManager
-        self.contractAddress = contractAddress
+        self.rinkebyContractAddress = rinkebyContractAddress
+        self.mumbaiContractAddress = mumbaiContractAddress
         self.contractAbi = contractJson['abi']
         self.contract = self.w3.eth.contract(address='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', abi=self.contractAbi)
         self.contractTotalSupplyEvent = self.contract.events.Transfer()
@@ -84,12 +86,17 @@ class MdtpManager:
 
     async def update_tokens(self, network: str) -> None:
         if network == 'rinkeby':
-            tokenCountResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTotalSupplyMethodAbi, arguments={})
-            tokenCount = tokenCountResponse[0]
-            for tokenIndex in range(tokenCount):
-                await self.update_token(network=network, tokenId=(tokenIndex + 1))
+            ethClient = self.rinkebyEthClient
+            contractAddress = self.rinkebyContractAddress
+        elif network == 'mumbai':
+            ethClient = self.mumbaiEthClient
+            contractAddress = self.mumbaiContractAddress
         else:
             raise Exception('Unknown network')
+        tokenCountResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTotalSupplyMethodAbi, arguments={})
+        tokenCount = tokenCountResponse[0]
+        for tokenIndex in range(8815, tokenCount):
+            await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
     async def upload_token_image_deferred(self, network: str, tokenId: int) -> None:
         await self.workQueue.send_message(message=UploadTokenImageMessageContent(network=network, tokenId=tokenId).to_message())
@@ -104,11 +111,16 @@ class MdtpManager:
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
         if network == 'rinkeby':
-            tokenMetadataUrlResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
-            ownerIdResponse = await self.ethClient.call_function(toAddress=self.contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
-            ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
+            ethClient = self.rinkebyEthClient
+            contractAddress = self.rinkebyContractAddress
+        elif network == 'mumbai':
+            ethClient = self.mumbaiEthClient
+            contractAddress = self.mumbaiContractAddress
         else:
             raise Exception('Unknown network')
+        tokenMetadataUrlResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
+        ownerIdResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
+        ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
         tokenMetadataUrl = tokenMetadataUrlResponse[0].strip()
         tokenMetadataResponse = await self.requester.make_request(method='GET', url=tokenMetadataUrl)
         tokenMetadataJson = json.loads(tokenMetadataResponse.text)
@@ -121,11 +133,11 @@ class MdtpManager:
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
             gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, ownerId=ownerId)
-            await self.upload_token_image_deferred(tokenId=tokenId)
+            await self.upload_token_image_deferred(network=network, tokenId=tokenId)
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
-            await self.upload_token_image_deferred(tokenId=tokenId)
+            await self.upload_token_image_deferred(network=network, tokenId=tokenId)
         if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, ownerId=ownerId)
