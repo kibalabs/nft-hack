@@ -52,7 +52,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     const title = newTitle != null ? newTitle : gridItem.title;
     const description = newDescription != null ? newDescription : gridItem.description;
     const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
-    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title, description, image);
+    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title || '', description || '', image || '');
 
     setNewTokenSettingResult(null);
     const tokenId = Number(props.tokenId);
