@@ -79,11 +79,19 @@ export const App = hot((): React.ReactElement => {
     setAccounts(await web3.eth.getAccounts());
   };
 
+  const getChainId = async (): Promise<void> => {
+    if (web3) {
+      web3.eth.getChainId().then((retrievedChainId: number): void => {
+        setChainId(retrievedChainId);
+      });
+    } else {
+      setChainId(ChainId.Rinkeby);
+    }
+  };
+
   useInitialization((): void => {
     getAccounts();
-    web3.eth.getChainId().then((retrievedChainId: number): void => {
-      setChainId(retrievedChainId);
-    });
+    getChainId();
   });
 
   React.useEffect((): void => {
