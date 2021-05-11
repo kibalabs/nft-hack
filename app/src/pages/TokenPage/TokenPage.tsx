@@ -49,11 +49,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
 
     setIsUpdating(true);
-    // const title = newTitle != null ? newTitle : gridItem.title;
-    // const description = newDescription != null ? newDescription : gridItem.description;
-    // const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
-    // TODO(krishan711): upload this new metadata somewhere and set it as tokenMetadataUrl
-    const tokenMetadataUrl = await contract.methods.tokenURI(gridItem.tokenId).call();
+    const title = newTitle != null ? newTitle : gridItem.title;
+    const description = newDescription != null ? newDescription : gridItem.description;
+    const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
+    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title || '', description || '', image || '');
 
     setNewTokenSettingResult(null);
     const tokenId = Number(props.tokenId);
@@ -163,7 +162,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                             value={newTitle}
                             onValueChanged={setNewTitle}
                             inputWrapperVariant={inputState}
-                            messageText={newTokenSettingResult?.message}
                             placeholderText='Name'
                           />
                           <SingleLineInput
@@ -171,7 +169,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                             value={newDescription}
                             onValueChanged={setNewDescription}
                             inputWrapperVariant={inputState}
-                            messageText={newTokenSettingResult?.message}
                             placeholderText='Description'
                           />
                           {isUploadingImage ? (

@@ -86,3 +86,11 @@ class GenerateImageUploadForTokenRequest(BaseModel):
 
 class GenerateImageUploadForTokenResponse(BaseModel):
     presignedUpload: ApiPresignedUpload
+
+class UploadMetadataForTokenRequest(BaseModel):
+    name: str
+    description: str
+    imageUrl: str
+
+class UploadMetadataForTokenResponse(BaseModel):
+    url: str

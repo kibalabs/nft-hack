@@ -76,14 +76,14 @@ export class ListStatItemsResponse extends ResponseData {
   }
 }
 
-export class GenerateImageUploadForSiteVersionRequest extends RequestData {
+export class GenerateImageUploadForTokenRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {
     };
   }
 }
 
-export class GenerateImageUploadForSiteVersionResponse extends ResponseData {
+export class GenerateImageUploadForTokenResponse extends ResponseData {
   readonly presignedUpload: Resources.PresignedUpload;
 
   public constructor(presignedUpload: Resources.PresignedUpload) {
@@ -91,9 +91,45 @@ export class GenerateImageUploadForSiteVersionResponse extends ResponseData {
     this.presignedUpload = presignedUpload;
   }
 
-  public static fromObject = (obj: Record<string, unknown>): GenerateImageUploadForSiteVersionResponse => {
-    return new GenerateImageUploadForSiteVersionResponse(
+  public static fromObject = (obj: Record<string, unknown>): GenerateImageUploadForTokenResponse => {
+    return new GenerateImageUploadForTokenResponse(
       Resources.PresignedUpload.fromObject(obj.presignedUpload as Record<string, unknown>),
+    );
+  }
+}
+
+export class UploadMetadataForTokenRequest extends RequestData {
+  readonly name: string;
+  readonly description: string;
+  readonly imageUrl: string;
+
+  public constructor(name: string, description: string, imageUrl: string) {
+    super();
+    this.name = name;
+    this.description = description;
+    this.imageUrl = imageUrl;
+  }
+
+  public toObject = (): Record<string, unknown> => {
+    return {
+      name: this.name,
+      description: this.description,
+      imageUrl: this.imageUrl,
+    };
+  }
+}
+
+export class UploadMetadataForTokenResponse extends ResponseData {
+  readonly url: string;
+
+  public constructor(url: string) {
+    super();
+    this.url = url;
+  }
+
+  public static fromObject = (obj: Record<string, unknown>): UploadMetadataForTokenResponse => {
+    return new UploadMetadataForTokenResponse(
+      String(obj.url),
     );
   }
 }
