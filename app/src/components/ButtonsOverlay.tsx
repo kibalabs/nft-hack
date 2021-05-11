@@ -21,7 +21,7 @@ export const ButtonsOverlay = (): React.ReactElement => {
         <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/ffRPTSj2'} />
         <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-share' />} onClicked={onShareClicked} />
         <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-cart' />} target={'https://testnets.opensea.io/collection/mdtp-test-2?embed=true'} />
-        <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-help' />} onClicked={onAboutClicked} />        
+        <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-help' />} onClicked={onAboutClicked} />
       </Stack>
     </Box>
   );

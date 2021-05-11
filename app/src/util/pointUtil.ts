@@ -41,3 +41,7 @@ export const floorPoint = (point: Point): Point => {
 export const arePointsEqual = (point1: Point, point2: Point): boolean => {
   return point1.x === point2.x && point1.y === point2.y;
 };
+
+export const arePointRangesEqual = (pointRange1: PointRange, pointRange2: PointRange): boolean => {
+  return arePointsEqual(pointRange1.topLeft, pointRange2.topLeft) && arePointsEqual(pointRange1.bottomRight, pointRange2.bottomRight);
+};
