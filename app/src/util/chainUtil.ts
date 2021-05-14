@@ -10,7 +10,7 @@ export enum ChainId {
 
 const validChainIdNetworkMap: Record<number, string> = {
   [ChainId.Rinkeby]: 'rinkeby',
-  [ChainId.Mumbai]: 'mumbai',
+  // [ChainId.Mumbai]: 'mumbai',
 };
 
 export const getNetwork = (chainId: ChainId): string | null => {
