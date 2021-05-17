@@ -94,3 +94,9 @@ class UploadMetadataForTokenRequest(BaseModel):
 
 class UploadMetadataForTokenResponse(BaseModel):
     url: str
+
+class GetImageRequest(BaseModel):
+    pass
+
+class GetImageResponse(BaseModel):
+    pass
