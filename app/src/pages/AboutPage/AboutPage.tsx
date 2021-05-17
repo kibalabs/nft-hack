@@ -1,13 +1,14 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, KibaIcon, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Button, Direction, KibaIcon, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, LayerContainer } from '@kibalabs/ui-react';
+import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { Helmet } from 'react-helmet';
 
 export const AboutPage = (): React.ReactElement => {
   const navigator = useNavigator();
 
-  const onBackClicked = () => {
+  const onHomeClicked = () => {
     navigator.navigateTo('/');
   };
 
@@ -58,20 +59,25 @@ So come along and join us now by buying and sharing a piece of crypto history!
       <Helmet>
         <title>{'About | The Million Dollar Token Page'}</title>
       </Helmet>
-      <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        <Spacing variant={PaddingSize.Wide3} />
-        <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
-          <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
-            <Stack.Item alignment={Alignment.Start}>
-              <Button variant='secondary' onClicked={onBackClicked} text='Back' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
-            </Stack.Item>
-            <Text variant='header1'>{'About'}</Text>
-            <Spacing variant={PaddingSize.Wide3} />
-            <Markdown source={text} />
-          </Stack>
-        </ResponsiveContainingView>
-        <Spacing variant={PaddingSize.Wide3} />
-      </Stack>
+      <LayerContainer>
+        <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
+          <Spacing variant={PaddingSize.Wide3} />
+          <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
+            <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
+              <Stack.Item alignment={Alignment.Start}>
+                <Button variant='secondary' onClicked={onHomeClicked} text='Home' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
+              </Stack.Item>
+              <Text variant='header1'>{'About'}</Text>
+              <Spacing variant={PaddingSize.Wide3} />
+              <Markdown source={text} />
+            </Stack>
+          </ResponsiveContainingView>
+          <Spacing variant={PaddingSize.Wide3} />
+        </Stack>
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
+          <ButtonsOverlay />
+        </LayerContainer.Layer>
+      </LayerContainer>
     </React.Fragment>
   );
 };

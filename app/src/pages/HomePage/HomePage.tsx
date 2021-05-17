@@ -6,7 +6,6 @@ import { Helmet } from 'react-helmet';
 import { GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { NotificationOverlay } from '../../components/NotificationOverlay';
-import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
