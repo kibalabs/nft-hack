@@ -13,3 +13,26 @@ class GridItem:
     imageUrl: str
     resizableImageUrl: Optional[str]
     ownerId: str
+
+@dataclasses.dataclass
+class ImageSize:
+    width: int
+    height: int
+
+class ImageFormat:
+    JPG = "JPEG"
+    PNG = "PNG"
+    WEBP = "WEBP"
+
+@dataclasses.dataclass
+class Image:
+    imageId: str
+    content: str
+    size: ImageSize
+    imageFormat: str
+
+@dataclasses.dataclass
+class ImageVariant:
+    imageId: str
+    variantId: str
+    size: ImageSize
