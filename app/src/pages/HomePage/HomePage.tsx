@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet';
 
 import { GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
+import { NotificationOverlay } from '../../components/NotificationOverlay';
 import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
@@ -13,7 +14,7 @@ import { isValidChain } from '../../util/chainUtil';
 
 export const HomePage = (): React.ReactElement => {
   const { chainId, contract, apiClient, network } = useGlobals();
-  const [errorText, setErrorText] = React.useState<string | null>(null);
+  const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
@@ -37,11 +38,11 @@ export const HomePage = (): React.ReactElement => {
   React.useEffect((): void => {
     loadGridItems();
     if (!contract) {
-      setErrorText('Install Metamask to buy a token!');
-    } else if (!isValidChain(chainId)) {
-      setErrorText('We currently only support Rinkeby and Mumbai. Please switch networks in Metamask and refresh');
+      setInfoText('Please install Metamask to interact fully with the website');
+    } else if (!isValidChain(chainId)) { // arthur-fox: currently this case can never happen, as chainId is set to Rinkeby
+      setInfoText('We currently only support Rinkeby testnet. Please switch networks in Metamask and refresh');
     } else {
-      setErrorText(null);
+      setInfoText('BETA - this is a beta version currently running on the Rinkeby testnet.');
     }
   }, [chainId, contract, loadGridItems]);
 
@@ -60,18 +61,21 @@ export const HomePage = (): React.ReactElement => {
         ) : (
           <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
         )}
-        { errorText && (
-          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.Center}>
+        { infoText && (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Center}>
             <Box variant='overlay'>
-              <Text>{errorText}</Text>
+              <Text variant='error'>{infoText}</Text>
             </Box>
           </LayerContainer.Layer>
         )}
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-          <WelcomeOverlay />
+          <NotificationOverlay />
         </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <ButtonsOverlay />
+        </LayerContainer.Layer>
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+          <WelcomeOverlay />
         </LayerContainer.Layer>
       </LayerContainer>
     </React.Fragment>

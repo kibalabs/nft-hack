@@ -2,6 +2,7 @@ import json
 import logging
 from typing import Dict
 from typing import Sequence
+from typing import Optional
 import uuid
 
 from web3 import Web3
@@ -78,7 +79,7 @@ class MdtpManager:
                     counter += 1
         return statItems
 
-    async def generate_image_upload_for_token(self, network: str, tokenId: int) -> S3PresignedUpload:
+    async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
 
@@ -117,8 +118,8 @@ class MdtpManager:
     async def upload_token_image(self, network: str, tokenId: int) -> None:
         logging.info(f'Uploading image for token {tokenId}')
         gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
-        dateString = date_util.datetime_to_string(dt=date_util.datetime_from_now(), dateFormat='%Y-%m-%d-%H-%M-%S-%f')
-        resizableImageUrl = await self.imageManager.upload_image_from_url(imageUrl=gridItem.imageUrl, filePath=f'/mdtp/tokens/{network}/{tokenId}/{dateString}')
+        imageId = await self.imageManager.upload_image_from_url(url=gridItem.imageUrl)
+        resizableImageUrl = f'https://mdtp-api.kibalabs.com/v1/images/{imageId}/go'
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
 
     async def update_token(self, network: str, tokenId: int) -> None:
@@ -154,3 +155,6 @@ class MdtpManager:
         if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, ownerId=ownerId)
+
+    async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
+        return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)

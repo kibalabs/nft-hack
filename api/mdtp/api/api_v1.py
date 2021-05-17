@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import Request
 from fastapi import Response
 
@@ -38,5 +40,10 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     async def upload_metadata_for_token(network: str, tokenId: int, rawRequest: Request, response: Response, request: UploadMetadataForTokenRequest):
         url = await manager.upload_metadata_for_token(network=network, tokenId=tokenId, name=request.name, description=request.description, imageUrl=request.imageUrl)
         return UploadMetadataForTokenResponse(url=url)
+
+    @router.get('/images/{imageId}/go', response_model=GenerateImageUploadForTokenResponse)
+    async def go_to_image(imageId: str, rawRequest: Request, response: Response, w: Optional[int] = None, h: Optional[int] = None):
+        imageUrl = await manager.go_to_image(imageId=imageId, width=w, height=h)
+        return Response(status_code=301, headers={'location': imageUrl})
 
     return router
