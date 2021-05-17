@@ -6,7 +6,6 @@ import { Helmet } from 'react-helmet';
 import { GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { NotificationOverlay } from '../../components/NotificationOverlay';
-import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
@@ -68,9 +67,6 @@ export const HomePage = (): React.ReactElement => {
             </Box>
           </LayerContainer.Layer>
         )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.End}>
-          <StatsOverlay />
-        </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
           <NotificationOverlay />
         </LayerContainer.Layer>
