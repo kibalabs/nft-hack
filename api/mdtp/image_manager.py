@@ -1,4 +1,5 @@
 import logging
+from os import stat
 from typing import Dict
 import mimetypes
 import imghdr
@@ -8,7 +9,7 @@ from io import BytesIO
 
 from PIL import Image as PILImage
 
-from mdtp.model import ImageFormat, ImageSize, Image, ImageVariant
+from mdtp.model import ImageData, ImageFormat, ImageSize, Image, ImageVariant
 from mdtp.core.requester import Requester
 from mdtp.core.util import file_util
 from mdtp.core.exceptions import InternalServerErrorException, KibaException, NotFoundException
@@ -44,14 +45,20 @@ class ImageManager:
         response = await self.requester.post_json(url=url, dataDict=dataDict, headers={'authorization': f'Bearer {token}'})
         return response.json()
 
-    def _get_image_type(self, fileName: str) -> str:
+    def _get_image_type_from_file(self, fileName: str) -> str:
         imageType = imghdr.what(fileName)
         if not imageType:
             raise UnknownImageType
         return f'image/{imageType}'
 
-    async def upload_image_from_url(self, imageUrl: str) -> str:
-        # response = await self._make_post_request(url='https://api.sirv.com/v2/files/fetch', dataDict=[{'url': imageUrl, 'filename': filePath}])
+    def _get_image_type(self, content: str) -> str:
+        imageType = imghdr.what(content)
+        if not imageType:
+            raise UnknownImageType
+        return f'image/{imageType}'
+
+    async def upload_image_from_url(self, url: str) -> str:
+        # response = await self._make_post_request(url='https://api.sirv.com/v2/files/fetch', dataDict=[{'url': url, 'filename': filePath}])
         # imageResponse = response[0]
         # if not imageResponse['success']:
         #     logging.error(imageResponse)
@@ -59,32 +66,59 @@ class ImageManager:
         # return f'https://kibalabs.sirv.com{filePath}'
         imageId = str(uuid.uuid4()).replace('-', '')
         localFilePath = f'./tmp/{imageId}/download'
-        await self.requester.get(url=imageUrl, outputFilePath=localFilePath)
+        await self.requester.get(url=url, outputFilePath=localFilePath)
         # TODO(krishan711): save with extensions once implemented in pablo
-        # mimetype = self._get_image_type(fileName=localFilePath)
+        # mimetype = self._get_image_type_from_file(fileName=localFilePath)
         # extension = mimetypes.guess_extension(type=mimetype)
-        filePath = f'{imageId}/original'
-        await self.s3Manager.upload_file(filePath=localFilePath, targetPath=f'{_BUCKET}/{filePath}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
+        await self.s3Manager.upload_file(filePath=localFilePath, targetPath=f'{_BUCKET}/{imageId}/original', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
         # NOTE(krishan711): resizing below
-        image = None
-        imageSize = None
+        image = await self._load_image(imageId=imageId)
         for targetSize in _TARGET_SIZES:
-            if imageSize.width >= targetSize:
-                resizedImage = None
+            if image.size.width >= targetSize:
+                resizedImage = await self._resize_image(image=image, size=ImageSize(width=targetSize, height=targetSize * (image.size.height / image.size.width)))
                 resizedFilename = f'./tmp/{uuid.uuid4()}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
-                await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{filePath}/widths/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
-            if imageSize.height >= targetSize:
-                resizedImage = None
+                await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/widths/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
+            if image.size.height >= targetSize:
+                resizedImage = await self._resize_image(image=image, size=ImageSize(width=targetSize * (image.size.width / image.size.height), height=targetSize))
                 resizedFilename = f'./tmp/{uuid.uuid4()}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
-                await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{filePath}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
+                await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
+        return imageId
+
+    async def _save_image_to_file(self, image: Image, fileName: str) -> None:
+        if image.imageFormat == ImageFormat.JPG:
+            contentBuffer = BytesIO(image.content)
+            with PILImage.open(fp=contentBuffer) as pilImage, open(fileName, 'wb') as imageFile:
+                try:
+                    pilImage.save(fp=imageFile, format=image.imageFormat.replace('image/', ''), subsampling=0, quality=90, optimize=True)
+                except OSError as exception:
+                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}')
+            return
+        if image.imageFormat in {ImageFormat.PNG, ImageFormat.WEBP}:
+            contentBuffer = BytesIO(image.content)
+            with PILImage.open(fp=contentBuffer) as pilImage, open(fileName, 'wb') as imageFile:
+                try:
+                    pilImage.save(fp=imageFile, format=image.imageFormat.replace('image/', ''), optimize=True)
+                except OSError as exception:
+                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}')
+            return
+        raise KibaException(message=f'Cannot save image format to file: {image.imageFormat}')
+
+    async def _resize_image(self, image: ImageData, size: ImageSize) -> ImageData:
+        if image.imageFormat in {ImageFormat.JPG, ImageFormat.PNG, ImageFormat.WEBP}:
+            contentBuffer = BytesIO(image.content)
+            with PILImage.open(fp=contentBuffer) as pilImage:
+                pilImage = pilImage.resize(size=(size.width, size.height))
+                content = BytesIO()
+                pilImage.save(fp=content, format=image.imageFormat.replace('image/', ''))
+                return ImageData(content=content.getvalue(), size=size, imageFormat=image.imageFormat)
+        raise KibaException(message=f'Cannot determine image size from image format: {image.imageFormat}')
 
     async def get_image_url(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         image = await self._load_image(imageId=imageId)
-        if width is not None and height is not None:
-            imageVariants = self._load_image_variants(image=image)
-            print('imageVariants', imageVariants)
+        imageVariants = await self._load_image_variants(imageId=imageId, image=image)
+        if width is not None or height is not None:
             targetWidth = width or 0
             targetHeight = height or 0
             for imageVariant in imageVariants:
@@ -93,36 +127,37 @@ class ImageManager:
         return f'{_BASE_URL}/{imageId}/original'
 
     @staticmethod
-    def get_size(content: str, imageFormat: str):
+    def _get_image_size(content: str, imageFormat: str):
         if imageFormat in {ImageFormat.JPG, ImageFormat.PNG, ImageFormat.WEBP}:
             contentBuffer = BytesIO(content)
             with PILImage.open(fp=contentBuffer) as pilImage:
                 size = ImageSize(width=pilImage.size[0], height=pilImage.size[1])
-        else:
-            raise KibaException(message=f'Unknown image format: {imageFormat}')
-        return size
+            return size
+        raise KibaException(message=f'Cannot determine image size from image format: {imageFormat}')
 
-    async def _load_image(self, imageId: str) -> Image:
-        content = await self.requester.get(url=f'{_BASE_URL}/{imageId}/original').content
-        return self._load_image_from_content(imageId=imageId, content=content)
+    async def _load_image(self, imageId: str) -> ImageData:
+        response = await self.requester.get(url=f'{_BASE_URL}/{imageId}/original')
+        return self._load_image_from_content(content=response.content)
 
-    async def _load_image_from_file(self, filePath: str) -> Image:
+    async def _load_image_from_file(self, filePath: str) -> ImageData:
         content = await file_util.read_file(filePath=filePath)
         return self._load_image_from_content(content=content)
 
-    def _load_image_from_content(self, imageId: str, content: str) -> Image:
-        imageFormat = self._get_image_type(content=content)
-        size = self._get_size(content=content, imageFormat=imageFormat)
-        image = Image(imageId=imageId, content=content, size=size, imageFormat=imageFormat)
+    def _load_image_from_content(self, content: str) -> ImageData:
+        imageFormat = self._get_image_type(content=BytesIO(content))
+        size = self._get_image_size(content=content, imageFormat=imageFormat)
+        image = ImageData(content=content, size=size, imageFormat=imageFormat)
         return image
 
     # NOTE(krishan711): this needs the image because it uses the size. It can use imageId once its in a db
-    def _load_image_variants(self, image: Image) -> List[ImageVariant]:
-        variants = []
+    @staticmethod
+    async def _load_image_variants(imageId: str, image: ImageData) -> List[ImageVariant]:
+        variants: List[ImageVariant] = []
         for targetSize in _TARGET_SIZES:
             if image.size.width >= targetSize:
-                variants.append(ImageVariant(imageId=image.imageId, variantId=f'widths/{targetSize}', size=ImageSize(width=targetSize, height=targetSize * (image.size.height / image.size.width))))
+                variants.append(ImageVariant(imageId=imageId, variantId=f'widths/{targetSize}', size=ImageSize(width=targetSize, height=targetSize * (image.size.height / image.size.width)), imageFormat=image.imageFormat))
             if image.size.height >= targetSize:
-                variants.append(ImageVariant(imageId=image.imageId, variantId=f'heights/{targetSize}', size=ImageSize(height=targetSize, width=targetSize * (image.size.width / image.size.height))))
-        variants.append(ImageVariant(imageId=image.imageId, variantId='original', size=image.size))
+                variants.append(ImageVariant(imageId=imageId, variantId=f'heights/{targetSize}', size=ImageSize(height=targetSize, width=targetSize * (image.size.width / image.size.height)), imageFormat=image.imageFormat))
+        variants.append(ImageVariant(imageId=imageId, variantId='original', size=image.size, imageFormat=image.imageFormat))
+        variants = sorted(variants, key=lambda variant: variant.size.width * variant.size.height)
         return variants

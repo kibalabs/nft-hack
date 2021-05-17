@@ -26,14 +26,13 @@ class ImageSize:
     height: int
 
 class ImageFormat:
-    JPG = "JPEG"
-    PNG = "PNG"
-    WEBP = "WEBP"
+    JPG = "image/jpg"
+    PNG = "image/png"
+    WEBP = "image/webp"
 
 @dataclasses.dataclass
 class Image:
     imageId: str
-    content: str
     size: ImageSize
     imageFormat: str
 
@@ -41,4 +40,11 @@ class Image:
 class ImageVariant:
     imageId: str
     variantId: str
+    imageFormat: str
     size: ImageSize
+
+@dataclasses.dataclass
+class ImageData:
+    content: bytes
+    size: ImageSize
+    imageFormat: str

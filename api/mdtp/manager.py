@@ -118,7 +118,8 @@ class MdtpManager:
     async def upload_token_image(self, network: str, tokenId: int) -> None:
         logging.info(f'Uploading image for token {tokenId}')
         gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
-        resizableImageUrl = await self.imageManager.upload_image_from_url(imageUrl=gridItem.imageUrl)
+        imageId = await self.imageManager.upload_image_from_url(url=gridItem.imageUrl)
+        resizableImageUrl = f'https://mdtp-api.kibalabs.com/v1/images/{imageId}/go'
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
 
     async def update_token(self, network: str, tokenId: int) -> None:
@@ -156,4 +157,4 @@ class MdtpManager:
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, ownerId=ownerId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
-        return self.imageManager.get_image_url(imageId=imageId, width=width, height=height)
+        return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)
