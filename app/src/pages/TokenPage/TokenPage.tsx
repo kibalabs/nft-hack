@@ -1,13 +1,13 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text, LayerContainer } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
 import { GridItem, PresignedUpload } from '../../client';
-import { Dropzone } from '../../components/dropzone';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
+import { Dropzone } from '../../components/dropzone';
 import { useGlobals } from '../../globalsContext';
 
 export type TokenPageProps = {
@@ -75,7 +75,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
   };
 
-  const onHomeClicked = () => {    
+  const onHomeClicked = () => {
     navigator.navigateTo('/');
   };
 

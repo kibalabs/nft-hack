@@ -1,9 +1,10 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, KibaIcon, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, LayerContainer } from '@kibalabs/ui-react';
-import { ButtonsOverlay } from '../../components/ButtonsOverlay';
+import { Alignment, Button, Direction, KibaIcon, LayerContainer, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
+
+import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 
 export const AboutPage = (): React.ReactElement => {
   const navigator = useNavigator();
