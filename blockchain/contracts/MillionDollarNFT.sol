@@ -1,52 +1,52 @@
-//Contract based on https://docs.openzeppelin.com/contracts/3.x/erc721
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
+pragma solidity ^0.8.4;
 
 // import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-// import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-// import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
-
-contract MillionDollarNFT is ERC721, Ownable {
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+contract AdminManageable {
 
     mapping (address => bool) public admins;
-
-    constructor() public ERC721("MillionDollarNFT", "MDNFT") { //💲💵💰
-        admins[_msgSender()] = true;
-    }
 
     modifier onlyAdmin() {
         require(admins[msg.sender], "Admin: caller is not a valid admin");
         _;
     }
 
+    function setAdmin(address admin, bool state) public onlyAdmin {
+        admins[admin] = state;
+    }
+
+}
+
+// NOTE(krishan711): maybe we can make a UserMintable contract?
+
+
+contract MillionDollarTokenPage is ERC721, AdminManageable {
+
     modifier onlyTokenOwner(uint256 tokenId) {
         require(ownerOf(tokenId) == _msgSender(), "Ownable: caller is not the tokenOwner");
         _;
     }
 
-    function mintNFT(address recipient, string memory tokenURI) public onlyAdmin returns (uint256) {
-        // TODO(krishan711): prevent more than 1000000
-        _tokenIds.increment();
-
-        uint256 newItemId = _tokenIds.current();
-        _mint(recipient, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-
-        return newItemId;
+    constructor() ERC721("MillionDollarTokenPage", "\u22A1") {
+        ERC721._setBaseURI("https://api.milliondollartokenpage.com/contract-base/");
+        setAdmin(_msgSender(), true);
     }
 
-    function setTokenURI(uint256 tokenId, string memory tokenURI) onlyTokenOwner(tokenId) public {
-        _setTokenURI(tokenId, tokenURI);
+    function mintNFT(address recipient, uint256 tokenId) public onlyAdmin returns (uint256) {
+        require(!ERC721._exists(tokenId));
+        require(tokenId > 0 && tokenId <= 10000);
+        ERC721._mint(recipient, tokenId);
+        return tokenId;
     }
 
-    function setAdmin(address admin, bool state) onlyAdmin public {
-        admins[admin] = state;
+    // function setTokenURI(uint256 tokenId, string memory tokenURI) onlyTokenOwner(tokenId) public {
+    //     _setTokenURI(tokenId, tokenURI);
+    // }
+
+    function totalSupply() public pure returns (uint256) {
+        return 10000;
     }
 
 }
