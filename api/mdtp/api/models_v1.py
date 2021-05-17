@@ -66,3 +66,9 @@ class GenerateImageUploadForTokenRequest(BaseModel):
 
 class GenerateImageUploadForTokenResponse(BaseModel):
     presignedUpload: ApiPresignedUpload
+
+class GetImageRequest(BaseModel):
+    pass
+
+class GetImageResponse(BaseModel):
+    pass

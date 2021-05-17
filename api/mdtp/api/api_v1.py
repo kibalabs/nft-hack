@@ -29,4 +29,9 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         presignedUpload = await manager.generate_image_upload_for_token(tokenId=tokenId)
         return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_presigned_upload(presignedUpload=presignedUpload))
 
+    @router.get('/images/{imageId}/go', response_model=GenerateImageUploadForTokenResponse)
+    async def go_to_image(imageId: str, rawRequest: Request, response: Response, w: Optional[int] = None, h: Optional[int] = None):
+        imageUrl = await manager.go_to_image(imageId=imageId, width=w, height=h)
+        return Response(status_code=301, headers={'location': imageUrl})
+
     return router

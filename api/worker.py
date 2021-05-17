@@ -34,7 +34,7 @@ async def main():
     ethClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
     with open('./MillionDollarNFT.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
-    imageManager = ImageManager(requester=requester, sirvKey=os.environ['SIRV_KEY'], sirvSecret=os.environ['SIRV_SECRET'])
+    imageManager = ImageManager(requester=requester, s3Manager=s3Manager, sirvKey=os.environ['SIRV_KEY'], sirvSecret=os.environ['SIRV_SECRET'])
     manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, ethClient=ethClient, workQueue=workQueue, imageManager=imageManager, contractAddress='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', contractJson=contractJson)
 
     processor = MdtpMessageProcessor(manager=manager)
