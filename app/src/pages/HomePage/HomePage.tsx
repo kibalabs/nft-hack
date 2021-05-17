@@ -67,9 +67,6 @@ export const HomePage = (): React.ReactElement => {
             </Box>
           </LayerContainer.Layer>
         )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
-          <StatsOverlay />
-        </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
           <WelcomeOverlay />
         </LayerContainer.Layer>

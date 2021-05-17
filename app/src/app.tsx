@@ -11,6 +11,7 @@ import { provider as Web3Provider } from 'web3-core';
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
+import { StatsOverlay } from './components/StatsOverlay';
 import MDTContract from './contracts/MillionDollarNFT.json';
 import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
@@ -109,13 +110,11 @@ export const App = hot((): React.ReactElement => {
               <Route path='/tokens/:tokenId' page={TokenPage} />
               <Route path='/about' page={AboutPage} />
             </Router>
-            <LayerContainer.Layer
-              isFullHeight={false}
-              isFullWidth={false}
-              alignmentVertical={Alignment.End}
-              alignmentHorizontal={Alignment.Start}
-            >
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
+            </LayerContainer.Layer>
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
+              <StatsOverlay />
             </LayerContainer.Layer>
           </LayerContainer>
         </AccountControlProvider>
