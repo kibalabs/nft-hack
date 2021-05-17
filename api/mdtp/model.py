@@ -15,6 +15,12 @@ class GridItem:
     ownerId: str
 
 @dataclasses.dataclass
+class StatItem:
+    statItemId: int
+    title: str
+    data: str
+
+@dataclasses.dataclass
 class ImageSize:
     width: int
     height: int

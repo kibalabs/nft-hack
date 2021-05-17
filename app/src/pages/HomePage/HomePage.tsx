@@ -4,26 +4,25 @@ import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/
 import { Helmet } from 'react-helmet';
 
 import { GridItem } from '../../client';
-import { RightHandSideButtons } from '../../components/RightHandSideButtons';
+import { ButtonsOverlay } from '../../components/ButtonsOverlay';
+import { NotificationOverlay } from '../../components/NotificationOverlay';
+import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
-
-enum ChainId {
-  Mainnet = 1,
-  Ropsten = 3,
-  Rinkeby = 4,
-  Goerli = 5,
-  Kovan = 42,
-}
+import { isValidChain } from '../../util/chainUtil';
 
 export const HomePage = (): React.ReactElement => {
-  const { web3, contract, mdtpClient } = useGlobals();
-  const [errorText, setErrorText] = React.useState<string | null>(null);
+  const { chainId, contract, apiClient, network } = useGlobals();
+  const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
-    mdtpClient.listGridItems().then((retrievedGridItems: GridItem[]): void => {
+    apiClient.listGridItems(network).then((retrievedGridItems: GridItem[]): void => {
+      if (retrievedGridItems.length === 0) {
+        setGridItems([]);
+        return;
+      }
       const sortedGridItems = retrievedGridItems.sort((gridItem1: GridItem, gridItem2: GridItem): number => gridItem1.gridItemId - gridItem2.gridItemId);
       setGridItems(Array(10000).fill(null).map((_: unknown, index: number): GridItem => {
       // setGridItems(Array(1000).fill(null).map((_: unknown, index: number): GridItem => {
@@ -34,22 +33,18 @@ export const HomePage = (): React.ReactElement => {
       }));
       // setGridItems(retrievedGridItems);
     });
-  }, [mdtpClient]);
+  }, [network, apiClient]);
 
   React.useEffect((): void => {
     loadGridItems();
-    if (web3) {
-      web3.eth.getChainId().then((chainId: number): void => {
-        if (!contract) {
-          setErrorText('Install Metamask to buy a token!');
-        } else if (chainId !== ChainId.Rinkeby) {
-          setErrorText('We currently only support Rinkeby, please switch networks within Metamask and refresh');
-        } else {
-          setErrorText(null);
-        }
-      });
+    if (!contract) {
+      setInfoText('Please install Metamask to interact fully with the website');
+    } else if (!isValidChain(chainId)) { // arthur-fox: currently this case can never happen, as chainId is set to Rinkeby
+      setInfoText('We currently only support Rinkeby testnet. Please switch networks in Metamask and refresh');
+    } else {
+      setInfoText('BETA - this is a beta version currently running on the Rinkeby testnet.');
     }
-  }, [web3, contract, loadGridItems]);
+  }, [chainId, contract, loadGridItems]);
 
   const onGridItemClicked = (gridItem: GridItem) => {
     window.open(`/tokens/${gridItem.tokenId}`, '_blank');
@@ -66,18 +61,24 @@ export const HomePage = (): React.ReactElement => {
         ) : (
           <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
         )}
-        { errorText && (
-          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.Center}>
+        { infoText && (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Center}>
             <Box variant='overlay'>
-              <Text>{errorText}</Text>
+              <Text variant='error'>{infoText}</Text>
             </Box>
           </LayerContainer.Layer>
         )}
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.End}>
+          <StatsOverlay />
+        </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-          <WelcomeOverlay />
+          <NotificationOverlay />
         </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
-          <RightHandSideButtons />
+          <ButtonsOverlay />
+        </LayerContainer.Layer>
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+          <WelcomeOverlay />
         </LayerContainer.Layer>
       </LayerContainer>
     </React.Fragment>

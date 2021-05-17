@@ -20,7 +20,7 @@ type Result = {
 }
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
-  const { contract, contractAddress, requester, mdtpClient } = useGlobals();
+  const { contract, contractAddress, requester, apiClient, network } = useGlobals();
   const navigator = useNavigator();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
@@ -34,10 +34,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     const tokenId = Number(props.tokenId);
-    mdtpClient.retrieveGridItem(tokenId).then((retrievedGridItem: GridItem): void => {
+    apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
     });
-  }, [props.tokenId, mdtpClient]);
+  }, [props.tokenId, network, apiClient]);
 
   React.useEffect((): void => {
     loadToken();
@@ -49,11 +49,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
 
     setIsUpdating(true);
-    // const title = newTitle != null ? newTitle : gridItem.title;
-    // const description = newDescription != null ? newDescription : gridItem.description;
-    // const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
-    // TODO(krishan711): upload this new metadata somewhere and set it as tokenMetadataUrl
-    const tokenMetadataUrl = await contract.methods.tokenURI(gridItem.tokenId).call();
+    const title = newTitle != null ? newTitle : gridItem.title;
+    const description = newDescription != null ? newDescription : gridItem.description;
+    const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
+    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title || '', description || '', image || '');
 
     setNewTokenSettingResult(null);
     const tokenId = Number(props.tokenId);
@@ -86,7 +85,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
     // TODO(krishan711): ensure there is only one file
     setIsUploadingImage(true);
-    mdtpClient.generateImageUploadForToken(Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
+    apiClient.generateImageUploadForToken(network, Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
       const file = files[0];
       // @ts-ignore
       const fileName = file.path.replace(/^\//g, '');
@@ -163,7 +162,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                             value={newTitle}
                             onValueChanged={setNewTitle}
                             inputWrapperVariant={inputState}
-                            messageText={newTokenSettingResult?.message}
                             placeholderText='Name'
                           />
                           <SingleLineInput
@@ -171,7 +169,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                             value={newDescription}
                             onValueChanged={setNewDescription}
                             inputWrapperVariant={inputState}
-                            messageText={newTokenSettingResult?.message}
                             placeholderText='Description'
                           />
                           {isUploadingImage ? (

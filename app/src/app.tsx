@@ -12,16 +12,18 @@ import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
 import MDTContract from './contracts/MillionDollarNFT.json';
-import { GlobalsProvider } from './globalsContext';
+import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { TokenPage } from './pages/TokenPage';
 import { buildMDTPTheme } from './theme';
+import { ChainId, getNetwork } from './util/chainUtil';
 
 declare global {
   export interface Window {
     KRT_CONTRACT_ADDRESS: string;
+    KRT_API_URL?: string;
     ethereum?: Web3Provider;
   }
 }
@@ -39,23 +41,27 @@ const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const contract = web3 ? new web3.eth.Contract(MDTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
-const mdtpClient = new MdtpClient(requester);
+const apiClient = new MdtpClient(requester, window.KRT_API_URL);
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
 
-const globals = {
+
+const theme = buildMDTPTheme();
+const globals: Globals = {
   web3,
   requester,
   localStorageClient,
   contract,
   contractAddress: window.KRT_CONTRACT_ADDRESS,
-  mdtpClient,
+  apiClient,
+  network: 'rinkeby',
+  chainId: ChainId.Rinkeby,
 };
-
-const theme = buildMDTPTheme();
 
 export const App = hot((): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<string[] | null>(null);
+  const [chainId, setChainId] = React.useState<number | null>(null);
+  const [network, setNetwork] = React.useState<string | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
     if (!web3) {
@@ -73,13 +79,28 @@ export const App = hot((): React.ReactElement => {
     setAccounts(await web3.eth.getAccounts());
   };
 
+  const getChainId = async (): Promise<void> => {
+    if (web3) {
+      web3.eth.getChainId().then((retrievedChainId: number): void => {
+        setChainId(retrievedChainId);
+      });
+    } else {
+      setChainId(ChainId.Rinkeby);
+    }
+  };
+
   useInitialization((): void => {
     getAccounts();
+    getChainId();
   });
+
+  React.useEffect((): void => {
+    setNetwork(chainId ? getNetwork(chainId) : null);
+  }, [chainId]);
 
   return (
     <KibaApp theme={theme}>
-      <GlobalsProvider globals={globals}>
+      <GlobalsProvider globals={{ ...globals, network }}>
         <AccountControlProvider accounts={accounts} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
             <Router>

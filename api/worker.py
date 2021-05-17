@@ -31,11 +31,14 @@ async def main():
     s3Manager = S3Manager(s3Client=s3Client)
 
     requester = Requester()
-    ethClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
+    rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
+    mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
+    rinkebyContractAddress = os.environ['RINKEBY_CONTRACT_ADDRESS']
+    mumbaiContractAddress = os.environ['MUMBAI_CONTRACT_ADDRESS']
     with open('./MillionDollarNFT.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
     imageManager = ImageManager(requester=requester, s3Manager=s3Manager, sirvKey=os.environ['SIRV_KEY'], sirvSecret=os.environ['SIRV_SECRET'])
-    manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, ethClient=ethClient, workQueue=workQueue, imageManager=imageManager, contractAddress='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', contractJson=contractJson)
+    manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient, workQueue=workQueue, imageManager=imageManager, rinkebyContractAddress=rinkebyContractAddress, mumbaiContractAddress=mumbaiContractAddress, contractJson=contractJson)
 
     processor = MdtpMessageProcessor(manager=manager)
     slackClient = SlackClient(webhookUrl=os.environ['SLACK_WEBHOOK_URL'], requester=requester, defaultSender='worker', defaultChannel='mdtp-notifications')
