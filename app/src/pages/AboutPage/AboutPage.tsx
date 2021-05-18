@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, KibaIcon, LayerContainer, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Image,  Alignment, Button, Direction, KibaIcon, LayerContainer, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
@@ -36,9 +36,9 @@ To make use of Ethereum and Web3 technologies you need to have a Web3 enabled pl
 
 Once you own the NFT that represents a block of pixels you can then change the image, title and description by selecting the image and opening the appropriate token page. The website recognises when you own that block and will allow you to update the data stored in that block of pixels.
 
-*[Image of Token Page - showing changing image, title, description - with Metamask transaction]*
+![Update Block](../../../images/update-block.gif)
 
-And its a simple as that, buy as many pixels as you like and share your website, work or creations in this digital space with the entire world!
+And its a simple as that, buy pixels and share your website, work or creations in this digital space with the entire world!
 
 &nbsp;
 
@@ -69,7 +69,7 @@ So come along and join us now by interacting, trading and sharing on milliondoll
                 <Button variant='secondary' onClicked={onHomeClicked} text='Home' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
               </Stack.Item>
               <Text variant='header1'>{'About'}</Text>
-              <Spacing variant={PaddingSize.Wide3} />
+              <Spacing variant={PaddingSize.Wide3} />              
               <Markdown source={text} />
             </Stack>
           </ResponsiveContainingView>
