@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Image,  Alignment, Button, Direction, KibaIcon, LayerContainer, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Button, Direction, KibaIcon, LayerContainer, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
@@ -69,7 +69,7 @@ So come along and join us now by interacting, trading and sharing on milliondoll
                 <Button variant='secondary' onClicked={onHomeClicked} text='Home' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
               </Stack.Item>
               <Text variant='header1'>{'About'}</Text>
-              <Spacing variant={PaddingSize.Wide3} />              
+              <Spacing variant={PaddingSize.Wide3} />
               <Markdown source={text} />
             </Stack>
           </ResponsiveContainingView>
