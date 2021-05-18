@@ -28,15 +28,15 @@ Today the internet is a lot more fun to play with and cryptocurrencies like [Bit
 
 Milliondollartokenpage has 10,000 blocks of 10x10 pixels represented by 10,000 NFTs on the Ethereum network. Each new pixel costs $1 and so each new block of 100 pixels costs $100 to buy. Once bought, you the owner can put any image in those pixels, along with a title, and description with links to other websites.
 
-![Pixel Blocks](../../../images/pixel-block.gif)
+![Pixel Blocks](/assets/pixel-block.gif)
 
 To make use of Ethereum and Web3 technologies you need to have a Web3 enabled plugin like [Metamask](https://metamask.io/) or browser like [Brave](https://brave.com/), which has a native crypto wallet, and have some cryptocurrency in your wallet. You'll need [Ether](https://ethereum.org/en/eth/) in your wallet to pay the [mining fees](https://www.coindesk.com/learn/ethereum-101/ethereum-mining-works) associated with having a transaction be accepted by the network, and at least $100 in [ETH](https://ethereum.org/en/eth/) or [DAI](https://oasis.app/dai) to buy a block.
 
-![Metamask](../../../images/metamask.gif)
+![Metamask](/assets/metamask.gif)
 
 Once you own the NFT that represents a block of pixels you can then change the image, title and description by selecting the image and opening the appropriate token page. The website recognises when you own that block and will allow you to update the data stored in that block of pixels.
 
-![Update Block](../../../images/update-block.gif)
+![Update Block](/assets/update-block.gif)
 
 And its a simple as that, buy pixels and share your website, work or creations in this digital space with the entire world!
 
