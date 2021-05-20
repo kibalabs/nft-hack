@@ -34,10 +34,11 @@ def crop(imagePath: str, outputDirectory: str, width: int, height: int):
 @click.command()
 @click.option('-i', '--image-path', 'imagePath', required=True, type=str)
 @click.option('-n', '--name', 'name', required=True, type=str)
+@click.option('-s', '--starting-token', 'startingToken', required=True, type=int)
 @click.option('-w', '--width', 'width', required=True, type=int)
 @click.option('-h', '--height', 'height', required=True, type=int)
-@click.option('-s', '--starting-token', 'startingToken', required=True, type=int)
-async def run(imagePath: str, name: str, width: int, height: int, startingToken: int):
+@click.option('-d', '--description', 'description', required=True, type=int)
+async def run(imagePath: str, name: str, startingToken: int, width: int, height: int, description: str):
     CONTRACT_ADDRESS = os.environ['RINKEBY_CONTRACT_ADDRESS']
     # CONTRACT_ADDRESS = os.environ['MUMBAI_CONTRACT_ADDRESS']
     ETH_CLIENT_URL = os.environ['ALCHEMY_URL']
@@ -46,9 +47,6 @@ async def run(imagePath: str, name: str, width: int, height: int, startingToken:
     PRIVATE_KEY = os.environ['PRIVATE_KEY']
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
-
-    # TODO: Get description from user...    
-    description = "This is a test description"
 
     outputDirectory = 'output'
     crop(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
