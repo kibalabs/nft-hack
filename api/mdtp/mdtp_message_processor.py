@@ -1,6 +1,7 @@
 from mdtp.core.message_queue_processor import MessageProcessor
 from mdtp.core.model import SqsMessage
 from mdtp.core.exceptions import KibaException
+from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.manager import MdtpManager
@@ -11,6 +12,10 @@ class MdtpMessageProcessor(MessageProcessor):
         self.manager = manager
 
     async def process_message(self, message: SqsMessage) -> None:
+        if message.command == UpdateTokenMessageContent._COMMAND:
+            messageContent = UpdateTokenMessageContent.parse_obj(message.content)
+            await self.manager.update_token(network=messageContent.network, tokenId=messageContent.tokenId)
+            return
         if message.command == UpdateTokensMessageContent._COMMAND:
             messageContent = UpdateTokensMessageContent.parse_obj(message.content)
             await self.manager.update_tokens(network=messageContent.network)

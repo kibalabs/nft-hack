@@ -95,6 +95,12 @@ class UploadMetadataForTokenRequest(BaseModel):
 class UploadMetadataForTokenResponse(BaseModel):
     url: str
 
+class UpdateTokenDeferredRequest(BaseModel):
+    pass
+
+class UpdateTokenDeferredResponse(BaseModel):
+    pass
+
 class GetImageRequest(BaseModel):
     pass
 

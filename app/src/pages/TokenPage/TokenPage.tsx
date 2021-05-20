@@ -65,6 +65,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         })
         .on('confirmation', () => { // confirmationNumber, receipt
           setNewTokenSettingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
+          apiClient.updateTokenDeferred(network, Number(props.tokenId));
           loadToken();
           setIsUpdating(false);
         });

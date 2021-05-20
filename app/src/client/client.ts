@@ -47,4 +47,11 @@ export class MdtpClient extends ServiceClient {
     const response = await this.makeRequest(method, path, request, Endpoints.UploadMetadataForTokenResponse);
     return response.url;
   }
+
+  public updateTokenDeferred = async (network: string, tokenId: number): Promise<void> => {
+    const method = RestMethod.POST;
+    const path = `v1/networks/${network}/tokens/${tokenId}/update-token-deferred`;
+    const request = new Endpoints.UpdateTokenDeferredRequest();
+    await this.makeRequest(method, path, request, Endpoints.UpdateTokenDeferredResponse);
+  }
 }
