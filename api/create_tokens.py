@@ -42,16 +42,16 @@ async def run(imagePath: str, name: str):
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
-    # outputDirectory = 'output'
-    # crop(imagePath=imagePath, outputDirectory=outputDirectory, height=10, width=10)
-    # await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{name}', accessControl='public-read', cacheControl='public,max-age=31536000')
-    # for index in range(10000):
-    #     data = {
-    #         "name" : f"MillionDollarTokenPage Token {index + 1}",
-    #         "description" : "MillionDollarTokenPage (MDTP) is a digital advertising space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display what you like, and later re-sold on the secondary-market. So join us and interact, trade and share, and be a part of making crypto history!",
-    #         "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.png"
-    #     }
-    #     await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{name}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
+    outputDirectory = 'output'
+    crop(imagePath=imagePath, outputDirectory=outputDirectory, height=10, width=10)
+    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{name}', accessControl='public-read', cacheControl='public,max-age=31536000')
+    for index in range(10000):
+        data = {
+            "name" : f"MillionDollarTokenPage Token {index + 1}",
+            "description" : "MillionDollarTokenPage (MDTP) is a digital advertising space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display what you like, and later re-sold on the secondary-market. So join us and interact, trade and share, and be a part of making crypto history!",
+            "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.png"
+        }
+        await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{name}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
     w3 = Web3()
     requester = Requester()
     ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
@@ -77,8 +77,8 @@ async def run(imagePath: str, name: str):
                     'tokenId': tokenId,
                     'tokenURI': tokenUri,
                 }
-                output = await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=50000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
-                print('output', output)
+                await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=50000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+                await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred')
                 nonce += 1
         else:
             print(f'Creating token {tokenId}', nonce)
@@ -86,8 +86,8 @@ async def run(imagePath: str, name: str):
                 'recipient': ACCOUNT_ADDRESS,
                 'tokenURI': tokenUri,
             }
-            output = await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractMintNFTMethodAbi, arguments=data, gas=300000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
-            print('output', output)
+            await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractMintNFTMethodAbi, arguments=data, gas=300000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+            await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred')
             nonce += 1
     await requester.close_connections()
 
