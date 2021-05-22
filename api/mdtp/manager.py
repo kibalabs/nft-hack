@@ -10,7 +10,7 @@ from web3 import Web3
 from core.exceptions import NotFoundException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
-from mdtp.eth_client import EthClientInterface
+from core.web3.eth_client import EthClientInterface
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import GridItem

@@ -16,7 +16,7 @@ from core.s3_manager import S3Manager
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
 from mdtp.manager import MdtpManager
-from mdtp.eth_client import RestEthClient
+from core.web3.eth_client import RestEthClient
 from mdtp.mdtp_message_processor import MdtpMessageProcessor
 from mdtp.image_manager import ImageManager
 

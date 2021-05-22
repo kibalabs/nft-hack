@@ -11,7 +11,7 @@ from web3 import Web3
 
 from core.requester import Requester
 from core.s3_manager import S3Manager
-from mdtp.eth_client import RestEthClient
+from core.web3.eth_client import RestEthClient
 
 GWEI = 1000000000
 

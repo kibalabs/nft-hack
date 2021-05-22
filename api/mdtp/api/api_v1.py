@@ -1,11 +1,11 @@
 from typing import Optional
 
+from core.api.kiba_router import KibaRouter
 from fastapi import Request
 from fastapi import Response
 
 from mdtp.api.models_v1 import *
 from mdtp.manager import MdtpManager
-from core.api.kiba_router import KibaRouter
 
 def create_api(manager: MdtpManager) -> KibaRouter():
     router = KibaRouter()
