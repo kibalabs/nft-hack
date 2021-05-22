@@ -1,7 +1,9 @@
 CREATE TABLE tbl_grid_items (
     id BIGSERIAL PRIMARY KEY,
-    token_id INTEGER NOT NULL,
+    created_date DATETIME(3) NOT NULL,
+    updated_date DATETIME(3) NOT NULL,
     network TEXT NOT NULL,
+    token_id INTEGER NOT NULL,
     title TEXT NOT NULL,
     description TEXT,
     image_url TEXT NOT NULL,

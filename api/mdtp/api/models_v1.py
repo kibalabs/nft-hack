@@ -10,8 +10,8 @@ from mdtp.model import StatItem
 
 class ApiGridItem(BaseModel):
     gridItemId: int
-    tokenId: int
     network: str
+    tokenId: int
     title: str
     description: Optional[str]
     imageUrl: str
@@ -22,8 +22,8 @@ class ApiGridItem(BaseModel):
     def from_model(cls, model: GridItem):
         return cls(
             gridItemId=model.gridItemId,
-            tokenId=model.tokenId,
             network=model.network,
+            tokenId=model.tokenId,
             title=model.title,
             description=model.description,
             imageUrl=model.imageUrl,

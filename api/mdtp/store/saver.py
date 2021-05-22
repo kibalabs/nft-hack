@@ -1,6 +1,7 @@
 from typing import Optional
 
 from core.store.saver import Saver
+from core.util import date_util
 
 from mdtp.model import *
 from mdtp.store.schema import GridItemsTable
@@ -11,6 +12,9 @@ class MdtpSaver(Saver):
 
     async def create_grid_item(self, tokenId: int, network: str, title: str, description: Optional[str], imageUrl: str, resizableImageUrl: Optional[str], ownerId: str) -> GridItem:
         gridItemId = await self._execute(query=GridItemsTable.insert(), values={
+            GridItemsTable.c.tokenId.key: tokenId,
+            GridItemsTable.c.createdDate.key: date_util.datetime_from_now(),
+            GridItemsTable.c.updatedDate.key: date_util.datetime_from_now(),
             GridItemsTable.c.tokenId.key: tokenId,
             GridItemsTable.c.network.key: network,
             GridItemsTable.c.title.key: title,
@@ -35,4 +39,6 @@ class MdtpSaver(Saver):
             values[GridItemsTable.c.resizableImageUrl.key] = resizableImageUrl
         if ownerId is not None:
             values[GridItemsTable.c.ownerId.key] = ownerId
+        if len(values) > 0:
+            values[GridItemsTable.c.updatedDate.key] = date_util.datetime_from_now()
         await self.database.execute(query=query, values=values)
