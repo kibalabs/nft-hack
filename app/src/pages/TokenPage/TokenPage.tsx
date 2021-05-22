@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
 import { GridItem, PresignedUpload } from '../../client';
+import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { Dropzone } from '../../components/dropzone';
 import { useGlobals } from '../../globalsContext';
 
@@ -75,7 +76,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
   };
 
-  const onBackClicked = () => {
+  const onHomeClicked = () => {
     navigator.navigateTo('/');
   };
 
@@ -116,92 +117,97 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       <Helmet>
         <title>{'Token | The Million Dollar Token Page'}</title>
       </Helmet>
-      <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        { !gridItem ? (
-          <React.Fragment>
-            <Spacing variant={PaddingSize.Wide3} />
-            <LoadingSpinner />
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-            <Spacing variant={PaddingSize.Wide3} />
-            <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
-              <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
-                <Stack.Item alignment={Alignment.Start}>
-                  <Button variant='secondary' onClicked={onBackClicked} text='Back' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
-                </Stack.Item>
-                <Spacing variant={PaddingSize.Wide2} />
-                <Box maxHeight='250px' variant='tokenHeader'>
-                  <Image isCenteredHorizontally={true} fitType={'cover'} source={gridItem.imageUrl} alternativeText={`${gridItem.title} image`} />
-                </Box>
-                <Spacing variant={PaddingSize.Wide1} />
-                <Text variant='header3'>{`TOKEN #${gridItem.tokenId}`}</Text>
-                <Spacing variant={PaddingSize.Wide1} />
-                <Text variant='preheading'>{'Name:'}</Text>
-                <Text variant='header1'>{`${gridItem.title}`}</Text>
-                <Spacing variant={PaddingSize.Wide1} />
-                <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
-                <Spacing variant={PaddingSize.Wide2} />
-                <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='OpenSea' />
-                  <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='Etherscan' />
+      <LayerContainer>
+        <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
+          { !gridItem ? (
+            <React.Fragment>
+              <Spacing variant={PaddingSize.Wide3} />
+              <LoadingSpinner />
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <Spacing variant={PaddingSize.Wide3} />
+              <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
+                <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
+                  <Stack.Item alignment={Alignment.Start}>
+                    <Button variant='secondary' onClicked={onHomeClicked} text='Home' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
+                  </Stack.Item>
+                  <Spacing variant={PaddingSize.Wide2} />
+                  <Box maxHeight='250px' variant='tokenHeader'>
+                    <Image isCenteredHorizontally={true} fitType={'cover'} source={gridItem.imageUrl} alternativeText={`${gridItem.title} image`} />
+                  </Box>
+                  <Spacing variant={PaddingSize.Wide1} />
+                  <Text variant='header3'>{`TOKEN #${gridItem.tokenId}`}</Text>
+                  <Spacing variant={PaddingSize.Wide1} />
+                  <Text variant='preheading'>{'Name:'}</Text>
+                  <Text variant='header1'>{`${gridItem.title}`}</Text>
+                  <Spacing variant={PaddingSize.Wide1} />
+                  <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
+                  <Spacing variant={PaddingSize.Wide2} />
+                  <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='OpenSea' />
+                    <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='Etherscan' />
+                  </Stack>
+                  <Spacing variant={PaddingSize.Wide2} />
+                  { (accounts === null || !gridItem.tokenId) ? (
+                    <LoadingSpinner />
+                  ) : (accounts.includes(gridItem.ownerId)) ? (
+                    <React.Fragment>
+                      <Text>You are the owner. Update your Token&apos;s metadata here:</Text>
+                      <Spacing variant={PaddingSize.Default} />
+                      { !hasStartedUpdated ? (
+                        <Button variant='primary' text='Update your token' onClicked={onUpdateClicked} />
+                      ) : (
+                        <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
+                          <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+                            <SingleLineInput
+                              inputType={InputType.Text}
+                              value={newTitle}
+                              onValueChanged={setNewTitle}
+                              inputWrapperVariant={inputState}
+                              placeholderText='Name'
+                            />
+                            <SingleLineInput
+                              inputType={InputType.Text}
+                              value={newDescription}
+                              onValueChanged={setNewDescription}
+                              inputWrapperVariant={inputState}
+                              placeholderText='Description'
+                            />
+                            {isUploadingImage ? (
+                              <Text>Uploading image...</Text>
+                            ) : (
+                              <React.Fragment>
+                                <SingleLineInput
+                                  inputType={InputType.Url}
+                                  value={newImageUrl}
+                                  onValueChanged={setNewImageUrl}
+                                  inputWrapperVariant={inputState}
+                                  messageText={newTokenSettingResult?.message}
+                                  placeholderText='Image URL'
+                                />
+                                <Text variant='note'>OR</Text>
+                                <Dropzone onFilesChosen={onImageFilesChosen} />
+                              </React.Fragment>
+                            )}
+                            <Button variant='primary' text='Update' buttonType='submit' />
+                          </Stack>
+                        </Form>
+                      )}
+                    </React.Fragment>
+                  ) : (<Text>{`Owned by: ${gridItem.ownerId}`}</Text>
+                  )}
                 </Stack>
-                <Spacing variant={PaddingSize.Wide2} />
-                { (accounts === null || !gridItem.tokenId) ? (
-                  <LoadingSpinner />
-                ) : (accounts.includes(gridItem.ownerId)) ? (
-                  <React.Fragment>
-                    <Text>You are the owner. Update your Token&apos;s metadata here:</Text>
-                    <Spacing variant={PaddingSize.Default} />
-                    { !hasStartedUpdated ? (
-                      <Button variant='primary' text='Update your token' onClicked={onUpdateClicked} />
-                    ) : (
-                      <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
-                        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-                          <SingleLineInput
-                            inputType={InputType.Text}
-                            value={newTitle}
-                            onValueChanged={setNewTitle}
-                            inputWrapperVariant={inputState}
-                            placeholderText='Name'
-                          />
-                          <SingleLineInput
-                            inputType={InputType.Text}
-                            value={newDescription}
-                            onValueChanged={setNewDescription}
-                            inputWrapperVariant={inputState}
-                            placeholderText='Description'
-                          />
-                          {isUploadingImage ? (
-                            <Text>Uploading image...</Text>
-                          ) : (
-                            <React.Fragment>
-                              <SingleLineInput
-                                inputType={InputType.Url}
-                                value={newImageUrl}
-                                onValueChanged={setNewImageUrl}
-                                inputWrapperVariant={inputState}
-                                messageText={newTokenSettingResult?.message}
-                                placeholderText='Image URL'
-                              />
-                              <Text variant='note'>OR</Text>
-                              <Dropzone onFilesChosen={onImageFilesChosen} />
-                            </React.Fragment>
-                          )}
-                          <Button variant='primary' text='Update' buttonType='submit' />
-                        </Stack>
-                      </Form>
-                    )}
-                  </React.Fragment>
-                ) : (<Text>{`Owned by: ${gridItem.ownerId}`}</Text>
-                )}
-              </Stack>
-            </ResponsiveContainingView>
-            <Spacing variant={PaddingSize.Wide3} />
-          </React.Fragment>
-        )}
-        <Spacing variant={PaddingSize.Default} />
-      </Stack>
+              </ResponsiveContainingView>
+              <Spacing variant={PaddingSize.Wide3} />
+            </React.Fragment>
+          )}
+          <Spacing variant={PaddingSize.Default} />
+        </Stack>
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
+          <ButtonsOverlay />
+        </LayerContainer.Layer>
+      </LayerContainer>
     </React.Fragment>
   );
 };
