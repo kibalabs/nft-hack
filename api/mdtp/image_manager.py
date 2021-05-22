@@ -27,20 +27,9 @@ class UnknownImageType(InternalServerErrorException):
 
 class ImageManager:
 
-    def __init__(self, requester: Requester, s3Manager: S3Manager, sirvKey: str, sirvSecret: str):
+    def __init__(self, requester: Requester, s3Manager: S3Manager):
         self.requester = requester
         self.s3Manager = s3Manager
-        self.sirvKey = sirvKey
-        self.sirvSecret = sirvSecret
-
-    async def _get_sirv_token(self) -> str:
-        response = await self.requester.post_json(url='https://api.sirv.com/v2/token', dataDict={'clientId': self.sirvKey, 'clientSecret': self.sirvSecret})
-        return response.json()['token']
-
-    async def _make_post_request(self, dataDict: Dict, url: str) -> Dict:
-        token = await self._get_sirv_token()
-        response = await self.requester.post_json(url=url, dataDict=dataDict, headers={'authorization': f'Bearer {token}'})
-        return response.json()
 
     def _get_image_type_from_file(self, fileName: str) -> str:
         imageType = imghdr.what(fileName)
