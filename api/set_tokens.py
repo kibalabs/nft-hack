@@ -82,7 +82,7 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
             tokenId = startingToken + (row*kTotalBlocksPerRow + column)
             tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
             if tokenId <= tokenCount:
-                currentTokenUri = None #(await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
+                currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
                 if currentTokenUri != tokenUri:
                     print(f'Updating token {tokenId}', nonce + nonceIncrement)
                     data = {
