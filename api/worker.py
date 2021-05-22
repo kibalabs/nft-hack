@@ -4,19 +4,18 @@ import json
 import logging
 
 import boto3
-from databases import Database
-from web3 import Web3
-
 from core.requester import Requester
 from core.slack_client import SlackClient
 from core.queues.sqs_message_queue import SqsMessageQueue
-from core.message_queue_processor import MessageQueueProcessor
 from core.requester import Requester
 from core.s3_manager import S3Manager
+from core.queues.message_queue_processor import MessageQueueProcessor
+from core.web3.eth_client import RestEthClient
+from databases import Database
+
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
 from mdtp.manager import MdtpManager
-from core.web3.eth_client import RestEthClient
 from mdtp.mdtp_message_processor import MdtpMessageProcessor
 from mdtp.image_manager import ImageManager
 
