@@ -73,6 +73,12 @@ class RetrieveGridItemRequest(BaseModel):
 class RetrieveGridItemResponse(BaseModel):
     gridItem: ApiGridItem
 
+class UpdateTokenDeferredRequest(BaseModel):
+    pass
+
+class UpdateTokenDeferredResponse(BaseModel):
+    pass
+
 class UpdateTokensDeferredRequest(BaseModel):
     pass
 

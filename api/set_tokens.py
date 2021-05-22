@@ -33,12 +33,15 @@ def crop(imagePath: str, outputDirectory: str, width: int, height: int):
 @click.option('-s', '--starting-token', 'startingToken', required=True, type=int)
 @click.option('-w', '--width', 'width', required=True, type=int)
 @click.option('-h', '--height', 'height', required=True, type=int)
-@click.option('-d', '--description', 'description', required=True, type=int)
+@click.option('-d', '--description', 'description', required=True, type=str)
 async def run(imagePath: str, name: str, startingToken: int, width: int, height: int, description: str):
-    CONTRACT_ADDRESS = os.environ['RINKEBY_CONTRACT_ADDRESS']
-    # CONTRACT_ADDRESS = os.environ['MUMBAI_CONTRACT_ADDRESS']
-    ETH_CLIENT_URL = os.environ['ALCHEMY_URL']
-    # ETH_CLIENT_URL = 'https://matic-mumbai.chainstacklabs.com'
+    network = 'rinkeby'
+    if network == 'rinkeby':
+        CONTRACT_ADDRESS = os.environ['RINKEBY_CONTRACT_ADDRESS']
+        ETH_CLIENT_URL = os.environ['ALCHEMY_URL']
+    elif network == 'mumbai':
+        CONTRACT_ADDRESS = os.environ['MUMBAI_CONTRACT_ADDRESS']
+        ETH_CLIENT_URL = 'https://matic-mumbai.chainstacklabs.com'
     ACCOUNT_ADDRESS = os.environ['ACCOUNT_ADDRESS']
     PRIVATE_KEY = os.environ['PRIVATE_KEY']
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
@@ -86,7 +89,8 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
                         'tokenId': tokenId,
                         'tokenURI': tokenUri,
                     }
-                    output = await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+                    await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+                    await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred')
                     nonceIncrement += 1
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId}', nonce + nonceIncrement)

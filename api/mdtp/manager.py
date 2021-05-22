@@ -79,7 +79,7 @@ class MdtpManager:
                     counter += 1
         return statItems
 
-    async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
+    async def generate_image_upload_for_token(self, network: str, tokenId: int) -> S3PresignedUpload:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
 
@@ -122,7 +122,7 @@ class MdtpManager:
         logging.info(f'Uploading image for token {tokenId}')
         gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         imageId = await self.imageManager.upload_image_from_url(url=gridItem.imageUrl)
-        resizableImageUrl = f'https://mdtp-api.kibalabs.com/v1/images/{imageId}/go'
+        resizableImageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
 
     async def update_token(self, network: str, tokenId: int) -> None:
