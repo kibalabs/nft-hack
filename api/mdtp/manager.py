@@ -5,12 +5,15 @@ from typing import Sequence
 from typing import Optional
 import uuid
 
-from web3 import Web3
-
 from core.exceptions import NotFoundException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.web3.eth_client import EthClientInterface
+from core.s3_manager import S3Manager
+from core.s3_manager import S3PresignedUpload
+from core.store.retriever import StringFieldFilter
+from web3 import Web3
+
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import GridItem
@@ -19,9 +22,6 @@ from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
-from core.s3_manager import S3Manager
-from core.s3_manager import S3PresignedUpload
-from core.store.retriever import StringFieldFilter
 from mdtp.store.schema import GridItemsTable
 
 _KILOBYTE = 1024
