@@ -66,7 +66,8 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   const canvasHeight = tokenHeight * Math.ceil((props.gridItems.length * tokenWidth) / canvasWidth);
 
   const drawTokenImageOnCanvas = React.useCallback((imageUrl: string, context: CanvasRenderingContext2D, tokenIndex: number, imageScale: number) => {
-    if (tokenScales.current.get(tokenIndex) >= imageScale || imageScale < HALF_SCALE) {
+    const currentScale = tokenScales.current.get(tokenIndex);
+    if (currentScale !== undefined && currentScale >= imageScale) {
       return;
     }
 
@@ -93,7 +94,6 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
     }
     props.gridItems.forEach((gridItem: GridItem): void => {
       if (gridItem.updatedDate > props.baseImage.updatedDate) {
-        console.log('rendering gridItem', gridItem.tokenId);
         drawTokenImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, gridItem.tokenId - 1, 1);
       }
     });
@@ -135,11 +135,14 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       if (!context) {
         return;
       }
+      const truncatedScale = truncateScale(scale);
+      if (truncatedScale < HALF_SCALE) {
+        return;
+      }
       const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
       const topLeft = floorPoint(scaledOffset);
       const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSize.width / tokenWidth / scale, y: windowSize.height / tokenHeight / scale }));
       const range: PointRange = { topLeft, bottomRight };
-      const truncatedScale = truncateScale(scale);
       if (truncatedScale !== truncateScale(lastScale) || !arePointRangesEqual(range, lastRangeRef.current)) {
         lastRangeRef.current = range;
         for (let y = Math.max(0, topLeft.y); y <= bottomRight.y; y += 1) {
@@ -209,7 +212,10 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       const endPoint = { x: event.pageX - event.currentTarget.offsetLeft, y: event.pageY - event.currentTarget.offsetTop };
       const targetPoint = sumPoints(endPoint, scalePoint(adjustedOffset, scale));
       const tokenIndex = Math.floor((targetPoint.x / (scale * tokenWidth)) + (Math.floor(targetPoint.y / (scale * tokenHeight)) * (canvasWidth / tokenWidth)));
-      props.onGridItemClicked(gridItemMap[tokenIndex + 1]);
+      const gridItem = gridItemMap.get(tokenIndex + 1);
+      if (gridItem) {
+        props.onGridItemClicked(gridItem);
+      }
     }
     setIsMoving(false);
 

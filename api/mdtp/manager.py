@@ -106,11 +106,11 @@ class MdtpManager:
         await self.s3Manager.write_file(content=json.dumps(data).encode(), targetPath=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE, contentType='application/json')
         return target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
 
-    async def update_tokens_deferred(self, network: str) -> None:
-        await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message())
+    async def update_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
+        await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay)
 
-    async def update_token_deferred(self, network: str, tokenId: str) -> None:
-        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message())
+    async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int]) -> None:
+        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay)
 
     async def update_tokens(self, network: str) -> None:
         if network == 'rinkeby':

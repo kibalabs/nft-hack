@@ -18,7 +18,7 @@ class MdtpRetriever(Retriever):
         if fieldFilters:
             query = self._apply_field_filters(query=query, table=GridItemsTable, fieldFilters=fieldFilters)
         if orders:
-            query = self._apply_orders(query=query, table=BaseImagesTable, orders=orders)
+            query = self._apply_orders(query=query, table=GridItemsTable, orders=orders)
         if limit:
             query = query.limit(limit)
         rows = await self.database.fetch_all(query=query)

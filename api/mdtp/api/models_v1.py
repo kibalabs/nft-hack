@@ -98,14 +98,8 @@ class RetrieveGridItemRequest(BaseModel):
 class RetrieveGridItemResponse(BaseModel):
     gridItem: ApiGridItem
 
-class UpdateTokenDeferredRequest(BaseModel):
-    pass
-
-class UpdateTokenDeferredResponse(BaseModel):
-    pass
-
 class UpdateTokensDeferredRequest(BaseModel):
-    pass
+    delay: Optional[int]
 
 class UpdateTokensDeferredResponse(BaseModel):
     pass
@@ -125,7 +119,7 @@ class UploadMetadataForTokenResponse(BaseModel):
     url: str
 
 class UpdateTokenDeferredRequest(BaseModel):
-    pass
+    delay: Optional[int]
 
 class UpdateTokenDeferredResponse(BaseModel):
     pass

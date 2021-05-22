@@ -71,7 +71,6 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
     contractTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'tokenURI'][0]
     contractSetTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'setTokenURI'][0]
     nonce = await ethClient.get_transaction_count(address=ACCOUNT_ADDRESS)
-    print('nonce', nonce)
     nonceIncrement = 0
 
     kTotalBlocksPerRow = 100
@@ -91,6 +90,7 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
                     }
                     await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
                     await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred')
+                    await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
                     nonceIncrement += 1
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId}', nonce + nonceIncrement)

@@ -9,7 +9,7 @@ import boto3
 from core.exceptions import KibaException
 from core.requester import Requester
 from core.s3_manager import S3Manager
-from core.store.retriever import StringFieldFilter
+from core.store.retriever import Direction, Order, StringFieldFilter
 from core.util import file_util
 from databases.core import Database
 from PIL import Image as PILImage
@@ -66,7 +66,11 @@ async def run():
     outputImage = PILImage.new('RGB', (width, height))
 
     network = 'rinkeby'
-    gridItems = await retriever.list_grid_items(fieldFilters=[StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)])
+    gridItems = await retriever.list_grid_items(
+        fieldFilters=[StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)],
+        orders=[Order(fieldName=GridItemsTable.c.tokenId.key, direction=Direction.ASCENDING)],
+        limit=10000
+    )
     for gridItem in gridItems:
         tokenId = gridItem.tokenId
         imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
@@ -77,11 +81,13 @@ async def run():
             tokenIndex = tokenId - 1
             x = (tokenIndex * tokenWidth) % width
             y = tokenHeight * math.floor((tokenIndex * tokenWidth) / width)
-            outputImage.paste(tokenImage, (x, y))
+            image = tokenImage.resize(size=(tokenWidth, tokenHeight))
+            outputImage.paste(image, (x, y))
     outputFilePath = 'output.png'
     outputImage.save(outputFilePath)
     imageId = await imageManager.upload_image_from_file(filePath=outputFilePath)
     imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
+    # NOTE(krishan711): maybe we should add another field to baseImage because in the time between starting and saving tokens could have been updated
     await saver.create_base_image(network=network, url=imageUrl)
 
     await file_util.remove_file(filePath=outputFilePath)
