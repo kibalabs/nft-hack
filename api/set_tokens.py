@@ -1,18 +1,14 @@
-import asyncio
 import os
 import json
 import logging
-import math
-from typing import Optional
 
 import asyncclick as click
 import boto3
 from PIL import Image
 from web3 import Web3
-
-from mdtp.core.requester import Requester
-from mdtp.core.s3_manager import S3Manager
-from mdtp.eth_client import RestEthClient
+from core.requester import Requester
+from core.s3_manager import S3Manager
+from core.web3.eth_client import RestEthClient
 
 GWEI = 1000000000
 
@@ -25,7 +21,7 @@ def crop(imagePath: str, outputDirectory: str, width: int, height: int):
     boxHeight = int(imageHeight/height)
     index = 0
     for row in range(0, imageHeight, boxHeight):
-        for column in range(0, imageWidth, boxWidth):            
+        for column in range(0, imageWidth, boxWidth):
             box = (column, row, column + boxWidth, row + boxHeight)
             croppedImage = image.crop(box)
             croppedImage.save(os.path.join(outputDirectory, f'{index}.png'))
@@ -59,7 +55,7 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
             "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.png"
         }
         await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{name}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
-    
+
     w3 = Web3()
     requester = Requester()
     ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
@@ -75,15 +71,15 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
     print('nonce', nonce)
     nonceIncrement = 0
 
-    kTotalBlocksPerRow = 100 
-    tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]    
+    kTotalBlocksPerRow = 100
+    tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
     for row in range(0, height):
         for column in range(0, width):
             index = row*width + column
-            tokenId = startingToken + (row*kTotalBlocksPerRow + column)            
+            tokenId = startingToken + (row*kTotalBlocksPerRow + column)
             tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
             if tokenId <= tokenCount:
-                currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]                
+                currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
                 if currentTokenUri != tokenUri:
                     print(f'Updating token {tokenId}', nonce + nonceIncrement)
                     data = {
@@ -95,7 +91,7 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId}', nonce + nonceIncrement)
                 break
-    
+
     await requester.close_connections()
 
 
