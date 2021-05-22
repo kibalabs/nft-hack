@@ -1,7 +1,5 @@
-import logging
 from os import stat
 from typing import Dict
-import mimetypes
 import imghdr
 from typing import Optional, List
 import uuid
@@ -10,16 +8,15 @@ from io import BytesIO
 from PIL import Image as PILImage
 
 from mdtp.model import ImageData, ImageFormat, ImageSize, Image, ImageVariant
-from mdtp.core.requester import Requester
-from mdtp.core.util import file_util
-from mdtp.core.exceptions import InternalServerErrorException, KibaException, NotFoundException
-from mdtp.core.s3_manager import S3Manager
+from core.requester import Requester
+from core.util import file_util
+from core.exceptions import InternalServerErrorException, KibaException, NotFoundException
+from core.s3_manager import S3Manager
 
 
 _BUCKET = 's3://mdtp-images/pablo'
-_BASE_URL = 'https://mdtp-images.s3-eu-west-1.amazonaws.com/pablo'
+_BASE_URL = 'https://d2a7i2107hou45.cloudfront.net/pablo'
 
-_CACHE_CONTROL_TEMPORARY_FILE = 'public,max-age=1'
 _CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
 
 _TARGET_SIZES = [10, 20, 50, 100, 200, 500, 1000]

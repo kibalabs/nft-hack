@@ -1,4 +1,4 @@
-from mdtp.core.model import MessageContent
+from core.queues.model import MessageContent
 
 
 class UpdateTokenMessageContent(MessageContent):

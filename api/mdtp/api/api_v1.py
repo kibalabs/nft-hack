@@ -5,7 +5,7 @@ from fastapi import Response
 
 from mdtp.api.models_v1 import *
 from mdtp.manager import MdtpManager
-from mdtp.core.kiba_router import KibaRouter
+from core.api.kiba_router import KibaRouter
 
 def create_api(manager: MdtpManager) -> KibaRouter():
     router = KibaRouter()

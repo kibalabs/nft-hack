@@ -1,7 +1,7 @@
 from typing import Optional
 
 from mdtp.model import *
-from mdtp.core.store.saver import Saver
+from core.store.saver import Saver
 from mdtp.store.schema import GridItemsTable
 
 _EMPTY_STRING = '_EMPTY_STRING'

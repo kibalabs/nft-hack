@@ -8,7 +8,7 @@ from pydantic import Json
 
 from mdtp.model import GridItem
 from mdtp.model import StatItem
-from mdtp.core.s3_manager import S3PresignedUpload
+from core.s3_manager import S3PresignedUpload
 
 class ApiGridItem(BaseModel):
     gridItemId: int

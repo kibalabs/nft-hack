@@ -9,8 +9,8 @@ import boto3
 from PIL import Image
 from web3 import Web3
 
-from mdtp.core.requester import Requester
-from mdtp.core.s3_manager import S3Manager
+from core.requester import Requester
+from core.s3_manager import S3Manager
 from mdtp.eth_client import RestEthClient
 
 GWEI = 1000000000

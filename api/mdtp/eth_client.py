@@ -23,8 +23,8 @@ from web3._utils.abi import get_abi_output_types
 from eth_utils import event_abi_to_log_topic
 from hexbytes import HexBytes
 
-from mdtp.core.requester import Requester
-from mdtp.core.exceptions import BadRequestException
+from core.requester import Requester
+from core.exceptions import BadRequestException
 
 class EthClientInterface:
 

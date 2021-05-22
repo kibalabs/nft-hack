@@ -1,6 +1,7 @@
-from mdtp.core.message_queue_processor import MessageProcessor
-from mdtp.core.model import SqsMessage
-from mdtp.core.exceptions import KibaException
+from core.queues.message_queue_processor import MessageProcessor
+from core.queues.model import SqsMessage
+from core.exceptions import KibaException
+
 from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent

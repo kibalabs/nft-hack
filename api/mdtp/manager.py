@@ -7,9 +7,9 @@ import uuid
 
 from web3 import Web3
 
-from mdtp.core.exceptions import NotFoundException
-from mdtp.core.requester import Requester
-from mdtp.core.sqs_message_queue import SqsMessageQueue
+from core.exceptions import NotFoundException
+from core.requester import Requester
+from core.queues.sqs_message_queue import SqsMessageQueue
 from mdtp.eth_client import EthClientInterface
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
@@ -19,9 +19,9 @@ from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
-from mdtp.core.s3_manager import S3Manager
-from mdtp.core.s3_manager import S3PresignedUpload
-from mdtp.core.store.retriever import StringFieldFilter
+from core.s3_manager import S3Manager
+from core.s3_manager import S3PresignedUpload
+from core.store.retriever import StringFieldFilter
 from mdtp.store.schema import GridItemsTable
 
 _KILOBYTE = 1024
