@@ -55,12 +55,6 @@ class ImageManager:
         return f'image/{imageType}'
 
     async def upload_image_from_url(self, url: str) -> str:
-        # response = await self._make_post_request(url='https://api.sirv.com/v2/files/fetch', dataDict=[{'url': url, 'filename': filePath}])
-        # imageResponse = response[0]
-        # if not imageResponse['success']:
-        #     logging.error(imageResponse)
-        #     raise InternalServerErrorException(message=f'Failed to upload image')
-        # return f'https://kibalabs.sirv.com{filePath}'
         imageId = str(uuid.uuid4()).replace('-', '')
         localFilePath = f'./tmp/{imageId}/download'
         await self.requester.get(url=url, outputFilePath=localFilePath)
