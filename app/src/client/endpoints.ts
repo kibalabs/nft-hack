@@ -142,7 +142,7 @@ export class UpdateTokenDeferredRequest extends RequestData {
 }
 
 export class UpdateTokenDeferredResponse extends ResponseData {
-  public static fromObject = (obj: Record<string, unknown>): UpdateTokenDeferredResponse => {
+  public static fromObject = (): UpdateTokenDeferredResponse => {
     return new UpdateTokenDeferredResponse(
     );
   }
