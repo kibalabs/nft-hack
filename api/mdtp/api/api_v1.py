@@ -10,6 +10,11 @@ from mdtp.manager import MdtpManager
 def create_api(manager: MdtpManager) -> KibaRouter():
     router = KibaRouter()
 
+    @router.get('/networks/{network}/latest-base-image', response_model=BaseImageUrlResponse)
+    async def get_latest_base_image_url(network: str, rawRequest: Request, response: Response) -> BaseImageUrlResponse: # request: BaseImageUrlRequest
+        baseImage = await manager.get_latest_base_image_url(network=network)
+        return BaseImageUrlResponse(baseImage=ApiBaseImage.from_model(model=baseImage))
+
     @router.get('/networks/{network}/grid-items', response_model=ListGridItemsResponse)
     async def list_grid_items(network: str, rawRequest: Request, response: Response) -> ListGridItemsResponse: # request: ListGridItemsRequest
         gridItems = await manager.list_grid_items(network=network)
@@ -27,14 +32,14 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return RetrieveGridItemResponse(gridItem=ApiGridItem.from_model(model=gridItem))
 
     @router.post('/networks/{network}/update-tokens-deferred', response_model=UpdateTokensDeferredResponse)
-    async def update_tokens_deferred(network: str, rawRequest: Request, response: Response) -> UpdateTokensDeferredResponse: # request: UpdateTokensDeferredRequest
-        await manager.update_tokens_deferred(network=network)
+    async def update_tokens_deferred(network: str, request: UpdateTokensDeferredRequest, rawRequest: Request, response: Response) -> UpdateTokensDeferredResponse:
+        await manager.update_tokens_deferred(network=network, delay=request.delay)
         return UpdateTokensDeferredResponse()
 
     @router.post('/networks/{network}/tokens/{tokenId}/generate-image-upload', response_model=GenerateImageUploadForTokenResponse)
     async def generate_image_upload_for_token(network: str, tokenId: int, rawRequest: Request, response: Response):
         presignedUpload = await manager.generate_image_upload_for_token(network=network, tokenId=tokenId)
-        return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_presigned_upload(presignedUpload=presignedUpload))
+        return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_model(presignedUpload=presignedUpload))
 
     @router.post('/networks/{network}/tokens/{tokenId}/upload-metadata', response_model=UploadMetadataForTokenResponse)
     async def upload_metadata_for_token(network: str, tokenId: int, rawRequest: Request, response: Response, request: UploadMetadataForTokenRequest):
@@ -42,8 +47,8 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return UploadMetadataForTokenResponse(url=url)
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)
-    async def update_token_deferred(network: str, tokenId: str, rawRequest: Request, response: Response) -> UpdateTokenDeferredResponse: # request: UpdateTokenDeferredRequest
-        await manager.update_token_deferred(network=network, tokenId=tokenId)
+    async def update_token_deferred(network: str, tokenId: str, request: UpdateTokenDeferredRequest, rawRequest: Request, response: Response) -> UpdateTokenDeferredResponse:
+        await manager.update_token_deferred(network=network, tokenId=tokenId, delay=request.delay)
         return UpdateTokenDeferredResponse()
 
     @router.get('/images/{imageId}/go', response_model=GenerateImageUploadForTokenResponse)

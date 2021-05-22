@@ -1,3 +1,4 @@
+import datetime
 from typing import Dict
 from typing import Optional
 from typing import List
@@ -7,9 +8,11 @@ from pydantic import BaseModel
 
 from mdtp.model import GridItem
 from mdtp.model import StatItem
+from mdtp.model import BaseImage
 
 class ApiGridItem(BaseModel):
     gridItemId: int
+    updatedDate: datetime.datetime
     network: str
     tokenId: int
     title: str
@@ -22,6 +25,7 @@ class ApiGridItem(BaseModel):
     def from_model(cls, model: GridItem):
         return cls(
             gridItemId=model.gridItemId,
+            updatedDate=model.updatedDate,
             network=model.network,
             tokenId=model.tokenId,
             title=model.title,
@@ -49,11 +53,32 @@ class ApiPresignedUpload(BaseModel):
     params: Dict[str, str]
 
     @classmethod
-    def from_presigned_upload(cls, presignedUpload: S3PresignedUpload):
+    def from_model(cls, model: S3PresignedUpload):
         return cls(
-            url=presignedUpload.url,
-            params={field.name: field.value for field in presignedUpload.fields},
+            url=model.url,
+            params={field.name: field.value for field in model.fields},
         )
+
+class ApiBaseImage(BaseModel):
+    baseImageId: int
+    network: str
+    updatedDate: datetime.datetime
+    url: str
+
+    @classmethod
+    def from_model(cls, model: BaseImage):
+        return cls(
+            baseImageId=model.baseImageId,
+            network=model.network,
+            updatedDate=model.updatedDate,
+            url=model.url,
+        )
+
+class BaseImageUrlRequest(BaseModel):
+    pass
+
+class BaseImageUrlResponse(BaseModel):
+    baseImage: ApiBaseImage
 
 class ListGridItemsRequest(BaseModel):
     pass
@@ -73,14 +98,8 @@ class RetrieveGridItemRequest(BaseModel):
 class RetrieveGridItemResponse(BaseModel):
     gridItem: ApiGridItem
 
-class UpdateTokenDeferredRequest(BaseModel):
-    pass
-
-class UpdateTokenDeferredResponse(BaseModel):
-    pass
-
 class UpdateTokensDeferredRequest(BaseModel):
-    pass
+    delay: Optional[int]
 
 class UpdateTokensDeferredResponse(BaseModel):
     pass
@@ -100,7 +119,7 @@ class UploadMetadataForTokenResponse(BaseModel):
     url: str
 
 class UpdateTokenDeferredRequest(BaseModel):
-    pass
+    delay: Optional[int]
 
 class UpdateTokenDeferredResponse(BaseModel):
     pass

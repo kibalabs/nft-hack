@@ -4,16 +4,18 @@ from core.store.saver import Saver
 from core.util import date_util
 
 from mdtp.model import *
-from mdtp.store.schema import GridItemsTable
+from mdtp.store.schema import BaseImagesTable, GridItemsTable
 
 _EMPTY_STRING = '_EMPTY_STRING'
 
 class MdtpSaver(Saver):
 
     async def create_grid_item(self, tokenId: int, network: str, title: str, description: Optional[str], imageUrl: str, resizableImageUrl: Optional[str], ownerId: str) -> GridItem:
+        createdDate = date_util.datetime_from_now()
+        updatedDate = createdDate
         gridItemId = await self._execute(query=GridItemsTable.insert(), values={
-            GridItemsTable.c.createdDate.key: date_util.datetime_from_now(),
-            GridItemsTable.c.updatedDate.key: date_util.datetime_from_now(),
+            GridItemsTable.c.createdDate.key: createdDate,
+            GridItemsTable.c.updatedDate.key: updatedDate,
             GridItemsTable.c.network.key: network,
             GridItemsTable.c.tokenId.key: tokenId,
             GridItemsTable.c.title.key: title,
@@ -22,7 +24,7 @@ class MdtpSaver(Saver):
             GridItemsTable.c.resizableImageUrl.key: resizableImageUrl,
             GridItemsTable.c.ownerId.key: ownerId,
         })
-        return GridItem(gridItemId=gridItemId, tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, ownerId=ownerId)
+        return GridItem(gridItemId=gridItemId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, ownerId=ownerId)
 
     # NOTE(krishan711): resizableImageUrl is optional so _EMPTY_STRING allows it to be passed in as None. Maybe there is a nicer way to do this.
     async def update_grid_item(self, gridItemId: int, title: Optional[str] = None, description: Optional[str] = _EMPTY_STRING, imageUrl: Optional[str] = None, resizableImageUrl: Optional[str] = _EMPTY_STRING, ownerId: Optional[str] = None) -> None:
@@ -41,3 +43,14 @@ class MdtpSaver(Saver):
         if len(values) > 0:
             values[GridItemsTable.c.updatedDate.key] = date_util.datetime_from_now()
         await self.database.execute(query=query, values=values)
+
+    async def create_base_image(self, network: str, url: str) -> GridItem:
+        createdDate = date_util.datetime_from_now()
+        updatedDate = createdDate
+        baseImageId = await self._execute(query=BaseImagesTable.insert(), values={
+            BaseImagesTable.c.createdDate.key: createdDate,
+            BaseImagesTable.c.updatedDate.key: updatedDate,
+            BaseImagesTable.c.network.key: network,
+            BaseImagesTable.c.url.key: url,
+        })
+        return BaseImage(baseImageId=baseImageId, createdDate=createdDate, updatedDate=updatedDate, network=network, url=url)
