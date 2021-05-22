@@ -11,18 +11,19 @@ from core.queues.sqs_message_queue import SqsMessageQueue
 from core.web3.eth_client import EthClientInterface
 from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
-from core.store.retriever import StringFieldFilter
+from core.store.retriever import Direction, Order, StringFieldFilter
 from web3 import Web3
 
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
+from mdtp.model import BaseImage
 from mdtp.model import GridItem
 from mdtp.model import StatItem
 from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
-from mdtp.store.schema import GridItemsTable
+from mdtp.store.schema import BaseImagesTable, GridItemsTable
 
 _KILOBYTE = 1024
 _MEGABYTE = _KILOBYTE * 1024
@@ -57,6 +58,16 @@ class MdtpManager:
     async def list_grid_items(self, network: str) -> Sequence[GridItem]:
         gridItems = await self.retriever.list_grid_items(fieldFilters=[StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)])
         return gridItems
+
+    async def get_latest_base_image_url(self, network: str) -> BaseImage:
+        baseImages = await self.retriever.list_base_images(
+            fieldFilters=[StringFieldFilter(fieldName=BaseImagesTable.c.network.key, eq=network)],
+            orders=[Order(fieldName=BaseImagesTable.c.updatedDate.key, direction=Direction.DESCENDING)],
+            limit=1
+        )
+        if len(baseImages) == 0:
+            raise NotFoundException()
+        return baseImages[0]
 
     async def list_stat_items(self, network: str) -> Sequence[StatItem]:
         statItems = []

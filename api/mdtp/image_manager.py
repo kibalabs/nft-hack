@@ -1,17 +1,16 @@
 from os import stat
-from typing import Dict
 import imghdr
 from typing import Optional, List
 import uuid
 from io import BytesIO
 
+from core.util import file_util
+from core.exceptions import InternalServerErrorException, KibaException, NotFoundException
+from core.s3_manager import S3Manager
 from PIL import Image as PILImage
 
 from mdtp.model import ImageData, ImageFormat, ImageSize, Image, ImageVariant
 from core.requester import Requester
-from core.util import file_util
-from core.exceptions import InternalServerErrorException, KibaException, NotFoundException
-from core.s3_manager import S3Manager
 
 
 _BUCKET = 's3://mdtp-images/pablo'
@@ -44,14 +43,21 @@ class ImageManager:
         return f'image/{imageType}'
 
     async def upload_image_from_url(self, url: str) -> str:
-        imageId = str(uuid.uuid4()).replace('-', '')
-        localFilePath = f'./tmp/{imageId}/download'
+        localFilePath = f'./tmp/download'
         await self.requester.get(url=url, outputFilePath=localFilePath)
+        imageId = await self.upload_image_from_file(filePath=localFilePath)
+        return imageId
+
+    async def upload_image_from_file(self, filePath: str) -> str:
+        imageId = str(uuid.uuid4()).replace('-', '')
         # TODO(krishan711): save with extensions once implemented in pablo
         # mimetype = self._get_image_type_from_file(fileName=localFilePath)
         # extension = mimetypes.guess_extension(type=mimetype)
-        await self.s3Manager.upload_file(filePath=localFilePath, targetPath=f'{_BUCKET}/{imageId}/original', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
-        # NOTE(krishan711): resizing below
+        await self.s3Manager.upload_file(filePath=filePath, targetPath=f'{_BUCKET}/{imageId}/original', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
+        await self.resize_image(imageId=imageId)
+        return imageId
+
+    async def resize_image(self, imageId: str):
         image = await self._load_image(imageId=imageId)
         for targetSize in _TARGET_SIZES:
             if image.size.width >= targetSize:
@@ -64,7 +70,6 @@ class ImageManager:
                 resizedFilename = f'./tmp/{uuid.uuid4()}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
-        return imageId
 
     async def _save_image_to_file(self, image: Image, fileName: str) -> None:
         if image.imageFormat == ImageFormat.JPG:

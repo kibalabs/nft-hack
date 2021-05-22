@@ -8,6 +8,14 @@ export class MdtpClient extends ServiceClient {
     super(requester, baseUrl || 'https://mdtp-api.kibalabs.com');
   }
 
+  public getLatestBaseImage = async (network: string): Promise<Resources.BaseImage> => {
+    const method = RestMethod.GET;
+    const path = `v1/networks/${network}/latest-base-image`;
+    const request = new Endpoints.GetLatestBaseImageRequest();
+    const response = await this.makeRequest(method, path, request, Endpoints.GetLatestBaseImageResponse);
+    return response.baseImage;
+  }
+
   public listGridItems = async (network: string): Promise<Resources.GridItem[]> => {
     const method = RestMethod.GET;
     const path = `v1/networks/${network}/grid-items`;

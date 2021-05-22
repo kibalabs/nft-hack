@@ -2,6 +2,27 @@ import { RequestData, ResponseData } from '@kibalabs/core';
 
 import * as Resources from './resources';
 
+export class GetLatestBaseImageRequest extends RequestData {
+  public toObject = (): Record<string, unknown> => {
+    return {
+    };
+  }
+}
+
+export class GetLatestBaseImageResponse extends ResponseData {
+  public constructor(
+    readonly baseImage: Resources.BaseImage,
+  ) {
+    super();
+  }
+
+  public static fromObject = (obj: Record<string, unknown>): GetLatestBaseImageResponse => {
+    return new GetLatestBaseImageResponse(
+      Resources.BaseImage.fromObject(obj.baseImage as Record<string, unknown>),
+    );
+  }
+}
+
 export class ListGridItemsRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {
@@ -10,11 +31,10 @@ export class ListGridItemsRequest extends RequestData {
 }
 
 export class ListGridItemsResponse extends ResponseData {
-  readonly gridItems: Resources.GridItem[];
-
-  public constructor(gridItems: Resources.GridItem[]) {
+  public constructor(
+    readonly gridItems: Resources.GridItem[],
+  ) {
     super();
-    this.gridItems = gridItems;
   }
 
   public static fromObject = (obj: Record<string, unknown>): ListGridItemsResponse => {
@@ -25,11 +45,10 @@ export class ListGridItemsResponse extends ResponseData {
 }
 
 export class RetrieveGridItemRequest extends RequestData {
-  readonly tokenId: number;
-
-  public constructor(tokenId: number) {
+  public constructor(
+    readonly tokenId: number,
+  ) {
     super();
-    this.tokenId = tokenId;
   }
 
   public toObject = (): Record<string, unknown> => {
@@ -40,11 +59,10 @@ export class RetrieveGridItemRequest extends RequestData {
 }
 
 export class RetrieveGridItemResponse extends ResponseData {
-  readonly gridItem: Resources.GridItem;
-
-  public constructor(gridItem: Resources.GridItem) {
+  public constructor(
+    readonly gridItem: Resources.GridItem,
+  ) {
     super();
-    this.gridItem = gridItem;
   }
 
   public static fromObject = (obj: Record<string, unknown>): RetrieveGridItemResponse => {
@@ -62,11 +80,10 @@ export class ListStatItemsRequest extends RequestData {
 }
 
 export class ListStatItemsResponse extends ResponseData {
-  readonly statItems: Resources.StatItem[];
-
-  public constructor(statItems: Resources.StatItem[]) {
+  public constructor(
+    readonly statItems: Resources.StatItem[],
+  ) {
     super();
-    this.statItems = statItems;
   }
 
   public static fromObject = (obj: Record<string, unknown>): ListStatItemsResponse => {
@@ -84,11 +101,10 @@ export class GenerateImageUploadForTokenRequest extends RequestData {
 }
 
 export class GenerateImageUploadForTokenResponse extends ResponseData {
-  readonly presignedUpload: Resources.PresignedUpload;
-
-  public constructor(presignedUpload: Resources.PresignedUpload) {
+  public constructor(
+    readonly presignedUpload: Resources.PresignedUpload,
+  ) {
     super();
-    this.presignedUpload = presignedUpload;
   }
 
   public static fromObject = (obj: Record<string, unknown>): GenerateImageUploadForTokenResponse => {
@@ -99,15 +115,12 @@ export class GenerateImageUploadForTokenResponse extends ResponseData {
 }
 
 export class UploadMetadataForTokenRequest extends RequestData {
-  readonly name: string;
-  readonly description: string;
-  readonly imageUrl: string;
-
-  public constructor(name: string, description: string, imageUrl: string) {
+  public constructor(
+    readonly name: string,
+    readonly description: string,
+    readonly imageUrl: string,
+  ) {
     super();
-    this.name = name;
-    this.description = description;
-    this.imageUrl = imageUrl;
   }
 
   public toObject = (): Record<string, unknown> => {
@@ -120,11 +133,10 @@ export class UploadMetadataForTokenRequest extends RequestData {
 }
 
 export class UploadMetadataForTokenResponse extends ResponseData {
-  readonly url: string;
-
-  public constructor(url: string) {
+  public constructor(
+    readonly url: string,
+  ) {
     super();
-    this.url = url;
   }
 
   public static fromObject = (obj: Record<string, unknown>): UploadMetadataForTokenResponse => {

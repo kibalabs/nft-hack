@@ -10,6 +10,11 @@ from mdtp.manager import MdtpManager
 def create_api(manager: MdtpManager) -> KibaRouter():
     router = KibaRouter()
 
+    @router.get('/networks/{network}/latest-base-image', response_model=BaseImageUrlResponse)
+    async def get_latest_base_image_url(network: str, rawRequest: Request, response: Response) -> BaseImageUrlResponse: # request: BaseImageUrlRequest
+        baseImage = await manager.get_latest_base_image_url(network=network)
+        return BaseImageUrlResponse(baseImage=ApiBaseImage.from_model(model=baseImage))
+
     @router.get('/networks/{network}/grid-items', response_model=ListGridItemsResponse)
     async def list_grid_items(network: str, rawRequest: Request, response: Response) -> ListGridItemsResponse: # request: ListGridItemsRequest
         gridItems = await manager.list_grid_items(network=network)
@@ -34,7 +39,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     @router.post('/networks/{network}/tokens/{tokenId}/generate-image-upload', response_model=GenerateImageUploadForTokenResponse)
     async def generate_image_upload_for_token(network: str, tokenId: int, rawRequest: Request, response: Response):
         presignedUpload = await manager.generate_image_upload_for_token(network=network, tokenId=tokenId)
-        return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_presigned_upload(presignedUpload=presignedUpload))
+        return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_model(presignedUpload=presignedUpload))
 
     @router.post('/networks/{network}/tokens/{tokenId}/upload-metadata', response_model=UploadMetadataForTokenResponse)
     async def upload_metadata_for_token(network: str, tokenId: int, rawRequest: Request, response: Response, request: UploadMetadataForTokenRequest):

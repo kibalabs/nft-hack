@@ -3,7 +3,7 @@ import React from 'react';
 import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
-import { GridItem } from '../../client';
+import { BaseImage, GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { NotificationOverlay } from '../../components/NotificationOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
@@ -15,22 +15,18 @@ export const HomePage = (): React.ReactElement => {
   const { chainId, contract, apiClient, network } = useGlobals();
   const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
+  const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
+    apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
+      setBaseImage(retrievedBaseImage);
+    });
     apiClient.listGridItems(network).then((retrievedGridItems: GridItem[]): void => {
       if (retrievedGridItems.length === 0) {
         setGridItems([]);
         return;
       }
-      const sortedGridItems = retrievedGridItems.sort((gridItem1: GridItem, gridItem2: GridItem): number => gridItem1.gridItemId - gridItem2.gridItemId);
-      setGridItems(Array(10000).fill(null).map((_: unknown, index: number): GridItem => {
-      // setGridItems(Array(1000).fill(null).map((_: unknown, index: number): GridItem => {
-        const originalGridItem = sortedGridItems[index % sortedGridItems.length];
-        const gridItem = Object.assign(Object.create(Object.getPrototypeOf(originalGridItem)), originalGridItem);
-        gridItem.gridItemId = index;
-        return gridItem;
-      }));
-      // setGridItems(retrievedGridItems);
+      setGridItems(retrievedGridItems);
     });
   }, [network, apiClient]);
 
@@ -38,7 +34,8 @@ export const HomePage = (): React.ReactElement => {
     loadGridItems();
     if (!contract) {
       setInfoText('Please install Metamask to interact fully with the website');
-    } else if (!isValidChain(chainId)) { // arthur-fox: currently this case can never happen, as chainId is set to Rinkeby
+    } else if (!isValidChain(chainId)) {
+      // NOTE(arthur-fox): currently this case can never happen, as chainId is set to Rinkeby
       setInfoText('We currently only support Rinkeby testnet. Please switch networks in Metamask and refresh');
     } else {
       setInfoText('BETA - this is a beta version currently running on the Rinkeby testnet.');
@@ -55,10 +52,10 @@ export const HomePage = (): React.ReactElement => {
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
       <LayerContainer>
-        { gridItems === null ? (
+        { gridItems === null || baseImage === null ? (
           <LoadingSpinner />
         ) : (
-          <TokenGrid gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
+          <TokenGrid baseImage={baseImage} gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
         )}
         { infoText && (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Center}>
