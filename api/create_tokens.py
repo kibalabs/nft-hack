@@ -1,17 +1,14 @@
-import asyncio
 import os
 import json
 import logging
-from typing import Optional
 
 import asyncclick as click
 import boto3
-from PIL import Image
-from web3 import Web3
-
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.web3.eth_client import RestEthClient
+from PIL import Image
+from web3 import Web3
 
 GWEI = 1000000000
 

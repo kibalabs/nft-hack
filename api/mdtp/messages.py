@@ -1,6 +1,5 @@
 from core.queues.model import MessageContent
 
-
 class UpdateTokenMessageContent(MessageContent):
     _COMMAND = 'UPDATE_TOKEN'
     network: str

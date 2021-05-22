@@ -1,17 +1,11 @@
-import asyncio
 import os
-import json
 import logging
-from typing import Optional
 
 import asyncclick as click
 import boto3
-from web3 import Web3
-from databases import Database
-
 from core.queues.sqs_message_queue import SqsMessageQueue
-from mdtp.messages import UpdateTokensMessageContent
 
+from mdtp.messages import UpdateTokensMessageContent
 
 @click.command()
 async def run():
