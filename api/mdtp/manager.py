@@ -5,23 +5,23 @@ from typing import Sequence
 from typing import Optional
 import uuid
 
+from core.exceptions import NotFoundException
+from core.requester import Requester
+from core.queues.sqs_message_queue import SqsMessageQueue
+from core.web3.eth_client import EthClientInterface
+from core.s3_manager import S3Manager
+from core.s3_manager import S3PresignedUpload
+from core.store.retriever import StringFieldFilter
 from web3 import Web3
 
-from mdtp.core.exceptions import NotFoundException
-from mdtp.core.requester import Requester
-from mdtp.core.sqs_message_queue import SqsMessageQueue
-from mdtp.eth_client import EthClientInterface
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import GridItem
 from mdtp.model import StatItem
+from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
-from mdtp.core.util import date_util
-from mdtp.core.s3_manager import S3Manager
-from mdtp.core.s3_manager import S3PresignedUpload
-from mdtp.core.store.retriever import StringFieldFilter
 from mdtp.store.schema import GridItemsTable
 
 _KILOBYTE = 1024
@@ -98,6 +98,9 @@ class MdtpManager:
     async def update_tokens_deferred(self, network: str) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message())
 
+    async def update_token_deferred(self, network: str, tokenId: str) -> None:
+        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message())
+
     async def update_tokens(self, network: str) -> None:
         if network == 'rinkeby':
             ethClient = self.rinkebyEthClient
@@ -147,10 +150,10 @@ class MdtpManager:
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
             gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, ownerId=ownerId)
-            await self.upload_token_image_deferred(network=network, tokenId=tokenId)
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
+        if resizableImageUrl is None:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId)
         if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')

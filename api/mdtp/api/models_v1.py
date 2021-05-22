@@ -1,14 +1,12 @@
-import datetime
 from typing import Dict
 from typing import Optional
 from typing import List
 
+from core.s3_manager import S3PresignedUpload
 from pydantic import BaseModel
-from pydantic import Json
 
 from mdtp.model import GridItem
 from mdtp.model import StatItem
-from mdtp.core.s3_manager import S3PresignedUpload
 
 class ApiGridItem(BaseModel):
     gridItemId: int
@@ -94,6 +92,12 @@ class UploadMetadataForTokenRequest(BaseModel):
 
 class UploadMetadataForTokenResponse(BaseModel):
     url: str
+
+class UpdateTokenDeferredRequest(BaseModel):
+    pass
+
+class UpdateTokenDeferredResponse(BaseModel):
+    pass
 
 class GetImageRequest(BaseModel):
     pass

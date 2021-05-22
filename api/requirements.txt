@@ -1,12 +1,3 @@
-fastapi==0.52.0
-uvicorn==0.13.4
-web3==5.17.0
-pydantic==1.8.1
-boto3==1.12.49
-aiofiles==0.6.0
 Pillow==8.2.0
-databases[postgresql]==0.4.2
-# NOTE(krishan711): 1.4.0 fail with wierd asyncpg error
-sqlalchemy==1.3.23
-httpx==0.17.0
 asyncclick==7.1.2.3
+kiba-core[database-psql, requester, queues, api, web3] @ git+https://git@github.com/kibalabs/core-py.git

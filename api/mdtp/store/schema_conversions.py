@@ -1,4 +1,3 @@
-import datetime
 from typing import Mapping
 
 from mdtp.model import GridItem

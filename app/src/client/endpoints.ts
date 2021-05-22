@@ -133,3 +133,17 @@ export class UploadMetadataForTokenResponse extends ResponseData {
     );
   }
 }
+
+export class UpdateTokenDeferredRequest extends RequestData {
+  public toObject = (): Record<string, unknown> => {
+    return {
+    };
+  }
+}
+
+export class UpdateTokenDeferredResponse extends ResponseData {
+  public static fromObject = (): UpdateTokenDeferredResponse => {
+    return new UpdateTokenDeferredResponse(
+    );
+  }
+}
