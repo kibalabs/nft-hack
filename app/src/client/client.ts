@@ -16,10 +16,10 @@ export class MdtpClient extends ServiceClient {
     return response.baseImage;
   }
 
-  public listGridItems = async (network: string): Promise<Resources.GridItem[]> => {
+  public listGridItems = async (network: string, shouldCompact = false): Promise<Resources.GridItem[]> => {
     const method = RestMethod.GET;
     const path = `v1/networks/${network}/grid-items`;
-    const request = new Endpoints.ListGridItemsRequest();
+    const request = new Endpoints.ListGridItemsRequest(shouldCompact);
     const response = await this.makeRequest(method, path, request, Endpoints.ListGridItemsResponse);
     return response.gridItems;
   }
