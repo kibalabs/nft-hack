@@ -21,7 +21,7 @@ class ApiGridItem(BaseModel):
     ownerId: str
 
     @classmethod
-    def from_model(cls, model: GridItem, shouldCompact: bool):
+    def from_model(cls, model: GridItem, shouldCompact: bool = False):
         return cls(
             gridItemId=model.gridItemId,
             updatedDate=model.updatedDate,

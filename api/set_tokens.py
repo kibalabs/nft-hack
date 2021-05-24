@@ -8,7 +8,6 @@ from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.web3.eth_client import RestEthClient
 from PIL import Image
-from web3 import Web3
 
 GWEI = 1000000000
 
@@ -59,26 +58,23 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
         }
         await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{name}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
 
-    w3 = Web3()
     requester = Requester()
     ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
     with open('./MillionDollarNFT.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
     contractAbi = contractJson['abi']
-    contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=contractAbi)
-    contractMintNFTMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'mintNFT'][0]
     contractTotalSupplyMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'totalSupply'][0]
     contractTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'tokenURI'][0]
     contractSetTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'setTokenURI'][0]
     nonce = await ethClient.get_transaction_count(address=ACCOUNT_ADDRESS)
     nonceIncrement = 0
 
-    kTotalBlocksPerRow = 100
+    totalBlocksPerRow = 100
     tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
     for row in range(0, height):
         for column in range(0, width):
-            index = row*width + column
-            tokenId = startingToken + (row*kTotalBlocksPerRow + column)
+            index = (row * width) + column
+            tokenId = startingToken + (row * totalBlocksPerRow) + column
             tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
             if tokenId <= tokenCount:
                 currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
@@ -89,7 +85,7 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
                         'tokenURI': tokenUri,
                     }
                     await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
-                    await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred')
+                    await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
                     await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
                     nonceIncrement += 1
             else:

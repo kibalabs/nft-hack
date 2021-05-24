@@ -1,4 +1,4 @@
-import { RequestData, ResponseData } from '@kibalabs/core';
+import { dateToString, RequestData, ResponseData } from '@kibalabs/core';
 
 import * as Resources from './resources';
 
@@ -26,6 +26,7 @@ export class GetLatestBaseImageResponse extends ResponseData {
 export class ListGridItemsRequest extends RequestData {
   public constructor(
     readonly shouldCompact: boolean,
+    readonly updatedSinceDate?: Date,
   ) {
     super();
   }
@@ -33,6 +34,7 @@ export class ListGridItemsRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {
       shouldCompact: this.shouldCompact,
+      updatedSinceSate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
     };
   }
 }

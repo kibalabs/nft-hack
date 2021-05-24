@@ -24,13 +24,9 @@ export const HomePage = (): React.ReactElement => {
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
-    });
-    apiClient.listGridItems(network, true).then((retrievedGridItems: GridItem[]): void => {
-      if (retrievedGridItems.length === 0) {
-        setGridItems([]);
-        return;
-      }
-      setGridItems(retrievedGridItems);
+      apiClient.listGridItems(network, true, retrievedBaseImage.updatedDate).then((retrievedGridItems: GridItem[]): void => {
+        setGridItems(retrievedGridItems);
+      });
     });
   }, [network, apiClient]);
 
@@ -46,8 +42,8 @@ export const HomePage = (): React.ReactElement => {
     }
   }, [chainId, contract, loadGridItems]);
 
-  const onGridItemClicked = (gridItem: GridItem) => {
-    window.open(`/tokens/${gridItem.tokenId}`, '_blank');
+  const onTokenIdClicked = (tokenId: number) => {
+    window.open(`/tokens/${tokenId}`, '_blank');
   };
 
   const onWelcomeCloseClicked = (): void => {
@@ -72,10 +68,10 @@ export const HomePage = (): React.ReactElement => {
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
       <LayerContainer>
-        { gridItems === null || baseImage === null ? (
+        { baseImage === null ? (
           <LoadingSpinner />
         ) : (
-          <TokenGrid baseImage={baseImage} gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
+          <TokenGrid baseImage={baseImage} newGridItems={gridItems || []} tokenCount={10000} onTokenIdClicked={onTokenIdClicked} />
         )}
         { infoText && (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Center}>
