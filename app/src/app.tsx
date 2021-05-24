@@ -60,9 +60,9 @@ const globals: Globals = {
 };
 
 export const App = hot((): React.ReactElement => {
-  const [accounts, setAccounts] = React.useState<string[] | null>(null);
-  const [chainId, setChainId] = React.useState<number | null>(null);
-  const [network, setNetwork] = React.useState<string | null>(null);
+  const [accounts, setAccounts] = React.useState<string[] | undefined>(undefined);
+  const [chainId, setChainId] = React.useState<number | undefined>(undefined);
+  const [network, setNetwork] = React.useState<string | undefined>(undefined);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
     if (!web3) {
@@ -96,11 +96,11 @@ export const App = hot((): React.ReactElement => {
   });
 
   React.useEffect((): void => {
-    setNetwork(chainId ? getNetwork(chainId) : null);
+    setNetwork(chainId ? getNetwork(chainId) : undefined);
   }, [chainId]);
 
   return (
-    <KibaApp theme={theme}>
+    <KibaApp theme={theme} globalExtraCss={'html,body{width:100%; height:100%;} #root{position:fixed; width:100%; height:100%;}'} extraCss={'min-height: 100%;'}>
       <GlobalsProvider globals={{ ...globals, network }}>
         <AccountControlProvider accounts={accounts} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>

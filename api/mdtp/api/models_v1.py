@@ -22,14 +22,14 @@ class ApiGridItem(BaseModel):
     ownerId: str
 
     @classmethod
-    def from_model(cls, model: GridItem):
+    def from_model(cls, model: GridItem, shouldCompact: bool):
         return cls(
             gridItemId=model.gridItemId,
             updatedDate=model.updatedDate,
             network=model.network,
             tokenId=model.tokenId,
             title=model.title,
-            description=model.description,
+            description=model.description if not shouldCompact else None,
             imageUrl=model.imageUrl,
             resizableImageUrl=model.resizableImageUrl,
             ownerId=model.ownerId,

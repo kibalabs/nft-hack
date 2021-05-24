@@ -16,7 +16,7 @@ export interface Globals {
   contract: Contract;
   contractAddress: string;
   apiClient: MdtpClient;
-  network: string;
+  network: string | undefined;
   chainId: ChainId;
 }
 

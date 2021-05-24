@@ -13,11 +13,16 @@ import { isValidChain } from '../../util/chainUtil';
 
 export const HomePage = (): React.ReactElement => {
   const { chainId, contract, apiClient, network } = useGlobals();
-  const [infoText, setInfoText] = React.useState<string | null>(null);
-  const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
-  const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
+  const [infoText, setInfoText] = React.useState<string | undefined>(undefined);
+  const [gridItems, setGridItems] = React.useState<GridItem[] | undefined>(undefined);
+  const [baseImage, setBaseImage] = React.useState<BaseImage | undefined>(undefined);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
+    if (!network) {
+      setBaseImage(undefined);
+      setGridItems(undefined);
+      return;
+    }
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
     });
@@ -52,7 +57,7 @@ export const HomePage = (): React.ReactElement => {
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
       <LayerContainer>
-        { gridItems === null || baseImage === null ? (
+        { gridItems === undefined || baseImage === undefined || network === undefined ? (
           <LoadingSpinner />
         ) : (
           <TokenGrid baseImage={baseImage} gridItems={gridItems} onGridItemClicked={onGridItemClicked} />

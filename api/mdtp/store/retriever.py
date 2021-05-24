@@ -21,6 +21,7 @@ class MdtpRetriever(Retriever):
             query = self._apply_orders(query=query, table=GridItemsTable, orders=orders)
         if limit:
             query = query.limit(limit)
+        print('query', query)
         rows = await self.database.fetch_all(query=query)
         gridItems = [grid_item_from_row(row) for row in rows]
         return gridItems
@@ -33,7 +34,6 @@ class MdtpRetriever(Retriever):
             query = self._apply_orders(query=query, table=BaseImagesTable, orders=orders)
         if limit:
             query = query.limit(limit)
-        print('query', query)
         rows = await self.database.fetch_all(query=query)
         gridItems = [base_image_from_row(row) for row in rows]
         return gridItems

@@ -14,19 +14,29 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: num
     setScale(constrainScale(newScale));
   };
 
-  useEventListener(ref.current, 'wheel', (e) => {
-    e.preventDefault();
+  const updateScale = (zoomingIn: boolean): void => {
     setScale((currentScale: number): number => {
-      let newScale = currentScale;
-      // @ts-ignore
-      if (e.deltaY > 0) {
-        newScale = currentScale + increment;
-      // @ts-ignore
-      } else if (e.deltaY < 0) {
-        newScale = currentScale - increment;
-      }
+      const newScale = currentScale + (zoomingIn ? increment : -increment);
       return constrainScale(newScale);
     });
+  }
+
+  useEventListener(ref.current, 'wheel', (event: React.WheelEvent) => {
+    event.preventDefault();
+    if (event.deltaY > 0) {
+      updateScale(true);
+    } else if (event.deltaY < 0) {
+      updateScale(false);
+    }
+  });
+
+  useEventListener(ref.current, 'wheel', (event: React.WheelEvent) => {
+    event.preventDefault();
+    if (event.deltaY > 0) {
+      updateScale(true);
+    } else if (event.deltaY < 0) {
+      updateScale(false);
+    }
   });
 
   return [scale, setScaleManually];

@@ -39,7 +39,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
   const windowSize = useWindowSize();
-  const [panOffset, startPan] = usePan();
+  const [panOffset, startPanMouse, startPanTouch] = usePan();
   const lastPanOffset = usePreviousValue(panOffset);
   const [scale, setScale] = useScale(containerRef, MIN_SCALE, MAX_SCALE, 0.3, true);
   const lastScale = usePreviousValue(scale);
@@ -223,6 +223,16 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
     lastMouseMovePointRef.current = null;
   };
 
+  const onTouchStart = (event: React.TouchEvent): void => {
+    if (event.touches.length === 1) {
+      startPanTouch(event);
+    } else {
+      console.log('here');
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
   return (
     <LayerContainer>
       <div
@@ -246,7 +256,8 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
             backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover',
           }}
-          onMouseDown={startPan}
+          onMouseDown={startPanMouse}
+          onTouchStart={onTouchStart}
         >
           <canvas
             ref={canvasRef}
