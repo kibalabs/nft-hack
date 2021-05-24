@@ -10,12 +10,16 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { isValidChain } from '../../util/chainUtil';
+import { useBooleanLocalStorageState, useNavigator } from '@kibalabs/core-react';
 
 export const HomePage = (): React.ReactElement => {
+  const navigator = useNavigator();
   const { chainId, contract, apiClient, network } = useGlobals();
   const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
+  const [notificationComplete, setNotificationComplete] = useBooleanLocalStorageState('notificationComplete')
+  const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete')
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
@@ -46,6 +50,22 @@ export const HomePage = (): React.ReactElement => {
     window.open(`/tokens/${gridItem.tokenId}`, '_blank');
   };
 
+  const onWelcomeCloseClicked = (): void => {
+    setWelcomeComplete(true);
+  }
+
+  const onWelcomeAboutClicked = () => {
+    navigator.navigateTo('/about');
+  };
+
+  const onNotificationCloseClicked = (): void => {
+    setNotificationComplete(true);
+  }
+
+  const onNotificationClaimClicked = () => {
+    setNotificationComplete(true);
+  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -64,15 +84,18 @@ export const HomePage = (): React.ReactElement => {
             </Box>
           </LayerContainer.Layer>
         )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-          <NotificationOverlay />
-        </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <ButtonsOverlay />
         </LayerContainer.Layer>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-          <WelcomeOverlay />
-        </LayerContainer.Layer>
+        {!welcomeComplete ? (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+            <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onWelcomeAboutClicked} />
+          </LayerContainer.Layer>
+        ) : !notificationComplete ? (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+            <NotificationOverlay onCloseClicked={onNotificationCloseClicked} onClaimClicked={onNotificationClaimClicked} />
+          </LayerContainer.Layer>
+        ) : null}
       </LayerContainer>
     </React.Fragment>
   );
