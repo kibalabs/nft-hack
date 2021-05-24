@@ -77,7 +77,7 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
             tokenId = startingToken + (row * totalBlocksPerRow) + column
             tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
             if tokenId <= tokenCount:
-                currentTokenUri = None #(await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
+                currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
                 if currentTokenUri != tokenUri:
                     print(f'Updating token {tokenId}', nonce + nonceIncrement)
                     data = {
@@ -85,8 +85,8 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
                         'tokenURI': tokenUri,
                     }
                     await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
-                    await requester.post(url=f'http://localhost:5000/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
-                    await requester.post_json(url=f'http://localhost:5000/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
+                    await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
+                    await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
                     nonceIncrement += 1
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId}', nonce + nonceIncrement)
