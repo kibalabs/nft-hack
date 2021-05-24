@@ -17,10 +17,10 @@ class GridItem:
     ownerId: str
 
 @dataclasses.dataclass
-class StatItem:
-    statItemId: int
-    title: str
-    data: str
+class NetworkSummary:
+    marketCapitalization: float
+    totalSales: int
+    averagePrice: float
 
 @dataclasses.dataclass
 class ImageSize:
