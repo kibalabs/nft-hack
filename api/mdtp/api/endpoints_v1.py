@@ -1,0 +1,66 @@
+from typing import Optional
+from typing import List
+
+from pydantic import BaseModel
+
+from mdtp.api.resources_v1 import ApiGridItem
+from mdtp.api.resources_v1 import ApiStatItem
+from mdtp.api.resources_v1 import ApiBaseImage
+from mdtp.api.resources_v1 import ApiPresignedUpload
+
+
+class BaseImageUrlRequest(BaseModel):
+    pass
+
+class BaseImageUrlResponse(BaseModel):
+    baseImage: ApiBaseImage
+
+class ListGridItemsRequest(BaseModel):
+    pass
+
+class ListGridItemsResponse(BaseModel):
+    gridItems: List[ApiGridItem]
+
+class ListStatItemsRequest(BaseModel):
+    pass
+
+class ListStatItemsResponse(BaseModel):
+    statItems: List[ApiStatItem]
+
+class RetrieveGridItemRequest(BaseModel):
+    tokenId: int
+
+class RetrieveGridItemResponse(BaseModel):
+    gridItem: ApiGridItem
+
+class UpdateTokensDeferredRequest(BaseModel):
+    delay: Optional[int]
+
+class UpdateTokensDeferredResponse(BaseModel):
+    pass
+
+class GenerateImageUploadForTokenRequest(BaseModel):
+    pass
+
+class GenerateImageUploadForTokenResponse(BaseModel):
+    presignedUpload: ApiPresignedUpload
+
+class UploadMetadataForTokenRequest(BaseModel):
+    name: str
+    description: str
+    imageUrl: str
+
+class UploadMetadataForTokenResponse(BaseModel):
+    url: str
+
+class UpdateTokenDeferredRequest(BaseModel):
+    delay: Optional[int]
+
+class UpdateTokenDeferredResponse(BaseModel):
+    pass
+
+class GetImageRequest(BaseModel):
+    pass
+
+class GetImageResponse(BaseModel):
+    pass
