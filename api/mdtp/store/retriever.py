@@ -46,7 +46,7 @@ class MdtpRetriever(Retriever):
         gridItem = grid_item_from_row(row)
         return gridItem
 
-    async def get_grid_item_by_token_id_network(self, tokenId: str, network: str) -> Optional[GridItem]:
+    async def get_grid_item_by_token_id_network(self, tokenId: str, network: str) -> GridItem:
         query = GridItemsTable.select() \
             .where(GridItemsTable.c.tokenId == tokenId) \
             .where(GridItemsTable.c.network == network)

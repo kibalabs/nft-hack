@@ -1,17 +1,21 @@
+from dataclasses import field
+import datetime
 import json
 import logging
 from typing import Dict
 from typing import Sequence
 from typing import Optional
+import urllib.parse as urlparse
 import uuid
 
 from core.exceptions import NotFoundException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
+from core.util import dict_util
 from core.web3.eth_client import EthClientInterface
 from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
-from core.store.retriever import Direction, Order, StringFieldFilter
+from core.store.retriever import DateFieldFilter, Direction, Order, StringFieldFilter
 from web3 import Web3
 
 from mdtp.store.saver import MdtpSaver
@@ -55,8 +59,13 @@ class MdtpManager:
         gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         return gridItem
 
-    async def list_grid_items(self, network: str) -> Sequence[GridItem]:
-        gridItems = await self.retriever.list_grid_items(fieldFilters=[StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)])
+    async def list_grid_items(self, network: str, updatedSinceSate: Optional[datetime.datetime] = None) -> Sequence[GridItem]:
+        filters = [StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)]
+        print('updatedSinceSate', updatedSinceSate)
+        if updatedSinceSate:
+            filters.append(DateFieldFilter(fieldName=GridItemsTable.c.updatedDate.key, gte=updatedSinceSate.replace(tzinfo=None)))
+        print('filters', filters)
+        gridItems = await self.retriever.list_grid_items(fieldFilters=filters)
         return gridItems
 
     async def get_latest_base_image_url(self, network: str) -> BaseImage:
@@ -107,10 +116,10 @@ class MdtpManager:
         return target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
 
     async def update_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
-        await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay)
+        await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
     async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int]) -> None:
-        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay)
+        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
 
     async def update_tokens(self, network: str) -> None:
         if network == 'rinkeby':
@@ -172,3 +181,20 @@ class MdtpManager:
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)
+
+    async def go_to_token_image(self, network: str, tokenId: int, width: Optional[int] = None, height: Optional[int] = None) -> str:
+        gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
+        if gridItem.resizableImageUrl:
+            if gridItem.resizableImageUrl.startswith('https://mdtp-api.kibalabs.com/v1/images/'):
+                imageId = gridItem.resizableImageUrl.replace('https://mdtp-api.kibalabs.com/v1/images/', '').replace('/go', '')
+                return await self.go_to_image(imageId=imageId, width=width, height=height)
+            params = {}
+            if width:
+                params['w'] = width
+            if height:
+                params['h'] = height
+            urlParts = urlparse.urlparse(gridItem.resizableImageUrl)
+            currentQuery = urlparse.parse_qs(urlParts.query)
+            queryString = urlparse.urlencode(dict_util.merge_dicts(currentQuery, params), doseq=True)
+            return urlparse.urlunsplit(components=(urlParts.scheme, urlParts.netloc, urlParts.path, queryString, urlParts.fragment))
+        return gridItem.imageUrl

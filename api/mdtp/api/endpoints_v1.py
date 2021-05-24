@@ -39,6 +39,12 @@ class UpdateTokensDeferredRequest(BaseModel):
 class UpdateTokensDeferredResponse(BaseModel):
     pass
 
+class GoToImageForTokenRequest(BaseModel):
+    pass
+
+class GoToImageForTokenResponse(BaseModel):
+    pass
+
 class GenerateImageUploadForTokenRequest(BaseModel):
     pass
 
@@ -59,8 +65,8 @@ class UpdateTokenDeferredRequest(BaseModel):
 class UpdateTokenDeferredResponse(BaseModel):
     pass
 
-class GetImageRequest(BaseModel):
+class GoToImageRequest(BaseModel):
     pass
 
-class GetImageResponse(BaseModel):
+class GoToImageResponse(BaseModel):
     pass

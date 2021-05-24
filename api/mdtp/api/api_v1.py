@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from core.api.kiba_router import KibaRouter
@@ -17,8 +18,8 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return BaseImageUrlResponse(baseImage=ApiBaseImage.from_model(model=baseImage))
 
     @router.get('/networks/{network}/grid-items', response_model=ListGridItemsResponse)
-    async def list_grid_items(network: str, shouldCompact: bool = False) -> ListGridItemsResponse: # request: ListGridItemsRequest
-        gridItems = await manager.list_grid_items(network=network)
+    async def list_grid_items(network: str, shouldCompact: bool = False, updatedSinceSate: Optional[datetime.datetime] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
+        gridItems = await manager.list_grid_items(network=network, updatedSinceSate=updatedSinceSate)
         return ListGridItemsResponse(gridItems=[ApiGridItem.from_model(model=gridItem, shouldCompact=shouldCompact) for gridItem in gridItems])
 
     @router.get('/networks/{network}/stat-items', response_model=ListStatItemsResponse)
@@ -37,6 +38,11 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         await manager.update_tokens_deferred(network=network, delay=request.delay)
         return UpdateTokensDeferredResponse()
 
+    @router.get('/networks/{network}/tokens/{tokenId}/go-to-image')
+    async def go_to_token_image(network: str, tokenId: int, w: Optional[int] = None, h: Optional[int] = None) -> Response:
+        imageUrl = await manager.go_to_token_image(network=network, tokenId=tokenId, width=w, height=h)
+        return Response(status_code=302, headers={'location': imageUrl})
+
     @router.post('/networks/{network}/tokens/{tokenId}/generate-image-upload', response_model=GenerateImageUploadForTokenResponse)
     async def generate_image_upload_for_token(network: str, tokenId: int):
         presignedUpload = await manager.generate_image_upload_for_token(network=network, tokenId=tokenId)
@@ -52,8 +58,8 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         await manager.update_token_deferred(network=network, tokenId=tokenId, delay=request.delay)
         return UpdateTokenDeferredResponse()
 
-    @router.get('/images/{imageId}/go', response_model=GenerateImageUploadForTokenResponse)
-    async def go_to_image(imageId: str, w: Optional[int] = None, h: Optional[int] = None):
+    @router.get('/images/{imageId}/go')
+    async def go_to_image(imageId: str, w: Optional[int] = None, h: Optional[int] = None) -> Response:
         imageUrl = await manager.go_to_image(imageId=imageId, width=w, height=h)
         return Response(status_code=301, headers={'location': imageUrl, 'Cache-Control': 'public, max-age=31536000, immutable'})
 
