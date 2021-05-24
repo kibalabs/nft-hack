@@ -18,10 +18,10 @@ def crop(imagePath: str, outputDirectory: str, width: int, height: int):
     imageWidth, imageHeight = image.size
     boxWidth = int(imageWidth/width)
     boxHeight = int(imageHeight/height)
-    index = 0
-    for row in range(0, imageHeight, boxHeight):
-        for column in range(0, imageWidth, boxWidth):
-            box = (column, row, column + boxWidth, row + boxHeight)
+    index = 0    
+    for row in range(0, height):
+        for column in range(0, width):
+            box = (column*boxWidth, row*boxHeight, (column+1)*boxWidth, (row+1)*boxHeight)
             croppedImage = image.crop(box)
             croppedImage.save(os.path.join(outputDirectory, f'{index}.png'))
             index += 1
@@ -78,8 +78,8 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
             tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
             if tokenId <= tokenCount:
                 currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
-                if currentTokenUri != tokenUri:
-                    print(f'Updating token {tokenId}', nonce + nonceIncrement)
+                if True: #currentTokenUri != tokenUri:
+                    print(f'Updating token {tokenId}, with index {index}, and nonce', nonce + nonceIncrement)
                     data = {
                         'tokenId': tokenId,
                         'tokenURI': tokenUri,
