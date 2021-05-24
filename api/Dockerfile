@@ -4,6 +4,7 @@ WORKDIR /app
 
 # NOTE(krishan711): GCC (and others) needed to build some dependencies. Remove when everything has a wheel.
 RUN apt-get update \
+    && apt-get install -y --no-install-recommends git gcc \
     && apt-get install -y --no-install-recommends gcc libc-dev \
     && pip install cytoolz==0.11.0 \
     && pip install bitarray==1.2.2 \

@@ -1,25 +1,21 @@
-import logging
 from os import stat
-from typing import Dict
-import mimetypes
 import imghdr
 from typing import Optional, List
 import uuid
 from io import BytesIO
 
+from core.util import file_util
+from core.exceptions import InternalServerErrorException, KibaException, NotFoundException
+from core.s3_manager import S3Manager
 from PIL import Image as PILImage
 
 from mdtp.model import ImageData, ImageFormat, ImageSize, Image, ImageVariant
-from mdtp.core.requester import Requester
-from mdtp.core.util import file_util
-from mdtp.core.exceptions import InternalServerErrorException, KibaException, NotFoundException
-from mdtp.core.s3_manager import S3Manager
+from core.requester import Requester
 
 
 _BUCKET = 's3://mdtp-images/pablo'
-_BASE_URL = 'https://mdtp-images.s3-eu-west-1.amazonaws.com/pablo'
+_BASE_URL = 'https://d2a7i2107hou45.cloudfront.net/pablo'
 
-_CACHE_CONTROL_TEMPORARY_FILE = 'public,max-age=1'
 _CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
 
 _TARGET_SIZES = [10, 20, 50, 100, 200, 500, 1000]
@@ -30,20 +26,9 @@ class UnknownImageType(InternalServerErrorException):
 
 class ImageManager:
 
-    def __init__(self, requester: Requester, s3Manager: S3Manager, sirvKey: str, sirvSecret: str):
+    def __init__(self, requester: Requester, s3Manager: S3Manager):
         self.requester = requester
         self.s3Manager = s3Manager
-        self.sirvKey = sirvKey
-        self.sirvSecret = sirvSecret
-
-    async def _get_sirv_token(self) -> str:
-        response = await self.requester.post_json(url='https://api.sirv.com/v2/token', dataDict={'clientId': self.sirvKey, 'clientSecret': self.sirvSecret})
-        return response.json()['token']
-
-    async def _make_post_request(self, dataDict: Dict, url: str) -> Dict:
-        token = await self._get_sirv_token()
-        response = await self.requester.post_json(url=url, dataDict=dataDict, headers={'authorization': f'Bearer {token}'})
-        return response.json()
 
     def _get_image_type_from_file(self, fileName: str) -> str:
         imageType = imghdr.what(fileName)
@@ -58,20 +43,21 @@ class ImageManager:
         return f'image/{imageType}'
 
     async def upload_image_from_url(self, url: str) -> str:
-        # response = await self._make_post_request(url='https://api.sirv.com/v2/files/fetch', dataDict=[{'url': url, 'filename': filePath}])
-        # imageResponse = response[0]
-        # if not imageResponse['success']:
-        #     logging.error(imageResponse)
-        #     raise InternalServerErrorException(message=f'Failed to upload image')
-        # return f'https://kibalabs.sirv.com{filePath}'
-        imageId = str(uuid.uuid4()).replace('-', '')
-        localFilePath = f'./tmp/{imageId}/download'
+        localFilePath = f'./tmp/download'
         await self.requester.get(url=url, outputFilePath=localFilePath)
+        imageId = await self.upload_image_from_file(filePath=localFilePath)
+        return imageId
+
+    async def upload_image_from_file(self, filePath: str) -> str:
+        imageId = str(uuid.uuid4()).replace('-', '')
         # TODO(krishan711): save with extensions once implemented in pablo
         # mimetype = self._get_image_type_from_file(fileName=localFilePath)
         # extension = mimetypes.guess_extension(type=mimetype)
-        await self.s3Manager.upload_file(filePath=localFilePath, targetPath=f'{_BUCKET}/{imageId}/original', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
-        # NOTE(krishan711): resizing below
+        await self.s3Manager.upload_file(filePath=filePath, targetPath=f'{_BUCKET}/{imageId}/original', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
+        await self.resize_image(imageId=imageId)
+        return imageId
+
+    async def resize_image(self, imageId: str):
         image = await self._load_image(imageId=imageId)
         for targetSize in _TARGET_SIZES:
             if image.size.width >= targetSize:
@@ -84,7 +70,6 @@ class ImageManager:
                 resizedFilename = f'./tmp/{uuid.uuid4()}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
-        return imageId
 
     async def _save_image_to_file(self, image: Image, fileName: str) -> None:
         if image.imageFormat == ImageFormat.JPG:

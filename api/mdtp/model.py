@@ -6,8 +6,10 @@ from pydantic import dataclasses
 @dataclasses.dataclass
 class GridItem:
     gridItemId: int
-    tokenId: int
+    createdDate: datetime.datetime
+    updatedDate: datetime.datetime
     network: str
+    tokenId: int
     title: str
     description: Optional[str]
     imageUrl: str
@@ -26,7 +28,7 @@ class ImageSize:
     height: int
 
 class ImageFormat:
-    JPG = "image/jpg"
+    JPG = "image/jpeg"
     PNG = "image/png"
     WEBP = "image/webp"
 
@@ -48,3 +50,11 @@ class ImageData:
     content: bytes
     size: ImageSize
     imageFormat: str
+
+@dataclasses.dataclass
+class BaseImage:
+    baseImageId: int
+    createdDate: datetime.datetime
+    updatedDate: datetime.datetime
+    network: str
+    url: str

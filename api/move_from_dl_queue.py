@@ -4,7 +4,7 @@ import logging
 import boto3
 import asyncclick as click
 
-from mdtp.core.sqs_message_queue import SqsMessageQueue
+from core.queues.sqs_message_queue import SqsMessageQueue
 
 @click.command()
 async def run():

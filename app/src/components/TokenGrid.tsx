@@ -3,7 +3,7 @@ import React from 'react';
 import { useDebouncedCallback, usePreviousValue, useWindowSize } from '@kibalabs/core-react';
 import { Alignment, LayerContainer } from '@kibalabs/ui-react';
 
-import { GridItem } from '../client';
+import { BaseImage, GridItem } from '../client';
 import { arePointRangesEqual, arePointsEqual, diffPoints, floorPoint, ORIGIN_POINT, Point, PointRange, scalePoint, sumPoints } from '../util/pointUtil';
 import { useMousePositionRef } from '../util/useMousePositionRef';
 import { usePan } from '../util/usePan';
@@ -13,10 +13,10 @@ import { GridControl } from './GridControl';
 const tokenWidth = 10;
 const tokenHeight = 10;
 const canvasWidth = 1000;
-// const canvasWidth = 300;
 
 interface TokenGridProps {
   gridItems: GridItem[];
+  baseImage: BaseImage;
   onGridItemClicked: (gridItem: GridItem) => void;
 }
 
@@ -55,11 +55,19 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   const lastMouseMovePointRef = React.useRef<Point | null>(null);
   const [setRedrawCallback, clearRedrawCallback] = useDebouncedCallback(350);
   const [isMoving, setIsMoving] = React.useState<boolean>(false);
+  const gridItemMap = React.useMemo((): Map<number, GridItem> => {
+    const map = new Map<number, GridItem>();
+    props.gridItems.forEach((gridItem: GridItem): void => {
+      map.set(gridItem.tokenId, gridItem);
+    });
+    return map;
+  }, [props.gridItems]);
 
   const canvasHeight = tokenHeight * Math.ceil((props.gridItems.length * tokenWidth) / canvasWidth);
 
-  const drawImageOnCanvas = React.useCallback((imageUrl: string, context: CanvasRenderingContext2D, tokenIndex: number, imageScale: number) => {
-    if (tokenScales.current.get(tokenIndex) === imageScale) {
+  const drawTokenImageOnCanvas = React.useCallback((imageUrl: string, context: CanvasRenderingContext2D, tokenIndex: number, imageScale: number) => {
+    const currentScale = tokenScales.current.get(tokenIndex);
+    if (currentScale !== undefined && currentScale >= imageScale) {
       return;
     }
 
@@ -75,19 +83,21 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       image = newImage;
     }
 
-    image.setAttribute('src', `${imageUrl}?w=${tokenWidth * imageScale}&h=${tokenHeight * imageScale}`);
+    image.setAttribute('src', `${imageUrl}?w=${tokenWidth * imageScale * window.devicePixelRatio}&h=${tokenHeight * imageScale * window.devicePixelRatio}`);
     tokenScales.current.set(tokenIndex, imageScale);
   }, []);
 
   React.useEffect((): void => {
-    const context = canvasRef.current?.getContext('2d', { alpha: false });
+    const context = canvasRef.current?.getContext('2d');
     if (!context) {
       return;
     }
-    props.gridItems.forEach((gridItem: GridItem, index: number): void => {
-      drawImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, index, 1);
+    props.gridItems.forEach((gridItem: GridItem): void => {
+      if (gridItem.updatedDate > props.baseImage.updatedDate) {
+        drawTokenImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, gridItem.tokenId - 1, 1);
+      }
     });
-  }, [props.gridItems, drawImageOnCanvas]);
+  }, [props.gridItems, props.baseImage, drawTokenImageOnCanvas]);
 
   // NOTE(krishan711): due to the "center by default" logic this would probably be better
   // modelled as "offset from center" instead of directly the offset
@@ -121,29 +131,34 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
     setAdjustedOffset(constrainedPoint);
     clearRedrawCallback();
     setRedrawCallback((): void => {
-      const context = canvasRef.current?.getContext('2d', { alpha: false });
+      const context = canvasRef.current?.getContext('2d');
       if (!context) {
+        return;
+      }
+      const truncatedScale = truncateScale(scale);
+      if (truncatedScale < HALF_SCALE) {
         return;
       }
       const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
       const topLeft = floorPoint(scaledOffset);
       const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSize.width / tokenWidth / scale, y: windowSize.height / tokenHeight / scale }));
       const range: PointRange = { topLeft, bottomRight };
-      const truncatedScale = truncateScale(scale);
       if (truncatedScale !== truncateScale(lastScale) || !arePointRangesEqual(range, lastRangeRef.current)) {
         lastRangeRef.current = range;
         for (let y = Math.max(0, topLeft.y); y <= bottomRight.y; y += 1) {
           for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
             const tokenIndex = x + (y * (canvasWidth / tokenWidth));
-            if (tokenIndex < props.gridItems.length) {
-              const gridItem = props.gridItems[tokenIndex];
-              drawImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, tokenIndex, truncatedScale);
+            const gridItem = gridItemMap.get(tokenIndex + 1);
+            if (gridItem) {
+              drawTokenImageOnCanvas(gridItem.resizableImageUrl || gridItem.imageUrl, context, tokenIndex, truncatedScale);
+            } else {
+              console.error(`Failed to find token with index: ${tokenIndex}`);
             }
           }
         }
       }
     });
-  }, [props.gridItems, canvasHeight, scale, lastScale, windowSize, setRedrawCallback, clearRedrawCallback, drawImageOnCanvas]);
+  }, [gridItemMap, canvasHeight, scale, lastScale, windowSize, setRedrawCallback, clearRedrawCallback, drawTokenImageOnCanvas]);
 
   React.useEffect((): void => {
     if (scale !== lastScale) {
@@ -197,7 +212,10 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       const endPoint = { x: event.pageX - event.currentTarget.offsetLeft, y: event.pageY - event.currentTarget.offsetTop };
       const targetPoint = sumPoints(endPoint, scalePoint(adjustedOffset, scale));
       const tokenIndex = Math.floor((targetPoint.x / (scale * tokenWidth)) + (Math.floor(targetPoint.y / (scale * tokenHeight)) * (canvasWidth / tokenWidth)));
-      props.onGridItemClicked(props.gridItems[tokenIndex]);
+      const gridItem = gridItemMap.get(tokenIndex + 1);
+      if (gridItem) {
+        props.onGridItemClicked(gridItem);
+      }
     }
     setIsMoving(false);
 
@@ -224,7 +242,9 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
             transform: `translate(${-adjustedOffset.x * scale}px, ${-adjustedOffset.y * scale}px) scale(${scale / MAX_SCALE})`,
             transformOrigin: 'left top',
             overflow: 'hidden',
-            backgroundColor: 'yellow',
+            backgroundImage: `url(${props.baseImage.url}?w=${canvasWidth * window.devicePixelRatio}&h=${canvasHeight * window.devicePixelRatio})`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
           }}
           onMouseDown={startPan}
         >

@@ -30,7 +30,7 @@ export const Dropzone = (props: IDropzoneProps): React.ReactElement => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.onFilesChosen]);
 
-  const { getRootProps, getInputProps, isDragActive } = ReactDropzone.useDropzone({ onDrop, maxFiles: 1, accept: 'image/*' });
+  const { getRootProps, getInputProps, isDragActive } = ReactDropzone.useDropzone({ onDrop, maxFiles: 1, accept: ['image/png', 'image/jpeg', 'image/jpg'] });
 
   return (
     <StyledDropzone {...getRootProps()} style={{ padding: '20px' }}>

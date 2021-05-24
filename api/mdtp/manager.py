@@ -5,24 +5,25 @@ from typing import Sequence
 from typing import Optional
 import uuid
 
+from core.exceptions import NotFoundException
+from core.requester import Requester
+from core.queues.sqs_message_queue import SqsMessageQueue
+from core.web3.eth_client import EthClientInterface
+from core.s3_manager import S3Manager
+from core.s3_manager import S3PresignedUpload
+from core.store.retriever import Direction, Order, StringFieldFilter
 from web3 import Web3
 
-from mdtp.core.exceptions import NotFoundException
-from mdtp.core.requester import Requester
-from mdtp.core.sqs_message_queue import SqsMessageQueue
-from mdtp.eth_client import EthClientInterface
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
+from mdtp.model import BaseImage
 from mdtp.model import GridItem
 from mdtp.model import StatItem
+from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
-from mdtp.core.util import date_util
-from mdtp.core.s3_manager import S3Manager
-from mdtp.core.s3_manager import S3PresignedUpload
-from mdtp.core.store.retriever import StringFieldFilter
-from mdtp.store.schema import GridItemsTable
+from mdtp.store.schema import BaseImagesTable, GridItemsTable
 
 _KILOBYTE = 1024
 _MEGABYTE = _KILOBYTE * 1024
@@ -58,6 +59,16 @@ class MdtpManager:
         gridItems = await self.retriever.list_grid_items(fieldFilters=[StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)])
         return gridItems
 
+    async def get_latest_base_image_url(self, network: str) -> BaseImage:
+        baseImages = await self.retriever.list_base_images(
+            fieldFilters=[StringFieldFilter(fieldName=BaseImagesTable.c.network.key, eq=network)],
+            orders=[Order(fieldName=BaseImagesTable.c.updatedDate.key, direction=Direction.DESCENDING)],
+            limit=1
+        )
+        if len(baseImages) == 0:
+            raise NotFoundException()
+        return baseImages[0]
+
     async def list_stat_items(self, network: str) -> Sequence[StatItem]:
         statItems = []
         if network == 'rinkeby':
@@ -79,7 +90,7 @@ class MdtpManager:
                     counter += 1
         return statItems
 
-    async def generate_image_upload_for_token(self, tokenId: int) -> S3PresignedUpload:
+    async def generate_image_upload_for_token(self, network: str, tokenId: int) -> S3PresignedUpload:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
 
@@ -95,8 +106,11 @@ class MdtpManager:
         await self.s3Manager.write_file(content=json.dumps(data).encode(), targetPath=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE, contentType='application/json')
         return target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
 
-    async def update_tokens_deferred(self, network: str) -> None:
-        await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message())
+    async def update_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
+        await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay)
+
+    async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int]) -> None:
+        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay)
 
     async def update_tokens(self, network: str) -> None:
         if network == 'rinkeby':
@@ -119,7 +133,7 @@ class MdtpManager:
         logging.info(f'Uploading image for token {tokenId}')
         gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         imageId = await self.imageManager.upload_image_from_url(url=gridItem.imageUrl)
-        resizableImageUrl = f'https://mdtp-api.kibalabs.com/v1/images/{imageId}/go'
+        resizableImageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
 
     async def update_token(self, network: str, tokenId: int) -> None:
@@ -147,10 +161,10 @@ class MdtpManager:
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
             gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, ownerId=ownerId)
-            await self.upload_token_image_deferred(network=network, tokenId=tokenId)
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
+        if resizableImageUrl is None:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId)
         if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')

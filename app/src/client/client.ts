@@ -8,6 +8,14 @@ export class MdtpClient extends ServiceClient {
     super(requester, baseUrl || 'https://mdtp-api.kibalabs.com');
   }
 
+  public getLatestBaseImage = async (network: string): Promise<Resources.BaseImage> => {
+    const method = RestMethod.GET;
+    const path = `v1/networks/${network}/latest-base-image`;
+    const request = new Endpoints.GetLatestBaseImageRequest();
+    const response = await this.makeRequest(method, path, request, Endpoints.GetLatestBaseImageResponse);
+    return response.baseImage;
+  }
+
   public listGridItems = async (network: string): Promise<Resources.GridItem[]> => {
     const method = RestMethod.GET;
     const path = `v1/networks/${network}/grid-items`;
@@ -46,5 +54,12 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.UploadMetadataForTokenRequest(name, description, imageUrl);
     const response = await this.makeRequest(method, path, request, Endpoints.UploadMetadataForTokenResponse);
     return response.url;
+  }
+
+  public updateTokenDeferred = async (network: string, tokenId: number): Promise<void> => {
+    const method = RestMethod.POST;
+    const path = `v1/networks/${network}/tokens/${tokenId}/update-token-deferred`;
+    const request = new Endpoints.UpdateTokenDeferredRequest();
+    await this.makeRequest(method, path, request, Endpoints.UpdateTokenDeferredResponse);
   }
 }
