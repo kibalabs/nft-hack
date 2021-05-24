@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useBooleanLocalStorageState, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
@@ -10,7 +11,6 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { isValidChain } from '../../util/chainUtil';
-import { useBooleanLocalStorageState, useNavigator } from '@kibalabs/core-react';
 
 export const HomePage = (): React.ReactElement => {
   const navigator = useNavigator();
@@ -18,8 +18,8 @@ export const HomePage = (): React.ReactElement => {
   const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
-  const [notificationComplete, setNotificationComplete] = useBooleanLocalStorageState('notificationComplete')
-  const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete')
+  const [notificationComplete, setNotificationComplete] = useBooleanLocalStorageState('notificationComplete');
+  const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
@@ -52,7 +52,7 @@ export const HomePage = (): React.ReactElement => {
 
   const onWelcomeCloseClicked = (): void => {
     setWelcomeComplete(true);
-  }
+  };
 
   const onWelcomeAboutClicked = () => {
     navigator.navigateTo('/about');
@@ -60,7 +60,7 @@ export const HomePage = (): React.ReactElement => {
 
   const onNotificationCloseClicked = (): void => {
     setNotificationComplete(true);
-  }
+  };
 
   const onNotificationClaimClicked = () => {
     setNotificationComplete(true);

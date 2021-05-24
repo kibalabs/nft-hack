@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Box, Button, Direction, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, PaddingSize, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 interface NotificationOverlayProps {
   onCloseClicked: () => void;

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Box, Button, Direction, IconButton, KibaIcon, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, IconButton, KibaIcon, PaddingSize, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 interface WelcomeOverlayProps {
   onCloseClicked: () => void;
@@ -12,7 +12,7 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
 
   const onNextClicked = (): void => {
     setOverlayScreenNumber(overlayScreenNumber + 1);
-  }
+  };
 
   const OverlayScreen1 = (): React.ReactElement => (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
