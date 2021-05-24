@@ -4,9 +4,9 @@ from typing import List
 from pydantic import BaseModel
 
 from mdtp.api.resources_v1 import ApiGridItem
-from mdtp.api.resources_v1 import ApiStatItem
 from mdtp.api.resources_v1 import ApiBaseImage
 from mdtp.api.resources_v1 import ApiPresignedUpload
+from mdtp.api.resources_v1 import ApiNetworkSummary
 
 
 class BaseImageUrlRequest(BaseModel):
@@ -21,11 +21,11 @@ class ListGridItemsRequest(BaseModel):
 class ListGridItemsResponse(BaseModel):
     gridItems: List[ApiGridItem]
 
-class ListStatItemsRequest(BaseModel):
+class GetNetworkSummaryRequest(BaseModel):
     pass
 
-class ListStatItemsResponse(BaseModel):
-    statItems: List[ApiStatItem]
+class GetNetworkSummaryResponse(BaseModel):
+    networkSummary: ApiNetworkSummary
 
 class RetrieveGridItemRequest(BaseModel):
     tokenId: int

@@ -30,20 +30,20 @@ export class GridItem {
   }
 }
 
-export class StatItem {
+export class NetworkSummary {
   // eslint-disable-next-line no-useless-constructor
   public constructor(
-    readonly statItemId: number,
-    readonly title: string,
-    readonly data: string,
+    readonly marketCapitalization: number,
+    readonly totalSales: number,
+    readonly averagePrice: number,
     // eslint-disable-next-line no-empty-function
   ) {}
 
-  public static fromObject = (obj: Record<string, unknown>): StatItem => {
-    return new StatItem(
-      Number(obj.statItemId),
-      String(obj.title),
-      String(obj.data),
+  public static fromObject = (obj: Record<string, unknown>): NetworkSummary => {
+    return new NetworkSummary(
+      Number(obj.marketCapitalization),
+      Number(obj.totalSales),
+      Number(obj.averagePrice),
     );
   }
 }

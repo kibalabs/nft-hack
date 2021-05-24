@@ -5,8 +5,7 @@ from typing import Optional
 from core.s3_manager import S3PresignedUpload
 from pydantic import BaseModel
 
-from mdtp.model import GridItem
-from mdtp.model import StatItem
+from mdtp.model import GridItem, NetworkSummary
 from mdtp.model import BaseImage
 
 class ApiGridItem(BaseModel):
@@ -34,18 +33,19 @@ class ApiGridItem(BaseModel):
             ownerId=model.ownerId,
         )
 
-class ApiStatItem(BaseModel):
-    statItemId: int
-    title: str
-    data: str
+class ApiNetworkSummary(BaseModel):
+    marketCapitalization: float
+    totalSales: int
+    averagePrice: float
 
     @classmethod
-    def from_model(cls, model: StatItem):
+    def from_model(cls, model: NetworkSummary):
         return cls(
-            statItemId=model.statItemId,
-            title=model.title,
-            data=model.data,
+            marketCapitalization=model.marketCapitalization,
+            totalSales=model.totalSales,
+            averagePrice=model.averagePrice,
         )
+
 
 class ApiPresignedUpload(BaseModel):
     url: str

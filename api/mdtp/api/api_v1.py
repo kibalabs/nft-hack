@@ -22,10 +22,10 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         gridItems = await manager.list_grid_items(network=network, updatedSinceSate=updatedSinceSate)
         return ListGridItemsResponse(gridItems=[ApiGridItem.from_model(model=gridItem, shouldCompact=shouldCompact) for gridItem in gridItems])
 
-    @router.get('/networks/{network}/stat-items', response_model=ListStatItemsResponse)
-    async def list_stat_items(network: str) -> ListStatItemsResponse: # request: ListStatItemsRequest
-        statItems = await manager.list_stat_items(network=network)
-        return ListStatItemsResponse(statItems=[ApiStatItem.from_model(model=statItem) for statItem in statItems])
+    @router.get('/networks/{network}/summary', response_model=GetNetworkSummaryResponse)
+    async def get_network_summary(network: str) -> GetNetworkSummaryResponse: # request: GetNetworkSummaryRequest
+        networkSummary = await manager.get_network_summary(network=network)
+        return GetNetworkSummaryResponse(networkSummary=ApiNetworkSummary.from_model(model=networkSummary))
 
     # TODO(krishan711): this can nicely be a GET once we have query params
     @router.post('/networks/{network}/retrieve-grid-item', response_model=RetrieveGridItemResponse)

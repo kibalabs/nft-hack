@@ -20,9 +20,8 @@ from web3 import Web3
 
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
-from mdtp.model import BaseImage
+from mdtp.model import BaseImage, NetworkSummary
 from mdtp.model import GridItem
-from mdtp.model import StatItem
 from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
@@ -78,8 +77,7 @@ class MdtpManager:
             raise NotFoundException()
         return baseImages[0]
 
-    async def list_stat_items(self, network: str) -> Sequence[StatItem]:
-        statItems = []
+    async def get_network_summary(self, network: str) -> NetworkSummary:
         if network == 'rinkeby':
             # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
             # so we have to loop through their owned assets' contracts to find the correct one
@@ -87,17 +85,15 @@ class MdtpManager:
             token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3'
             response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')
             responseJson = response.json()
-            statsDict = None
-            for responseElem in responseJson:
-                if responseElem.get('primary_asset_contracts')[0].get('address') == token_contract:
-                    statsDict = responseElem.get('stats')
-                    break
-            if statsDict:
-                counter = 0
-                for statKey in statsDict.keys():
-                    statItems.append(StatItem(statItemId=counter, title=statKey, data=statsDict.get(statKey)))
-                    counter += 1
-        return statItems
+            for responseEntry in responseJson:
+                if responseEntry['primary_asset_contracts'][0].get('address') == token_contract:
+                    stats = responseEntry['stats']
+                    return NetworkSummary(
+                        marketCapitalization=float(stats['market_cap']),
+                        totalSales=float(stats['total_sales']),
+                        averagePrice=float(stats['average_price'])
+                    )
+        return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
 
     async def generate_image_upload_for_token(self, network: str, tokenId: int) -> S3PresignedUpload:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
