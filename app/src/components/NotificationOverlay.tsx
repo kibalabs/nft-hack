@@ -14,17 +14,8 @@ export const NotificationOverlay = (props: NotificationOverlayProps): React.Reac
         <Text variant='header2' alignment={TextAlignment.Center}>{'Notification'}</Text>
         <Text alignment={TextAlignment.Center}>{'We are giving away FREE tokens during BETA, click to claim!'}</Text>
         <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-          <Button
-            variant={'secondary'}
-            text='Hide'
-            onClicked={props.onCloseClicked}
-          />
-          <Button
-            variant={'primary'}
-            text='Claim'
-            target='https://fec48oyedt9.typeform.com/to/kzsI48jo'
-            onClicked={props.onClaimClicked}
-          />
+          <Button variant={'secondary'} text='Hide' onClicked={props.onCloseClicked} />
+          <Button variant={'primary'} text='Claim' target='https://fec48oyedt9.typeform.com/to/kzsI48jo' onClicked={props.onClaimClicked} />
         </Stack>
       </Stack>
     </Box>
