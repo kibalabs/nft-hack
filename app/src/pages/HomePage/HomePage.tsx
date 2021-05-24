@@ -21,7 +21,7 @@ export const HomePage = (): React.ReactElement => {
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
     });
-    apiClient.listGridItems(network).then((retrievedGridItems: GridItem[]): void => {
+    apiClient.listGridItems(network, true).then((retrievedGridItems: GridItem[]): void => {
       if (retrievedGridItems.length === 0) {
         setGridItems([]);
         return;

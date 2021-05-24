@@ -24,8 +24,15 @@ export class GetLatestBaseImageResponse extends ResponseData {
 }
 
 export class ListGridItemsRequest extends RequestData {
+  public constructor(
+    readonly shouldCompact: boolean,
+  ) {
+    super();
+  }
+
   public toObject = (): Record<string, unknown> => {
     return {
+      shouldCompact: this.shouldCompact,
     };
   }
 }
