@@ -153,28 +153,20 @@ class MdtpManager:
         ownerIdResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
         ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
         tokenMetadataUrl = tokenMetadataUrlResponse[0].strip()
-        print('tokenMetadataUrl', tokenMetadataUrl)
         tokenMetadataResponse = await self.requester.make_request(method='GET', url=tokenMetadataUrl)
         tokenMetadataJson = json.loads(tokenMetadataResponse.text)
-        print('tokenMetadataJson', tokenMetadataJson)
         title = tokenMetadataJson.get('title') or tokenMetadataJson.get('name') or ''
-        print('title', title)
         # TODO(krishan711): pick a better default image
         imageUrl = tokenMetadataJson.get('imageUrl') or tokenMetadataJson.get('image') or ''
-        print('imageUrl', imageUrl)
         description = tokenMetadataJson.get('description')
-        print('description', description)
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
             gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, ownerId=ownerId)
-        print('gridItem', gridItem)
         resizableImageUrl = gridItem.resizableImageUrl
-        print('resizableImageUrl', resizableImageUrl)
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
-        print('resizableImageUrl 2', resizableImageUrl)
         if resizableImageUrl is None:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId)
         if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.ownerId != ownerId:
