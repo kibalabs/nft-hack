@@ -91,7 +91,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       return;
     }
     props.newGridItems.forEach((gridItem: GridItem): void => {
-      if (gridItem.updatedDate > props.baseImage.updatedDate) {
+      if (gridItem.updatedDate > props.baseImage.generatedDate) {
         drawTokenImageOnCanvas(context, gridItem.tokenId - 1, 1);
       }
     });

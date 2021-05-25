@@ -61,14 +61,14 @@ class ApiPresignedUpload(BaseModel):
 class ApiBaseImage(BaseModel):
     baseImageId: int
     network: str
-    updatedDate: datetime.datetime
     url: str
+    generatedDate: datetime.datetime
 
     @classmethod
     def from_model(cls, model: BaseImage):
         return cls(
             baseImageId=model.baseImageId,
             network=model.network,
-            updatedDate=model.updatedDate,
             url=model.url,
+            generatedDate=model.generatedDate,
         )

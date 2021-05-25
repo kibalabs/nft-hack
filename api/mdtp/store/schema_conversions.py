@@ -25,4 +25,5 @@ def base_image_from_row(row: Mapping) -> BaseImage:
         updatedDate=row[BaseImagesTable.c.updatedDate],
         network=row[BaseImagesTable.c.network],
         url=row[BaseImagesTable.c.url],
+        generatedDate=row[BaseImagesTable.c.generatedDate],
     )

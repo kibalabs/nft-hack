@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import uuid
 
 import asyncclick as click
 import boto3
@@ -12,19 +13,20 @@ from web3 import Web3
 
 GWEI = 1000000000
 
-def crop(imagePath: str, outputDirectory: str, height: int, width: int):
+def crop(imagePath: str, outputDirectory: str, width: int, height: int):
     if not os.path.exists(outputDirectory):
         os.makedirs(outputDirectory)
     image = Image.open(imagePath)
     imageWidth, imageHeight = image.size
+    boxWidth = int(imageWidth / width)
+    boxHeight = int(imageHeight / height)
     index = 0
-    for row in range(0, imageHeight, height):
-        for column in range(0, imageWidth, width):
-            box = (column, row, column + width, row + height)
+    for row in range(0, height):
+        for column in range(0, width):
+            box = (column * boxWidth, row * boxHeight, (column + 1) * boxWidth, (row + 1) * boxHeight)
             croppedImage = image.crop(box)
             croppedImage.save(os.path.join(outputDirectory, f'{index}.png'))
             index += 1
-
 
 @click.command()
 @click.option('-i', '--image-path', 'imagePath', required=True, type=str)
@@ -42,16 +44,17 @@ async def run(imagePath: str, name: str):
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
+    runId = str(uuid.uuid4())
     outputDirectory = 'output'
     crop(imagePath=imagePath, outputDirectory=outputDirectory, height=10, width=10)
-    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{name}', accessControl='public-read', cacheControl='public,max-age=31536000')
+    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
     for index in range(10000):
         data = {
             "name" : f"MillionDollarTokenPage Token {index + 1}",
             "description" : "MillionDollarTokenPage (MDTP) is a digital advertising space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display what you like, and later re-sold on the secondary-market. So join us and interact, trade and share, and be a part of making crypto history!",
-            "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.png"
+            "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png"
         }
-        await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{name}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
+        await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
     w3 = Web3()
     requester = Requester()
     ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
@@ -68,7 +71,7 @@ async def run(imagePath: str, name: str):
     tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
     for index in range(1000, 10000):
         tokenId = index + 1
-        tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
+        tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.json'
         if tokenId <= tokenCount:
             currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
             if currentTokenUri != tokenUri:

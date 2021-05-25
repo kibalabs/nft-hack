@@ -58,3 +58,4 @@ class BaseImage:
     updatedDate: datetime.datetime
     network: str
     url: str
+    generatedDate: datetime.datetime

@@ -24,7 +24,7 @@ export const HomePage = (): React.ReactElement => {
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
-      apiClient.listGridItems(network, true, retrievedBaseImage.updatedDate).then((retrievedGridItems: GridItem[]): void => {
+      apiClient.listGridItems(network, true, retrievedBaseImage.generatedDate).then((retrievedGridItems: GridItem[]): void => {
         setGridItems(retrievedGridItems);
       });
     });

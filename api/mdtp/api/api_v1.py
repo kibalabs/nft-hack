@@ -18,8 +18,8 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return BaseImageUrlResponse(baseImage=ApiBaseImage.from_model(model=baseImage))
 
     @router.get('/networks/{network}/grid-items', response_model=ListGridItemsResponse)
-    async def list_grid_items(network: str, shouldCompact: bool = False, updatedSinceSate: Optional[datetime.datetime] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
-        gridItems = await manager.list_grid_items(network=network, updatedSinceSate=updatedSinceSate)
+    async def list_grid_items(network: str, shouldCompact: bool = False, updatedSinceDate: Optional[datetime.datetime] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
+        gridItems = await manager.list_grid_items(network=network, updatedSinceDate=updatedSinceDate)
         return ListGridItemsResponse(gridItems=[ApiGridItem.from_model(model=gridItem, shouldCompact=shouldCompact) for gridItem in gridItems])
 
     @router.get('/networks/{network}/summary', response_model=GetNetworkSummaryResponse)
@@ -32,6 +32,11 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     async def retrieve_grid_item(network: str, request: RetrieveGridItemRequest) -> RetrieveGridItemResponse:
         gridItem = await manager.retrieve_grid_item(network=network, tokenId=request.tokenId)
         return RetrieveGridItemResponse(gridItem=ApiGridItem.from_model(model=gridItem))
+
+    @router.post('/networks/{network}/build-base-image-deferred', response_model=BuildBaseImageResponse)
+    async def build_base_image_deferred(network: str, request: BuildBaseImageRequest) -> BuildBaseImageResponse:
+        await manager.build_base_image_deferred(network=network, delay=request.delay)
+        return BuildBaseImageResponse()
 
     @router.post('/networks/{network}/update-tokens-deferred', response_model=UpdateTokensDeferredResponse)
     async def update_tokens_deferred(network: str, request: UpdateTokensDeferredRequest) -> UpdateTokensDeferredResponse:

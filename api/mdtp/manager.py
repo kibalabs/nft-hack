@@ -1,7 +1,9 @@
 from dataclasses import field
 import datetime
+from io import BytesIO
 import json
 import logging
+import math
 from typing import Dict
 from typing import Sequence
 from typing import Optional
@@ -11,18 +13,19 @@ import uuid
 from core.exceptions import NotFoundException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
-from core.util import dict_util
+from core.util import date_util, dict_util, file_util
 from core.web3.eth_client import EthClientInterface
 from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
 from core.store.retriever import DateFieldFilter, Direction, Order, StringFieldFilter
+from PIL import Image as PILImage
 from web3 import Web3
 
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import BaseImage, NetworkSummary
 from mdtp.model import GridItem
-from mdtp.messages import UpdateTokenMessageContent
+from mdtp.messages import BuildBaseImageMessageContent, UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
@@ -58,12 +61,10 @@ class MdtpManager:
         gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         return gridItem
 
-    async def list_grid_items(self, network: str, updatedSinceSate: Optional[datetime.datetime] = None) -> Sequence[GridItem]:
+    async def list_grid_items(self, network: str, updatedSinceDate: Optional[datetime.datetime] = None) -> Sequence[GridItem]:
         filters = [StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)]
-        print('updatedSinceSate', updatedSinceSate)
-        if updatedSinceSate:
-            filters.append(DateFieldFilter(fieldName=GridItemsTable.c.updatedDate.key, gte=updatedSinceSate.replace(tzinfo=None)))
-        print('filters', filters)
+        if updatedSinceDate:
+            filters.append(DateFieldFilter(fieldName=GridItemsTable.c.updatedDate.key, gte=updatedSinceDate.replace(tzinfo=None)))
         gridItems = await self.retriever.list_grid_items(fieldFilters=filters)
         return gridItems
 
@@ -76,6 +77,46 @@ class MdtpManager:
         if len(baseImages) == 0:
             raise NotFoundException()
         return baseImages[0]
+
+    async def build_base_image_deferred(self, network: str, delay: Optional[int]) -> Optional[BaseImage]:
+        await self.workQueue.send_message(message=BuildBaseImageMessageContent(network=network).to_message(), delaySeconds=delay or 0)
+
+    async def build_base_image(self, network: str) -> Optional[BaseImage]:
+        # NOTE(krishan711): everything is double so that it works well in retina
+        scale = 2
+        width = 1000 * scale
+        height = 1000 * scale
+        tokenHeight = 10 * scale
+        tokenWidth = 10 * scale
+        generatedDate = date_util.datetime_from_now()
+        outputImage = PILImage.new('RGB', (width, height))
+        latestBaseImage = await self.get_latest_base_image_url(network=network)
+        imageResponse = await self.requester.get(latestBaseImage.url)
+        contentBuffer = BytesIO(imageResponse.content)
+        with PILImage.open(fp=contentBuffer) as baseImage:
+            image = baseImage.resize(size=(width, height))
+            outputImage.paste(image, (0, 0))
+        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
+        if len(gridItems) == 0:
+            logging.info('Nothing to update')
+            return None
+        for gridItem in gridItems:
+            imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
+            imageResponse = await self.requester.get(imageUrl)
+            contentBuffer = BytesIO(imageResponse.content)
+            with PILImage.open(fp=contentBuffer) as tokenImage:
+                tokenIndex = gridItem.tokenId - 1
+                x = (tokenIndex * tokenWidth) % width
+                y = tokenHeight * math.floor((tokenIndex * tokenWidth) / width)
+                image = tokenImage.resize(size=(tokenWidth, tokenHeight))
+                outputImage.paste(image, (x, y))
+        outputFilePath = 'output.png'
+        outputImage.save(outputFilePath)
+        imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
+        await file_util.remove_file(filePath=outputFilePath)
+        imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
+        baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
+        return baseImage
 
     async def get_network_summary(self, network: str) -> NetworkSummary:
         if network == 'rinkeby':
