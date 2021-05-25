@@ -81,7 +81,7 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
             if tokenId <= tokenCount:
                 currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
                 if currentTokenUri != tokenUri:
-                    print(f'Updating token {tokenId}', nonce + nonceIncrement)
+                    print(f'Updating token {tokenId}, with index {index}, and nonce', nonce + nonceIncrement)
                     data = {
                         'tokenId': tokenId,
                         'tokenURI': tokenUri,
