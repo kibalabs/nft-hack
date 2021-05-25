@@ -14,6 +14,6 @@ class UploadTokenImageMessageContent(MessageContent):
     network: str
     tokenId: int
 
-class UpdateBaseImageMessageContent(MessageContent):
-    _COMMAND = 'UPDATE_BASE_IMAGE'
+class BuildBaseImageMessageContent(MessageContent):
+    _COMMAND = 'BUILD_BASE_IMAGE'
     network: str

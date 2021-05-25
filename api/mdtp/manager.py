@@ -25,7 +25,7 @@ from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import BaseImage, NetworkSummary
 from mdtp.model import GridItem
-from mdtp.messages import UpdateTokenMessageContent
+from mdtp.messages import BuildBaseImageMessageContent, UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
@@ -78,7 +78,10 @@ class MdtpManager:
             raise NotFoundException()
         return baseImages[0]
 
-    async def update_base_image(self, network: str) -> Optional[BaseImage]:
+    async def build_base_image_deferred(self, network: str) -> Optional[BaseImage]:
+        await self.workQueue.send_message(message=BuildBaseImageMessageContent(network=network).to_message())
+
+    async def build_base_image(self, network: str) -> Optional[BaseImage]:
         # NOTE(krishan711): everything is double so that it works well in retina
         scale = 2
         width = 1000 * scale
