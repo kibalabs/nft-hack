@@ -19,7 +19,7 @@ def crop(imagePath: str, outputDirectory: str, width: int, height: int):
     imageWidth, imageHeight = image.size
     boxWidth = int(imageWidth/width)
     boxHeight = int(imageHeight/height)
-    index = 0    
+    index = 0
     for row in range(0, height):
         for column in range(0, width):
             box = (column*boxWidth, row*boxHeight, (column+1)*boxWidth, (row+1)*boxHeight)
@@ -69,7 +69,6 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
     contractTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'tokenURI'][0]
     contractSetTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'setTokenURI'][0]
     nonce = await ethClient.get_transaction_count(address=ACCOUNT_ADDRESS)
-    nonceIncrement = 0
 
     tokensPerRow = 100
     tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
@@ -80,18 +79,18 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
             tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.json'
             if tokenId <= tokenCount:
                 currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
-                if True: #currentTokenUri != tokenUri:
-                    print(f'Updating token {tokenId}, with index {index}, and nonce', nonce + nonceIncrement)
+                if currentTokenUri != tokenUri:
+                    print(f'Updating token {tokenId}, with index {index}, and nonce {nonce}')
                     data = {
                         'tokenId': tokenId,
                         'tokenURI': tokenUri,
                     }
-                    await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce + nonceIncrement, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+                    await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
                     await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
                     await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
-                    nonceIncrement += 1
+                    nonce += 1
             else:
-                print(f'ERROR: Attempting to set a token that does not exist: {tokenId}', nonce + nonceIncrement)
+                print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
 
     await requester.close_connections()
