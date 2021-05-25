@@ -33,6 +33,11 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         gridItem = await manager.retrieve_grid_item(network=network, tokenId=request.tokenId)
         return RetrieveGridItemResponse(gridItem=ApiGridItem.from_model(model=gridItem))
 
+    @router.post('/networks/{network}/build-base-image-deferred', response_model=BuildBaseImageResponse)
+    async def build_base_image_deferred(network: str, request: BuildBaseImageRequest) -> BuildBaseImageResponse:
+        await manager.build_base_image_deferred(network=network, delay=request.delay)
+        return BuildBaseImageResponse()
+
     @router.post('/networks/{network}/update-tokens-deferred', response_model=UpdateTokensDeferredResponse)
     async def update_tokens_deferred(network: str, request: UpdateTokensDeferredRequest) -> UpdateTokensDeferredResponse:
         await manager.update_tokens_deferred(network=network, delay=request.delay)

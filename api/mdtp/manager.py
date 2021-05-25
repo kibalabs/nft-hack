@@ -78,8 +78,8 @@ class MdtpManager:
             raise NotFoundException()
         return baseImages[0]
 
-    async def build_base_image_deferred(self, network: str) -> Optional[BaseImage]:
-        await self.workQueue.send_message(message=BuildBaseImageMessageContent(network=network).to_message())
+    async def build_base_image_deferred(self, network: str, delay: Optional[int]) -> Optional[BaseImage]:
+        await self.workQueue.send_message(message=BuildBaseImageMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
     async def build_base_image(self, network: str) -> Optional[BaseImage]:
         # NOTE(krishan711): everything is double so that it works well in retina

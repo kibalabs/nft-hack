@@ -33,6 +33,12 @@ class RetrieveGridItemRequest(BaseModel):
 class RetrieveGridItemResponse(BaseModel):
     gridItem: ApiGridItem
 
+class BuildBaseImageRequest(BaseModel):
+    delay: Optional[int]
+
+class BuildBaseImageResponse(BaseModel):
+    pass
+
 class UpdateTokensDeferredRequest(BaseModel):
     delay: Optional[int]
 
