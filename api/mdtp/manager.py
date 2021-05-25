@@ -100,6 +100,7 @@ class MdtpManager:
         with PILImage.open(fp=contentBuffer) as baseImage:
             image = baseImage.resize(size=(width, height))
             outputImage.paste(image, (0, 0))
+        logging.info(f'Drawing {len(gridItems)} new grid items')
         for gridItem in gridItems:
             imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
             imageResponse = await self.requester.get(imageUrl)
@@ -109,6 +110,7 @@ class MdtpManager:
                 x = (tokenIndex * tokenWidth) % width
                 y = tokenHeight * math.floor((tokenIndex * tokenWidth) / width)
                 image = tokenImage.resize(size=(tokenWidth, tokenHeight))
+                # NOTE(krishan711): this doesnt use transparency as we aren't using the 3rd (mask) param
                 outputImage.paste(image, (x, y))
         outputFilePath = 'output.png'
         outputImage.save(outputFilePath)
