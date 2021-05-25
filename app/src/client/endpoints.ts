@@ -34,7 +34,7 @@ export class ListGridItemsRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {
       shouldCompact: this.shouldCompact,
-      updatedSinceSate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
+      updatedSinceDate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
     };
   }
 }

@@ -61,10 +61,10 @@ class MdtpManager:
         gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         return gridItem
 
-    async def list_grid_items(self, network: str, updatedSinceSate: Optional[datetime.datetime] = None) -> Sequence[GridItem]:
+    async def list_grid_items(self, network: str, updatedSinceDate: Optional[datetime.datetime] = None) -> Sequence[GridItem]:
         filters = [StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)]
-        if updatedSinceSate:
-            filters.append(DateFieldFilter(fieldName=GridItemsTable.c.updatedDate.key, gte=updatedSinceSate.replace(tzinfo=None)))
+        if updatedSinceDate:
+            filters.append(DateFieldFilter(fieldName=GridItemsTable.c.updatedDate.key, gte=updatedSinceDate.replace(tzinfo=None)))
         gridItems = await self.retriever.list_grid_items(fieldFilters=filters)
         return gridItems
 
@@ -78,13 +78,14 @@ class MdtpManager:
             raise NotFoundException()
         return baseImages[0]
 
-    async def update_base_image(self, network: str) -> None:
+    async def update_base_image(self, network: str) -> Optional[BaseImage]:
         # NOTE(krishan711): everything is double so that it works well in retina
         scale = 2
         width = 1000 * scale
         height = 1000 * scale
         tokenHeight = 10 * scale
         tokenWidth = 10 * scale
+        generatedDate = date_util.datetime_from_now()
         outputImage = PILImage.new('RGB', (width, height))
         latestBaseImage = await self.get_latest_base_image_url(network=network)
         imageResponse = await self.requester.get(latestBaseImage.url)
@@ -92,7 +93,10 @@ class MdtpManager:
         with PILImage.open(fp=contentBuffer) as baseImage:
             image = baseImage.resize(size=(width, height))
             outputImage.paste(image, (0, 0))
-        gridItems = await self.list_grid_items(network=network, updatedSinceSate=date_util.datetime_from_datetime(dt=latestBaseImage.createdDate, hours=-1))
+        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
+        if len(gridItems) == 0:
+            logging.info('Nothing to update')
+            return None
         for gridItem in gridItems:
             imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
             imageResponse = await self.requester.get(imageUrl)
@@ -108,8 +112,7 @@ class MdtpManager:
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
         await file_util.remove_file(filePath=outputFilePath)
         imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
-        # NOTE(krishan711): maybe we should add another field to baseImage because in the time between starting and saving tokens could have been updated
-        baseImage = await self.saver.create_base_image(network=network, url=imageUrl)
+        baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
         return baseImage
 
     async def get_network_summary(self, network: str) -> NetworkSummary:

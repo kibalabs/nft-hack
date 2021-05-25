@@ -68,18 +68,18 @@ export class BaseImage {
   // eslint-disable-next-line no-useless-constructor
   public constructor(
     readonly baseImageId: number,
-    readonly updatedDate: Date,
     readonly network: string,
     readonly url: string,
+    readonly generatedDate: Date,
     // eslint-disable-next-line no-empty-function
   ) {}
 
   public static fromObject = (obj: Record<string, unknown>): BaseImage => {
     return new BaseImage(
       Number(obj.baseImageId),
-      dateFromString(obj.updatedDate as string),
       String(obj.network),
       String(obj.url),
+      dateFromString(obj.generatedDate as string),
     );
   }
 }

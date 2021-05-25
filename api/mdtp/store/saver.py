@@ -44,7 +44,7 @@ class MdtpSaver(Saver):
             values[GridItemsTable.c.updatedDate.key] = date_util.datetime_from_now()
         await self.database.execute(query=query, values=values)
 
-    async def create_base_image(self, network: str, url: str) -> GridItem:
+    async def create_base_image(self, network: str, url: str, generatedDate: datetime.datetime) -> GridItem:
         createdDate = date_util.datetime_from_now()
         updatedDate = createdDate
         baseImageId = await self._execute(query=BaseImagesTable.insert(), values={
@@ -52,5 +52,6 @@ class MdtpSaver(Saver):
             BaseImagesTable.c.updatedDate.key: updatedDate,
             BaseImagesTable.c.network.key: network,
             BaseImagesTable.c.url.key: url,
+            BaseImagesTable.c.generatedDate.key: generatedDate,
         })
-        return BaseImage(baseImageId=baseImageId, createdDate=createdDate, updatedDate=updatedDate, network=network, url=url)
+        return BaseImage(baseImageId=baseImageId, createdDate=createdDate, updatedDate=updatedDate, network=network, url=url, generatedDate=generatedDate)

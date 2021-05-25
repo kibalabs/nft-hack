@@ -21,7 +21,8 @@ CREATE TABLE tbl_base_images (
     created_date TIMESTAMP NOT NULL,
     updated_date TIMESTAMP NOT NULL,
     network TEXT NOT NULL,
-    url TEXT NOT NULL
+    url TEXT NOT NULL,
+    generated_date TIMESTAMP NOT NULL
 );
 CREATE INDEX tbl_base_images_updated_date ON tbl_base_images (updated_date);
 CREATE INDEX tbl_base_images_network ON tbl_base_images (network);

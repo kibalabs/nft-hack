@@ -13,3 +13,7 @@ class UploadTokenImageMessageContent(MessageContent):
     _COMMAND = 'UPLOAD_TOKEN_IMAGE'
     network: str
     tokenId: int
+
+class UpdateBaseImageMessageContent(MessageContent):
+    _COMMAND = 'UPDATE_BASE_IMAGE'
+    network: str
