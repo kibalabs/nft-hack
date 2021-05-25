@@ -91,15 +91,16 @@ class MdtpManager:
         generatedDate = date_util.datetime_from_now()
         outputImage = PILImage.new('RGB', (width, height))
         latestBaseImage = await self.get_latest_base_image_url(network=network)
-        imageResponse = await self.requester.get(latestBaseImage.url)
-        contentBuffer = BytesIO(imageResponse.content)
-        with PILImage.open(fp=contentBuffer) as baseImage:
-            image = baseImage.resize(size=(width, height))
-            outputImage.paste(image, (0, 0))
         gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None
+        baseImageResponse = await self.requester.get(latestBaseImage.url)
+        contentBuffer = BytesIO(baseImageResponse.content)
+        with PILImage.open(fp=contentBuffer) as baseImage:
+            image = baseImage.resize(size=(width, height))
+            outputImage.paste(image, (0, 0))
+        logging.info(f'Drawing {len(gridItems)} new grid items')
         for gridItem in gridItems:
             imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
             imageResponse = await self.requester.get(imageUrl)
@@ -109,6 +110,7 @@ class MdtpManager:
                 x = (tokenIndex * tokenWidth) % width
                 y = tokenHeight * math.floor((tokenIndex * tokenWidth) / width)
                 image = tokenImage.resize(size=(tokenWidth, tokenHeight))
+                # NOTE(krishan711): this doesnt use transparency as we aren't using the 3rd (mask) param
                 outputImage.paste(image, (x, y))
         outputFilePath = 'output.png'
         outputImage.save(outputFilePath)

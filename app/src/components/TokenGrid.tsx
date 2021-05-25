@@ -74,6 +74,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
       const newImage = new window.Image();
       newImage.addEventListener('load', () => {
+        context.fillRect(x * MAX_SCALE, y * MAX_SCALE, tokenWidth * MAX_SCALE, tokenHeight * MAX_SCALE);
         context.drawImage(newImage, x * MAX_SCALE, y * MAX_SCALE, tokenWidth * MAX_SCALE, tokenHeight * MAX_SCALE);
       });
       tokenImages.current.set(tokenIndex, newImage);
