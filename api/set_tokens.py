@@ -77,7 +77,7 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
         for column in range(0, width):
             index = (row * width) + column
             tokenId = startTokenId + (row * tokensPerRow) + column
-            tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
+            tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.json'
             if tokenId <= tokenCount:
                 currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
                 if currentTokenUri != tokenUri:
