@@ -17,8 +17,8 @@ def crop(imagePath: str, outputDirectory: str, width: int, height: int):
         os.makedirs(outputDirectory)
     image = Image.open(imagePath)
     imageWidth, imageHeight = image.size
-    boxWidth = int(imageWidth/width)
-    boxHeight = int(imageHeight/height)
+    boxWidth = int(imageWidth / width)
+    boxHeight = int(imageHeight / height)
     index = 0
     for row in range(0, height):
         for column in range(0, width):
