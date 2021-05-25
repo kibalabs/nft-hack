@@ -92,7 +92,6 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
-
     await requester.close_connections()
 
 
