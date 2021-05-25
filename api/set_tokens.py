@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import uuid
 
 import asyncclick as click
 import boto3
@@ -29,11 +30,11 @@ def crop(imagePath: str, outputDirectory: str, width: int, height: int):
 @click.command()
 @click.option('-i', '--image-path', 'imagePath', required=True, type=str)
 @click.option('-n', '--name', 'name', required=True, type=str)
-@click.option('-s', '--starting-token', 'startingToken', required=True, type=int)
+@click.option('-s', '--starting-token', 'startTokenId', required=True, type=int)
 @click.option('-w', '--width', 'width', required=True, type=int)
 @click.option('-h', '--height', 'height', required=True, type=int)
 @click.option('-d', '--description', 'description', required=True, type=str)
-async def run(imagePath: str, name: str, startingToken: int, width: int, height: int, description: str):
+async def run(imagePath: str, name: str, startTokenId: int, width: int, height: int, description: str):
     network = 'rinkeby'
     if network == 'rinkeby':
         CONTRACT_ADDRESS = os.environ['RINKEBY_CONTRACT_ADDRESS']
@@ -46,17 +47,18 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
+    runId = str(uuid.uuid4())
     outputDirectory = 'output'
     crop(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
-    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{name}', accessControl='public-read', cacheControl='public,max-age=31536000')
+    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
     size = width*height
     for index in range(size):
         data = {
             "name" : name,
             "description" : description,
-            "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.png"
+            "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png"
         }
-        await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{name}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
+        await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000')
 
     requester = Requester()
     ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
@@ -69,12 +71,12 @@ async def run(imagePath: str, name: str, startingToken: int, width: int, height:
     nonce = await ethClient.get_transaction_count(address=ACCOUNT_ADDRESS)
     nonceIncrement = 0
 
-    totalBlocksPerRow = 100
+    tokensPerRow = 100
     tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
     for row in range(0, height):
         for column in range(0, width):
             index = (row * width) + column
-            tokenId = startingToken + (row * totalBlocksPerRow) + column
+            tokenId = startTokenId + (row * tokensPerRow) + column
             tokenUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{name}/{index}.json'
             if tokenId <= tokenCount:
                 currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]

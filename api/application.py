@@ -9,14 +9,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.api.health import create_api as create_health_api
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
+from core.web3.eth_client import RestEthClient
+from core.s3_manager import S3Manager
 
 from mdtp.api.api_v1 import create_api as create_v1_api
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
 from mdtp.manager import MdtpManager
-from core.web3.eth_client import RestEthClient
 from mdtp.image_manager import ImageManager
-from core.s3_manager import S3Manager
 
 logging.basicConfig(level=logging.INFO)
 
