@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, Markdown, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
@@ -145,8 +145,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
                   <Spacing variant={PaddingSize.Wide2} />
                   <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='OpenSea' />
-                    <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='Etherscan' />
+                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Trade on OpenSea' />
+                    <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
                   </Stack>
                   <Spacing variant={PaddingSize.Wide2} />
                   { (accounts === null || !gridItem.tokenId) ? (
@@ -195,7 +195,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                         </Form>
                       )}
                     </React.Fragment>
-                  ) : (<Text>{`Owned by: ${gridItem.ownerId}`}</Text>
+                  ) : (
+                    <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
+                      <Markdown source={`Owned by: [${gridItem.ownerId}](https://rinkeby.etherscan.io/address/${gridItem.ownerId})`} />
+                    </Stack>
                   )}
                 </Stack>
               </ResponsiveContainingView>
