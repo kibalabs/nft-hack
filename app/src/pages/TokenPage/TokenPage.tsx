@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, Markdown, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
@@ -124,7 +124,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const getOwnerId = (): string => {
-    return chainOwnerId || gridItem.ownerId;
+    return chainOwnerId || gridItem?.ownerId || '';
   };
 
   const getOwnerUrl = (): string => {
@@ -134,7 +134,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     return '';
   };
 
-  const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? null : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : null);
+  const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
   return (
     <React.Fragment>
