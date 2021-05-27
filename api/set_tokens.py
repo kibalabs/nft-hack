@@ -30,7 +30,7 @@ def crop(imagePath: str, outputDirectory: str, width: int, height: int):
 @click.command()
 @click.option('-i', '--image-path', 'imagePath', required=True, type=str)
 @click.option('-n', '--name', 'name', required=True, type=str)
-@click.option('-s', '--starting-token', 'startTokenId', required=True, type=int)
+@click.option('-t', '--starting-token', 'startTokenId', required=True, type=int)
 @click.option('-w', '--width', 'width', required=True, type=int)
 @click.option('-h', '--height', 'height', required=True, type=int)
 @click.option('-d', '--description', 'description', required=True, type=str)

@@ -13,10 +13,12 @@ from PIL import Image
 GWEI = 1000000000
 
 @click.command()
-@click.option('-s', '--starting-token', 'startTokenId', required=True, type=int)
+@click.option('-t', '--starting-token', 'startTokenId', required=True, type=int)
 @click.option('-w', '--width', 'width', required=True, type=int)
 @click.option('-h', '--height', 'height', required=True, type=int)
-async def run(startTokenId: int, width: int, height: int):
+@click.option('-s', '--sendAddress', 'sendAddress', required=True, type=str)
+@click.option('-r', '--receiveAddress', 'receiveAddress', required=True, type=str)
+async def run(startTokenId: int, width: int, height: int, sendAddress: str, receiveAddress: str):
     network = 'rinkeby'
     if network == 'rinkeby':
         CONTRACT_ADDRESS = os.environ['RINKEBY_CONTRACT_ADDRESS']
@@ -33,12 +35,8 @@ async def run(startTokenId: int, width: int, height: int):
         contractJson = json.load(contractJsonFile)
     contractAbi = contractJson['abi']
     contractTotalSupplyMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'totalSupply'][0]
-    contractTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'tokenURI'][0]
-    contractSetTokenUriMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'setTokenURI'][0]
+    contractTransferFromMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'transferFrom'][0]
     nonce = await ethClient.get_transaction_count(address=ACCOUNT_ADDRESS)
-
-    sendAddress = '0x123'
-    receiveAddress = '0x456'
 
     tokensPerRow = 100
     tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
@@ -46,16 +44,15 @@ async def run(startTokenId: int, width: int, height: int):
         for column in range(0, width):
             index = (row * width) + column
             tokenId = startTokenId + (row * tokensPerRow) + column
-            if tokenId <= tokenCount:
-                currentTokenUri = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTokenUriMethodAbi, arguments={'tokenId': tokenId}))[0]
-                if currentTokenUri != tokenUri:
-                    print(f'Transferring token {tokenId}, from {sendAddress}, to {receiveAddress}')
-                    data = {
-                        'tokenId': tokenId,
-                        'tokenURI': tokenUri,
-                    }
-                    await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractSetTokenUriMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)                    
-                    nonce += 1
+            if tokenId <= tokenCount:                
+                print(f'Transferring token {tokenId}, from {sendAddress}, to {receiveAddress}, with nonce {nonce}')
+                data = {
+                    'from' : sendAddress,
+                    'to' : receiveAdress,
+                    'tokenId': tokenId,
+                }
+                await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)                    
+                nonce += 1
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
