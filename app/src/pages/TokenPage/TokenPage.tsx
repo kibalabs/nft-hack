@@ -145,8 +145,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
                   <Spacing variant={PaddingSize.Wide2} />
                   <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='OpenSea' />
-                    <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='Etherscan' />
+                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Trade on OpenSea' />
+                    <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
                   </Stack>
                   <Spacing variant={PaddingSize.Wide2} />
                   { (accounts === null || !gridItem.tokenId) ? (
