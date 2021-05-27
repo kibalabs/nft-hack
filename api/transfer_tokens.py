@@ -48,7 +48,7 @@ async def run(startTokenId: int, width: int, height: int, sendAddress: str, rece
                 print(f'Transferring token {tokenId}, from {sendAddress}, to {receiveAddress}, with nonce {nonce}')
                 data = {
                     'from' : sendAddress,
-                    'to' : receiveAdress,
+                    'to' : receiveAddress,
                     'tokenId': tokenId,
                 }
                 await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=100000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)                    
