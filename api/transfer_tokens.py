@@ -11,6 +11,7 @@ from core.web3.eth_client import RestEthClient
 from PIL import Image
 
 GWEI = 1000000000
+GAS_LIMIT = 1000000
 
 @click.command()
 @click.option('-t', '--starting-token', 'startTokenId', required=True, type=int)
@@ -51,7 +52,7 @@ async def run(startTokenId: int, width: int, height: int, sendAddress: str, rece
                     'to' : receiveAddress,
                     'tokenId': tokenId,
                 }
-                await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=1000000, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)                    
+                await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=GAS_LIMIT, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)                    
                 nonce += 1
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
