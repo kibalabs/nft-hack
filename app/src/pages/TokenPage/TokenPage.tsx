@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, Markdown, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
@@ -195,7 +195,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                         </Form>
                       )}
                     </React.Fragment>
-                  ) : (<Text>{`Owned by: ${gridItem.ownerId}`}</Text>
+                  ) : (
+                    <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
+                      <Markdown source={`Owned by: [${gridItem.ownerId}](https://rinkeby.etherscan.io/address/${gridItem.ownerId})`} />
+                    </Stack>
                   )}
                 </Stack>
               </ResponsiveContainingView>
