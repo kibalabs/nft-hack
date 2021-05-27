@@ -59,12 +59,13 @@ const globals: Globals = {
 };
 
 export const App = hot((): React.ReactElement => {
-  const [accounts, setAccounts] = React.useState<string[] | null>(null);
+  const [accounts, setAccounts] = React.useState<string[] | undefined | null>(undefined);
   const [chainId, setChainId] = React.useState<number | null>(null);
   const [network, setNetwork] = React.useState<string | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
     if (!web3) {
+      setAccounts(null);
       return;
     }
 
@@ -73,6 +74,7 @@ export const App = hot((): React.ReactElement => {
 
   const getAccounts = async (): Promise<void> => {
     if (!web3) {
+      setAccounts(null);
       return;
     }
 
@@ -109,12 +111,7 @@ export const App = hot((): React.ReactElement => {
               <Route path='/tokens/:tokenId' page={TokenPage} />
               <Route path='/about' page={AboutPage} />
             </Router>
-            <LayerContainer.Layer
-              isFullHeight={false}
-              isFullWidth={false}
-              alignmentVertical={Alignment.End}
-              alignmentHorizontal={Alignment.Start}
-            >
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
             </LayerContainer.Layer>
           </LayerContainer>

@@ -1,18 +1,15 @@
-import datetime
 from typing import Optional
 from typing import Sequence
 from typing import Optional
 
-from  sqlalchemy.sql.expression import func as sqlalchemyfunc
+from core.store.retriever import Retriever
+from core.store.retriever import FieldFilter
+from core.store.retriever import Order
+from core.exceptions import NotFoundException
 
-from mdtp.core.store.retriever import Retriever
-from mdtp.core.store.retriever import FieldFilter
-from mdtp.core.store.retriever import Order
-from mdtp.core.store.retriever import StringFieldFilter
-from mdtp.core.exceptions import NotFoundException
 from mdtp.model import GridItem
-from mdtp.store.schema import GridItemsTable
-from mdtp.store.schema_conversions import grid_item_from_row
+from mdtp.store.schema import BaseImagesTable, GridItemsTable
+from mdtp.store.schema_conversions import base_image_from_row, grid_item_from_row
 
 class MdtpRetriever(Retriever):
 
@@ -21,12 +18,23 @@ class MdtpRetriever(Retriever):
         if fieldFilters:
             query = self._apply_field_filters(query=query, table=GridItemsTable, fieldFilters=fieldFilters)
         if orders:
-            for order in orders:
-                query = self._apply_order(query=query, table=GridItemsTable, order=order)
+            query = self._apply_orders(query=query, table=GridItemsTable, orders=orders)
         if limit:
             query = query.limit(limit)
         rows = await self.database.fetch_all(query=query)
         gridItems = [grid_item_from_row(row) for row in rows]
+        return gridItems
+
+    async def list_base_images(self, fieldFilters: Optional[Sequence[FieldFilter]] = None, orders: Optional[Sequence[Order]] = None, limit: Optional[int] = None) -> Sequence[GridItem]:
+        query = BaseImagesTable.select()
+        if fieldFilters:
+            query = self._apply_field_filters(query=query, table=BaseImagesTable, fieldFilters=fieldFilters)
+        if orders:
+            query = self._apply_orders(query=query, table=BaseImagesTable, orders=orders)
+        if limit:
+            query = query.limit(limit)
+        rows = await self.database.fetch_all(query=query)
+        gridItems = [base_image_from_row(row) for row in rows]
         return gridItems
 
     async def get_grid_item(self, gridItemId: int) -> GridItem:
@@ -38,7 +46,7 @@ class MdtpRetriever(Retriever):
         gridItem = grid_item_from_row(row)
         return gridItem
 
-    async def get_grid_item_by_token_id_network(self, tokenId: str, network: str) -> Optional[GridItem]:
+    async def get_grid_item_by_token_id_network(self, tokenId: str, network: str) -> GridItem:
         query = GridItemsTable.select() \
             .where(GridItemsTable.c.tokenId == tokenId) \
             .where(GridItemsTable.c.network == network)

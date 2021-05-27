@@ -1,20 +1,49 @@
-import { RequestData, ResponseData } from '@kibalabs/core';
+import { dateToString, RequestData, ResponseData } from '@kibalabs/core';
 
 import * as Resources from './resources';
 
-export class ListGridItemsRequest extends RequestData {
+export class GetLatestBaseImageRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {
     };
   }
 }
 
-export class ListGridItemsResponse extends ResponseData {
-  readonly gridItems: Resources.GridItem[];
-
-  public constructor(gridItems: Resources.GridItem[]) {
+export class GetLatestBaseImageResponse extends ResponseData {
+  public constructor(
+    readonly baseImage: Resources.BaseImage,
+  ) {
     super();
-    this.gridItems = gridItems;
+  }
+
+  public static fromObject = (obj: Record<string, unknown>): GetLatestBaseImageResponse => {
+    return new GetLatestBaseImageResponse(
+      Resources.BaseImage.fromObject(obj.baseImage as Record<string, unknown>),
+    );
+  }
+}
+
+export class ListGridItemsRequest extends RequestData {
+  public constructor(
+    readonly shouldCompact: boolean,
+    readonly updatedSinceDate?: Date,
+  ) {
+    super();
+  }
+
+  public toObject = (): Record<string, unknown> => {
+    return {
+      shouldCompact: this.shouldCompact,
+      updatedSinceDate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
+    };
+  }
+}
+
+export class ListGridItemsResponse extends ResponseData {
+  public constructor(
+    readonly gridItems: Resources.GridItem[],
+  ) {
+    super();
   }
 
   public static fromObject = (obj: Record<string, unknown>): ListGridItemsResponse => {
@@ -25,11 +54,10 @@ export class ListGridItemsResponse extends ResponseData {
 }
 
 export class RetrieveGridItemRequest extends RequestData {
-  readonly tokenId: number;
-
-  public constructor(tokenId: number) {
+  public constructor(
+    readonly tokenId: number,
+  ) {
     super();
-    this.tokenId = tokenId;
   }
 
   public toObject = (): Record<string, unknown> => {
@@ -40,11 +68,10 @@ export class RetrieveGridItemRequest extends RequestData {
 }
 
 export class RetrieveGridItemResponse extends ResponseData {
-  readonly gridItem: Resources.GridItem;
-
-  public constructor(gridItem: Resources.GridItem) {
+  public constructor(
+    readonly gridItem: Resources.GridItem,
+  ) {
     super();
-    this.gridItem = gridItem;
   }
 
   public static fromObject = (obj: Record<string, unknown>): RetrieveGridItemResponse => {
@@ -54,24 +81,23 @@ export class RetrieveGridItemResponse extends ResponseData {
   }
 }
 
-export class ListStatItemsRequest extends RequestData {
+export class GetNetworkSummaryRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {
     };
   }
 }
 
-export class ListStatItemsResponse extends ResponseData {
-  readonly statItems: Resources.StatItem[];
-
-  public constructor(statItems: Resources.StatItem[]) {
+export class GetNetworkSummaryResponse extends ResponseData {
+  public constructor(
+    readonly networkSummary: Resources.NetworkSummary,
+  ) {
     super();
-    this.statItems = statItems;
   }
 
-  public static fromObject = (obj: Record<string, unknown>): ListStatItemsResponse => {
-    return new ListStatItemsResponse(
-      (obj.statItems as Record<string, unknown>[]).map((entry: Record<string, unknown>): Resources.StatItem => Resources.StatItem.fromObject(entry)),
+  public static fromObject = (obj: Record<string, unknown>): GetNetworkSummaryResponse => {
+    return new GetNetworkSummaryResponse(
+      Resources.NetworkSummary.fromObject(obj.networkSummary as Record<string, unknown>),
     );
   }
 }
@@ -84,11 +110,10 @@ export class GenerateImageUploadForTokenRequest extends RequestData {
 }
 
 export class GenerateImageUploadForTokenResponse extends ResponseData {
-  readonly presignedUpload: Resources.PresignedUpload;
-
-  public constructor(presignedUpload: Resources.PresignedUpload) {
+  public constructor(
+    readonly presignedUpload: Resources.PresignedUpload,
+  ) {
     super();
-    this.presignedUpload = presignedUpload;
   }
 
   public static fromObject = (obj: Record<string, unknown>): GenerateImageUploadForTokenResponse => {
@@ -99,15 +124,12 @@ export class GenerateImageUploadForTokenResponse extends ResponseData {
 }
 
 export class UploadMetadataForTokenRequest extends RequestData {
-  readonly name: string;
-  readonly description: string;
-  readonly imageUrl: string;
-
-  public constructor(name: string, description: string, imageUrl: string) {
+  public constructor(
+    readonly name: string,
+    readonly description: string,
+    readonly imageUrl: string,
+  ) {
     super();
-    this.name = name;
-    this.description = description;
-    this.imageUrl = imageUrl;
   }
 
   public toObject = (): Record<string, unknown> => {
@@ -120,16 +142,29 @@ export class UploadMetadataForTokenRequest extends RequestData {
 }
 
 export class UploadMetadataForTokenResponse extends ResponseData {
-  readonly url: string;
-
-  public constructor(url: string) {
+  public constructor(
+    readonly url: string,
+  ) {
     super();
-    this.url = url;
   }
 
   public static fromObject = (obj: Record<string, unknown>): UploadMetadataForTokenResponse => {
     return new UploadMetadataForTokenResponse(
       String(obj.url),
+    );
+  }
+}
+
+export class UpdateTokenDeferredRequest extends RequestData {
+  public toObject = (): Record<string, unknown> => {
+    return {
+    };
+  }
+}
+
+export class UpdateTokenDeferredResponse extends ResponseData {
+  public static fromObject = (): UpdateTokenDeferredResponse => {
+    return new UpdateTokenDeferredResponse(
     );
   }
 }

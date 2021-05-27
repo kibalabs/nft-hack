@@ -1,7 +1,9 @@
-from typing import List
+from core.queues.model import MessageContent
 
-from mdtp.core.model import MessageContent
-
+class UpdateTokenMessageContent(MessageContent):
+    _COMMAND = 'UPDATE_TOKEN'
+    network: str
+    tokenId: int
 
 class UpdateTokensMessageContent(MessageContent):
     _COMMAND = 'UPDATE_TOKENS'
@@ -11,3 +13,7 @@ class UploadTokenImageMessageContent(MessageContent):
     _COMMAND = 'UPLOAD_TOKEN_IMAGE'
     network: str
     tokenId: int
+
+class BuildBaseImageMessageContent(MessageContent):
+    _COMMAND = 'BUILD_BASE_IMAGE'
+    network: str

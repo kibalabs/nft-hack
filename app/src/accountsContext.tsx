@@ -3,11 +3,11 @@ import React from 'react';
 import { IMultiAnyChildProps } from '@kibalabs/core-react';
 
 type AccountsControl = {
-  accounts: string[] | null;
+  accounts: string[] | undefined | null;
   onLinkAccountsClicked: () => void;
 }
 
-export const AccountsContext = React.createContext<AccountsControl | null>(null);
+export const AccountsContext = React.createContext<AccountsControl | undefined | null>(undefined);
 
 interface IAccountControlProviderProps extends IMultiAnyChildProps {
   accounts: string[] | null;
@@ -20,7 +20,7 @@ export const AccountControlProvider = (props: IAccountControlProviderProps): Rea
   </AccountsContext.Provider>
 );
 
-export const useAccounts = (): string[] | null => {
+export const useAccounts = (): string[] | undefined | null => {
   const accountsControl = React.useContext(AccountsContext);
   if (!accountsControl) {
     throw Error('accountsControl has not been initialized correctly.');
