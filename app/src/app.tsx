@@ -11,7 +11,6 @@ import { provider as Web3Provider } from 'web3-core';
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
-import { StatsOverlay } from './components/StatsOverlay';
 import MDTContract from './contracts/MillionDollarNFT.json';
 import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
@@ -60,12 +59,13 @@ const globals: Globals = {
 };
 
 export const App = hot((): React.ReactElement => {
-  const [accounts, setAccounts] = React.useState<string[] | null>(null);
+  const [accounts, setAccounts] = React.useState<string[] | undefined | null>(undefined);
   const [chainId, setChainId] = React.useState<number | null>(null);
   const [network, setNetwork] = React.useState<string | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
     if (!web3) {
+      setAccounts(null);
       return;
     }
 
@@ -74,6 +74,7 @@ export const App = hot((): React.ReactElement => {
 
   const getAccounts = async (): Promise<void> => {
     if (!web3) {
+      setAccounts(null);
       return;
     }
 
@@ -112,9 +113,6 @@ export const App = hot((): React.ReactElement => {
             </Router>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
-            </LayerContainer.Layer>
-            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
-              <StatsOverlay />
             </LayerContainer.Layer>
           </LayerContainer>
         </AccountControlProvider>

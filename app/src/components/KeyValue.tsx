@@ -13,12 +13,12 @@ export type KeyValueProps = {
 };
 
 export const KeyValue = (props: KeyValueProps): React.ReactElement => {
-  const nameTextVariant = props.nameTextVariant || 'small-bold';
-  const valueTextVariant = props.valueTextVariant || 'small';
+  const nameTextVariant = props.nameTextVariant || 'bold';
+  const valueTextVariant = props.valueTextVariant || '';
   const emptyValueText = props.emptyValueText || 'none';
-  const emptyValueTextVariant = props.emptyValueTextVariant || 'small-light';
+  const emptyValueTextVariant = props.emptyValueTextVariant || 'light';
   return (
-    <Stack direction={Direction.Horizontal} shouldAddGutters={true} isFullWidth={true}>
+    <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
       <Text variant={nameTextVariant}>{`${props.name}:`}</Text>
       <Stack.Item growthFactor={1}>
         { props.value != null ? (

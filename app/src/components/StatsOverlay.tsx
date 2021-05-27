@@ -48,9 +48,24 @@ export const StatsOverlay = (): React.ReactElement => {
     <Box variant='overlay-bottomLeftCutoff' width={'175px'}>
       {networkSummary && (
         <Stack direction={Direction.Vertical} isFullWidth={true}>
-          <KeyValue name='Market Cap' value={`${formatPrice(networkSummary.marketCapitalization, 'Ξ', true)}`} />
-          <KeyValue name='Total sales' value={`${networkSummary.totalSales}`} />
-          <KeyValue name='Average price' value={`${formatPrice(networkSummary.averagePrice, 'Ξ', true)}`} />
+          <KeyValue
+            name='Market Cap'
+            value={`${formatPrice(networkSummary.marketCapitalization, 'Ξ', true)}`}
+            nameTextVariant='small-bold'
+            valueTextVariant='small'
+          />
+          <KeyValue
+            name='Total sales'
+            value={`${networkSummary.totalSales}`}
+            nameTextVariant='small-bold'
+            valueTextVariant='small'
+          />
+          <KeyValue
+            name='Average price'
+            value={`${formatPrice(networkSummary.averagePrice, 'Ξ', true)}`}
+            nameTextVariant='small-bold'
+            valueTextVariant='small'
+          />
         </Stack>
       )}
     </Box>

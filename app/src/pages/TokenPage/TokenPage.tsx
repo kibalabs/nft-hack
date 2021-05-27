@@ -1,13 +1,14 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, Markdown, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccounts } from '../../accountsContext';
 import { GridItem, PresignedUpload } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { Dropzone } from '../../components/dropzone';
+import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
 
 export type TokenPageProps = {
@@ -24,6 +25,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, contractAddress, requester, apiClient, network } = useGlobals();
   const navigator = useNavigator();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
+  const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
@@ -38,7 +40,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
     });
-  }, [props.tokenId, network, apiClient]);
+    if (contract) {
+      const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();
+      setChainOwnerId(receivedTokenOwner);
+      // NOTE(krishan711): is it worth pulling the metadata from the contract and showing that?
+      // const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
+      // const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
+      // const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
+      // const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
+      // const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
+      // setToken(retrievedToken);
+    }
+  }, [props.tokenId, network, contract, apiClient]);
 
   React.useEffect((): void => {
     loadToken();
@@ -59,7 +72,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     const tokenId = Number(props.tokenId);
     try {
       await contract.methods.setTokenURI(tokenId, tokenMetadataUrl)
-        .send({ from: gridItem.ownerId })
+        .send({ from: chainOwnerId || gridItem.ownerId })
         .on('transactionHash', (transactionHash: string) => {
           setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transactionHash}.` });
           setIsUpdating(false);
@@ -110,12 +123,23 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     });
   };
 
+  const getOwnerId = (): string => {
+    return chainOwnerId || gridItem?.ownerId || '';
+  };
+
+  const getOwnerUrl = (): string => {
+    if (network === 'rinkeby') {
+      return `https://rinkeby.etherscan.io/address/${getOwnerId()}`;
+    }
+    return '';
+  };
+
   const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
   return (
     <React.Fragment>
       <Helmet>
-        <title>{'Token | The Million Dollar Token Page'}</title>
+        <title>{`Token ${props.tokenId} | The Million Dollar Token Page`}</title>
       </Helmet>
       <LayerContainer>
         <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
@@ -149,14 +173,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                     <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
                   </Stack>
                   <Spacing variant={PaddingSize.Wide2} />
-                  { (accounts === null || !gridItem.tokenId) ? (
+                  <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
+                  { (accounts === undefined || !gridItem.tokenId) ? (
                     <LoadingSpinner />
-                  ) : (accounts.includes(gridItem.ownerId)) ? (
+                  ) : (accounts === null) ? (
+                    <Text variant='note'>{'Please connect your accounts if you are the owner and want to make changes.'}</Text>
+                  ) : (accounts.includes(getOwnerId())) ? (
                     <React.Fragment>
-                      <Text>You are the owner. Update your Token&apos;s metadata here:</Text>
+                      <Spacing variant={PaddingSize.Default} />
+                      <Text>👑 This is one of your tokens 👑</Text>
                       <Spacing variant={PaddingSize.Default} />
                       { !hasStartedUpdated ? (
-                        <Button variant='primary' text='Update your token' onClicked={onUpdateClicked} />
+                        <Button variant='primary' text='Update token' onClicked={onUpdateClicked} />
                       ) : (
                         <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
                           <Stack direction={Direction.Vertical} shouldAddGutters={true}>
@@ -195,11 +223,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                         </Form>
                       )}
                     </React.Fragment>
-                  ) : (
-                    <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center}>
-                      <Markdown source={`Owned by: [${gridItem.ownerId}](https://rinkeby.etherscan.io/address/${gridItem.ownerId})`} />
-                    </Stack>
-                  )}
+                  ) : null}
                 </Stack>
               </ResponsiveContainingView>
               <Spacing variant={PaddingSize.Wide3} />
