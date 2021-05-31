@@ -1,5 +1,0 @@
-{
-  "name" : "Charged Particles",
-  "description" : "Charged Particles allows you to turn your NFT into a basket holding ANY token (even another NFTs)! A \"Charged Particle\" is an interest-bearing Non-Fungible Tokens (DeFi NFTs) that is minted with an Asset Token (ie. DAI, USDT, etc..) and accrues interest through a Liquidity Provider (ie. Aave, yEarn, etc..) giving the Token a \"Charge\". The amount of interest earned from the token represents the \"Charge\" that the token (Particle) has amassed. The principal (mass) and interest (charge) are completely programmable. The principal can be time-locked, providing royalties for generations. You can even discharge the accrued interest to a different address - a friend? a donation? Your choice. NFT and Token Agnostic: Configure principal, program interest - You're in Charge!",
-  "image" : "https://miro.medium.com/max/1200/1*yNQdjEZl2lgQyW2ce7Kcww.png"
-}
