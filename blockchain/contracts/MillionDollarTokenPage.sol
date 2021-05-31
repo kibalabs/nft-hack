@@ -1,32 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+// import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract AdminManageable {
 
-    mapping (address => bool) public admins;
+    mapping (address => bool) public _admins;
 
     modifier onlyAdmin() {
-        require(admins[msg.sender], "Admin: caller is not a valid admin");
+        require(_admins[msg.sender], "Admin: caller is not an admin");
         _;
     }
 
     function setAdmin(address admin, bool state) public onlyAdmin {
-        admins[admin] = state;
+        _admins[admin] = state;
     }
 
 }
 
 // NOTE(krishan711): maybe we can make a UserMintable contract?
 
-// NOTE(krishan711): how caan we implement the "blocking"?
+// NOTE(krishan711): how can we implement the "blocking"?
+
+// NOTE(krishan711): This doesnt extend the IEnumerable interface which should be easy to support
 
 contract MillionDollarTokenPage is ERC721, AdminManageable {
 
     mapping (uint256 => string) private _tokenGridDataURIs;
-    string private _baseTokenGridDataURI;
 
     event SetTokenGridDataURI(uint256 indexed tokenId);
 
@@ -36,15 +38,26 @@ contract MillionDollarTokenPage is ERC721, AdminManageable {
     }
 
     constructor() ERC721("MillionDollarTokenPage", "\u22A1") {
-        setAdmin(_msgSender(), true);
-        ERC721._setBaseURI("https://api.mdtp.com/token-metadatas/");
-        _baseTokenGridDataURI = "https://api.mdtp.com/token-grid-datas/";
+        _admins[_msgSender()] = true;
+    }
+
+    function _baseURI() internal view virtual override returns (string memory) {
+        return "https://api.mdtp.com/token-metadatas/";
+    }
+
+    function _baseGridDataURI() internal view virtual returns (string memory) {
+        return "https://api.mdtp.com/token-grid-datas/";
     }
 
     function mintNFT(address recipient, uint256 tokenId) public onlyAdmin returns (uint256) {
         require(tokenId > 0 && tokenId <= 10000, "MDTP: invalid tokenId");
-        ERC721._mint(recipient, tokenId);
+        ERC721._safeMint(recipient, tokenId);
         return tokenId;
+    }
+
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        string memory baseURI = _baseURI();
+        return string(abi.encodePacked(baseURI, Strings.toString(tokenId)));
     }
 
     function setTokenGridDataURI(uint256 tokenId, string memory metadataURI) onlyTokenOwner(tokenId) public {
@@ -58,12 +71,7 @@ contract MillionDollarTokenPage is ERC721, AdminManageable {
         if (bytes(_tokenGridDataURI).length > 0) {
             return _tokenGridDataURI;
         }
-
-        return string(abi.encodePacked(_baseTokenGridDataURI, tokenId.toString()));
-    }
-
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        return string(abi.encodePacked(baseURI(), tokenId.toString()));
+        return string(abi.encodePacked(_baseGridDataURI(), Strings.toString(tokenId)));
     }
 
     function totalSupply() public pure returns (uint256) {
