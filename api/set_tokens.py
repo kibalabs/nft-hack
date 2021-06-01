@@ -79,24 +79,24 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
     runId = 'c2cb4bc6-3264-46c0-bf4e-cc25c4b008d2' #str(uuid.uuid4())
 
     # Split and upload image
-    # outputDirectory = 'output'
-    # crop(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
-    # await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
+    outputDirectory = 'output'
+    crop(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
+    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
 
     # Upload metadatas
-    # metadataUploadTasks = []
-    # for index in range(width * height):
-    #     tokenId = index + 1
-    #     data = {
-    #         "name" : name.replace('{tokenId}', str(tokenId)),
-    #         "description" : description.replace('{tokenId}', str(tokenId)),
-    #         "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png"
-    #     }
-    #     metadataUploadTasks.append(s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))
-    #     if len(metadataUploadTasks) >= 100:
-    #         await asyncio.gather(*metadataUploadTasks)
-    #         metadataUploadTasks = []
-    #         logging.info(f'Upload state: {index} / {(width * height)}')
+    metadataUploadTasks = []
+    for index in range(width * height):
+        tokenId = index + 1
+        data = {
+            "name" : name.replace('{tokenId}', str(tokenId)),
+            "description" : description.replace('{tokenId}', str(tokenId)),
+            "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png"
+        }
+        metadataUploadTasks.append(s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))
+        if len(metadataUploadTasks) >= 100:
+            await asyncio.gather(*metadataUploadTasks)
+            metadataUploadTasks = []
+            logging.info(f'Upload state: {index} / {(width * height)}')
 
     with open('./MillionDollarNFT.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
