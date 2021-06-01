@@ -76,7 +76,7 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
-    runId = 'c2cb4bc6-3264-46c0-bf4e-cc25c4b008d2' #str(uuid.uuid4())
+    runId = str(uuid.uuid4())
 
     # Split and upload image
     outputDirectory = 'output'
