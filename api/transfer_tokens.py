@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import time
 
 import asyncclick as click
 from core.exceptions import BadRequestException
@@ -42,17 +43,18 @@ async def run(startTokenId: int, width: int, height: int, sendAddress: str, rece
         for column in range(0, width):
             tokenId = startTokenId + (row * tokensPerRow) + column
             if tokenId <= tokenCount:
-                print(f'Transferring token {tokenId}, from {sendAddress}, to {receiveAddress}, with nonce {nonce}')
+                print(f'Transferring token {tokenId} with nonce {nonce} from {sendAddress} -> {receiveAddress}')
                 data = {
-                    'from' : sendAddress,
-                    'to' : receiveAddress,
+                    'from': sendAddress,
+                    'to': receiveAddress,
                     'tokenId': tokenId,
                 }
                 try:
                     await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=GAS_LIMIT, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
-                except BadRequestException:
-                    pass
+                except BadRequestException as exception:
+                    print(f'Failed to transfer {tokenId}: {str(exception)}')
                 nonce += 1
+                time.sleep(0.5)
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
