@@ -127,8 +127,6 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
                     await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
                     nonce += 1
                     time.sleep(0.5)
-                else:
-                    await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
