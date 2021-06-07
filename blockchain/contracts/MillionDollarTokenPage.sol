@@ -39,11 +39,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     }
 
     function _baseURI() internal pure override returns (string memory) {
-        return "https://api.mdtp.com/token-metadatas/";
-    }
-
-    function _baseGridDataURI() internal pure returns (string memory) {
-        return "https://api.mdtp.com/token-grid-datas/";
+        return "https://api.mdtp.co/token-metadatas/";
     }
 
     function mint(address recipient, uint256 tokenId) public onlyAdmin returns (uint256) {
@@ -55,6 +51,10 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     function tokenURI(uint256 tokenId) public pure override returns (string memory) {
         string memory baseURI = _baseURI();
         return string(abi.encodePacked(baseURI, Strings.toString(tokenId)));
+    }
+
+    function _baseGridDataURI() internal pure returns (string memory) {
+        return "https://api.mdtp.co/token-grid-datas/";
     }
 
     function setTokenGridDataURI(uint256 tokenId, string memory metadataURI) public onlyTokenOwner(tokenId) {
