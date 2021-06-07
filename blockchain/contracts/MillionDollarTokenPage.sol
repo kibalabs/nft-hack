@@ -23,11 +23,11 @@ contract AdminManageable {
 
 contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
 
-    mapping (uint256 => string) private _tokenGridDataURIs;
+    mapping (uint256 => string) private _tokenContentURIs;
     mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
     mapping(uint256 => uint256) private _ownedTokensIndex;
 
-    event TokenGridDataURIChanged(uint256 indexed tokenId);
+    event TokenContentURIChanged(uint256 indexed tokenId);
 
     modifier onlyTokenOwner(uint256 tokenId) {
         require(ownerOf(tokenId) == _msgSender(), "MDTP: caller is not the tokenOwner");
@@ -47,26 +47,26 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
         return string(abi.encodePacked(baseURI, Strings.toString(tokenId)));
     }
 
-    function _defaultBaseGridDataURI() internal pure returns (string memory) {
-        return "https://api.mdtp.co/token-default-grid-datas/";
+    function _defaultBaseContentURI() internal pure returns (string memory) {
+        return "https://api.mdtp.co/token-default-contents/";
     }
 
-    function setTokenGridDataURI(uint256 tokenId, string memory metadataURI) public onlyTokenOwner(tokenId) {
-        _tokenGridDataURIs[tokenId] = metadataURI;
-        emit TokenGridDataURIChanged(tokenId);
+    function setTokenContentURI(uint256 tokenId, string memory metadataURI) public onlyTokenOwner(tokenId) {
+        _tokenContentURIs[tokenId] = metadataURI;
+        emit TokenContentURIChanged(tokenId);
     }
 
-    function tokenGridDataURI(uint256 tokenId) public view returns (string memory) {
-        string memory _tokenGridDataURI = _tokenGridDataURIs[tokenId];
-        if (bytes(_tokenGridDataURI).length > 0) {
-            return _tokenGridDataURI;
+    function tokenContentURI(uint256 tokenId) public view returns (string memory) {
+        string memory _tokenContentURI = _tokenContentURIs[tokenId];
+        if (bytes(_tokenContentURI).length > 0) {
+            return _tokenContentURI;
         }
-        return string(abi.encodePacked(_defaultBaseGridDataURI(), Strings.toString(tokenId)));
+        return string(abi.encodePacked(_defaultBaseContentURI(), Strings.toString(tokenId)));
     }
 
     function mint(address recipient, uint256 tokenId) public onlyAdmin returns (uint256) {
         require(tokenId > 0 && tokenId <= 10000, "MDTP: invalid tokenId");
-        ERC721._safeMint(recipient, tokenId);
+        super._safeMint(recipient, tokenId);
         return tokenId;
     }
 

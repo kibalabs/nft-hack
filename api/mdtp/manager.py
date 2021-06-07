@@ -72,7 +72,7 @@ class MdtpManager:
             image='',
         )
 
-    async def get_token_default_grid_data(self, tokenId: str) -> TokenMetadata:
+    async def get_token_default_content(self, tokenId: str) -> TokenMetadata:
         try:
             tokenIdValue = int(tokenId)
         except ValueError:

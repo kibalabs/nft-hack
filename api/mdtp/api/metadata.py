@@ -25,10 +25,10 @@ class GetTokenMetadataResponse(BaseModel):
             image=model.image,
         )
 
-class GetTokenDefaultGridDataRequest(BaseModel):
+class GetTokenDefaultContentRequest(BaseModel):
     pass
 
-class GetTokenDefaultGridDataResponse(BaseModel):
+class GetTokenDefaultContentResponse(BaseModel):
     tokenId: str
     tokenIndex: int
     name: str
@@ -53,9 +53,9 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         tokenMetadata = await manager.get_token_metadata(tokenId=tokenId)
         return GetTokenMetadataResponse.from_token_metadata(model=tokenMetadata)
 
-    @router.get('/token-default-grid-datas/{tokenId}', response_model=GetTokenDefaultGridDataResponse)
-    async def get_token_default_grid_data(tokenId: str) -> GetTokenDefaultGridDataResponse: # request: GetTokenDefaultGridDataRequest
-        tokenMetadata = await manager.get_token_default_grid_data(tokenId=tokenId)
-        return GetTokenDefaultGridDataResponse.from_token_metadata(model=tokenMetadata)
+    @router.get('/token-default-contents/{tokenId}', response_model=GetTokenDefaultContentResponse)
+    async def get_token_default_content(tokenId: str) -> GetTokenDefaultContentResponse: # request: GetTokenDefaultContentRequest
+        tokenMetadata = await manager.get_token_default_content(tokenId=tokenId)
+        return GetTokenDefaultContentResponse.from_token_metadata(model=tokenMetadata)
 
     return router
