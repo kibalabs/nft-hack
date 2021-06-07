@@ -129,7 +129,15 @@ describe("MillionDollarTokenPage contract", async function() {
     await mdtp.mint(myWallet.address, 102);
     const balance = await mdtp.balanceOf(myWallet.address);
     expect(balance).to.equal(3);
+  });
 
+  it("returns the correct value for the balance of a transferred token", async function () {
+    await mdtp.mint(myWallet.address, 100);
+    await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+    const balance1 = await mdtp.balanceOf(myWallet.address);
+    expect(balance1).to.equal(0);
+    const balance2 = await mdtp.balanceOf(otherWallet.address);
+    expect(balance2).to.equal(1);
   });
 
   it("raises an error for ownerOf of a non-minted token", async function () {
@@ -141,6 +149,13 @@ describe("MillionDollarTokenPage contract", async function() {
     await mdtp.mint(myWallet.address, 100);
     const owner = await mdtp.ownerOf(100);
     expect(owner).to.equal(myWallet.address);
+  });
+
+  it("returns the correct value for ownerOf of a transferred token", async function () {
+    await mdtp.mint(myWallet.address, 100);
+    await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+    const owner = await mdtp.ownerOf(100);
+    expect(owner).to.equal(otherWallet.address);
   });
 
 });
