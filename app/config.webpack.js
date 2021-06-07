@@ -1,6 +1,5 @@
 /* eslint-disable */
 const path = require('path');
-const webpack = require('webpack');
 const CreateRuntimeConfigPlugin = require('@kibalabs/build/scripts/plugins/createRuntimeConfigPlugin')
 
 module.exports = (config) => {
