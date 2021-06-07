@@ -21,10 +21,6 @@ contract AdminManageable {
 
 }
 
-// NOTE(krishan711): maybe we can make a UserMintable contract?
-
-// NOTE(krishan711): how can we implement the "blocking"?
-
 contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
 
     mapping (uint256 => string) private _tokenGridDataURIs;
@@ -85,14 +81,16 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     }
 
     function tokenByIndex(uint256 index) public pure override returns (uint256) {
+        require(index >= 0 && index < 10000, "MDTP: invalid index");
         return index + 1;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
         super._beforeTokenTransfer(from, to, tokenId);
-        if (from != address(0) && from != to) {
+        if (from != address(0)) {
             uint256 lastTokenIndex = ERC721.balanceOf(from) - 1;
             uint256 tokenIndex = _ownedTokensIndex[tokenId];
+            // If any token except the last is being removed, swap it with the last one
             if (tokenIndex != lastTokenIndex) {
                 uint256 lastTokenId = _ownedTokens[from][lastTokenIndex];
                 _ownedTokens[from][tokenIndex] = lastTokenId;
@@ -101,7 +99,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
             delete _ownedTokensIndex[tokenId];
             delete _ownedTokens[from][lastTokenIndex];
         }
-        if (to != address(0) && to != from) {
+        if (to != address(0)) {
             uint256 length = ERC721.balanceOf(to);
             _ownedTokens[to][length] = tokenId;
             _ownedTokensIndex[tokenId] = length;

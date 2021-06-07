@@ -158,4 +158,40 @@ describe("MillionDollarTokenPage contract", async function() {
     expect(owner).to.equal(otherWallet.address);
   });
 
+  it("returns the correct value for tokenByIndex", async function () {
+    const tokenId = await mdtp.tokenByIndex(1);
+    expect(tokenId).to.equal(2);
+  });
+
+  it("raises an error if tokenByIndex is called with an invalid index", async function () {
+    const transaction = mdtp.tokenByIndex(10001);
+    await expect(transaction).to.be.reverted;
+  });
+
+  it("returns the correct value for tokenOfOwnerByIndex of a token owner", async function () {
+    await mdtp.mint(myWallet.address, 100);
+    await mdtp.mint(myWallet.address, 101);
+    await mdtp.mint(myWallet.address, 102);
+    const tokenId = await mdtp.tokenOfOwnerByIndex(myWallet.address, 1);
+    expect(tokenId).to.equal(101);
+  });
+
+  it("returns the correct value for tokenOfOwnerByIndex after tokens are transferred", async function () {
+    await mdtp.mint(myWallet.address, 100);
+    await mdtp.mint(myWallet.address, 101);
+    await mdtp.mint(myWallet.address, 102);
+    const tokenId = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
+    expect(tokenId).to.equal(100);
+    await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+    const tokenId2 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
+    console.log('tokenId2', tokenId2);
+    expect(tokenId2).to.equal(101);
+    const tokenId3 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 1);
+    console.log('tokenId3', tokenId3);
+    expect(tokenId3).to.equal(102);
+    // await mdtp.transferFrom(myWallet.address, otherWallet.address, 102);
+    // const tokenId4 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
+    // expect(tokenId4).to.equal(101);
+  });
+
 });
