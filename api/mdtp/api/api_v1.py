@@ -51,7 +51,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     @router.post('/networks/{network}/tokens/{tokenId}/generate-image-upload', response_model=GenerateImageUploadForTokenResponse)
     async def generate_image_upload_for_token(network: str, tokenId: int):
         presignedUpload = await manager.generate_image_upload_for_token(network=network, tokenId=tokenId)
-        return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_model(presignedUpload=presignedUpload))
+        return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_model(model=presignedUpload))
 
     @router.post('/networks/{network}/tokens/{tokenId}/upload-metadata', response_model=UploadMetadataForTokenResponse)
     async def upload_metadata_for_token(network: str, tokenId: int, request: UploadMetadataForTokenRequest):

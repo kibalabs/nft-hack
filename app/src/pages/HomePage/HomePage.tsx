@@ -23,6 +23,9 @@ export const HomePage = (): React.ReactElement => {
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
+    if (network === null) {
+      return;
+    }
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
       apiClient.listGridItems(network, true, retrievedBaseImage.generatedDate).then((retrievedGridItems: GridItem[]): void => {
