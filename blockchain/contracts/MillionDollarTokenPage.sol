@@ -30,7 +30,7 @@ contract MillionDollarTokenPage is ERC721, AdminManageable {
 
     mapping (uint256 => string) private _tokenGridDataURIs;
 
-    event SetTokenGridDataURI(uint256 indexed tokenId);
+    event TokenGridDataURIChanged(uint256 indexed tokenId);
 
     modifier onlyTokenOwner(uint256 tokenId) {
         require(ownerOf(tokenId) == _msgSender(), "MDTP: caller is not the tokenOwner");
@@ -49,7 +49,7 @@ contract MillionDollarTokenPage is ERC721, AdminManageable {
         return "https://api.mdtp.com/token-grid-datas/";
     }
 
-    function mintNFT(address recipient, uint256 tokenId) public onlyAdmin returns (uint256) {
+    function mint(address recipient, uint256 tokenId) public onlyAdmin returns (uint256) {
         require(tokenId > 0 && tokenId <= 10000, "MDTP: invalid tokenId");
         ERC721._safeMint(recipient, tokenId);
         return tokenId;
@@ -61,9 +61,8 @@ contract MillionDollarTokenPage is ERC721, AdminManageable {
     }
 
     function setTokenGridDataURI(uint256 tokenId, string memory metadataURI) onlyTokenOwner(tokenId) public {
-        require(_exists(tokenId), "MDTP: token does not exist");
         _tokenGridDataURIs[tokenId] = metadataURI;
-        emit SetTokenGridDataURI(tokenId);
+        emit TokenGridDataURIChanged(tokenId);
     }
 
     function tokenGridDataURI(uint256 tokenId) public view virtual returns (string memory) {

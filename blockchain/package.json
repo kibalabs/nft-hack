@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "main": "index.ts",
-  "scripts": {},
+  "scripts": {
+    "test": "hardhat test"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
