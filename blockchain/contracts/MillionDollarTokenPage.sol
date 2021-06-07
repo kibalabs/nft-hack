@@ -42,19 +42,13 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
         return "https://api.mdtp.co/token-metadatas/";
     }
 
-    function mint(address recipient, uint256 tokenId) public onlyAdmin returns (uint256) {
-        require(tokenId > 0 && tokenId <= 10000, "MDTP: invalid tokenId");
-        ERC721._safeMint(recipient, tokenId);
-        return tokenId;
-    }
-
     function tokenURI(uint256 tokenId) public pure override returns (string memory) {
         string memory baseURI = _baseURI();
         return string(abi.encodePacked(baseURI, Strings.toString(tokenId)));
     }
 
-    function _baseGridDataURI() internal pure returns (string memory) {
-        return "https://api.mdtp.co/token-grid-datas/";
+    function _defaultBaseGridDataURI() internal pure returns (string memory) {
+        return "https://api.mdtp.co/token-default-grid-datas/";
     }
 
     function setTokenGridDataURI(uint256 tokenId, string memory metadataURI) public onlyTokenOwner(tokenId) {
@@ -67,7 +61,13 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
         if (bytes(_tokenGridDataURI).length > 0) {
             return _tokenGridDataURI;
         }
-        return string(abi.encodePacked(_baseGridDataURI(), Strings.toString(tokenId)));
+        return string(abi.encodePacked(_defaultBaseGridDataURI(), Strings.toString(tokenId)));
+    }
+
+    function mint(address recipient, uint256 tokenId) public onlyAdmin returns (uint256) {
+        require(tokenId > 0 && tokenId <= 10000, "MDTP: invalid tokenId");
+        ERC721._safeMint(recipient, tokenId);
+        return tokenId;
     }
 
     // IERC721Enumerable

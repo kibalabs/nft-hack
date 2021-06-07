@@ -10,7 +10,7 @@ from typing import Optional
 import urllib.parse as urlparse
 import uuid
 
-from core.exceptions import NotFoundException
+from core.exceptions import BadRequestException, NotFoundException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.util import date_util, dict_util, file_util
@@ -23,7 +23,7 @@ from web3 import Web3
 
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
-from mdtp.model import BaseImage, NetworkSummary
+from mdtp.model import BaseImage, NetworkSummary, TokenMetadata
 from mdtp.model import GridItem
 from mdtp.messages import BuildBaseImageMessageContent, UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
@@ -56,6 +56,36 @@ class MdtpManager:
         self.contractTotalSupplyMethodAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'totalSupply'][0]
         self.contractTokenUriAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'tokenURI'][0]
         self.contractOwnerOfAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'ownerOf'][0]
+
+    async def get_token_metadata(self, tokenId: str) -> TokenMetadata:
+        try:
+            tokenIdValue = int(tokenId)
+        except ValueError:
+            raise NotFoundException()
+        if tokenIdValue <= 0 or tokenIdValue > 10000:
+            raise NotFoundException()
+        return TokenMetadata(
+            tokenId=tokenId,
+            tokenIndex=(tokenIdValue - 1),
+            name=f'MDTP Token {tokenId}',
+            description='<description for the token>',
+            image='',
+        )
+
+    async def get_token_default_grid_data(self, tokenId: str) -> TokenMetadata:
+        try:
+            tokenIdValue = int(tokenId)
+        except ValueError:
+            raise NotFoundException()
+        if tokenIdValue <= 0 or tokenIdValue > 10000:
+            raise NotFoundException()
+        return TokenMetadata(
+            tokenId=tokenId,
+            tokenIndex=(tokenIdValue - 1),
+            name=f'MDTP Token {tokenId}',
+            description='<description for the token>',
+            image='',
+        )
 
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
         gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)

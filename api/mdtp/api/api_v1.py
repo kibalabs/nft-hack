@@ -2,7 +2,6 @@ import datetime
 from typing import Optional
 
 from core.api.kiba_router import KibaRouter
-from fastapi import Request
 from fastapi import Response
 
 from mdtp.api.endpoints_v1 import *

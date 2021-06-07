@@ -13,6 +13,7 @@ from core.web3.eth_client import RestEthClient
 from core.s3_manager import S3Manager
 
 from mdtp.api.api_v1 import create_api as create_v1_api
+from mdtp.api.metadata import create_api as create_metadata_api
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
 from mdtp.manager import MdtpManager
@@ -42,6 +43,7 @@ manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3M
 app = FastAPI()
 app.include_router(router=create_health_api(name=os.environ.get('NAME', 'mdtp-api'), version=os.environ.get('VERSION')))
 app.include_router(prefix='/v1', router=create_v1_api(manager=manager))
+app.include_router(prefix='', router=create_metadata_api(manager=manager))
 app.add_middleware(CORSMiddleware, allow_credentials=True, allow_methods=['*'], allow_headers=['*'], expose_headers=[
     'X-Response-Time',
     'X-Server',
