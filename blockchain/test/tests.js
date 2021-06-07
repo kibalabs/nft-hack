@@ -39,53 +39,53 @@ describe("MillionDollarTokenPage contract", async function() {
     await expect(transaction).to.be.reverted;
   });
 
-  it("should have the correct grid-data uri for a non-minted token", async function() {
-    const gridDataUri = await mdtp.tokenGridDataURI(100);
-    expect(gridDataUri).to.equal("https://api.mdtp.com/token-grid-datas/100");
+  it("should have the correct content uri for a non-minted token", async function() {
+    const contentUri = await mdtp.tokenContentURI(100);
+    expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
   });
 
-  it("should have the correct grid-data uri for a minted token without an overwritten uri", async function() {
+  it("should have the correct content uri for a minted token without an overwritten uri", async function() {
     await mdtp.mint(myWallet.address, 100);
-    const gridDataUri = await mdtp.tokenGridDataURI(100);
-    expect(gridDataUri).to.equal("https://api.mdtp.com/token-grid-datas/100");
+    const contentUri = await mdtp.tokenContentURI(100);
+    expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
   });
 
-  it("allows the owner to change the grid-data uri", async function() {
+  it("allows the owner to change the content uri", async function() {
     await mdtp.mint(myWallet.address, 100);
     const newUri = "https://google.com/tokens/100"
-    await mdtp.setTokenGridDataURI(100, newUri);
+    await mdtp.setTokenContentURI(100, newUri);
   });
 
-  it("doesn't not allow changing the grid-data uri of non-minted token", async function() {
+  it("doesn't not allow changing the content uri of non-minted token", async function() {
     const newUri = "https://google.com/tokens/100";
-    const transaction = mdtp.setTokenGridDataURI(100, newUri);
+    const transaction = mdtp.setTokenContentURI(100, newUri);
     await expect(transaction).to.be.reverted;
   });
 
-  it("should have the correct grid-data uri for a minted token with an overwritten uri", async function() {
+  it("should have the correct content uri for a minted token with an overwritten uri", async function() {
     await mdtp.mint(myWallet.address, 100);
     const newUri = "https://google.com/tokens/100"
-    await mdtp.setTokenGridDataURI(100, newUri);
-    const gridDataUri = await mdtp.tokenGridDataURI(100);
-    expect(gridDataUri).to.equal(newUri);
+    await mdtp.setTokenContentURI(100, newUri);
+    const contentUri = await mdtp.tokenContentURI(100);
+    expect(contentUri).to.equal(newUri);
   });
 
-  it("does not allow a non-owner to change the grid-data uri", async function() {
+  it("does not allow a non-owner to change the content uri", async function() {
     await mdtp.mint(otherWallet.address, 100);
     const newUri = "https://google.com/tokens/100";
-    const transaction = mdtp.setTokenGridDataURI(100, newUri);
+    const transaction = mdtp.setTokenContentURI(100, newUri);
     await expect(transaction).to.be.reverted;
   });
 
   it("should have the correct metadata uri for a non-minted token", async function() {
     const metadataUri = await mdtp.tokenURI(100);
-    expect(metadataUri).to.equal("https://api.mdtp.com/token-metadatas/100");
+    expect(metadataUri).to.equal("https://api.mdtp.co/token-metadatas/100");
   });
 
   it("should have the correct metadata uri for a minted token", async function() {
     await mdtp.mint(myWallet.address, 100);
     const metadataUri = await mdtp.tokenURI(100);
-    expect(metadataUri).to.equal("https://api.mdtp.com/token-metadatas/100");
+    expect(metadataUri).to.equal("https://api.mdtp.co/token-metadatas/100");
   });
 
   it("does not allow the owner to call mint", async function() {
@@ -111,11 +111,11 @@ describe("MillionDollarTokenPage contract", async function() {
     await expect(transaction).to.emit(mdtp, 'Transfer').withArgs(myWallet.address, otherWallet.address, 100);
   });
 
-  it("emits a TokenGridDataURIChanged event when a token grid-data is changed", async function() {
+  it("emits a TokenContentURIChanged event when a token content is changed", async function() {
     await mdtp.mint(myWallet.address, 100);
     const newUri = "https://google.com/tokens/100"
-    const transaction = mdtp.setTokenGridDataURI(100, newUri);
-    await expect(transaction).to.emit(mdtp, 'TokenGridDataURIChanged').withArgs(100);
+    const transaction = mdtp.setTokenContentURI(100, newUri);
+    await expect(transaction).to.emit(mdtp, 'TokenContentURIChanged').withArgs(100);
   });
 
   it("returns 0 for the balance of a non-token holder", async function () {
@@ -184,14 +184,12 @@ describe("MillionDollarTokenPage contract", async function() {
     expect(tokenId).to.equal(100);
     await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
     const tokenId2 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
-    console.log('tokenId2', tokenId2);
-    expect(tokenId2).to.equal(101);
+    expect(tokenId2).to.equal(102);
     const tokenId3 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 1);
-    console.log('tokenId3', tokenId3);
-    expect(tokenId3).to.equal(102);
-    // await mdtp.transferFrom(myWallet.address, otherWallet.address, 102);
-    // const tokenId4 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
-    // expect(tokenId4).to.equal(101);
+    expect(tokenId3).to.equal(101);
+    await mdtp.transferFrom(myWallet.address, otherWallet.address, 101);
+    const tokenId4 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
+    expect(tokenId4).to.equal(102);
   });
 
 });
