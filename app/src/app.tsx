@@ -3,10 +3,9 @@ import React from 'react';
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { Route, Router, useInitialization } from '@kibalabs/core-react';
 import { Alignment, KibaApp, LayerContainer } from '@kibalabs/ui-react';
+import { ethers } from 'ethers';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
-import Web3 from 'web3';
-import { provider as Web3Provider } from 'web3-core';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
@@ -24,23 +23,23 @@ declare global {
   export interface Window {
     KRT_CONTRACT_ADDRESS: string;
     KRT_API_URL?: string;
-    ethereum?: Web3Provider;
+    ethereum?: ethers.providers.ExternalProvider;
   }
 }
 
-const getWeb3Connection = (): Web3 => {
+const getWeb3Connection = (): ethers.providers.Web3Provider => {
   if (typeof window.ethereum === 'undefined') {
     // TOOD(krishan711): do something here!
     return null;
   }
-  return new Web3(window.ethereum);
+  return new ethers.providers.Web3Provider(window.ethereum);
 };
 
 
 const requester = new Requester();
 const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
-const contract = web3 ? new web3.eth.Contract(MDTContract.abi, window.KRT_CONTRACT_ADDRESS) : null;
+const contract = web3 ? new ethers.Contract(window.KRT_CONTRACT_ADDRESS, MDTContract.abi, web3) : null;
 const apiClient = new MdtpClient(requester, window.KRT_API_URL);
 // const tracker = new EveryviewTracker('');
 // tracker.trackApplicationOpen();
@@ -48,28 +47,23 @@ const apiClient = new MdtpClient(requester, window.KRT_API_URL);
 
 const theme = buildMDTPTheme();
 const globals: Globals = {
-  web3,
   requester,
   localStorageClient,
   contract,
   contractAddress: window.KRT_CONTRACT_ADDRESS,
   apiClient,
-  network: 'rinkeby',
+  network: null,
   chainId: ChainId.Rinkeby,
 };
 
 export const App = hot((): React.ReactElement => {
-  const [accounts, setAccounts] = React.useState<string[] | undefined | null>(undefined);
+  const [accounts, setAccounts] = React.useState<ethers.Signer[] | undefined | null>(undefined);
+  const [accountIds, setAccountIds] = React.useState<string[] | undefined | null>(undefined);
   const [chainId, setChainId] = React.useState<number | null>(null);
   const [network, setNetwork] = React.useState<string | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
-    if (!web3) {
-      setAccounts(null);
-      return;
-    }
-
-    setAccounts(await web3.eth.requestAccounts());
+    await getAccounts();
   };
 
   const getAccounts = async (): Promise<void> => {
@@ -77,14 +71,13 @@ export const App = hot((): React.ReactElement => {
       setAccounts(null);
       return;
     }
-
-    setAccounts(await web3.eth.getAccounts());
+    setAccounts([await web3.getSigner()]);
   };
 
   const getChainId = async (): Promise<void> => {
     if (web3) {
-      web3.eth.getChainId().then((retrievedChainId: number): void => {
-        setChainId(retrievedChainId);
+      web3.getNetwork().then((retrievedNetwork: ethers.providers.Network): void => {
+        setChainId(retrievedNetwork.chainId);
       });
     } else {
       setChainId(ChainId.Rinkeby);
@@ -100,10 +93,24 @@ export const App = hot((): React.ReactElement => {
     setNetwork(chainId ? getNetwork(chainId) : null);
   }, [chainId]);
 
+  React.useEffect((): void => {
+    if (accounts === null) {
+      setAccountIds(null);
+      return;
+    }
+    if (accounts === undefined) {
+      setAccountIds(undefined);
+      return;
+    }
+    Promise.all(accounts.map((account: ethers.Signer): Promise<string> => account.getAddress())).then((retrievedAccountIds: string[]): void => {
+      setAccountIds(retrievedAccountIds);
+    });
+  }, [accounts]);
+
   return (
     <KibaApp theme={theme}>
       <GlobalsProvider globals={{ ...globals, network }}>
-        <AccountControlProvider accounts={accounts} onLinkAccountsClicked={onLinkAccountsClicked}>
+        <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
             <Router>
               <Route path='/' page={HomePage} />

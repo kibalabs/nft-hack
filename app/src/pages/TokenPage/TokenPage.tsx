@@ -4,7 +4,7 @@ import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, Image, InputType, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
-import { useAccounts } from '../../accountsContext';
+import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem, PresignedUpload } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { Dropzone } from '../../components/dropzone';
@@ -34,14 +34,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const [isUpdating, setIsUpdating] = React.useState<boolean>(false);
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const accounts = useAccounts();
+  const accountIds = useAccountIds();
 
   const loadToken = React.useCallback(async (): Promise<void> => {
+    if (network === null) {
+      setGridItem(null);
+      return;
+    }
     const tokenId = Number(props.tokenId);
     apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
     });
     if (contract) {
-      const receivedTokenOwner = await contract.methods.ownerOf(tokenId).call();
+      const receivedTokenOwner = await contract.ownerOf(tokenId);
       setChainOwnerId(receivedTokenOwner);
       // NOTE(krishan711): is it worth pulling the metadata from the contract and showing that?
       // const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
@@ -58,7 +63,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [loadToken]);
 
   const onUpdateMetadataClicked = async (): Promise<void> => {
-    if (!gridItem) {
+    if (!gridItem || !accountIds || !accounts) {
       return;
     }
 
@@ -71,18 +76,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setNewTokenSettingResult(null);
     const tokenId = Number(props.tokenId);
     try {
-      await contract.methods.setTokenURI(tokenId, tokenMetadataUrl)
-        .send({ from: chainOwnerId || gridItem.ownerId })
-        .on('transactionHash', (transactionHash: string) => {
-          setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transactionHash}.` });
-          setIsUpdating(false);
-        })
-        .on('confirmation', () => { // confirmationNumber, receipt
-          setNewTokenSettingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
-          apiClient.updateTokenDeferred(network, Number(props.tokenId));
-          loadToken();
-          setIsUpdating(false);
-        });
+      const signerIndex = accountIds.indexOf(getOwnerId());
+      if (signerIndex === -1) {
+        setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
+        setIsUpdating(false);
+      }
+      const contractWithSigner = contract.connect(accounts[signerIndex]);
+      const transaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
+      setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
+      setIsUpdating(false);
+      await transaction.wait();
+      setNewTokenSettingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
+      apiClient.updateTokenDeferred(network, Number(props.tokenId));
+      loadToken();
     } catch (error) {
       setNewTokenSettingResult({ isSuccess: false, isPending: false, message: error.message });
       setIsUpdating(false);
@@ -174,11 +180,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   </Stack>
                   <Spacing variant={PaddingSize.Wide2} />
                   <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
-                  { (accounts === undefined || !gridItem.tokenId) ? (
+                  { (accounts === undefined || accountIds === undefined || !gridItem.tokenId) ? (
                     <LoadingSpinner />
-                  ) : (accounts === null) ? (
+                  ) : (accounts === null || accountIds === null) ? (
                     <Text variant='note'>{'Please connect your accounts if you are the owner and want to make changes.'}</Text>
-                  ) : (accounts.includes(getOwnerId())) ? (
+                  ) : (accountIds.includes(getOwnerId())) ? (
                     <React.Fragment>
                       <Spacing variant={PaddingSize.Default} />
                       <Text>👑 This is one of your tokens 👑</Text>

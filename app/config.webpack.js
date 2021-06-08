@@ -14,11 +14,11 @@ module.exports = (config) => {
     '@kibalabs/ui-react': path.resolve('./node_modules', '@kibalabs/ui-react'),
   };
   config.plugins = [
-    ...config.plugins,
+    ...config.plugins.filter((plugin) => !(plugin instanceof CreateRuntimeConfigPlugin)),
     new CreateRuntimeConfigPlugin({
       'KRT_CONTRACT_ADDRESS': process.env.KRT_CONTRACT_ADDRESS,
       'KRT_API_URL': process.env.KRT_API_URL,
-    })
+    }),
   ];
   return config;
 };
