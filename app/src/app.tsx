@@ -2,8 +2,10 @@ import React from 'react';
 
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { Route, Router, useInitialization } from '@kibalabs/core-react';
+import { EveryviewTracker } from '@kibalabs/everyview-tracker';
 import { Alignment, KibaApp, LayerContainer } from '@kibalabs/ui-react';
 import { ethers } from 'ethers';
+import ReactGA from 'react-ga';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
 
@@ -41,9 +43,11 @@ const web3 = getWeb3Connection();
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const contract = web3 ? new ethers.Contract(window.KRT_CONTRACT_ADDRESS, MDTContract.abi, web3) : null;
 const apiClient = new MdtpClient(requester, window.KRT_API_URL);
-// const tracker = new EveryviewTracker('');
-// tracker.trackApplicationOpen();
+const tracker = new EveryviewTracker('ee4224993fcf4c2fb2240ecc749c98a8');
+tracker.trackApplicationOpen();
 
+ReactGA.initialize('UA-31771231-11');
+ReactGA.pageview(window.location.pathname + window.location.search);
 
 const theme = buildMDTPTheme();
 const globals: Globals = {

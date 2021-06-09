@@ -13,12 +13,10 @@ class HtmlWebpackInjectSeo {
   apply(compiler) {
     compiler.hooks.compilation.tap('HtmlWebpackInjectSeo', compilation => {
       HtmlWebpackPlugin.getHooks(compilation).beforeEmit.tapAsync('HtmlWebpackInjectSeo.beforeEmit', (htmlPluginData, callback) => {
-        console.log('htmlPluginData', htmlPluginData);
         htmlPluginData.html = htmlPluginData.html.replace(/<title>.*<\/title>/i, `<title>${title}</title>`);
         callback(null, htmlPluginData);
       });
       HtmlWebpackPlugin.getHooks(compilation).alterAssetTagGroups.tapAsync('HtmlWebpackInjectSeo.alterAssetTagGroups', (htmlPluginData, callback) => {
-        console.log('htmlPluginData', htmlPluginData);
         htmlPluginData.headTags.push({
           tagName: 'meta',
           attributes: {
