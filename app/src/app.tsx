@@ -5,9 +5,9 @@ import { Route, Router, useInitialization } from '@kibalabs/core-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
 import { Alignment, KibaApp, LayerContainer } from '@kibalabs/ui-react';
 import { ethers } from 'ethers';
+import ReactGA from 'react-ga';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
-import ReactGA from 'react-ga';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
