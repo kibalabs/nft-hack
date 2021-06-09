@@ -1,14 +1,12 @@
 import os
 import json
 import logging
-import uuid
+import time
 
 import asyncclick as click
-import boto3
+from core.exceptions import BadRequestException
 from core.requester import Requester
-from core.s3_manager import S3Manager
 from core.web3.eth_client import RestEthClient
-from PIL import Image
 
 GWEI = 1000000000
 GAS_LIMIT = 1000000
@@ -43,17 +41,20 @@ async def run(startTokenId: int, width: int, height: int, sendAddress: str, rece
     tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
     for row in range(0, height):
         for column in range(0, width):
-            index = (row * width) + column
             tokenId = startTokenId + (row * tokensPerRow) + column
-            if tokenId <= tokenCount:                
-                print(f'Transferring token {tokenId}, from {sendAddress}, to {receiveAddress}, with nonce {nonce}')
+            if tokenId <= tokenCount:
+                print(f'Transferring token {tokenId} with nonce {nonce} from {sendAddress} -> {receiveAddress}')
                 data = {
-                    'from' : sendAddress,
-                    'to' : receiveAddress,
+                    'from': sendAddress,
+                    'to': receiveAddress,
                     'tokenId': tokenId,
                 }
-                await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=GAS_LIMIT, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)                    
+                try:
+                    await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=GAS_LIMIT, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+                except BadRequestException as exception:
+                    print(f'Failed to transfer {tokenId}: {str(exception)}')
                 nonce += 1
+                time.sleep(0.5)
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
