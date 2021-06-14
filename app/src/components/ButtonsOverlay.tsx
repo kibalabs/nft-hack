@@ -13,7 +13,8 @@ export const ButtonsOverlay = (): React.ReactElement => {
   };
 
   const onShareClicked = () => {
-    navigator.navigateTo('/about');
+    localStorage.setItem('shareDialogOpen', 'true');
+    // navigator.navigateTo('/about');
   };
 
   return (
