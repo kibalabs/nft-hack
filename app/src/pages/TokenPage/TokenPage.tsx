@@ -71,6 +71,12 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
     const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title || '', description || '', image || '');
 
+    if (!contract) {
+      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+      setIsUpdating(false);
+      return;
+    }
+
     setNewTokenSettingResult(null);
     const tokenId = Number(props.tokenId);
     try {
@@ -154,7 +160,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <Image isCenteredHorizontally={true} fitType={'cover'} source={gridItem.imageUrl} alternativeText={`${gridItem.title} image`} />
               </BackgroundView>
             </Box>
-            <Stack direction={Direction.Vertical} defaultGutter={PaddingSize.Wide1} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
+            <Stack direction={Direction.Vertical} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
               <Text variant='header3'>{`TOKEN #${gridItem.tokenId}`}</Text>
               <Text variant='header2'>{`${gridItem.title}`}</Text>
               <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
@@ -171,9 +177,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <Text variant='note'>{'Please connect your accounts if you are the owner and want to make changes.'}</Text>
               ) : (accountIds.includes(getOwnerId())) ? (
                 <React.Fragment>
-                  <Spacing variant={PaddingSize.Default} />
                   <Text>👑 This is one of your tokens 👑</Text>
-                  <Spacing variant={PaddingSize.Default} />
                   { !hasStartedUpdating ? (
                     <Button variant='primary' text='Update token' onClicked={onUpdateClicked} />
                   ) : (
