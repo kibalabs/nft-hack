@@ -3,7 +3,11 @@ import React from 'react';
 import { useNavigator } from '@kibalabs/core-react';
 import { Box, Direction, IconButton, KibaIcon, Stack } from '@kibalabs/ui-react';
 
-export const ButtonsOverlay = (): React.ReactElement => {
+interface ButtonsOverlayProps {
+  onShareClicked: () => void;
+}
+
+export const ButtonsOverlay = (props: ButtonsOverlayProps): React.ReactElement => {
   const navigator = useNavigator();
 
   const onAboutClicked = () => {
@@ -13,9 +17,8 @@ export const ButtonsOverlay = (): React.ReactElement => {
   };
 
   const onShareClicked = () => {
-    localStorage.setItem('shareDialogOpen', 'true');
-    // navigator.navigateTo('/about');
-  };
+    props.onShareClicked();
+  }
 
   return (
     <Box variant='overlay-topLeftCutoff'>
