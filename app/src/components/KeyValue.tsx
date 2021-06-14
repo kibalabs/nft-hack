@@ -18,9 +18,9 @@ export const KeyValue = (props: KeyValueProps): React.ReactElement => {
   const emptyValueText = props.emptyValueText || 'none';
   const emptyValueTextVariant = props.emptyValueTextVariant || 'light';
   return (
-    <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+    <Stack direction={Direction.Horizontal} shouldAddGutters={true} isFullWidth={true} shouldWrapItems={true}>
       <Text variant={nameTextVariant}>{`${props.name}:`}</Text>
-      <Stack.Item growthFactor={1}>
+      <Stack.Item growthFactor={1} shrinkFactor={1}>
         { props.value != null ? (
           <Text variant={valueTextVariant}>{props.value}</Text>
         ) : props.markdownValue != null ? (
