@@ -121,9 +121,9 @@ export const App = hot((): React.ReactElement => {
             <Router>
               <Route path='/' page={HomePage}>
                 <Route path='/tokens/:tokenId' page={TokenPage} />
+                <Route path='/about' page={AboutPage} />
               </Route>
               <Route default={true} page={NotFoundPage} />
-              <Route path='/about' page={AboutPage} />
             </Router>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
