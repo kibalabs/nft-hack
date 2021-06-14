@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import { BaseImage, GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 import { NotificationOverlay } from '../../components/NotificationOverlay';
+import { ShareOverlay } from '../../components/ShareOverlay';
 import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
@@ -37,6 +38,7 @@ export const HomePage = (): React.ReactElement => {
   const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
   const [notificationComplete, setNotificationComplete] = useBooleanLocalStorageState('notificationComplete');
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
 
@@ -68,15 +70,23 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo(`/tokens/${tokenId}`);
   };
 
-  const onCloseTokenPanelClicked = () => {
+  const onCloseTokenPanelClicked = (): void => {
     navigator.navigateTo('/');
+  };
+
+  const onShareOpenClicked = (): void => {
+    setShareDialogOpen(true);
+  };
+
+  const onShareCloseClicked = (): void => {
+    setShareDialogOpen(false);
   };
 
   const onWelcomeCloseClicked = (): void => {
     setWelcomeComplete(true);
   };
 
-  const onWelcomeAboutClicked = () => {
+  const onWelcomeAboutClicked = (): void => {
     navigator.navigateTo('/about');
   };
 
@@ -84,7 +94,7 @@ export const HomePage = (): React.ReactElement => {
     setNotificationComplete(true);
   };
 
-  const onNotificationClaimClicked = () => {
+  const onNotificationClaimClicked = (): void => {
     setNotificationComplete(true);
   };
 
@@ -130,7 +140,7 @@ export const HomePage = (): React.ReactElement => {
           </LayerContainer.Layer>
         )}
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
-          <ButtonsOverlay />
+          <ButtonsOverlay onShareClicked={onShareOpenClicked} />
         </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
           <StatsOverlay />
@@ -153,7 +163,11 @@ export const HomePage = (): React.ReactElement => {
             </PanelLayer>
           </LayerContainer.Layer>
         )}
-        {!welcomeComplete ? (
+        { shareDialogOpen ? (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+            <ShareOverlay onCloseClicked={onShareCloseClicked} />
+          </LayerContainer.Layer>
+        ) : !welcomeComplete ? (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
             <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onWelcomeAboutClicked} />
           </LayerContainer.Layer>
