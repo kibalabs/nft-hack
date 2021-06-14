@@ -1,18 +1,9 @@
 import React from 'react';
 
-import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, KibaIcon, LayerContainer, Markdown, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text } from '@kibalabs/ui-react';
-import { Helmet } from 'react-helmet';
+import { Alignment, Direction, Markdown, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
 
-import { ButtonsOverlay } from '../../components/ButtonsOverlay';
 
 export const AboutPage = (): React.ReactElement => {
-  const navigator = useNavigator();
-
-  const onHomeClicked = () => {
-    navigator.navigateTo('/');
-  };
-
   const text = `
   **What is Milliondollartokenpage?**
 
