@@ -16,15 +16,11 @@ export const ButtonsOverlay = (props: ButtonsOverlayProps): React.ReactElement =
     navigator.navigateTo('/about');
   };
 
-  const onShareClicked = () => {
-    props.onShareClicked();
-  }
-
   return (
     <Box variant='overlay-topLeftCutoff'>
       <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
         <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
-        <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-share' />} onClicked={onShareClicked} />
+        <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-share' />} onClicked={props.onShareClicked} />
         <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-cart' />} target={'https://testnets.opensea.io/collection/mdtp-test-2?embed=true'} />
         <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-help' />} onClicked={onAboutClicked} />
       </Stack>
