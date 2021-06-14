@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { useDebouncedCallback, usePreviousValue, useWindowSize } from '@kibalabs/core-react';
+import { deepCompare } from '@kibalabs/core';
+import { useDebouncedCallback, usePreviousValue, useSize } from '@kibalabs/core-react';
 import { Alignment, LayerContainer } from '@kibalabs/ui-react';
 
 import { BaseImage, GridItem } from '../client';
@@ -19,32 +20,20 @@ interface TokenGridProps {
   newGridItems: GridItem[];
   baseImage: BaseImage;
   tokenCount: number;
+  minScale: number;
+  maxScale: number;
   onTokenIdClicked: (tokenId: number) => void;
 }
 
-const MIN_SCALE = 1;
-const MAX_SCALE = 10;
-const HALF_SCALE = 5.0;
-
-const truncateScale = (scale: number): number => {
-  if (scale < HALF_SCALE - 0.5) {
-    return MIN_SCALE;
-  }
-  if (scale < MAX_SCALE - 0.5) {
-    return HALF_SCALE;
-  }
-  return MAX_SCALE;
-};
-
-export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
+export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement => {
   const { apiClient, network } = useGlobals();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
-  const windowSize = useWindowSize();
+  const windowSize = useSize(containerRef.current);
   const [panOffset, startPan] = usePan();
   const lastPanOffset = usePreviousValue(panOffset);
-  const [scale, setScale] = useScale(containerRef, MIN_SCALE, MAX_SCALE, 0.3, true);
+  const [scale, setScale] = useScale(containerRef, props.minScale, props.maxScale, 0.3, true);
   const lastScale = usePreviousValue(scale);
   const mousePositionRef = useMousePositionRef(containerRef);
   const [adjustedOffset, setAdjustedOffset] = React.useState<Point>(panOffset);
@@ -61,6 +50,16 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
 
   const canvasHeight = tokenHeight * Math.ceil((props.tokenCount * tokenWidth) / canvasWidth);
 
+  const truncateScale = React.useCallback((newScale: number): number => {
+    if (newScale < (props.maxScale / 2.0) - 0.5) {
+      return props.minScale;
+    }
+    if (newScale < props.maxScale - 0.5) {
+      return (props.maxScale / 2.0);
+    }
+    return props.maxScale;
+  }, [props.minScale, props.maxScale]);
+
   const drawTokenImageOnCanvas = React.useCallback((context: CanvasRenderingContext2D, tokenIndex: number, imageScale: number) => {
     const currentScale = tokenScales.current.get(tokenIndex);
     if (currentScale !== undefined && currentScale >= imageScale) {
@@ -74,8 +73,8 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
       const newImage = new window.Image();
       newImage.addEventListener('load', () => {
-        context.fillRect(x * MAX_SCALE, y * MAX_SCALE, tokenWidth * MAX_SCALE, tokenHeight * MAX_SCALE);
-        context.drawImage(newImage, x * MAX_SCALE, y * MAX_SCALE, tokenWidth * MAX_SCALE, tokenHeight * MAX_SCALE);
+        context.fillRect(x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
+        context.drawImage(newImage, x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
       });
       tokenImages.current.set(tokenIndex, newImage);
       image = newImage;
@@ -84,7 +83,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
     // @ts-ignore TODO(krishan711): make baseUrl visible in ServiceClient
     image.setAttribute('src', `${apiClient.baseUrl}/v1/networks/${network}/tokens/${tokenId}/go-to-image?w=${tokenWidth * imageScale * window.devicePixelRatio}&h=${tokenHeight * imageScale * window.devicePixelRatio}`);
     tokenScales.current.set(tokenIndex, imageScale);
-  }, [apiClient, network]);
+  }, [apiClient, network, props.maxScale]);
 
   React.useEffect((): void => {
     const context = canvasRef.current?.getContext('2d');
@@ -101,7 +100,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
   // NOTE(krishan711): due to the "center by default" logic this would probably be better
   // modelled as "offset from center" instead of directly the offset
   const updateAdjustedOffset = React.useCallback((offset: Point | null, sizeChanged = false): void => {
-    if (windowSize.width === 0 || windowSize.height === 0 || canvasHeight === 0) {
+    if (!windowSize || windowSize.width === 0 || windowSize.height === 0 || canvasHeight === 0) {
       return;
     }
     const scaledWindowWidth = windowSize.width / scale;
@@ -135,7 +134,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
         return;
       }
       const truncatedScale = truncateScale(scale);
-      if (truncatedScale < HALF_SCALE) {
+      if (truncatedScale < props.maxScale / 2.0) {
         return;
       }
       const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
@@ -154,7 +153,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
         }
       }
     });
-  }, [props.tokenCount, canvasHeight, scale, lastScale, windowSize, setRedrawCallback, clearRedrawCallback, drawTokenImageOnCanvas]);
+  }, [props.tokenCount, props.maxScale, truncateScale, scale, canvasHeight, lastScale, windowSize, setRedrawCallback, clearRedrawCallback, drawTokenImageOnCanvas]);
 
   React.useEffect((): void => {
     if (scale !== lastScale) {
@@ -177,17 +176,17 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
     updateAdjustedOffset(null, true);
   }, [updateAdjustedOffset]);
 
-  const onZoomInClicked = (): void => {
-    setScale(scale + 1);
-  };
-
-  const onZoomOutClicked = (): void => {
-    setScale(scale - 1);
+  const getEventElementPosition = (event: React.MouseEvent<HTMLElement>): Point => {
+    const eventPoint = { x: event.clientX, y: event.clientY };
+    const elementRect = event.currentTarget.getBoundingClientRect();
+    const adjustedElementRect = { x: -elementRect.x, y: -elementRect.y };
+    const offsetRect = { x: -event.currentTarget.offsetLeft, y: -event.currentTarget.offsetTop };
+    return sumPoints(sumPoints(eventPoint, offsetRect), adjustedElementRect);
   };
 
   const onCanvasMouseDown = (event: React.MouseEvent<HTMLElement>): void => {
     lastMouseMoveTimeRef.current = new Date();
-    lastMouseMovePointRef.current = { x: event.pageX - event.currentTarget.offsetLeft, y: event.pageY - event.currentTarget.offsetTop };
+    lastMouseMovePointRef.current = getEventElementPosition(event);
   };
 
   const onCanvasMouseMove = (event: React.MouseEvent<HTMLElement>): void => {
@@ -195,7 +194,7 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       return;
     }
     const timeDiff = new Date().getTime() - lastMouseMoveTimeRef.current.getTime();
-    const endPoint = { x: event.pageX - event.currentTarget.offsetLeft, y: event.pageY - event.currentTarget.offsetTop };
+    const endPoint = getEventElementPosition(event);
     const pointDiff = diffPoints(endPoint, lastMouseMovePointRef.current);
 
     if (timeDiff > 700 || Math.abs(pointDiff.x) > 15 || Math.abs(pointDiff.y) > 15) {
@@ -205,15 +204,22 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
 
   const onCanvasMouseUp = (event: React.MouseEvent<HTMLElement>): void => {
     if (!isMoving) {
-      const endPoint = { x: event.pageX - event.currentTarget.offsetLeft, y: event.pageY - event.currentTarget.offsetTop };
-      const targetPoint = sumPoints(endPoint, scalePoint(adjustedOffset, scale));
-      const tokenIndex = Math.floor((targetPoint.x / (scale * tokenWidth)) + (Math.floor(targetPoint.y / (scale * tokenHeight)) * (canvasWidth / tokenWidth)));
+      const endPoint = getEventElementPosition(event);
+      const tokenIndex = Math.floor((endPoint.x / (scale * tokenWidth)) + (Math.floor(endPoint.y / (scale * tokenHeight)) * (canvasWidth / tokenWidth)));
       props.onTokenIdClicked(tokenIndex + 1);
     }
-    setIsMoving(false);
 
     lastMouseMoveTimeRef.current = null;
     lastMouseMovePointRef.current = null;
+    setIsMoving(false);
+  };
+
+  const onZoomInClicked = (): void => {
+    setScale(scale + 1);
+  };
+
+  const onZoomOutClicked = (): void => {
+    setScale(scale - 1);
   };
 
   return (
@@ -230,9 +236,9 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       >
         <div
           style={{
-            width: `${canvasWidth * MAX_SCALE}px`,
-            height: `${canvasHeight * MAX_SCALE}px`,
-            transform: `translate(${-adjustedOffset.x * scale}px, ${-adjustedOffset.y * scale}px) scale(${scale / MAX_SCALE})`,
+            width: `${canvasWidth * props.maxScale}px`,
+            height: `${canvasHeight * props.maxScale}px`,
+            transform: `translate(${-adjustedOffset.x * scale}px, ${-adjustedOffset.y * scale}px) scale(${scale / props.maxScale})`,
             transformOrigin: 'left top',
             overflow: 'hidden',
             backgroundImage: `url(${props.baseImage.url}?w=${canvasWidth * window.devicePixelRatio}&h=${canvasHeight * window.devicePixelRatio})`,
@@ -243,8 +249,8 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
         >
           <canvas
             ref={canvasRef}
-            width={`${canvasWidth * MAX_SCALE}px`}
-            height={`${canvasHeight * MAX_SCALE}px`}
+            width={`${canvasWidth * props.maxScale}px`}
+            height={`${canvasHeight * props.maxScale}px`}
             onMouseDown={onCanvasMouseDown}
             onMouseUp={onCanvasMouseUp}
             onMouseMove={onCanvasMouseMove}
@@ -254,11 +260,11 @@ export const TokenGrid = (props: TokenGridProps): React.ReactElement => {
       </div>
       <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Start}>
         <GridControl
-          zoomLevel={`${Math.floor(100 * (scale / MAX_SCALE))}%`}
+          zoomLevel={`${Math.floor(100 * (scale / props.maxScale))}%`}
           onZoomInClicked={onZoomInClicked}
           onZoomOutClicked={onZoomOutClicked}
         />
       </LayerContainer.Layer>
     </LayerContainer>
   );
-};
+}, deepCompare);

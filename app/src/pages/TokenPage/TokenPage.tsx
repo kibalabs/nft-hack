@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Box, Button, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
@@ -34,8 +34,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const accountIds = useAccountIds();
 
   const loadToken = React.useCallback(async (): Promise<void> => {
+    setGridItem(null);
+    setChainOwnerId(null);
     if (network === null) {
-      setGridItem(null);
       return;
     }
     const tokenId = Number(props.tokenId);
@@ -149,7 +150,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         ) : (
           <React.Fragment>
             <Box maxHeight='250px' variant='tokenHeader'>
-              <Image isCenteredHorizontally={true} fitType={'cover'} source={gridItem.imageUrl} alternativeText={`${gridItem.title} image`} />
+              <BackgroundView color='#000000'>
+                <Image isCenteredHorizontally={true} fitType={'cover'} source={gridItem.imageUrl} alternativeText={`${gridItem.title} image`} />
+              </BackgroundView>
             </Box>
             <Stack direction={Direction.Vertical} defaultGutter={PaddingSize.Wide1} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
               <Text variant='header3'>{`TOKEN #${gridItem.tokenId}`}</Text>
