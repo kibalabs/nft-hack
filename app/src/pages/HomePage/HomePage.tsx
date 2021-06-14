@@ -1,8 +1,11 @@
 import React from 'react';
 
 import { useBooleanLocalStorageState, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, IconButton, KibaIcon, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Outlet, useLocation } from 'react-router';
+import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
@@ -13,8 +16,15 @@ import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { isValidChain } from '../../util/chainUtil';
 
+const TokenLayer = styled.div`
+  width: 95vw;
+  max-width: 550px;
+  height: 100%;
+`;
+
 export const HomePage = (): React.ReactElement => {
   const navigator = useNavigator();
+  const location = useLocation();
   const { chainId, contract, apiClient, network } = useGlobals();
   const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
@@ -47,7 +57,11 @@ export const HomePage = (): React.ReactElement => {
   }, [chainId, contract, loadGridItems]);
 
   const onTokenIdClicked = (tokenId: number) => {
-    window.open(`/tokens/${tokenId}`, '_blank');
+    navigator.navigateTo(`/tokens/${tokenId}`);
+  };
+
+  const onCloseTokenPanelClicked = () => {
+    navigator.navigateTo('/');
   };
 
   const onWelcomeCloseClicked = (): void => {
@@ -90,6 +104,24 @@ export const HomePage = (): React.ReactElement => {
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
           <StatsOverlay />
         </LayerContainer.Layer>
+        {location.pathname.includes('/tokens/') && (
+          <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
+            <TokenLayer>
+              <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
+                <LayerContainer>
+                  <LayerContainer.Layer>
+                    <Outlet />
+                  </LayerContainer.Layer>
+                  <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+                    <Box variant='panelButtonHolder'>
+                      <IconButton icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
+                    </Box>
+                  </LayerContainer.Layer>
+                </LayerContainer>
+              </Box>
+            </TokenLayer>
+          </LayerContainer.Layer>
+        )}
         {!welcomeComplete ? (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
             <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onWelcomeAboutClicked} />

@@ -75,7 +75,9 @@ export const App = hot((): React.ReactElement => {
       setAccounts(null);
       return;
     }
-    setAccounts([await web3.getSigner()]);
+    // window.ethereum.enable();
+    const signer = await web3.getSigner();
+    setAccounts([signer]);
   };
 
   const getChainId = async (): Promise<void> => {
@@ -117,9 +119,10 @@ export const App = hot((): React.ReactElement => {
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
             <Router>
-              <Route path='/' page={HomePage} />
+              <Route path='/' page={HomePage}>
+                <Route path='/tokens/:tokenId' page={TokenPage} />
+              </Route>
               <Route default={true} page={NotFoundPage} />
-              <Route path='/tokens/:tokenId' page={TokenPage} />
               <Route path='/about' page={AboutPage} />
             </Router>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
