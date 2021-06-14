@@ -55,8 +55,8 @@ class HtmlWebpackInjectSeo {
         htmlPluginData.headTags.push({
           tagName: 'meta',
           attributes: {
-            "name": "summary_large_image",
-            "content": "twitter:card",
+            "name": "twitter:card",
+            "content": "summary_large_image",
           },
         });
         callback(null, htmlPluginData);
