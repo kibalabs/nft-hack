@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useBooleanLocalStorageState, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, IconButton, KibaIcon, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Outlet, useLocation } from 'react-router';
@@ -18,9 +18,17 @@ import { isValidChain } from '../../util/chainUtil';
 
 const TokenLayer = styled.div`
   width: 95vw;
-  max-width: 550px;
+  max-width: 500px;
   height: 100%;
 `;
+
+const GridOffset = styled.div`
+  width: 95vw;
+  max-width: 500px;
+`;
+
+const MIN_SCALE = 1;
+const MAX_SCALE = 10;
 
 export const HomePage = (): React.ReactElement => {
   const navigator = useNavigator();
@@ -80,6 +88,13 @@ export const HomePage = (): React.ReactElement => {
     setNotificationComplete(true);
   };
 
+  const isTokenPanelShowing = location.pathname.includes('/tokens/');
+
+  React.useEffect((): void => {
+    // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
+    window.dispatchEvent(new Event('resize'));
+  }, [isTokenPanelShowing]);
+
   return (
     <React.Fragment>
       <Helmet>
@@ -89,7 +104,21 @@ export const HomePage = (): React.ReactElement => {
         { baseImage === null ? (
           <LoadingSpinner />
         ) : (
-          <TokenGrid baseImage={baseImage} newGridItems={gridItems || []} tokenCount={10000} onTokenIdClicked={onTokenIdClicked} />
+          <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
+            <HidingView isHidden={!isTokenPanelShowing}>
+              <GridOffset />
+            </HidingView>
+            <Stack.Item shrinkFactor={1} growthFactor={1}>
+              <TokenGrid
+                minScale={MIN_SCALE}
+                maxScale={MAX_SCALE}
+                baseImage={baseImage}
+                newGridItems={gridItems || []}
+                tokenCount={10000}
+                onTokenIdClicked={onTokenIdClicked}
+              />
+            </Stack.Item>
+          </Stack>
         )}
         { infoText && (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Center}>
@@ -104,7 +133,7 @@ export const HomePage = (): React.ReactElement => {
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
           <StatsOverlay />
         </LayerContainer.Layer>
-        {location.pathname.includes('/tokens/') && (
+        {isTokenPanelShowing && (
           <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
             <TokenLayer>
               <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
