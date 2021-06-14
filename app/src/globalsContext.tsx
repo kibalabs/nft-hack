@@ -11,7 +11,7 @@ import { ChainId } from './util/chainUtil';
 export interface Globals {
   requester: Requester;
   localStorageClient: LocalStorageClient;
-  contract: ethers.Contract;
+  contract: ethers.Contract | null;
   contractAddress: string;
   apiClient: MdtpClient;
   network: string;
