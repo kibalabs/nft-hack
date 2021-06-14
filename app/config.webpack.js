@@ -52,6 +52,13 @@ class HtmlWebpackInjectSeo {
             "content": imageUrl,
           },
         });
+        htmlPluginData.headTags.push({
+          tagName: 'meta',
+          attributes: {
+            "name": "summary_large_image",
+            "content": "twitter:card",
+          },
+        });
         callback(null, htmlPluginData);
       });
     });
