@@ -16,7 +16,7 @@ import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { isValidChain } from '../../util/chainUtil';
 
-const TokenLayer = styled.div`
+const PanelLayer = styled.div`
   width: 95vw;
   max-width: 500px;
   height: 100%;
@@ -89,11 +89,13 @@ export const HomePage = (): React.ReactElement => {
   };
 
   const isTokenPanelShowing = location.pathname.includes('/tokens/');
+  const isAboutPanelShowing = location.pathname.includes('/about');
+  const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
     window.dispatchEvent(new Event('resize'));
-  }, [isTokenPanelShowing]);
+  }, [isPanelShowing]);
 
   return (
     <React.Fragment>
@@ -105,7 +107,7 @@ export const HomePage = (): React.ReactElement => {
           <LoadingSpinner />
         ) : (
           <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
-            <HidingView isHidden={!isTokenPanelShowing}>
+            <HidingView isHidden={!isPanelShowing}>
               <GridOffset />
             </HidingView>
             <Stack.Item shrinkFactor={1} growthFactor={1}>
@@ -133,9 +135,9 @@ export const HomePage = (): React.ReactElement => {
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
           <StatsOverlay />
         </LayerContainer.Layer>
-        {isTokenPanelShowing && (
+        {isPanelShowing && (
           <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
-            <TokenLayer>
+            <PanelLayer>
               <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
                 <LayerContainer>
                   <LayerContainer.Layer>
@@ -148,7 +150,7 @@ export const HomePage = (): React.ReactElement => {
                   </LayerContainer.Layer>
                 </LayerContainer>
               </Box>
-            </TokenLayer>
+            </PanelLayer>
           </LayerContainer.Layer>
         )}
         {!welcomeComplete ? (

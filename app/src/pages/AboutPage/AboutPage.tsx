@@ -18,7 +18,7 @@ export const AboutPage = (): React.ReactElement => {
 
 [Milliondollartokenpage.com](http://milliondollartokenpage.com) is [milliondollarhomepage.com](http://milliondollarhomepage.com) in the crypto era.
 
-When created in 2005 milliondollarhomepage acted as an advertising board on the internet, selling one million pixels on the web for $1 each. Back then the web was still very static and there were no digital native forms of transacting value so when pixels were bought and set, they could no longer be re-sold or updated. 
+When created in 2005 milliondollarhomepage acted as an advertising board on the internet, selling one million pixels on the web for $1 each. Back then the web was still very static and there were no digital native forms of transacting value so when pixels were bought and set, they could no longer be re-sold or updated.
 
 Today the internet is a lot more fun to play with and cryptocurrencies like [Bitcoin](https://bitcoin.org/en/faq) and [Ethereum](https://ethereum.org/en/what-is-ethereum/) have ushered in a whole new age known as [Web3](https://ethereum.org/en/developers/docs/web2-vs-web3/) where digitally native money and assets, represented by [tokens](https://blog.coinbase.com/a-beginners-guide-to-ethereum-tokens-fbd5611fe30b) and [NFTs](https://opensea.io/blog/guides/non-fungible-tokens/), can be transacted openly [peer-to-peer](https://www.investopedia.com/terms/p/peertopeer-p2p-service.asp) across the internet. Milliondollartokenpage infuses these modern innovations into the original idea to build a much more fun and functional virtual space to share content on anything you like!
 
@@ -44,7 +44,7 @@ And its a simple as that, buy pixels and share your website, work or creations i
 
 **Why should I get involved?**
 
-Milliondollartokenpage's magic comes in using the Ethereum network to store data and token ownership, as you get the benefit of both (1) life beyond the developers, and (2) the ability to re-sell your pixels easily. Let's expand on these benefits... 
+Milliondollartokenpage's magic comes in using the Ethereum network to store data and token ownership, as you get the benefit of both (1) life beyond the developers, and (2) the ability to re-sell your pixels easily. Let's expand on these benefits...
 
 The first relates to the fact that when data is written into the Ethereum blockchain its made [immutable](https://academy.binance.com/en/glossary/immutability). So even if a catastrophe topples our servers, as the sole owner of the NFT representing this block of pixels you will still have ownership and it will still point to the same data. So another developer could potentially build another website showing the same NFTs and your pixels would still show up identically as before.
 
@@ -56,29 +56,9 @@ So come along and join us now by interacting, trading and sharing on milliondoll
   `;
 
   return (
-    <React.Fragment>
-      <Helmet>
-        <title>{'About | The Million Dollar Token Page'}</title>
-      </Helmet>
-      <LayerContainer>
-        <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-          <Spacing variant={PaddingSize.Wide3} />
-          <ResponsiveContainingView sizeResponsive={{ base: 12, small: 10, medium: 8 }}>
-            <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start}>
-              <Stack.Item alignment={Alignment.Start}>
-                <Button variant='secondary' onClicked={onHomeClicked} text='Home' iconLeft={<KibaIcon iconId='ion-chevron-back' />} />
-              </Stack.Item>
-              <Text variant='header1'>{'About'}</Text>
-              <Spacing variant={PaddingSize.Wide3} />
-              <Markdown source={text} />
-            </Stack>
-          </ResponsiveContainingView>
-          <Spacing variant={PaddingSize.Wide3} />
-        </Stack>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
-          <ButtonsOverlay />
-        </LayerContainer.Layer>
-      </LayerContainer>
-    </React.Fragment>
+    <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
+      <Text variant='header1'>{'The Million Dollar Token Page'}</Text>
+      <Markdown source={text} />
+    </Stack>
   );
 };
