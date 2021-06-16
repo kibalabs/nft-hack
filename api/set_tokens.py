@@ -92,7 +92,7 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
             "description" : description.replace('{tokenId}', str(tokenId)),
             "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png"
         }
-        metadataUploadTasks.append(s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))
+        metadataUploadTasks.append(await s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))  
         if len(metadataUploadTasks) >= 100:
             await asyncio.gather(*metadataUploadTasks)
             metadataUploadTasks = []
