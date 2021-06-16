@@ -14,6 +14,7 @@ from core.s3_manager import S3Manager
 
 from mdtp.api.api_v1 import create_api as create_v1_api
 from mdtp.api.metadata import create_api as create_metadata_api
+from mdtp.contract_store import Contract, ContractStore
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
 from mdtp.manager import MdtpManager
@@ -33,12 +34,18 @@ s3Manager = S3Manager(s3Client=s3Client)
 requester = Requester()
 rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
 mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
-rinkebyContractAddress = os.environ['RINKEBY_CONTRACT_ADDRESS']
-mumbaiContractAddress = os.environ['MUMBAI_CONTRACT_ADDRESS']
-with open('./MillionDollarNFT.json') as contractJsonFile:
+
+with open('./contract.json') as contractJsonFile:
     contractJson = json.load(contractJsonFile)
+with open('./contract2.json') as contractJsonFile:
+    contract2Json = json.load(contractJsonFile)
+contractStore = ContractStore(contracts=[
+    Contract(network='rinkeby', address='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', abi=contractJson, ethClient=rinkebyEthClient),
+    Contract(network='mumbai', address='0x87084477F7172dfC303A31efd33e9cA6eA8CABCE', abi=contractJson, ethClient=mumbaiEthClient),
+    Contract(network='rinkeby2', address='0xeDa9C05612579ff3888C5dCd689566406Df54e01', abi=contract2Json, ethClient=rinkebyEthClient),
+])
 imageManager = ImageManager(requester=requester, s3Manager=s3Manager)
-manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient, workQueue=workQueue, imageManager=imageManager, rinkebyContractAddress=rinkebyContractAddress, mumbaiContractAddress=mumbaiContractAddress, contractJson=contractJson)
+manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, contractStore=contractStore, workQueue=workQueue, imageManager=imageManager)
 
 app = FastAPI()
 app.include_router(router=create_health_api(name=os.environ.get('NAME', 'mdtp-api'), version=os.environ.get('VERSION')))

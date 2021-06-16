@@ -34,7 +34,7 @@ async def main():
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     rinkebyContractAddress = os.environ['RINKEBY_CONTRACT_ADDRESS']
     mumbaiContractAddress = os.environ['MUMBAI_CONTRACT_ADDRESS']
-    with open('./MillionDollarNFT.json') as contractJsonFile:
+    with open('./contract.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
     imageManager = ImageManager(requester=requester, s3Manager=s3Manager)
     manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient, workQueue=workQueue, imageManager=imageManager, rinkebyContractAddress=rinkebyContractAddress, mumbaiContractAddress=mumbaiContractAddress, contractJson=contractJson)

@@ -13,7 +13,7 @@ import { hot } from 'react-hot-loader/root';
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
-import MDTContract from './contracts/MillionDollarNFT.json';
+import MDTPContract from './contract.json';
 import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
@@ -96,7 +96,7 @@ export const App = hot((): React.ReactElement => {
     if (!web3) {
       return;
     }
-    const connectedContract = new ethers.Contract(window.KRT_CONTRACT_ADDRESS, MDTContract.abi, web3);
+    const connectedContract = new ethers.Contract(window.KRT_CONTRACT_ADDRESS, MDTPContract.abi, web3);
     setContract(connectedContract);
     setChainId(await web3.provider.request({ method: 'eth_chainId' }));
     web3.provider.on('chainChanged', onChainChanged);
