@@ -30,7 +30,7 @@ async def run(startTokenId: int, width: int, height: int, sendAddress: str, rece
 
     requester = Requester()
     ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
-    with open('./MillionDollarNFT.json') as contractJsonFile:
+    with open('./contract.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
     contractAbi = contractJson['abi']
     contractTotalSupplyMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'totalSupply'][0]

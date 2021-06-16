@@ -10,7 +10,7 @@ from typing import Optional
 import urllib.parse as urlparse
 import uuid
 
-from core.exceptions import BadRequestException, NotFoundException
+from core.exceptions import NotFoundException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.util import date_util, dict_util, file_util
@@ -20,6 +20,7 @@ from core.s3_manager import S3PresignedUpload
 from core.store.retriever import DateFieldFilter, Direction, Order, StringFieldFilter
 from PIL import Image as PILImage
 from web3 import Web3
+from mdtp.contract_store import ContractStore
 
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
@@ -38,23 +39,20 @@ _CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, rinkebyEthClient: EthClientInterface, mumbaiEthClient: EthClientInterface, workQueue: SqsMessageQueue, imageManager: ImageManager, rinkebyContractAddress: str, mumbaiContractAddress: str, contractJson: Dict):
+    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
         self.saver = saver
         self.s3Manager = s3Manager
-        self.rinkebyEthClient = rinkebyEthClient
-        self.mumbaiEthClient = mumbaiEthClient
+        self.contractStore = contractStore
         self.workQueue = workQueue
         self.imageManager = imageManager
-        self.rinkebyContractAddress = rinkebyContractAddress
-        self.mumbaiContractAddress = mumbaiContractAddress
-        self.contractAbi = contractJson['abi']
-        self.contract = self.w3.eth.contract(address='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', abi=self.contractAbi)
+        self.ownerAddress = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
+        self.contract = self.w3.eth.contract(address=self.rinkebyContractAddress, abi=self.contractAbi)
         self.contractTotalSupplyEvent = self.contract.events.Transfer()
         self.contractTotalSupplyMethodAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'totalSupply'][0]
-        self.contractTokenUriAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'tokenURI'][0]
+        self.contractTokenUriAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'tokenContentURI'][0]
         self.contractOwnerOfAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'ownerOf'][0]
 
     async def get_token_metadata(self, tokenId: str) -> TokenMetadata:
@@ -64,9 +62,10 @@ class MdtpManager:
             raise NotFoundException()
         if tokenIdValue <= 0 or tokenIdValue > 10000:
             raise NotFoundException()
+        tokenIndex = tokenIdValue - 1
         return TokenMetadata(
             tokenId=tokenId,
-            tokenIndex=(tokenIdValue - 1),
+            tokenIndex=tokenIndex,
             name=f'MDTP Token {tokenId}',
             description='<description for the token>',
             image='',
@@ -79,12 +78,13 @@ class MdtpManager:
             raise NotFoundException()
         if tokenIdValue <= 0 or tokenIdValue > 10000:
             raise NotFoundException()
+        tokenIndex = tokenIdValue - 1
         return TokenMetadata(
             tokenId=tokenId,
-            tokenIndex=(tokenIdValue - 1),
+            tokenIndex=tokenIndex,
             name=f'MDTP Token {tokenId}',
             description='<description for the token>',
-            image='',
+            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/f82c6b11-afaf-4724-909b-b41068ab8639/{tokenIndex}.png',
         )
 
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
@@ -151,12 +151,15 @@ class MdtpManager:
         return baseImage
 
     async def get_network_summary(self, network: str) -> NetworkSummary:
+        try:
+            contract = self.contractStore.get_contract(network=network)
+        except NotFoundException:
+            return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
         if network == 'rinkeby':
             # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
             # so we have to loop through their owned assets' contracts to find the correct one
-            owner_contract = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
-            token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3'
-            response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')
+            token_contract = self.rinkebyContractAddress
+            response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={self.ownerAddress}&offset=0&limit=300')
             responseJson = response.json()
             for responseEntry in responseJson:
                 if responseEntry['primary_asset_contracts'][0].get('address') == token_contract:
@@ -224,16 +227,16 @@ class MdtpManager:
             contractAddress = self.mumbaiContractAddress
         else:
             raise Exception('Unknown network')
-        tokenMetadataUrlResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
         ownerIdResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
         ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
-        tokenMetadataUrl = tokenMetadataUrlResponse[0].strip()
-        tokenMetadataResponse = await self.requester.make_request(method='GET', url=tokenMetadataUrl)
-        tokenMetadataJson = json.loads(tokenMetadataResponse.text)
-        title = tokenMetadataJson.get('title') or tokenMetadataJson.get('name') or ''
+        tokenContentUrlResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
+        tokenContentUrl = tokenContentUrlResponse[0].strip()
+        tokenContentResponse = await self.requester.make_request(method='GET', url=tokenContentUrl)
+        tokenContentJson = json.loads(tokenContentResponse.text)
+        title = tokenContentJson.get('title') or tokenContentJson.get('name') or ''
         # TODO(krishan711): pick a better default image
-        imageUrl = tokenMetadataJson.get('imageUrl') or tokenMetadataJson.get('image') or ''
-        description = tokenMetadataJson.get('description')
+        imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or ''
+        description = tokenContentJson.get('description')
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:

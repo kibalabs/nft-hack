@@ -6,8 +6,10 @@ Miro: https://miro.com/app/board/o9J_lS4yNAo=/
 
 Figma: https://www.figma.com/file/bcJ986kLJy9OxW0mTQEDG8/Main?node-id=0%3A1
 
-Eth-Rinkeby contract address: 0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3
-Eth-Rinkeby contract url: https://rinkeby.etherscan.io/address/0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3
+<!-- Eth-Rinkeby contract address: 0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3
+Eth-Rinkeby contract url: https://rinkeby.etherscan.io/address/0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3 -->
+Eth-Rinkeby contract address: 0xeDa9C05612579ff3888C5dCd689566406Df54e01
+Eth-Rinkeby contract url: https://rinkeby.etherscan.io/address/0xeDa9C05612579ff3888C5dCd689566406Df54e01
 Matic-Mumbai contract address: 0x87084477F7172dfC303A31efd33e9cA6eA8CABCE
 Matic-Mumbai contract url: https://explorer-mumbai.maticvigil.com/address/0x87084477F7172dfC303A31efd33e9cA6eA8CABCE
 

@@ -12,14 +12,14 @@ module.exports = {
    // defaultNetwork: "rinkeby",
    networks: {
       hardhat: {},
-      // rinkeby: {
-      //    url: ALCHEMY_URL,
-      //    accounts: [PRIVATE_KEY]
-      // },
-      // matic: {
-      //    url: "https://rpc-mumbai.maticvigil.com",
-      //    accounts: [PRIVATE_KEY]
-      // }
+      rinkeby: {
+         url: ALCHEMY_URL,
+         accounts: [PRIVATE_KEY]
+      },
+      matic: {
+         url: "https://rpc-mumbai.maticvigil.com",
+         accounts: [PRIVATE_KEY]
+      }
    },
    etherscan: {
     apiKey: ETHERSCAN_API_KEY
