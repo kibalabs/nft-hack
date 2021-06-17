@@ -1,6 +1,8 @@
 import unittest
 
 def get_spiral_index(index: int, size: int) -> int:
+    minIndex = 0
+    maxIndex = (size * size) - 1
     return index
 
 class Tests(unittest.TestCase):
