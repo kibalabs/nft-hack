@@ -15,15 +15,15 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
   };
 
   const OverlayScreen1 = (): React.ReactElement => (
-      <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
+    <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
       <LayerContainer>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>          
-            <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />          
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+          <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />
         </LayerContainer.Layer>
       </LayerContainer>
       <Text variant='header2' alignment={TextAlignment.Center}>{'Welcome!'}</Text>
       <Text alignment={TextAlignment.Center}>{'MillionDollarTokenPage is a digital content space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display what you like, and later re-sold on the secondary-market.'}</Text>
-      <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>        
+      <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
         <Button variant={'primary'} text='Next' onClicked={onNextClicked} />
       </Stack>
     </Stack>
@@ -32,8 +32,8 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
   const OverlayScreen2 = (): React.ReactElement => (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
       <LayerContainer>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>          
-            <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />          
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+          <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />
         </LayerContainer.Layer>
       </LayerContainer>
       <Text variant='header2' alignment={TextAlignment.Center}>{'Interact'}</Text>
@@ -47,8 +47,8 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
   const OverlayScreen3 = (): React.ReactElement => (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
       <LayerContainer>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>          
-            <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />          
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+          <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />
         </LayerContainer.Layer>
       </LayerContainer>
       <Text variant='header2' alignment={TextAlignment.Center}>{'Trade'}</Text>
@@ -62,8 +62,8 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
   const OverlayScreen4 = (): React.ReactElement => (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
       <LayerContainer>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>          
-            <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />          
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+          <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />
         </LayerContainer.Layer>
       </LayerContainer>
       <Text variant='header2' alignment={TextAlignment.Center}>{'Share'}</Text>

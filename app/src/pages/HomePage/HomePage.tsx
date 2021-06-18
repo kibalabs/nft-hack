@@ -9,7 +9,6 @@ import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
-import { NotificationOverlay } from '../../components/NotificationOverlay';
 import { ShareOverlay } from '../../components/ShareOverlay';
 import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
