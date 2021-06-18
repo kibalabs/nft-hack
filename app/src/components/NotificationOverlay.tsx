@@ -1,3 +1,5 @@
+// THIS COMPONENT IS CURRENTLY UNUSED...
+
 import React from 'react';
 
 import { Alignment, Box, Button, Direction, PaddingSize, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
