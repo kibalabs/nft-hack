@@ -12,7 +12,7 @@ export const ButtonsOverlay = (props: ButtonsOverlayProps): React.ReactElement =
 
   const onAboutClicked = () => {
     localStorage.removeItem('welcomeComplete');
-    localStorage.removeItem('notificationComplete');
+    // localStorage.removeItem('notificationComplete');
     navigator.navigateTo('/about');
   };
 

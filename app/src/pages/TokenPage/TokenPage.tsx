@@ -140,6 +140,17 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     return '';
   };
 
+  const isForSale = (): boolean => {
+    const adminAddress = '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC';
+    const ownedByAdminAddress = getOwnerId() === adminAddress;
+
+    const tokenId = Number(props.tokenId);
+    const inMiddleBlock = (tokenId % 100 >= 38) && (tokenId % 100 <= 62) // xx38 <= w <= xx62
+                          && (tokenId / 100 >= 40) && (tokenId / 100 < 60); // 40xx <= h <= 59xx
+
+    return ownedByAdminAddress && !inMiddleBlock;
+  };
+
   const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
   return (
@@ -166,7 +177,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Trade on OpenSea' />
+                  { isForSale() ? (
+                    <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy NFT' />
+                  ) : (
+                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Bid on NFT' />
+                  )}
                   <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
                 </Stack>
               </Stack.Item>
