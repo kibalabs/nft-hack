@@ -37,7 +37,7 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
         </LayerContainer.Layer>
       </LayerContainer>
       <Text variant='header2' alignment={TextAlignment.Center}>{'Interact'}</Text>
-      <Text alignment={TextAlignment.Center}>{'Zoom with the mouse or + and - buttons to see down to the pixel level. Select a token to open its token panel, where you can view its details and edit it if you own it and are connected with Metamask.'}</Text>
+      <Text alignment={TextAlignment.Center}>{'Zoom with the mouse or + and - buttons to see down to the pixel level. Select a token to open its token panel where you can view its details and edit it if you are the owner by connecting to Metamask.'}</Text>
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
         <Button variant={'primary'} text='Next' onClicked={onNextClicked} />
       </Stack>
