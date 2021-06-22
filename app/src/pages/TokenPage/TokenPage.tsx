@@ -28,6 +28,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
   const [newTokenSettingResult, setNewTokenSettingResult] = React.useState<Result | null>(null);
   const [hasStartedUpdatingToken, setHasStartedUpdatingToken] = React.useState<boolean>(false);
+  const [stakingAmount, setStakingAmount] = React.useState<string | null>(null);
   const [hasStartedUpdatingStaking, setHasStartedUpdatingStaking] = React.useState<boolean>(false);
   const [isUpdating, setIsUpdating] = React.useState<boolean>(false);
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
@@ -150,91 +151,71 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     return ownedByAdminAddress && !inMiddleBlock;
   };
 
+  const onUpdateTokenClicked = (): void => {
+    setHasStartedUpdatingToken(true);
+    setHasStartedUpdatingStaking(false);
+  };
+
   const UpdateTokenForm = (): React.ReactElement => (
-    <React.Fragment>      
-      { !hasStartedUpdatingToken ? (
-        <Button variant='primary' text='Update token' onClicked={()=>setHasStartedUpdatingToken(true)} />
-      ) : (
-        <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
-          <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-            <SingleLineInput
-              inputType={InputType.Text}
-              value={newTitle}
-              onValueChanged={setNewTitle}
-              inputWrapperVariant={inputState}
-              placeholderText='Name'
-            />
-            <SingleLineInput
-              inputType={InputType.Text}
-              value={newDescription}
-              onValueChanged={setNewDescription}
-              inputWrapperVariant={inputState}
-              placeholderText='Description'
-            />
-            {isUploadingImage ? (
-              <Text>Uploading image...</Text>
-            ) : (
-              <React.Fragment>
-                <SingleLineInput
-                  inputType={InputType.Url}
-                  value={newImageUrl}
-                  onValueChanged={setNewImageUrl}
-                  inputWrapperVariant={inputState}
-                  messageText={newTokenSettingResult?.message}
-                  placeholderText='Image URL'
-                />
-                <Text variant='note'>OR</Text>
-                <Dropzone onFilesChosen={onImageFilesChosen} />
-              </React.Fragment>
-            )}
-            <Button variant='primary' text='Update' buttonType='submit' />
-          </Stack>
-        </Form>
-      )}
+    <React.Fragment>
+      <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
+        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+          <SingleLineInput
+            inputType={InputType.Text}
+            value={newTitle}
+            onValueChanged={setNewTitle}
+            inputWrapperVariant={inputState}
+            placeholderText='Name'
+          />
+          <SingleLineInput
+            inputType={InputType.Text}
+            value={newDescription}
+            onValueChanged={setNewDescription}
+            inputWrapperVariant={inputState}
+            placeholderText='Description'
+          />
+          {isUploadingImage ? (
+            <Text>Uploading image...</Text>
+          ) : (
+            <React.Fragment>
+              <SingleLineInput
+                inputType={InputType.Url}
+                value={newImageUrl}
+                onValueChanged={setNewImageUrl}
+                inputWrapperVariant={inputState}
+                messageText={newTokenSettingResult?.message}
+                placeholderText='Image URL'
+              />
+              <Text variant='note'>OR</Text>
+              <Dropzone onFilesChosen={onImageFilesChosen} />
+            </React.Fragment>
+          )}
+          <Button variant='primary' text='Update' buttonType='submit' />
+        </Stack>
+      </Form>
     </React.Fragment>
   );
 
+  const onUpdateStakingClicked = (): void => {
+    setHasStartedUpdatingStaking(true);
+    setHasStartedUpdatingToken(false);    
+  };
+
   const UpdateStakingForm = (): React.ReactElement => (
-    <React.Fragment>      
-      { !hasStartedUpdatingStaking ? (
-        <Button variant='primary' text='Stake for Premium Features' onClicked={()=>setHasStartedUpdatingStaking(true)} />
-      ) : (
-        <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
-          <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-            <SingleLineInput
-              inputType={InputType.Text}
-              value={newTitle}
-              onValueChanged={setNewTitle}
-              inputWrapperVariant={inputState}
-              placeholderText='Name'
-            />
-            <SingleLineInput
-              inputType={InputType.Text}
-              value={newDescription}
-              onValueChanged={setNewDescription}
-              inputWrapperVariant={inputState}
-              placeholderText='Description'
-            />
-            {isUploadingImage ? (
-              <Text>Uploading image...</Text>
-            ) : (
-              <React.Fragment>
-                <SingleLineInput
-                  inputType={InputType.Url}
-                  value={newImageUrl}
-                  onValueChanged={setNewImageUrl}
-                  inputWrapperVariant={inputState}
-                  messageText={newTokenSettingResult?.message}
-                  placeholderText='Image URL'
-                />
-                <Text variant='note'>OR</Text>
-                <Dropzone onFilesChosen={onImageFilesChosen} />
-              </React.Fragment>
-            )}
-            <Button variant='primary' text='Update' buttonType='submit' />
-          </Stack>
-        </Form>
-      )}
+    <React.Fragment> 
+      <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
+        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+          <Text variant='note'>{'Stake at least $100 in DAI to get...'}</Text>
+          <SingleLineInput
+            inputType={InputType.Text}
+            value={stakingAmount}
+            onValueChanged={setStakingAmount}
+            // inputWrapperVariant={inputState}
+            placeholderText='Amount to stake'
+          />
+          <Button variant='primary' text='Stake' buttonType='submit' />
+        </Stack>
+      </Form>      
     </React.Fragment>
   );
 
@@ -264,7 +245,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  { isForSale() ? (
+                  { (accountIds.includes(getOwnerId())) ? (
+                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='View on Opensea' />
+                  ) : isForSale() ? (
                     <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy NFT' />
                   ) : (
                     <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Bid on NFT' />
@@ -276,12 +259,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               { (accounts === undefined || accountIds === undefined || !gridItem.tokenId) ? (                   
                 <LoadingSpinner />
               ) : (accounts.length === 0 || accountIds.length === 0) ? (
-                <Text variant='note'>{'Please connect your accounts if you are the owner and want to make changes.'}</Text>
+                <Text variant='note'>{'Please connect your account to view more options if you are the owner.'}</Text>
               ) : (accountIds.includes(getOwnerId())) ? (
                 <React.Fragment>
                   <Text>👑 This is one of your tokens 👑</Text>
-                  <UpdateTokenForm />
-                  <UpdateStakingForm />
+                  <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+                    <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
+                    <Button variant='primary' text='Stake for Premium Features' onClicked={onUpdateStakingClicked} />
+                  </Stack>
+                  { hasStartedUpdatingToken ? (  
+                    <UpdateTokenForm />
+                  ) : hasStartedUpdatingStaking ? (
+                    <UpdateStakingForm />
+                  ) : null}
                 </React.Fragment>
               ) : null}
             </Stack>
