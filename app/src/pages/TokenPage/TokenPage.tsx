@@ -29,6 +29,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const [newTokenSettingResult, setNewTokenSettingResult] = React.useState<Result | null>(null);
   const [hasStartedUpdatingToken, setHasStartedUpdatingToken] = React.useState<boolean>(false);
   const [stakingAmount, setStakingAmount] = React.useState<string | null>(null);
+  const [newStakingResult, setNewStakingResult] = React.useState<Result | null>(null);
   const [hasStartedUpdatingStaking, setHasStartedUpdatingStaking] = React.useState<boolean>(false);
   const [isUpdating, setIsUpdating] = React.useState<boolean>(false);
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
@@ -64,7 +65,33 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     loadToken();
   }, [loadToken]);
 
-  const onUpdateMetadataClicked = async (): Promise<void> => {
+  const onImageFilesChosen = async (files: File[]): Promise<void> => {
+    // TODO(krishan711): ensure there is only one file
+    setIsUploadingImage(true);
+    apiClient.generateImageUploadForToken(network, Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
+      const file = files[0];
+      // @ts-ignore
+      const fileName = file.path.replace(/^\//g, '');
+      const formData = new FormData();
+      Object.keys(presignedUpload.params).forEach((key: string): void => {
+        formData.set(key, presignedUpload.params[key]);
+      });
+      // eslint-disable-next-line no-template-curly-in-string
+      formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
+      formData.set('content-type', file.type);
+      formData.append('file', file, file.name);
+      requester.makeFormRequest(presignedUpload.url, formData).then((): void => {
+        // eslint-disable-next-line no-template-curly-in-string
+        setNewImageUrl(`${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}`);
+        setIsUploadingImage(false);
+      });
+    }).catch((): void => {
+      setNewImageUrl('');
+      setIsUploadingImage(false);
+    });
+  };
+
+  const onUpdateButtonClicked = async (): Promise<void> => {
     if (!gridItem || !accountIds || !accounts) {
       return;
     }
@@ -103,31 +130,43 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
   };
 
-  const onImageFilesChosen = async (files: File[]): Promise<void> => {
-    // TODO(krishan711): ensure there is only one file
-    setIsUploadingImage(true);
-    apiClient.generateImageUploadForToken(network, Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
-      const file = files[0];
-      // @ts-ignore
-      const fileName = file.path.replace(/^\//g, '');
-      const formData = new FormData();
-      Object.keys(presignedUpload.params).forEach((key: string): void => {
-        formData.set(key, presignedUpload.params[key]);
-      });
-      // eslint-disable-next-line no-template-curly-in-string
-      formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
-      formData.set('content-type', file.type);
-      formData.append('file', file, file.name);
-      requester.makeFormRequest(presignedUpload.url, formData).then((): void => {
-        // eslint-disable-next-line no-template-curly-in-string
-        setNewImageUrl(`${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}`);
-        setIsUploadingImage(false);
-      });
-    }).catch((): void => {
-      setNewImageUrl('');
-      setIsUploadingImage(false);
-    });
-  };
+  const onStakeButtonClicked = async (): Promise<void> => {
+    if (!gridItem || !accountIds || !accounts) {
+      return;
+    }
+
+    setIsUpdating(true);
+    const stake = stakingAmount != null ? Number(stakingAmount) : 0;
+
+    if (!contract) {
+      setNewStakingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+      setIsUpdating(false);
+      return;
+    }
+
+    setNewStakingResult(null);
+    const tokenId = Number(props.tokenId);
+    try {
+      const signerIndex = accountIds.indexOf(getOwnerId());
+      if (signerIndex === -1) {
+        setNewStakingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
+        setIsUpdating(false);
+      }
+      
+      // TODO: Call correct contract and function...
+      const contractWithSigner = contract.connect(accounts[signerIndex]);            
+      const transaction = await contractWithSigner.setTokenURI(tokenId, stake);
+      //...
+
+      setNewStakingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
+      setIsUpdating(false);
+      await transaction.wait();
+      setNewStakingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });      
+    } catch (error) {
+      setNewStakingResult({ isSuccess: false, isPending: false, message: error.message });
+      setIsUpdating(false);
+    }
+  }
 
   const getOwnerId = (): string => {
     return chainOwnerId || gridItem?.ownerId || '';
@@ -156,22 +195,24 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setHasStartedUpdatingStaking(false);
   };
 
+  const updateInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
+
   const UpdateTokenForm = (): React.ReactElement => (
     <React.Fragment>
-      <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
+      <Form onFormSubmitted={onUpdateButtonClicked} isLoading={isUpdating}>
         <Stack direction={Direction.Vertical} shouldAddGutters={true}>
           <SingleLineInput
             inputType={InputType.Text}
             value={newTitle}
             onValueChanged={setNewTitle}
-            inputWrapperVariant={inputState}
+            inputWrapperVariant={updateInputState}
             placeholderText='Name'
           />
           <SingleLineInput
             inputType={InputType.Text}
             value={newDescription}
             onValueChanged={setNewDescription}
-            inputWrapperVariant={inputState}
+            inputWrapperVariant={updateInputState}
             placeholderText='Description'
           />
           {isUploadingImage ? (
@@ -182,7 +223,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 inputType={InputType.Url}
                 value={newImageUrl}
                 onValueChanged={setNewImageUrl}
-                inputWrapperVariant={inputState}
+                inputWrapperVariant={updateInputState}
                 messageText={newTokenSettingResult?.message}
                 placeholderText='Image URL'
               />
@@ -194,32 +235,33 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         </Stack>
       </Form>
     </React.Fragment>
-  );
+  );  
 
   const onUpdateStakingClicked = (): void => {
     setHasStartedUpdatingStaking(true);
     setHasStartedUpdatingToken(false);    
   };
 
+  const stakingInputState = (!newStakingResult || newStakingResult.isPending) ? undefined : newStakingResult?.isSuccess ? 'success' : (newStakingResult?.isSuccess === false ? 'error' : undefined);
+
   const UpdateStakingForm = (): React.ReactElement => (
     <React.Fragment> 
-      <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
+      <Form onFormSubmitted={onStakeButtonClicked} isLoading={isUpdating}>
         <Stack direction={Direction.Vertical} shouldAddGutters={true}>
           <Text variant='note'>{'Stake at least $100 in DAI to get...'}</Text>
           <SingleLineInput
             inputType={InputType.Text}
             value={stakingAmount}
             onValueChanged={setStakingAmount}
-            // inputWrapperVariant={inputState}
+            inputWrapperVariant={stakingInputState}
+            messageText={newStakingResult?.message}
             placeholderText='Amount to stake'
           />
           <Button variant='primary' text='Stake' buttonType='submit' />
         </Stack>
       </Form>      
     </React.Fragment>
-  );
-
-  const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
+  );  
 
   return (
     <React.Fragment>
