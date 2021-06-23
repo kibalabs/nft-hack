@@ -248,7 +248,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     <React.Fragment> 
       <Form onFormSubmitted={onStakeButtonClicked} isLoading={isUpdating}>
         <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-          <Text variant='note'>{'Stake at least $100 in DAI to get...'}</Text>
+          <Text variant='note'>{'Stake at least $100 in ETH or DAI to get your content featured. The higher the stake the more likely you are to be featured. All stake will remain yours and can be unstaked at any moment.'}</Text>
           <SingleLineInput
             inputType={InputType.Text}
             value={stakingAmount}
@@ -307,7 +307,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <Text>👑 This is one of your tokens 👑</Text>
                   <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
                     <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-                    <Button variant='primary' text='Stake for Premium Features' onClicked={onUpdateStakingClicked} />
+                    <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked} />
                   </Stack>
                   { hasStartedUpdatingToken ? (  
                     <UpdateTokenForm />

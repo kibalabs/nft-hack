@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Box, Button, Direction, IconButton, KibaIcon, PaddingSize, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, IconButton, KibaIcon, LayerContainer, PaddingSize, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 interface ShareOverlayProps {
   onCloseClicked: () => void;
@@ -15,6 +15,11 @@ export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
   return (
     <Box variant='overlay' maxWidth='500px'>
       <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
+        <LayerContainer>
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+            <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={props.onCloseClicked} />
+          </LayerContainer.Layer>
+        </LayerContainer>
         <Text variant='header2' alignment={TextAlignment.Center}>{'Share'}</Text>
         <Text alignment={TextAlignment.Center}>{'😊 Make sure to share us with your friends and followers! 😊'}</Text>
         <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
@@ -22,9 +27,6 @@ export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
           <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={WHATSAPP_SHARE} />
           <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-logo-reddit' />} target={REDDIT_SHARE} />
           <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-mail' />} target={EMAIL_SHARE} />
-        </Stack>
-        <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-          <Button variant={'secondary'} text='Close' onClicked={props.onCloseClicked} />
         </Stack>
       </Stack>
     </Box>
