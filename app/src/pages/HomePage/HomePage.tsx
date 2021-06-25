@@ -53,6 +53,7 @@ export const HomePage = (): React.ReactElement => {
       });
     });
 
+    // setFeaturedToken("6421");
     selectFeaturedToken();
   }, [network, apiClient]);
 
@@ -69,8 +70,19 @@ export const HomePage = (): React.ReactElement => {
   }, [chainId, contract, loadGridItems]);
 
   const selectFeaturedToken = () => {
-    //TODO: Select randomly a featured token based on a set
-    setFeaturedToken('6421');
+    //TODO: Get stakingTokens and tokenWeights from an API function
+    const stakingTokens = ['3729', '6421', '2443', '4969', '197', '5929', '4886'];
+    const tokenWeights = [300, 1000, 300, 400, 100, 550, 300];
+    const totalWeights = tokenWeights.reduce((a, b) => a + b, 0);
+    const randomNumber = Math.floor(Math.random() * (totalWeights + 1));
+    var index = 0, acc = 0;
+    for ( ; index < tokenWeights.length; index++)
+    {
+      acc += tokenWeights[index];
+      if (randomNumber < acc) break;
+    }
+    const selectedIndex = stakingTokens[index];
+    setFeaturedToken(selectedIndex.toString());
   }
 
   const onTokenIdClicked = (tokenId: number) => {
