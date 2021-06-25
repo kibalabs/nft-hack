@@ -15,6 +15,7 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { isValidChain } from '../../util/chainUtil';
+import { TokenPage } from '../TokenPage/TokenPage';
 
 const PanelLayer = styled.div`
   width: 95vw;
@@ -39,6 +40,7 @@ export const HomePage = (): React.ReactElement => {
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
+  const [featuredToken, setFeaturedToken] = React.useState<string | null>(null);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -68,12 +70,13 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo(`/tokens/${tokenId}`);
   };
 
-  const onCloseTokenPanelClicked = (): void => {
+  const onCloseSidePanelClicked = (): void => {
     navigator.navigateTo('/');
+    setFeaturedToken(null)
   };
 
   const onShareOpenClicked = (): void => {
-    setShareDialogOpen(true);
+    setShareDialogOpen(true);    
   };
 
   const onShareCloseClicked = (): void => {
@@ -88,9 +91,10 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo('/about');
   };
 
+  const isFeaturedPanelShowing = featuredToken !== null;
   const isTokenPanelShowing = location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
-  const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing;
+  const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing || isFeaturedPanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
@@ -141,18 +145,22 @@ export const HomePage = (): React.ReactElement => {
               <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
                 <LayerContainer>
                   <LayerContainer.Layer>
-                    <Outlet />
+                    {isFeaturedPanelShowing ? (
+                      <TokenPage tokenId={featuredToken}/>
+                    ) : (
+                      <Outlet />
+                    )}
                   </LayerContainer.Layer>
                   <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
                     <Box variant='panelButtonHolder'>
-                      <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
+                      <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseSidePanelClicked} />
                     </Box>
                   </LayerContainer.Layer>
                 </LayerContainer>
               </Box>
             </PanelLayer>
           </LayerContainer.Layer>
-        )}
+        )} 
         { shareDialogOpen ? (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
             <ShareOverlay onCloseClicked={onShareCloseClicked} />
