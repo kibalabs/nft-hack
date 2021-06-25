@@ -40,7 +40,7 @@ export const HomePage = (): React.ReactElement => {
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
-  const [featuredToken, setFeaturedToken] = React.useState<string>('6421');
+  const [featuredToken, setFeaturedToken] = React.useState<string>('');
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -52,6 +52,8 @@ export const HomePage = (): React.ReactElement => {
         setGridItems(retrievedGridItems);
       });
     });
+
+    selectFeaturedToken();
   }, [network, apiClient]);
 
   React.useEffect((): void => {
@@ -65,6 +67,11 @@ export const HomePage = (): React.ReactElement => {
       setInfoText('BETA - this is a beta version currently running on the Rinkeby testnet.');
     }
   }, [chainId, contract, loadGridItems]);
+
+  const selectFeaturedToken = () => {
+    //TODO: Select randomly a featured token based on a set
+    setFeaturedToken('6421');
+  }
 
   const onTokenIdClicked = (tokenId: number) => {
     navigator.navigateTo(`/tokens/${tokenId}`);
@@ -91,10 +98,10 @@ export const HomePage = (): React.ReactElement => {
   const onWelcomeAboutClicked = (): void => {
     navigator.navigateTo('/about');
   };
-
-  const isFeaturedPanelShowing = featuredToken.length > 0;
+  
   const isTokenPanelShowing = location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
+  const isFeaturedPanelShowing = featuredToken.length > 0 && !(isTokenPanelShowing || isAboutPanelShowing);
   const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing || isFeaturedPanelShowing;
 
   React.useEffect((): void => {
