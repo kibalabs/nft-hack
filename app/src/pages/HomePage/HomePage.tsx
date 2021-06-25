@@ -40,7 +40,7 @@ export const HomePage = (): React.ReactElement => {
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
-  const [featuredToken, setFeaturedToken] = React.useState<string | null>(null);
+  const [featuredToken, setFeaturedToken] = React.useState<string>('6421');
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -68,15 +68,16 @@ export const HomePage = (): React.ReactElement => {
 
   const onTokenIdClicked = (tokenId: number) => {
     navigator.navigateTo(`/tokens/${tokenId}`);
+    setFeaturedToken('');
   };
 
   const onCloseSidePanelClicked = (): void => {
     navigator.navigateTo('/');
-    setFeaturedToken(null)
+    setFeaturedToken('');
   };
 
   const onShareOpenClicked = (): void => {
-    setShareDialogOpen(true);    
+    setShareDialogOpen(true);
   };
 
   const onShareCloseClicked = (): void => {
@@ -91,7 +92,7 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo('/about');
   };
 
-  const isFeaturedPanelShowing = featuredToken !== null;
+  const isFeaturedPanelShowing = featuredToken.length > 0;
   const isTokenPanelShowing = location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
   const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing || isFeaturedPanelShowing;
@@ -146,7 +147,7 @@ export const HomePage = (): React.ReactElement => {
                 <LayerContainer>
                   <LayerContainer.Layer>
                     {isFeaturedPanelShowing ? (
-                      <TokenPage tokenId={featuredToken}/>
+                      <TokenPage tokenId={featuredToken} isFeatured={true} />
                     ) : (
                       <Outlet />
                     )}
@@ -160,7 +161,7 @@ export const HomePage = (): React.ReactElement => {
               </Box>
             </PanelLayer>
           </LayerContainer.Layer>
-        )} 
+        )}
         { shareDialogOpen ? (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
             <ShareOverlay onCloseClicked={onShareCloseClicked} />
