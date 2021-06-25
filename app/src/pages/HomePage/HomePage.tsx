@@ -53,8 +53,9 @@ export const HomePage = (): React.ReactElement => {
       });
     });
 
-    // setFeaturedToken("6421");
-    selectFeaturedToken();
+    if (welcomeComplete) {
+      displayFeaturedToken();
+    }
   }, [network, apiClient]);
 
   React.useEffect((): void => {
@@ -69,7 +70,7 @@ export const HomePage = (): React.ReactElement => {
     }
   }, [chainId, contract, loadGridItems]);
 
-  const selectFeaturedToken = () => {
+  const displayFeaturedToken = () => {
     //TODO: Get stakingTokens and tokenWeights from an API function
     const stakingTokens = ['3729', '6421', '2443', '4969', '197', '5929', '4886'];
     const tokenWeights = [300, 1000, 300, 400, 100, 550, 300];
