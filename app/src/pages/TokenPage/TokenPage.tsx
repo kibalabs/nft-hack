@@ -235,7 +235,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setHasStartedBuyingToken(true);
   };
 
-  //TODO(arthur-fox): fix this...
+  // TODO(arthur-fox): fix this...
   const buyingInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
   const BuyTokenForm = (): React.ReactElement => (
@@ -325,6 +325,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     </React.Fragment>
   );
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const onUpdateStakingClicked = (): void => {
     setHasStartedUpdatingStaking(true);
     setHasStartedUpdatingToken(false);
@@ -376,27 +377,27 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
                   { isForSale() ? (
-                    <Button variant='primary' onClicked={onBuyTokenClicked} text='Buy NFT' />
+                    <Button variant='primary' onClicked={onBuyTokenClicked} text='Buy Token' />
                   ) : accountIds && accountIds.includes(getOwnerId()) ? (
-                    <>
+                    <React.Fragment>
                       <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='View on Opensea' />
                       <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
-                    </>
+                    </React.Fragment>
                   ) : (
-                    <>
-                      <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Bid on NFT' />
+                    <React.Fragment>
+                      <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Bid on Token' />
                       <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
-                    </>
-                  )}                  
+                    </React.Fragment>
+                  )}
                 </Stack>
-              </Stack.Item>              
+              </Stack.Item>
               { isForSale() ? (
-                <KeyValue name='Owned by' markdownValue={`Nobody yet, but it could be you!`} />                
+                <KeyValue name='Owned by' markdownValue={'Nobody yet, but it could be you!'} />
               ) : (
                 <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
               )}
               { hasStartedBuyingToken ? (
-                <BuyTokenForm /> 
+                <BuyTokenForm />
               ) : (!accounts || !accountIds || !gridItem.tokenId) ? (
                 <LoadingSpinner />
               ) : ((accounts && accounts.length === 0) || (accountIds && accountIds.length === 0)) ? (
@@ -410,13 +411,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   </Stack>
                   { hasStartedUpdatingToken ? (
                     <UpdateTokenForm />
-                  ) : hasStartedUpdatingStaking ? ( // TODO(arthur-fox): Remove this button, its just to avoid type-errors whilst above button disabled
-                    <>
-                      <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked} />
-                      <UpdateStakingForm />
-                    </>
+                  ) : hasStartedUpdatingStaking ? (
+                    <UpdateStakingForm />
                   ) : null}
-                </React.Fragment>              
+                </React.Fragment>
               ) : null}
             </Stack>
           </React.Fragment>
