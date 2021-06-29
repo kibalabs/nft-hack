@@ -152,21 +152,21 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         setNewStakingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
         setIsUpdating(false);
       }
-      
-      // TODO(arthur-fox): Call correct contract and function...      
-      const contractWithSigner = contract.connect(accounts[signerIndex]);            
+
+      // TODO(arthur-fox): Call correct contract and function...
+      const contractWithSigner = contract.connect(accounts[signerIndex]);
       const transaction = await contractWithSigner.setTokenURI(tokenId, stake);
-      //...
+      // ...
 
       setNewStakingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
       setIsUpdating(false);
       await transaction.wait();
-      setNewStakingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });      
+      setNewStakingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
     } catch (error) {
       setNewStakingResult({ isSuccess: false, isPending: false, message: error.message });
       setIsUpdating(false);
     }
-  }
+  };
 
   const getOwnerId = (): string => {
     return chainOwnerId || gridItem?.ownerId || '';
@@ -235,17 +235,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         </Stack>
       </Form>
     </React.Fragment>
-  );  
+  );
 
+  // @ts-ignore TODO(arthur-fox): Function call temporarily commented out until solidity contract implemented
   const onUpdateStakingClicked = (): void => {
     setHasStartedUpdatingStaking(true);
-    setHasStartedUpdatingToken(false);    
+    setHasStartedUpdatingToken(false);
   };
 
   const stakingInputState = (!newStakingResult || newStakingResult.isPending) ? undefined : newStakingResult?.isSuccess ? 'success' : (newStakingResult?.isSuccess === false ? 'error' : undefined);
 
   const UpdateStakingForm = (): React.ReactElement => (
-    <React.Fragment> 
+    <React.Fragment>
       <Form onFormSubmitted={onStakeButtonClicked} isLoading={isUpdating}>
         <Stack direction={Direction.Vertical} shouldAddGutters={true}>
           <Text variant='note'>{'Stake at least $100 in ETH or DAI to get your content featured. The higher the stake the more likely you are to be featured. All stake will remain yours and can be unstaked at any moment.'}</Text>
@@ -259,9 +260,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           />
           <Button variant='primary' text='Stake' buttonType='submit' />
         </Stack>
-      </Form>      
+      </Form>
     </React.Fragment>
-  );  
+  );
 
   return (
     <React.Fragment>
@@ -297,8 +298,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
                 </Stack>
               </Stack.Item>
-              <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />                
-              { (accounts === undefined || accountIds === undefined || !gridItem.tokenId) ? (                   
+              <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
+              { (accounts === undefined || accountIds === undefined || !gridItem.tokenId) ? (
                 <LoadingSpinner />
               ) : (accounts.length === 0 || accountIds.length === 0) ? (
                 <Text variant='note'>{'Please connect your account to view more options if you are the owner.'}</Text>
@@ -309,7 +310,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                     <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
                     {/* <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked} /> */}
                   </Stack>
-                  { hasStartedUpdatingToken ? (  
+                  { hasStartedUpdatingToken ? (
                     <UpdateTokenForm />
                   ) : hasStartedUpdatingStaking ? (
                     <UpdateStakingForm />
