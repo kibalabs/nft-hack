@@ -153,7 +153,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         setIsUpdating(false);
       }
       
-      // TODO: Call correct contract and function...
+      // TODO(arthur-fox): Call correct contract and function...      
       const contractWithSigner = contract.connect(accounts[signerIndex]);            
       const transaction = await contractWithSigner.setTokenURI(tokenId, stake);
       //...
@@ -307,7 +307,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <Text>👑 This is one of your tokens 👑</Text>
                   <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
                     <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-                    <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked} />
+                    {/* <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked} /> */}
                   </Stack>
                   { hasStartedUpdatingToken ? (  
                     <UpdateTokenForm />
