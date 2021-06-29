@@ -18,11 +18,11 @@ export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
     setOverlayScreenNumber(2);
   };
 
-  const onWin = (): void => {
+  const onLose = (): void => {
     setOverlayScreenNumber(3);
   };
 
-  const onLose = (): void => {
+  const onWin = (): void => {
     setOverlayScreenNumber(4);
   };
 
@@ -44,21 +44,21 @@ export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
 
   const MiningScreen = (): React.ReactElement => (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
-      <Text variant='header2' alignment={TextAlignment.Center}>{'Thanks for sharing'}</Text>
-      <Text alignment={TextAlignment.Center}>{'Mining for your reward... ⛏️'}</Text>
+      <Text variant='header2' alignment={TextAlignment.Center}>{'Thanks for sharing!'}</Text>
+      <Text alignment={TextAlignment.Center}>{'One sec, we are mining for your reward... ⛏️'}</Text>
       <Image source='/assets/mining-small.gif' alternativeText={'Mining'} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-        <Button variant={'secondary'} text='Win' onClicked={onWin} />
         <Button variant={'secondary'} text='Lose' onClicked={onLose} />
+        <Button variant={'secondary'} text='Win' onClicked={onWin} />        
       </Stack>
     </Stack>
   );
 
   const LoseScreen = (): React.ReactElement => (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
-      <Text variant='header2' alignment={TextAlignment.Center}>{'Thanks for sharing'}</Text>
-      <Text alignment={TextAlignment.Center}>{'Mining for your reward... ⛏️'}</Text>
-      <Image source='/assets/mining-small.gif' alternativeText={'Mining'} />
+      <Text variant='header2' alignment={TextAlignment.Center}>{'Share again!'}</Text>
+      <Text alignment={TextAlignment.Center}>{'You did not get a reward this time but please try again!'}</Text>
+      <Image source='/assets/sad-doge-small.gif' alternativeText={'Mining'} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
         <Button variant={'secondary'} text='Close' onClicked={props.onCloseClicked} />
       </Stack>
@@ -67,11 +67,11 @@ export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
 
   const WinScreen = (): React.ReactElement => (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
-      <Text variant='header2' alignment={TextAlignment.Center}>{'Thanks for sharing'}</Text>
-      <Text alignment={TextAlignment.Center}>{'Mining for your reward... ⛏️'}</Text>
-      <Image source='/assets/mining-small.gif' alternativeText={'Mining'} />
+      <Text variant='header2' alignment={TextAlignment.Center}>{'Congrats!'}</Text>
+      <Text alignment={TextAlignment.Center}>{'Thanks for sharing, you have earned a reward from our staking pool!'}</Text>
+      <Image source='/assets/win-doge-small.gif' alternativeText={'You Win!'} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-        <Button variant={'secondary'} text='Close' onClicked={props.onCloseClicked} />
+        <Button variant={'secondary'} text='Claim' onClicked={props.onCloseClicked} />
       </Stack>
     </Stack>
   );
