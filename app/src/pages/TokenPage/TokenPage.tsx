@@ -237,7 +237,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     </React.Fragment>
   );
 
-  // @ts-ignore TODO(arthur-fox): Function call temporarily commented out until solidity contract implemented
   const onUpdateStakingClicked = (): void => {
     setHasStartedUpdatingStaking(true);
     setHasStartedUpdatingToken(false);
@@ -288,7 +287,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  { (accountIds.includes(getOwnerId())) ? (
+                  { (accountIds && accountIds.includes(getOwnerId())) ? (
                     <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='View on Opensea' />
                   ) : isForSale() ? (
                     <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy NFT' />
@@ -299,21 +298,24 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 </Stack>
               </Stack.Item>
               <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
-              { (accounts === undefined || accountIds === undefined || !gridItem.tokenId) ? (
+              { (!accounts || !accountIds || !gridItem.tokenId) ? (
                 <LoadingSpinner />
-              ) : (accounts.length === 0 || accountIds.length === 0) ? (
+              ) : ((accounts && accounts.length === 0) || (accountIds && accountIds.length === 0)) ? (
                 <Text variant='note'>{'Please connect your account to view more options if you are the owner.'}</Text>
-              ) : (accountIds.includes(getOwnerId())) ? (
+              ) : (accountIds && accountIds.includes(getOwnerId())) ? (
                 <React.Fragment>
                   <Text>👑 This is one of your tokens 👑</Text>
                   <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
                     <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-                    {/* <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked} /> */}
+                    {/* <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked}/> */}
                   </Stack>
                   { hasStartedUpdatingToken ? (
                     <UpdateTokenForm />
-                  ) : hasStartedUpdatingStaking ? (
-                    <UpdateStakingForm />
+                  ) : hasStartedUpdatingStaking ? ( // TODO(arthur-fox): Remove this button, its just to avoid type-errors whilst above button disabled
+                    <>
+                      <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked} />
+                      <UpdateStakingForm />
+                    </>
                   ) : null}
                 </React.Fragment>
               ) : null}
