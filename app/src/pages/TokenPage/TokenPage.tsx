@@ -23,6 +23,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, contractAddress, requester, apiClient, network } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
+  const [hasStartedBuyingToken, setHasStartedBuyingToken] = React.useState<boolean>(false);
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
@@ -57,6 +58,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       // const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
       // setToken(retrievedToken);
     }
+    setHasStartedBuyingToken(false);
     setHasStartedUpdatingToken(false);
     setHasStartedUpdatingStaking(false);
   }, [props.tokenId, network, contract, apiClient]);
@@ -89,6 +91,45 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       setNewImageUrl('');
       setIsUploadingImage(false);
     });
+  };
+
+  const onBuyButtonClicked = async (): Promise<void> => {
+    if (!gridItem || !accountIds || !accounts) {
+      return;
+    }
+
+    setIsUpdating(true);
+    const title = newTitle != null ? newTitle : gridItem.title;
+    const description = newDescription != null ? newDescription : gridItem.description;
+    const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
+    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title || '', description || '', image || '');
+
+    if (!contract) {
+      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+      setIsUpdating(false);
+      return;
+    }
+
+    setNewTokenSettingResult(null);
+    const tokenId = Number(props.tokenId);
+    try {
+      const signerIndex = accountIds.indexOf(getOwnerId());
+      if (signerIndex === -1) {
+        setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
+        setIsUpdating(false);
+      }
+      const contractWithSigner = contract.connect(accounts[signerIndex]);
+      const transaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
+      setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
+      setIsUpdating(false);
+      await transaction.wait();
+      setNewTokenSettingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
+      apiClient.updateTokenDeferred(network, Number(props.tokenId));
+      loadToken();
+    } catch (error) {
+      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: error.message });
+      setIsUpdating(false);
+    }
   };
 
   const onUpdateButtonClicked = async (): Promise<void> => {
@@ -190,6 +231,53 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     return ownedByAdminAddress && !inMiddleBlock;
   };
 
+  const onBuyTokenClicked = (): void => {
+    setHasStartedBuyingToken(true);
+  };
+
+  //TODO(arthur-fox): fix this...
+  const buyingInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
+
+  const BuyTokenForm = (): React.ReactElement => (
+    <React.Fragment>
+      <Form onFormSubmitted={onBuyButtonClicked} isLoading={isUpdating}>
+        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+          <SingleLineInput
+            inputType={InputType.Text}
+            value={newTitle}
+            onValueChanged={setNewTitle}
+            inputWrapperVariant={buyingInputState}
+            placeholderText='Name'
+          />
+          <SingleLineInput
+            inputType={InputType.Text}
+            value={newDescription}
+            onValueChanged={setNewDescription}
+            inputWrapperVariant={buyingInputState}
+            placeholderText='Description'
+          />
+          {isUploadingImage ? (
+            <Text>Uploading image...</Text>
+          ) : (
+            <React.Fragment>
+              <SingleLineInput
+                inputType={InputType.Url}
+                value={newImageUrl}
+                onValueChanged={setNewImageUrl}
+                inputWrapperVariant={buyingInputState}
+                messageText={newTokenSettingResult?.message}
+                placeholderText='Image URL'
+              />
+              <Text variant='note'>OR</Text>
+              <Dropzone onFilesChosen={onImageFilesChosen} />
+            </React.Fragment>
+          )}
+          <Button variant='primary' text='Buy' buttonType='submit' />
+        </Stack>
+      </Form>
+    </React.Fragment>
+  );
+
   const onUpdateTokenClicked = (): void => {
     setHasStartedUpdatingToken(true);
     setHasStartedUpdatingStaking(false);
@@ -287,22 +375,33 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  { (accountIds && accountIds.includes(getOwnerId())) ? (
-                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='View on Opensea' />
-                  ) : isForSale() ? (
-                    <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy NFT' />
+                  { isForSale() ? (
+                    <Button variant='primary' onClicked={onBuyTokenClicked} text='Buy NFT' />
+                  ) : accountIds && accountIds.includes(getOwnerId()) ? (
+                    <>
+                      <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='View on Opensea' />
+                      <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
+                    </>
                   ) : (
-                    <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Bid on NFT' />
-                  )}
-                  <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
+                    <>
+                      <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Bid on NFT' />
+                      <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
+                    </>
+                  )}                  
                 </Stack>
-              </Stack.Item>
-              <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
-              { (!accounts || !accountIds || !gridItem.tokenId) ? (
+              </Stack.Item>              
+              { isForSale() ? (
+                <KeyValue name='Owned by' markdownValue={`Nobody yet, but it could be you!`} />                
+              ) : (
+                <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
+              )}
+              { hasStartedBuyingToken ? (
+                <BuyTokenForm /> 
+              ) : (!accounts || !accountIds || !gridItem.tokenId) ? (
                 <LoadingSpinner />
               ) : ((accounts && accounts.length === 0) || (accountIds && accountIds.length === 0)) ? (
                 <Text variant='note'>{'Please connect your account to view more options if you are the owner.'}</Text>
-              ) : (accountIds && accountIds.includes(getOwnerId())) ? (
+              ) : !isForSale() && (accountIds && accountIds.includes(getOwnerId())) ? (
                 <React.Fragment>
                   <Text>👑 This is one of your tokens 👑</Text>
                   <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
@@ -317,7 +416,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                       <UpdateStakingForm />
                     </>
                   ) : null}
-                </React.Fragment>
+                </React.Fragment>              
               ) : null}
             </Stack>
           </React.Fragment>
