@@ -243,8 +243,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setHasStartedUpdatingToken(true);
     setHasStartedUpdatingStaking(false);
   };
-
-  // eslint-disable-next-line unused-imports/no-unused-vars
+  
   const onUpdateStakingClicked = (): void => {
     setHasStartedUpdatingStaking(true);
     setHasStartedUpdatingToken(false);
@@ -370,7 +369,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           <Text>👑 This is one of your tokens 👑</Text>
           <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
             <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-            {/* <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked}/> */}
+            <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked}/>
           </Stack>
           { hasStartedUpdatingToken ? (
             <UpdateTokenForm />
