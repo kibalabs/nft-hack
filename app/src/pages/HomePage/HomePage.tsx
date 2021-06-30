@@ -15,6 +15,7 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { isValidChain } from '../../util/chainUtil';
+import { TokenPage } from '../TokenPage/TokenPage';
 
 const PanelLayer = styled.div`
   width: 95vw;
@@ -39,6 +40,7 @@ export const HomePage = (): React.ReactElement => {
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
+  const [featuredToken, setFeaturedToken] = React.useState<string>('');
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -50,6 +52,10 @@ export const HomePage = (): React.ReactElement => {
         setGridItems(retrievedGridItems);
       });
     });
+
+    if (welcomeComplete) {
+      displayFeaturedToken();
+    }
   }, [network, apiClient]);
 
   React.useEffect((): void => {
@@ -64,12 +70,30 @@ export const HomePage = (): React.ReactElement => {
     }
   }, [chainId, contract, loadGridItems]);
 
+  const displayFeaturedToken = () => {
+    //TODO: Get stakingTokens and tokenWeights from an API function
+    const stakingTokens = ['3729', '6421', '2443', '4969', '197', '5929', '4886', '1729'];
+    const tokenWeights = [300, 1000, 300, 400, 100, 550, 300, 800];
+    const totalWeights = tokenWeights.reduce((a, b) => a + b, 0);
+    const randomNumber = Math.floor(Math.random() * (totalWeights + 1));
+    var index = 0, acc = 0;
+    for ( ; index < tokenWeights.length; index++)
+    {
+      acc += tokenWeights[index];
+      if (randomNumber < acc) break;
+    }
+    const selectedIndex = stakingTokens[index];
+    setFeaturedToken(selectedIndex.toString());
+  }
+
   const onTokenIdClicked = (tokenId: number) => {
     navigator.navigateTo(`/tokens/${tokenId}`);
+    setFeaturedToken('');
   };
 
-  const onCloseTokenPanelClicked = (): void => {
+  const onCloseSidePanelClicked = (): void => {
     navigator.navigateTo('/');
+    setFeaturedToken('');
   };
 
   const onShareOpenClicked = (): void => {
@@ -87,10 +111,11 @@ export const HomePage = (): React.ReactElement => {
   const onWelcomeAboutClicked = (): void => {
     navigator.navigateTo('/about');
   };
-
+  
   const isTokenPanelShowing = location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
-  const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing;
+  const isFeaturedPanelShowing = featuredToken.length > 0 && !(isTokenPanelShowing || isAboutPanelShowing);
+  const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing || isFeaturedPanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
@@ -141,11 +166,15 @@ export const HomePage = (): React.ReactElement => {
               <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
                 <LayerContainer>
                   <LayerContainer.Layer>
-                    <Outlet />
+                    {isFeaturedPanelShowing ? (
+                      <TokenPage tokenId={featuredToken} isFeatured={true} />
+                    ) : (
+                      <Outlet />
+                    )}
                   </LayerContainer.Layer>
                   <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
                     <Box variant='panelButtonHolder'>
-                      <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
+                      <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseSidePanelClicked} />
                     </Box>
                   </LayerContainer.Layer>
                 </LayerContainer>

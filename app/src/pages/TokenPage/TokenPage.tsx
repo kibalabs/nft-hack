@@ -11,6 +11,7 @@ import { useGlobals } from '../../globalsContext';
 
 export type TokenPageProps = {
   tokenId: string;
+  isFeatured?: boolean;
 }
 
 type Result = {
@@ -400,6 +401,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               </BackgroundView>
             </Box>
             <Stack direction={Direction.Vertical} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
+              {props.isFeatured && (
+                <React.Fragment>
+                  <Text variant='header1'>{'Featured Token!'}</Text>
+                  <Text variant='note'>{'Set a stake in your token for a chance to be featured'}</Text>
+                  <Spacing direction={Direction.Vertical} />
+                  <Spacing direction={Direction.Vertical} />
+                </React.Fragment>
+              )}
               <Text variant='header3'>{`TOKEN #${gridItem.tokenId}`}</Text>
               <Text variant='header2'>{`${gridItem.title}`}</Text>
               <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
