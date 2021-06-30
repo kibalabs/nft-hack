@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
@@ -400,11 +400,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               </BackgroundView>
             </Box>
             <Stack direction={Direction.Vertical} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
-              {props.isFeatured && (
+              {props.isFeatured && (      
                 <React.Fragment>
-                  <Text variant='header1'>{'Featured Token!'}</Text>
-                  <Text variant='note'>{'Set a stake in your token for a chance to be featured'}</Text>
-                  <Spacing direction={Direction.Vertical} />
+                  <Box variant='featured' maxWidth='160px' height='50px' >
+                    <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
+                      <Text alignment={TextAlignment.Center}>{'Featured Token'}</Text>
+                      {/* <Text variant='note'>{'Set a stake in your token for a chance to be featured'}</Text> */}
+                    </Stack>
+                  </Box>
                   <Spacing direction={Direction.Vertical} />
                 </React.Fragment>
               )}

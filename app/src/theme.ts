@@ -54,6 +54,10 @@ export const buildMDTPTheme = (): ITheme => {
     panelButtonHolder: {
       margin: '0.5em 1em',
     },
+    featured: {
+      'background-color': 'rgba(194, 221, 136, 1)',
+      'border-radius': '1em 1em 1em 1em',
+    },
   };
 
   const iconButtonThemes: RecursivePartial<ThemeMap<IIconButtonTheme>> = {
