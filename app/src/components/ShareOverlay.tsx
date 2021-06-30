@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Box, Button, Direction, IconButton, KibaIcon, PaddingSize, Stack, Text, TextAlignment, Image } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, IconButton, KibaIcon, LayerContainer, PaddingSize, Stack, Text, TextAlignment, Image } from '@kibalabs/ui-react';
 
 interface ShareOverlayProps {
   onCloseClicked: () => void;
