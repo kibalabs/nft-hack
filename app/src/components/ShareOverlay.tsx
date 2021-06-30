@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Box, Button, Direction, IconButton, KibaIcon, LayerContainer, PaddingSize, Stack, Text, TextAlignment, Image } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, IconButton, Image, KibaIcon, PaddingSize, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 interface ShareOverlayProps {
   onCloseClicked: () => void;
@@ -49,7 +49,7 @@ export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
       <Image source='/assets/mining-small.gif' alternativeText={'Mining'} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
         <Button variant={'secondary'} text='Lose' onClicked={onLose} />
-        <Button variant={'secondary'} text='Win' onClicked={onWin} />        
+        <Button variant={'secondary'} text='Win' onClicked={onWin} />
       </Stack>
     </Stack>
   );

@@ -56,7 +56,7 @@ export const HomePage = (): React.ReactElement => {
     if (welcomeComplete) {
       displayFeaturedToken();
     }
-  }, [network, apiClient]);
+  }, [welcomeComplete, network, apiClient]);
 
   React.useEffect((): void => {
     loadGridItems();
@@ -71,20 +71,20 @@ export const HomePage = (): React.ReactElement => {
   }, [chainId, contract, loadGridItems]);
 
   const displayFeaturedToken = () => {
-    //TODO: Get stakingTokens and tokenWeights from an API function
+    // TODO: Get stakingTokens and tokenWeights from an API function
     const stakingTokens = ['3729', '6421', '2443', '4969', '197', '5929', '4886', '1729'];
     const tokenWeights = [300, 1000, 300, 400, 100, 550, 300, 800];
     const totalWeights = tokenWeights.reduce((a, b) => a + b, 0);
     const randomNumber = Math.floor(Math.random() * (totalWeights + 1));
-    var index = 0, acc = 0;
-    for ( ; index < tokenWeights.length; index++)
-    {
+    let index = 0; let
+      acc = 0;
+    for (; index < tokenWeights.length; index += 1) {
       acc += tokenWeights[index];
       if (randomNumber < acc) break;
     }
     const selectedIndex = stakingTokens[index];
     setFeaturedToken(selectedIndex.toString());
-  }
+  };
 
   const onTokenIdClicked = (tokenId: number) => {
     navigator.navigateTo(`/tokens/${tokenId}`);
@@ -111,7 +111,7 @@ export const HomePage = (): React.ReactElement => {
   const onWelcomeAboutClicked = (): void => {
     navigator.navigateTo('/about');
   };
-  
+
   const isTokenPanelShowing = location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
   const isFeaturedPanelShowing = featuredToken.length > 0 && !(isTokenPanelShowing || isAboutPanelShowing);
