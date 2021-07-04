@@ -8,6 +8,8 @@ from core.exceptions import BadRequestException
 from core.requester import Requester
 from core.web3.eth_client import RestEthClient
 
+from contracts import create_contract_store
+
 GWEI = 1000000000
 GAS_LIMIT = 1000000
 
@@ -18,27 +20,21 @@ GAS_LIMIT = 1000000
 @click.option('-s', '--sendAddress', 'sendAddress', required=True, type=str)
 @click.option('-r', '--receiveAddress', 'receiveAddress', required=True, type=str)
 async def run(startTokenId: int, width: int, height: int, sendAddress: str, receiveAddress: str):
-    network = 'rinkeby'
-    if network == 'rinkeby':
-        CONTRACT_ADDRESS = os.environ['RINKEBY_CONTRACT_ADDRESS']
-        ETH_CLIENT_URL = os.environ['ALCHEMY_URL']
-    elif network == 'mumbai':
-        CONTRACT_ADDRESS = os.environ['MUMBAI_CONTRACT_ADDRESS']
-        ETH_CLIENT_URL = 'https://matic-mumbai.chainstacklabs.com'
+    network = 'rinkeby2'
     ACCOUNT_ADDRESS = os.environ['ACCOUNT_ADDRESS']
     PRIVATE_KEY = os.environ['PRIVATE_KEY']
 
     requester = Requester()
-    ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
-    with open('./contract.json') as contractJsonFile:
-        contractJson = json.load(contractJsonFile)
-    contractAbi = contractJson['abi']
-    contractTotalSupplyMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'totalSupply'][0]
-    contractTransferFromMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'transferFrom'][0]
-    nonce = await ethClient.get_transaction_count(address=ACCOUNT_ADDRESS)
+    rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
+    mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
+    contractStore = create_contract_store(rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
+    contract = contractStore.get_contract(network=network)
+    nonce = await rinkebyEthClient.get_transaction_count(address=ACCOUNT_ADDRESS)
 
     tokensPerRow = 100
-    tokenCount = (await ethClient.call_function(toAddress=CONTRACT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTotalSupplyMethodAbi))[0]
+    contractTotalSupplyMethodAbi = [abi for abi in contract.abi if abi.get('name') == 'totalSupply'][0]
+    contractTransferFromMethodAbi = [abi for abi in contract.abi if abi.get('name') == 'transferFrom'][0]
+    tokenCount = (await rinkebyEthClient.call_function(toAddress=contract.address, contractAbi=contract.abi, functionAbi=contractTotalSupplyMethodAbi))[0]
     for row in range(0, height):
         for column in range(0, width):
             tokenId = startTokenId + (row * tokensPerRow) + column
@@ -50,7 +46,7 @@ async def run(startTokenId: int, width: int, height: int, sendAddress: str, rece
                     'tokenId': tokenId,
                 }
                 try:
-                    await ethClient.send_transaction(toAddress=CONTRACT_ADDRESS, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contractAbi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=GAS_LIMIT, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+                    await rinkebyEthClient.send_transaction(toAddress=contract.address, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contract.abi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=GAS_LIMIT, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
                 except BadRequestException as exception:
                     print(f'Failed to transfer {tokenId}: {str(exception)}')
                 nonce += 1

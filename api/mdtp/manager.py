@@ -10,7 +10,7 @@ from typing import Optional
 import urllib.parse as urlparse
 import uuid
 
-from core.exceptions import NotFoundException
+from core.exceptions import NotFoundException, ServerException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.util import date_util, dict_util, file_util
@@ -49,12 +49,8 @@ class MdtpManager:
         self.workQueue = workQueue
         self.imageManager = imageManager
         self.ownerAddress = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
-        self.contract = self.w3.eth.contract(address=self.rinkebyContractAddress, abi=self.contractAbi)
-        self.contractTotalSupplyEvent = self.contract.events.Transfer()
-        self.contractTotalSupplyMethodAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'totalSupply'][0]
-        self.contractTokenUriAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'tokenContentURI'][0]
-        self.contractOwnerOfAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'ownerOf'][0]
 
+    # NOTE(krishan711): it feels weird that this and the function below don't have network in the request or response. Think this through.
     async def get_token_metadata(self, tokenId: str) -> TokenMetadata:
         try:
             tokenIdValue = int(tokenId)
@@ -88,7 +84,7 @@ class MdtpManager:
         )
 
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
-        gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
+        gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         return gridItem
 
     async def list_grid_items(self, network: str, updatedSinceDate: Optional[datetime.datetime] = None) -> Sequence[GridItem]:
@@ -120,16 +116,21 @@ class MdtpManager:
         tokenWidth = 10 * scale
         generatedDate = date_util.datetime_from_now()
         outputImage = PILImage.new('RGB', (width, height))
-        latestBaseImage = await self.get_latest_base_image_url(network=network)
-        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
+        try:
+            latestBaseImage = await self.get_latest_base_image_url(network=network)
+        except NotFoundException:
+            latestBaseImage = None
+        lastUpdateDate = latestBaseImage.generatedDate if latestBaseImage else datetime.datetime.fromtimestamp(0)
+        gridItems = await self.list_grid_items(network=network, updatedSinceDate=lastUpdateDate)
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None
-        baseImageResponse = await self.requester.get(latestBaseImage.url)
-        contentBuffer = BytesIO(baseImageResponse.content)
-        with PILImage.open(fp=contentBuffer) as baseImage:
-            image = baseImage.resize(size=(width, height))
-            outputImage.paste(image, (0, 0))
+        if latestBaseImage:
+            baseImageResponse = await self.requester.get(latestBaseImage.url)
+            contentBuffer = BytesIO(baseImageResponse.content)
+            with PILImage.open(fp=contentBuffer) as baseImage:
+                image = baseImage.resize(size=(width, height))
+                outputImage.paste(image, (0, 0))
         logging.info(f'Drawing {len(gridItems)} new grid items')
         for gridItem in gridItems:
             imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
@@ -151,24 +152,25 @@ class MdtpManager:
         return baseImage
 
     async def get_network_summary(self, network: str) -> NetworkSummary:
-        try:
-            contract = self.contractStore.get_contract(network=network)
-        except NotFoundException:
-            return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
-        if network == 'rinkeby':
-            # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
-            # so we have to loop through their owned assets' contracts to find the correct one
-            token_contract = self.rinkebyContractAddress
-            response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={self.ownerAddress}&offset=0&limit=300')
-            responseJson = response.json()
-            for responseEntry in responseJson:
-                if responseEntry['primary_asset_contracts'][0].get('address') == token_contract:
-                    stats = responseEntry['stats']
-                    return NetworkSummary(
-                        marketCapitalization=float(stats['market_cap']),
-                        totalSales=float(stats['total_sales']),
-                        averagePrice=float(stats['average_price'])
-                    )
+        # TODO(krishan711): update this to work with the new contract
+        # try:
+        #     contract = self.contractStore.get_contract(network=network)
+        # except NotFoundException:
+        #     return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
+        # if network == 'rinkeby':
+        #     # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
+        #     # so we have to loop through their owned assets' contracts to find the correct one
+        #     token_contract = self.rinkebyContractAddress
+        #     response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={self.ownerAddress}&offset=0&limit=300')
+        #     responseJson = response.json()
+        #     for responseEntry in responseJson:
+        #         if responseEntry['primary_asset_contracts'][0].get('address') == token_contract:
+        #             stats = responseEntry['stats']
+        #             return NetworkSummary(
+        #                 marketCapitalization=float(stats['market_cap']),
+        #                 totalSales=float(stats['total_sales']),
+        #                 averagePrice=float(stats['average_price'])
+        #             )
         return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
 
     async def generate_image_upload_for_token(self, network: str, tokenId: int) -> S3PresignedUpload:
@@ -194,16 +196,7 @@ class MdtpManager:
         await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
 
     async def update_tokens(self, network: str) -> None:
-        if network == 'rinkeby':
-            ethClient = self.rinkebyEthClient
-            contractAddress = self.rinkebyContractAddress
-        elif network == 'mumbai':
-            ethClient = self.mumbaiEthClient
-            contractAddress = self.mumbaiContractAddress
-        else:
-            raise Exception('Unknown network')
-        tokenCountResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTotalSupplyMethodAbi, arguments={})
-        tokenCount = tokenCountResponse[0]
+        tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
             await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
@@ -219,18 +212,13 @@ class MdtpManager:
 
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
-        if network == 'rinkeby':
-            ethClient = self.rinkebyEthClient
-            contractAddress = self.rinkebyContractAddress
-        elif network == 'mumbai':
-            ethClient = self.mumbaiEthClient
-            contractAddress = self.mumbaiContractAddress
-        else:
-            raise Exception('Unknown network')
-        ownerIdResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
-        ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
-        tokenContentUrlResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
-        tokenContentUrl = tokenContentUrlResponse[0].strip()
+        try:
+            ownerId = await self.contractStore.get_owner_id(network=network, tokenId=tokenId)
+        except Exception as e:
+            print(e)
+            ownerId = self.ownerAddress
+        tokenContentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+        print('tokenContentUrl', tokenContentUrl)
         tokenContentResponse = await self.requester.make_request(method='GET', url=tokenContentUrl)
         tokenContentJson = json.loads(tokenContentResponse.text)
         title = tokenContentJson.get('title') or tokenContentJson.get('name') or ''

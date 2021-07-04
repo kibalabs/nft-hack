@@ -98,7 +98,7 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
             metadataUploadTasks = []
             logging.info(f'Upload state: {index} / {(width * height)}')
 
-    with open('./contract.json') as contractJsonFile:
+    with open('./contract1.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
     contractAbi = contractJson['abi']
     contractTotalSupplyMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'totalSupply'][0]

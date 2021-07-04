@@ -58,7 +58,7 @@ async def run(imagePath: str, name: str):
     w3 = Web3()
     requester = Requester()
     ethClient = RestEthClient(url=ETH_CLIENT_URL, requester=requester)
-    with open('./contract.json') as contractJsonFile:
+    with open('./contract1.json') as contractJsonFile:
         contractJson = json.load(contractJsonFile)
     contractAbi = contractJson['abi']
     contractMintNFTMethodAbi = [internalAbi for internalAbi in contractAbi if internalAbi.get('name') == 'mintNFT'][0]
