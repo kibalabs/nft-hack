@@ -11,6 +11,8 @@ import { useGlobals } from '../../globalsContext';
 import { ethers } from 'ethers';
 import StakingContract from '../../contracts/StakingWallet.json';
 
+const GWEI = 1000000000;
+
 export type TokenPageProps = {
   tokenId: string;
   isFeatured?: boolean;
@@ -225,7 +227,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       }
 
       const contractWithSigner = stakingContract.connect(accounts[signerIndex]);
-      const transaction = await contractWithSigner.deposit(tokenId);
+      const transaction = await contractWithSigner.deposit(tokenId, { gasPrice: 1 * GWEI, gasLimit: 100000 });
 
       setNewStakingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
       setIsUpdating(false);
