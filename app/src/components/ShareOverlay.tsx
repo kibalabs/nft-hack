@@ -48,8 +48,8 @@ export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
       <Text alignment={TextAlignment.Center}>{'One sec, we are mining for your reward... ⛏️'}</Text>
       <Image source='/assets/mining-small.gif' alternativeText={'Mining'} />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-        <Button variant={'secondary'} text='Lose' onClicked={onLose} />
-        <Button variant={'secondary'} text='Win' onClicked={onWin} />
+        <IconButton variant={'secondary'} onClicked={onLose} />
+        <IconButton variant={'secondary'} onClicked={onWin} />
       </Stack>
     </Stack>
   );

@@ -72,8 +72,8 @@ export const HomePage = (): React.ReactElement => {
 
   const displayFeaturedToken = () => {
     // TODO: Get stakingTokens and tokenWeights from an API function
-    const stakingTokens = ['3729', '6421', '2443', '4969', '197', '5929', '4886', '1729'];
-    const tokenWeights = [300, 1000, 300, 400, 100, 550, 300, 800];
+    const stakingTokens = ['3729', '6421', '2443', '4969', '197', '5929', '4886'];
+    const tokenWeights = [300, 1000, 300, 400, 100, 550, 300];
     const totalWeights = tokenWeights.reduce((a, b) => a + b, 0);
     const randomNumber = Math.floor(Math.random() * (totalWeights + 1));
     let index = 0; let
