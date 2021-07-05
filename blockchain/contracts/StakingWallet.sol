@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-abstract contract ICERC20 {
+abstract contract ICERC20 is IERC20 {
     function redeemUnderlying(uint redeemAmount) external virtual returns (uint);
     function mint(uint mintAmount) external virtual returns (uint);
     function exchangeRateCurrent() public view virtual returns(uint);
@@ -17,15 +17,17 @@ abstract contract ICompERC20 is IERC20 {
     function claimComp(address holder) public virtual;
 }
 
+// I found an example contract for interacting with compound here: https://github.com/Instadapp/dsa-connectors/blob/main/contracts/mainnet/connectors/compound/main.sol
+
 // This is meant to be constructed and owned by an ERC721 contract
-contract StakingWallet is Ownable {
+contract NftStakingWallet is Ownable {
     using SafeMath for uint256;
     using Address for address payable;
 
     IERC721 collection;
     ICERC20 cToken;
     IERC20 underlyingERC20;
-    ICompERC20 compErc20Token;
+    ICompERC20 compErc20Token; // TODO
 
     event Deposited(uint256 tokenId, address indexed payer, uint256 weiAmount);
     event Withdrawn(uint256 tokenId, address indexed payee, uint256 weiAmount);
@@ -36,8 +38,8 @@ contract StakingWallet is Ownable {
         _;
     }
 
-    constructor(address _cTokenAddress, address _underlying, address _compErc20Address) Ownable() {
-        collection = IERC721(msg.sender);
+    constructor(address tokenCollectionContract, address _cTokenAddress, address _underlying, address _compErc20Address) Ownable() {
+        collection = IERC721(tokenCollectionContract);
         underlyingERC20 = IERC20(_underlying);
         cToken = ICERC20(_cTokenAddress);
         compErc20Token = ICompERC20(_compErc20Address);
@@ -50,8 +52,7 @@ contract StakingWallet is Ownable {
         return _deposits[tokenId];
     }
 
-    function deposit(uint256 tokenId) public payable virtual onlyOwner validTokenId(tokenId) {
-        uint256 amount = msg.value;
+    function deposit(uint256 tokenId, uint256 amount) public payable virtual onlyOwner validTokenId(tokenId) {
         _deposits[tokenId] += amount;
         totalOnDeposit += amount;
         assert(_supplyErc20ToCompound(amount) == 0);
@@ -68,7 +69,7 @@ contract StakingWallet is Ownable {
         emit Withdrawn(tokenId, payee, onDeposit);
     }
 
-    function sendAccumulatedInterest(address payable payee) public onlyOwner {
+    function claimPrize(address payable payee) public onlyOwner {
         uint256 earnedInterest = getInterestEarned();
         assert(_redeemCErc20Tokens(earnedInterest) == 0);
         underlyingERC20.approve(payee, earnedInterest);
@@ -76,7 +77,7 @@ contract StakingWallet is Ownable {
     }
 
     function claimComp() public onlyOwner {
-        compErc20Token.claimComp(address(this));
+        compErc20Token.claimComp(address(this)); // TODO this isn't the right contract, claimComp is on the Comptroller contract
     }
 
     function sendComp(address payable payee) public onlyOwner {
@@ -103,5 +104,9 @@ contract StakingWallet is Ownable {
         uint exchangeRateMantissa = cToken.exchangeRateCurrent();
         uint256 interest = totalOnDeposit / exchangeRateMantissa;
         return interest;
+    }
+
+    function totalDeposits() public view returns (uint256) {
+        return totalOnDeposit;
     }
 }
