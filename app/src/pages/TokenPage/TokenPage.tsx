@@ -8,6 +8,8 @@ import { GridItem, PresignedUpload } from '../../client';
 import { Dropzone } from '../../components/dropzone';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
+import { ethers } from 'ethers';
+import StakingContract from '../../contracts/StakingWallet.json';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -21,7 +23,7 @@ type Result = {
 }
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
-  const { contract, contractAddress, requester, apiClient, network } = useGlobals();
+  const { web3, contract, contractAddress, requester, apiClient, network } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
   const [newBuyResult, setNewBuyResult] = React.useState<Result | null>(null);
@@ -107,7 +109,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const isForSale = (): boolean => {
-    const adminAddress = '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC';
+    // const adminAddress = '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC';
+    const adminAddress = '0xABC';
     const ownedByAdminAddress = getOwnerId() === adminAddress;
 
     const tokenId = Number(props.tokenId);
@@ -201,6 +204,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
 
     setIsUpdating(true);
+
+    const stakingContract = new ethers.Contract('0x5f4F85a295f2C5C42d7A720043981F885cdaFc44', StakingContract.abi, web3);
+
     const stake = stakingAmount != null ? Number(stakingAmount) : 0;
 
     if (!contract) {
@@ -218,10 +224,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         setIsUpdating(false);
       }
 
-      // TODO(arthur-fox): Call correct contract and function...
-      const contractWithSigner = contract.connect(accounts[signerIndex]);
-      const transaction = await contractWithSigner.setTokenURI(tokenId, stake);
-      // ...
+      const contractWithSigner = stakingContract.connect(accounts[signerIndex]);
+      const transaction = await contractWithSigner.deposit(tokenId);
 
       setNewStakingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
       setIsUpdating(false);
@@ -243,7 +247,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setHasStartedUpdatingToken(true);
     setHasStartedUpdatingStaking(false);
   };
-  
+
   const onUpdateStakingClicked = (): void => {
     setHasStartedUpdatingStaking(true);
     setHasStartedUpdatingToken(false);
@@ -268,64 +272,60 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const updateInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
   const UpdateTokenForm = (): React.ReactElement => (
-    <React.Fragment>
-      <Form onFormSubmitted={callContractForUpdating} isLoading={isUpdating}>
-        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-          <SingleLineInput
-            inputType={InputType.Text}
-            value={newTitle}
-            onValueChanged={setNewTitle}
-            inputWrapperVariant={updateInputState}
-            placeholderText='Name'
-          />
-          <SingleLineInput
-            inputType={InputType.Text}
-            value={newDescription}
-            onValueChanged={setNewDescription}
-            inputWrapperVariant={updateInputState}
-            placeholderText='Description'
-          />
-          {isUploadingImage ? (
-            <Text>Uploading image...</Text>
-          ) : (
-            <React.Fragment>
-              <SingleLineInput
-                inputType={InputType.Url}
-                value={newImageUrl}
-                onValueChanged={setNewImageUrl}
-                inputWrapperVariant={updateInputState}
-                messageText={newTokenSettingResult?.message}
-                placeholderText='Image URL'
-              />
-              <Text variant='note'>OR</Text>
-              <Dropzone onFilesChosen={onImageFilesChosen} />
-            </React.Fragment>
-          )}
-          <Button variant='primary' text='Update' buttonType='submit' />
-        </Stack>
-      </Form>
-    </React.Fragment>
+    <Form onFormSubmitted={callContractForUpdating} isLoading={isUpdating}>
+      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+        <SingleLineInput
+          inputType={InputType.Text}
+          value={newTitle}
+          onValueChanged={setNewTitle}
+          inputWrapperVariant={updateInputState}
+          placeholderText='Name'
+        />
+        <SingleLineInput
+          inputType={InputType.Text}
+          value={newDescription}
+          onValueChanged={setNewDescription}
+          inputWrapperVariant={updateInputState}
+          placeholderText='Description'
+        />
+        {isUploadingImage ? (
+          <Text>Uploading image...</Text>
+        ) : (
+          <React.Fragment>
+            <SingleLineInput
+              inputType={InputType.Url}
+              value={newImageUrl}
+              onValueChanged={setNewImageUrl}
+              inputWrapperVariant={updateInputState}
+              messageText={newTokenSettingResult?.message}
+              placeholderText='Image URL'
+            />
+            <Text variant='note'>OR</Text>
+            <Dropzone onFilesChosen={onImageFilesChosen} />
+          </React.Fragment>
+        )}
+        <Button variant='primary' text='Update' buttonType='submit' />
+      </Stack>
+    </Form>
   );
 
   const stakingInputState = (!newStakingResult || newStakingResult.isPending) ? undefined : newStakingResult?.isSuccess ? 'success' : (newStakingResult?.isSuccess === false ? 'error' : undefined);
 
   const UpdateStakingForm = (): React.ReactElement => (
-    <React.Fragment>
-      <Form onFormSubmitted={callContractForStaking} isLoading={isUpdating}>
-        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-          <Text variant='note'>{'Stake at least $100 in ETH or DAI to get your content featured. The higher the stake the more likely you are to be featured. All stake will remain yours and can be unstaked at any moment.'}</Text>
-          <SingleLineInput
-            inputType={InputType.Text}
-            value={stakingAmount}
-            onValueChanged={setStakingAmount}
-            inputWrapperVariant={stakingInputState}
-            messageText={newStakingResult?.message}
-            placeholderText='Amount to stake'
-          />
-          <Button variant='primary' text='Stake' buttonType='submit' />
-        </Stack>
-      </Form>
-    </React.Fragment>
+    <Form onFormSubmitted={callContractForStaking} isLoading={isUpdating}>
+      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+        <Text variant='note'>{'Stake at least $100 in ETH or DAI to get your content featured. The higher the stake the more likely you are to be featured. All stake will remain yours and can be unstaked at any moment.'}</Text>
+        <SingleLineInput
+          inputType={InputType.Text}
+          value={stakingAmount}
+          onValueChanged={setStakingAmount}
+          inputWrapperVariant={stakingInputState}
+          messageText={newStakingResult?.message}
+          placeholderText='Amount to stake'
+        />
+        <Button variant='primary' text='Stake' buttonType='submit' />
+      </Stack>
+    </Form>
   );
 
   const ButtonsShownOnPage = (): React.ReactElement => (
@@ -400,7 +400,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               </BackgroundView>
             </Box>
             <Stack direction={Direction.Vertical} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
-              {props.isFeatured && (      
+              {props.isFeatured && (
                 <React.Fragment>
                   <Box variant='featured' maxWidth='160px' height='50px' >
                     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>

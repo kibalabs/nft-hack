@@ -16,6 +16,7 @@ export interface Globals {
   apiClient: MdtpClient;
   network: string;
   chainId: ChainId;
+  web3: ethers.providers.Web3Provider | null;
 }
 
 export const GlobalsContext = React.createContext<Globals | null>(null);

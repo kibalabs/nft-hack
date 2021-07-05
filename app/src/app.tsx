@@ -47,6 +47,7 @@ const globals: Globals = {
   apiClient,
   network: null,
   chainId: ChainId.Rinkeby,
+  web3: null,
 };
 
 export const App = hot((): React.ReactElement => {
@@ -118,7 +119,7 @@ export const App = hot((): React.ReactElement => {
 
   return (
     <KibaApp theme={theme}>
-      <GlobalsProvider globals={{ ...globals, network, contract }}>
+      <GlobalsProvider globals={{ ...globals, network, contract, web3 }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
             <Router>
