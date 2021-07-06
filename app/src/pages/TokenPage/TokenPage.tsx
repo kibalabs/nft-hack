@@ -207,7 +207,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
     setIsUpdating(true);
 
-    const stakingContract = new ethers.Contract('0x5f4F85a295f2C5C42d7A720043981F885cdaFc44', StakingContract.abi, web3);
+    const stakingContract = new ethers.Contract('0x1B8D23941e76E9D0F7B8Cb6510df4b45257676FE', StakingContract.abi, web3);
 
     const stake = stakingAmount != null ? Number(stakingAmount) : 0;
 
