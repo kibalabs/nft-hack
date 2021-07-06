@@ -19,8 +19,8 @@ abstract contract ICompERC20 is IERC20 {
 
 // I found an example contract for interacting with compound here: https://github.com/Instadapp/dsa-connectors/blob/main/contracts/mainnet/connectors/compound/main.sol
 
-// TODO: This is meant to be constructed and owned by an ERC721 contract
-contract NftStakingWallet is Ownable {
+// This is meant to be constructed and owned by an ERC721 contract
+contract StakingWallet is Ownable {
     using SafeMath for uint256;
     using Address for address payable;
 
