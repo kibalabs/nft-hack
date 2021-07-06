@@ -9,7 +9,7 @@ import { Dropzone } from '../../components/dropzone';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
 import { ethers } from 'ethers';
-import StakingContract from '../../contracts/StakingWallet.json';
+import NftStakingContract from '../../contracts/NftStakingWallet.json';
 
 const GWEI = 1000000000;
 
@@ -207,7 +207,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
     setIsUpdating(true);
 
-    const stakingContract = new ethers.Contract('0x1B8D23941e76E9D0F7B8Cb6510df4b45257676FE', StakingContract.abi, web3);
+    const stakingContract = new ethers.Contract('0x1B8D23941e76E9D0F7B8Cb6510df4b45257676FE', NftStakingContract.abi, web3);
 
     const stake = stakingAmount != null ? Number(stakingAmount) : 0;
 
@@ -227,7 +227,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       }
 
       const contractWithSigner = stakingContract.connect(accounts[signerIndex]);
-      const transaction = await contractWithSigner.deposit(tokenId, { gasPrice: 1 * GWEI, gasLimit: 100000 });
+      const transaction = await contractWithSigner.deposit(tokenId, stake, { gasPrice: 1 * GWEI, gasLimit: 100000 });
 
       setNewStakingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
       setIsUpdating(false);
