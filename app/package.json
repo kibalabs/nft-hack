@@ -3,17 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "build-react-app --webpack-config-modifier ./config.webpack.js",
-    "start": "build-react-app --webpack-config-modifier ./config.webpack.js --start",
-    "start-dev": "build-react-app --webpack-config-modifier ./config.webpack.js --start --dev",
+    "build": "build-react-app --config-modifier ./config.build.js",
+    "start": "build-react-app --config-modifier ./config.build.js --start",
+    "start-dev": "build-react-app --config-modifier ./config.build.js --start --dev",
     "clean": "rm -rf ./node_modules ./package-lock.json ./dist",
     "lint": "lint",
     "lint-fix": "lint --fix",
     "type-check": "type-check"
   },
   "dependencies": {
-    "@kibalabs/core": "0.5.3",
-    "@kibalabs/core-react": "0.6.1-next.3",
+    "@kibalabs/core": "0.5.4-next.1",
+    "@kibalabs/core-react": "0.6.1-next.4",
     "@kibalabs/everyview-tracker": "0.2.4",
     "@kibalabs/everyview-tracker-react": "0.2.4",
     "@kibalabs/ui-react": "0.8.5-next.31",
@@ -27,7 +27,7 @@
     "styled-components": "5.3.0"
   },
   "devDependencies": {
-    "@kibalabs/build": "0.6.5-next.9",
+    "@kibalabs/build": "0.6.5-next.10",
     "@types/react": "17.0.9",
     "@types/react-dom": "17.0.6",
     "@types/react-helmet": "^6.1.1",
