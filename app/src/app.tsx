@@ -96,7 +96,6 @@ export const App = hot((): React.ReactElement => {
     if (!web3) {
       return;
     }
-    console.log('window.KRT_CONTRACT_ADDRESS', window.KRT_CONTRACT_ADDRESS);
     const connectedContract = new ethers.Contract(window.KRT_CONTRACT_ADDRESS, MDTContract.abi, web3);
     setContract(connectedContract);
     setChainId(await web3.provider.request({ method: 'eth_chainId' }));
