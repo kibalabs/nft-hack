@@ -18,17 +18,30 @@ from PIL import Image, ImageDraw, ImageFont
 
 IMAGE_HEIGHT_AND_WIDTH = 1000
 
+def generate_gradient(colour1: str, colour2: str) -> Image:
+    """Generate a vertical gradient."""
+    base = Image.new('RGB', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH), colour1)
+    top = Image.new('RGB', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH), colour2)
+    mask = Image.new('L', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH))
+    mask_data = []
+    for y in range(IMAGE_HEIGHT_AND_WIDTH):
+        for x in range(IMAGE_HEIGHT_AND_WIDTH):
+            mask_data.append(int(255 * (y / IMAGE_HEIGHT_AND_WIDTH)))
+    mask.putdata(mask_data)
+    base.paste(top, (0, 0), mask)
+    return base
+
 def genImage(tokenId: int, outputDirectory: str):
     if not os.path.exists(outputDirectory):
         os.makedirs(outputDirectory)
 
     # Colours and Fonts
-    grey = 255
-    white = (255,255,255,255)
-    font = ImageFont.truetype("/Library/Fonts/Arial.ttf", 80)
+    grey = (200,200,200)
+    white = (255,255,255)
+    font = ImageFont.truetype("/Library/Fonts/Arial.ttf", 90)
 
     # New Image
-    newImage = Image.new('RGBA', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH), "black")  
+    newImage = generate_gradient("blue", "pink")
     newImageDraw = ImageDraw.Draw(newImage)
         
     # Draw rows and columns
