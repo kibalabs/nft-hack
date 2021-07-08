@@ -22,15 +22,23 @@ def genImage(tokenId: int, outputDirectory: str):
     if not os.path.exists(outputDirectory):
         os.makedirs(outputDirectory)
 
+    # New Image
     newImage = Image.new('RGBA', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH), "black")  
     newImageDraw = ImageDraw.Draw(newImage)
         
+    # Draw rows and columns
     totalRowCol = int(IMAGE_HEIGHT_AND_WIDTH/10)
     for row in range(0, totalRowCol):
       newImageDraw.line((0, row*10, IMAGE_HEIGHT_AND_WIDTH, row*10), fill=255)
 
     for col in range(0, totalRowCol):
       newImageDraw.line((col*10, 0, col*10, IMAGE_HEIGHT_AND_WIDTH), fill=255)
+
+    # Draw Box at Token Number
+    xCoord = tokenId % 100
+    yCoord = int(tokenId / 100)
+    # logging.info(f'x: {xCoord} ; y: {yCoord}')
+    newImageDraw.rectangle((xCoord*10, yCoord*10, xCoord*10 + 10, yCoord*10 + 10), fill=255)
     
     newImage.save(os.path.join(outputDirectory, f'metadata-{tokenId}.png'))
   
