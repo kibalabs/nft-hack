@@ -17,8 +17,11 @@ import asyncclick as click
 from PIL import Image, ImageDraw, ImageFont
 
 IMAGE_HEIGHT_AND_WIDTH = 1000
+grey = (100,100,100)
+white = (255,255,255)
+font = ImageFont.truetype("/Library/Fonts/Arial.ttf", 90)
 
-def generate_gradient(colour1: str, colour2: str) -> Image:
+def draw_gradient(colour1: str, colour2: str) -> Image:
     """Generate a vertical gradient."""
     base = Image.new('RGB', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH), colour1)
     top = Image.new('RGB', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH), colour2)
@@ -31,17 +34,29 @@ def generate_gradient(colour1: str, colour2: str) -> Image:
     base.paste(top, (0, 0), mask)
     return base
 
-def genImage(tokenId: int, outputDirectory: str):
+def draw_cube(imageDraw: ImageDraw, x: int, y: int) -> ImageDraw:
+    width = 2
+    smallGap = 2
+    largeGap = 4.5
+    lowerTopleft = ( (x-largeGap)*10, (y-smallGap)*10 )
+    lowerBottomRight = ( (x+smallGap)*10, (y+largeGap)*10 )
+    upperTopLeft = ((x-smallGap)*10, (y-largeGap)*10)
+    upperBottomRight = ((x+largeGap)*10, (y+smallGap)*10)
+
+    imageDraw.rectangle((lowerTopleft[0], lowerTopleft[1], lowerBottomRight[0], lowerBottomRight[1]), outline=white, width=width)
+    imageDraw.rectangle((upperTopLeft[0], upperTopLeft[1], upperBottomRight[0], upperBottomRight[1]), outline=white, width=width)
+    imageDraw.line((lowerTopleft[0], lowerTopleft[1], upperTopLeft[0], upperTopLeft[1]), fill=white, width=width)
+    imageDraw.line((lowerBottomRight[0], lowerBottomRight[1], upperBottomRight[0], upperBottomRight[1]), fill=white, width=width)
+    imageDraw.line((lowerBottomRight[0], lowerTopleft[1], upperBottomRight[0], upperTopLeft[1]), fill=white, width=width)
+    imageDraw.line((upperTopLeft[0], upperBottomRight[1], lowerTopleft[0], lowerBottomRight[1]), fill=white, width=width)
+    return imageDraw
+
+def gen_image(tokenId: int, outputDirectory: str):
     if not os.path.exists(outputDirectory):
         os.makedirs(outputDirectory)
 
-    # Colours and Fonts
-    grey = (200,200,200)
-    white = (255,255,255)
-    font = ImageFont.truetype("/Library/Fonts/Arial.ttf", 90)
-
     # New Image
-    newImage = generate_gradient("blue", "pink")
+    newImage = draw_gradient("blue", "pink")
     newImageDraw = ImageDraw.Draw(newImage)
         
     # Draw rows and columns
@@ -70,6 +85,9 @@ def genImage(tokenId: int, outputDirectory: str):
       newImageDraw.multiline_text((80,80), "Million\nDollar\nToken\nPage", font=font, fill=white)
       newImageDraw.multiline_text((650,800), f'Token\n{tokenId}', font=font, fill=white)
     
+    # Draw the cube around box
+    newImageDraw = draw_cube(newImageDraw, xCoord, yCoord)
+
     newImage.save(os.path.join(outputDirectory, f'metadata-{tokenId}.png'))
   
 
@@ -78,7 +96,7 @@ def genImage(tokenId: int, outputDirectory: str):
 async def run(tokenId: int):
     logging.info(f'TokenID: {tokenId}')
     outputDirectory = 'output'
-    genImage(tokenId=tokenId, outputDirectory=outputDirectory)
+    gen_image(tokenId=tokenId, outputDirectory=outputDirectory)
     logging.info(f'Complete!')
 
 if __name__ == '__main__':
