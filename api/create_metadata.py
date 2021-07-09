@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
 IMAGE_HEIGHT_AND_WIDTH = 1000
 grey = (100,100,100)
 white = (255,255,255)
-font = ImageFont.truetype("./Roboto-Bold.ttf", 100)
+font = ImageFont.truetype("./RobotoSlab-Bold.ttf", 85)
 # font = ImageFont.truetype("/Library/Fonts/Arial.ttf", 90)
 
 def draw_gradient(colour1: str, colour2: str) -> Image:
@@ -80,11 +80,11 @@ def gen_image(tokenId: int, outputDirectory: str):
     flipText = inTopLeftQuadrant or inBottomRightQuadrant
 
     if flipText:
-      newImageDraw.multiline_text((650,80), "Million\nDollar\nToken\nPage", font=font, fill=white, spacing=-10)
-      newImageDraw.multiline_text((80,700), f'Token\n{tokenId}', font=font, fill=white)
+      newImageDraw.multiline_text((550,50), "MILLION\nDOLLAR\nTOKEN\nPAGE", font=font, fill=white, spacing=-10)
+      newImageDraw.multiline_text((80,700), f'TOKEN\n{tokenId}', font=font, fill=white, align='center')
     else:
-      newImageDraw.multiline_text((80,80), "Million\nDollar\nToken\nPage", font=font, fill=white, spacing=-10)
-      newImageDraw.multiline_text((650,700), f'Token\n{tokenId}', font=font, fill=white)
+      newImageDraw.multiline_text((80,50), "MILLION\nDOLLAR\nTOKEN\nPAGE", font=font, fill=white, spacing=-10)
+      newImageDraw.multiline_text((640,700), f'TOKEN\n{tokenId}', font=font, fill=white, align='center')
     
     # Draw the cube around box
     newImageDraw = draw_cube(newImageDraw, xCoord, yCoord)
