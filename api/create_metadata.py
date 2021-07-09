@@ -44,7 +44,9 @@ def gen_image(tokenId: int, outputDirectory: str):
         os.makedirs(outputDirectory)
 
     # New Image
-    newImage = draw_gradient("blue", "pink")
+    # good example colours: violet -> orange, cyan -> purple, blue -> pink, lime -> orange, yellow -> purple
+    # #6CDCDC -> #C513C9 , #CC6CDC -> #C98013 , #97DC6C -> #C95513 , #DADC6C -> #7913C9 , #DC746C -> #C513C9 , #6CDCA6 -> #C91360 , #6C77DC -> #2DC913
+    newImage = draw_gradient("#6C77DC", "#2DC913")    
     newImageDraw = ImageDraw.Draw(newImage)
         
     # Draw rows and columns
