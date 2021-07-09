@@ -1,5 +1,6 @@
 import asyncio
 import os
+import json
 import logging
 
 import asyncclick as click
@@ -46,7 +47,7 @@ def gen_image(tokenId: int, outputDirectory: str):
     # New Image
     # good example colours: violet -> orange, cyan -> purple, blue -> pink, lime -> orange, yellow -> purple
     # #6CDCDC -> #C513C9 , #CC6CDC -> #C98013 , #97DC6C -> #C95513 , #DADC6C -> #7913C9 , #DC746C -> #C513C9 , #6CDCA6 -> #C91360 , #6C77DC -> #2DC913
-    newImage = draw_gradient("#6C77DC", "#2DC913")    
+    newImage = draw_gradient("#6CDCDC", "#C513C9")    
     newImageDraw = ImageDraw.Draw(newImage)
         
     # Draw rows and columns
@@ -78,15 +79,26 @@ def gen_image(tokenId: int, outputDirectory: str):
     # Draw the cube around box
     newImageDraw = draw_cube(newImageDraw, xCoord, yCoord)
 
-    newImage.save(os.path.join(outputDirectory, f'metadata-{tokenId}.png'))
+    newImage.save(os.path.join(outputDirectory, f'image-{tokenId}.png'))
   
 
 @click.command()
 @click.option('-t', '--token-id', 'tokenId', required=True, type=int)
 async def run(tokenId: int):
     logging.info(f'TokenID: {tokenId}')
-    outputDirectory = 'output'
+    
+    outputDirectory = f'output/{tokenId}/'
     gen_image(tokenId=tokenId, outputDirectory=outputDirectory)
+
+    jsonContent = {
+      "name" : f'Milliondollartokenpage - Token {tokenId}',
+      "description" : f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP).\nMDTP is a digital content-sharing space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display the content you like, and later re-sold.\nSo join us and interact, trade and share, and be a part of making crypto history!",
+      "image" : f'{outputDirectory}image-{tokenId}.png'
+    }
+    metadataFile = open(f'{outputDirectory}metadata-{tokenId}.json', "w")     
+    json.dump(jsonContent, metadataFile, indent = 2)     
+    metadataFile.close() 
+    
     logging.info(f'Complete!')
 
 if __name__ == '__main__':
