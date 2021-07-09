@@ -1,29 +1,16 @@
 import asyncio
 import os
-# import json
 import logging
-# import math
-# import uuid
-# import base64
-# import time
-# from binascii import Error as BinasciiError
 
 import asyncclick as click
-# import boto3
-# from core.exceptions import UnauthorizedException
-# from core.requester import Requester
-# from core.s3_manager import S3Manager
-# from core.web3.eth_client import RestEthClient
 from PIL import Image, ImageDraw, ImageFont
 
 IMAGE_HEIGHT_AND_WIDTH = 1000
 grey = (100,100,100)
 white = (255,255,255)
 font = ImageFont.truetype("./RobotoSlab-Bold.ttf", 85)
-# font = ImageFont.truetype("/Library/Fonts/Arial.ttf", 90)
 
 def draw_gradient(colour1: str, colour2: str) -> Image:
-    """Generate a vertical gradient."""
     base = Image.new('RGB', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH), colour1)
     top = Image.new('RGB', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH), colour2)
     mask = Image.new('L', (IMAGE_HEIGHT_AND_WIDTH, IMAGE_HEIGHT_AND_WIDTH))
