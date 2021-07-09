@@ -19,7 +19,8 @@ from PIL import Image, ImageDraw, ImageFont
 IMAGE_HEIGHT_AND_WIDTH = 1000
 grey = (100,100,100)
 white = (255,255,255)
-font = ImageFont.truetype("/Library/Fonts/Arial.ttf", 90)
+font = ImageFont.truetype("./Roboto-Bold.ttf", 100)
+# font = ImageFont.truetype("/Library/Fonts/Arial.ttf", 90)
 
 def draw_gradient(colour1: str, colour2: str) -> Image:
     """Generate a vertical gradient."""
@@ -73,17 +74,17 @@ def gen_image(tokenId: int, outputDirectory: str):
     logging.info(f'x: {xCoord} ; y: {yCoord}')
     newImageDraw.rectangle((xCoord*10, yCoord*10, xCoord*10 + 10, yCoord*10 + 10), fill=white)
 
-    # Draw Text for MDTP and Token Number        
+    # Draw Text for MDTP and Token Number
     inTopLeftQuadrant = xCoord < 50 and yCoord < 50
     inBottomRightQuadrant = xCoord > 50 and yCoord > 50
     flipText = inTopLeftQuadrant or inBottomRightQuadrant
 
     if flipText:
-      newImageDraw.multiline_text((650,80), "Million\nDollar\nToken\nPage", font=font, fill=white)
-      newImageDraw.multiline_text((80,800), f'Token\n{tokenId}', font=font, fill=white)
+      newImageDraw.multiline_text((650,80), "Million\nDollar\nToken\nPage", font=font, fill=white, spacing=-10)
+      newImageDraw.multiline_text((80,700), f'Token\n{tokenId}', font=font, fill=white)
     else:
-      newImageDraw.multiline_text((80,80), "Million\nDollar\nToken\nPage", font=font, fill=white)
-      newImageDraw.multiline_text((650,800), f'Token\n{tokenId}', font=font, fill=white)
+      newImageDraw.multiline_text((80,80), "Million\nDollar\nToken\nPage", font=font, fill=white, spacing=-10)
+      newImageDraw.multiline_text((650,700), f'Token\n{tokenId}', font=font, fill=white)
     
     # Draw the cube around box
     newImageDraw = draw_cube(newImageDraw, xCoord, yCoord)
