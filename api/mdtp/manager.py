@@ -170,25 +170,24 @@ class MdtpManager:
         return baseImage
 
     async def get_network_summary(self, network: str) -> NetworkSummary:
+        try:
+            contract = self.contractStore.get_contract(network=network)
+        except NotFoundException:
+            return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
         # TODO(krishan711): update this to work with the new contract
-        # try:
-        #     contract = self.contractStore.get_contract(network=network)
-        # except NotFoundException:
-        #     return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
-        # if network == 'rinkeby':
-        #     # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
-        #     # so we have to loop through their owned assets' contracts to find the correct one
-        #     token_contract = self.rinkebyContractAddress
-        #     response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={self.ownerAddress}&offset=0&limit=300')
-        #     responseJson = response.json()
-        #     for responseEntry in responseJson:
-        #         if responseEntry['primary_asset_contracts'][0].get('address') == token_contract:
-        #             stats = responseEntry['stats']
-        #             return NetworkSummary(
-        #                 marketCapitalization=float(stats['market_cap']),
-        #                 totalSales=float(stats['total_sales']),
-        #                 averagePrice=float(stats['average_price'])
-        #             )
+        if network == 'rinkeby':
+            # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
+            # so we have to loop through their owned assets' contracts to find the correct one
+            response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={self.ownerAddress}&offset=0&limit=300')
+            responseJson = response.json()
+            for responseEntry in responseJson:
+                if responseEntry['primary_asset_contracts'][0].get('address').lower() == contract.address.lower():
+                    stats = responseEntry['stats']
+                    return NetworkSummary(
+                        marketCapitalization=float(stats['market_cap']),
+                        totalSales=float(stats['total_sales']),
+                        averagePrice=float(stats['average_price'])
+                    )
         return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
 
     async def generate_image_upload_for_token(self, network: str, tokenId: int) -> S3PresignedUpload:
