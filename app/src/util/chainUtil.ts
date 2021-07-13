@@ -10,11 +10,12 @@ export enum ChainId {
 
 const validChainIdNetworkMap: Record<number, string> = {
   [ChainId.Rinkeby]: 'rinkeby',
+  // [ChainId.Rinkeby]: 'rinkeby2',
   // [ChainId.Mumbai]: 'mumbai',
 };
 
 export const getNetwork = (chainId: ChainId): string | null => {
-  return validChainIdNetworkMap[chainId] || 'rinkeby';
+  return validChainIdNetworkMap[chainId] || validChainIdNetworkMap[ChainId.Rinkeby];
 };
 
 export const isValidChain = (chainId: ChainId): boolean => {

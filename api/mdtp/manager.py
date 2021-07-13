@@ -10,7 +10,7 @@ from typing import Optional
 import urllib.parse as urlparse
 import uuid
 
-from core.exceptions import NotFoundException
+from core.exceptions import NotFoundException, ServerException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.util import date_util, dict_util, file_util
@@ -20,10 +20,11 @@ from core.s3_manager import S3PresignedUpload
 from core.store.retriever import DateFieldFilter, Direction, Order, StringFieldFilter
 from PIL import Image as PILImage
 from web3 import Web3
+from mdtp.contract_store import ContractStore
 
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
-from mdtp.model import BaseImage, NetworkSummary
+from mdtp.model import BaseImage, NetworkSummary, TokenMetadata
 from mdtp.model import GridItem
 from mdtp.messages import BuildBaseImageMessageContent, UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
@@ -38,27 +39,67 @@ _CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, rinkebyEthClient: EthClientInterface, mumbaiEthClient: EthClientInterface, workQueue: SqsMessageQueue, imageManager: ImageManager, rinkebyContractAddress: str, mumbaiContractAddress: str, contractJson: Dict):
+    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
         self.saver = saver
         self.s3Manager = s3Manager
-        self.rinkebyEthClient = rinkebyEthClient
-        self.mumbaiEthClient = mumbaiEthClient
+        self.contractStore = contractStore
         self.workQueue = workQueue
         self.imageManager = imageManager
-        self.rinkebyContractAddress = rinkebyContractAddress
-        self.mumbaiContractAddress = mumbaiContractAddress
-        self.contractAbi = contractJson['abi']
-        self.contract = self.w3.eth.contract(address='0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3', abi=self.contractAbi)
-        self.contractTotalSupplyEvent = self.contract.events.Transfer()
-        self.contractTotalSupplyMethodAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'totalSupply'][0]
-        self.contractTokenUriAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'tokenURI'][0]
-        self.contractOwnerOfAbi = [internalAbi for internalAbi in self.contractAbi if internalAbi.get('name') == 'ownerOf'][0]
+        self.ownerAddress = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
+
+    # NOTE(krishan711): it feels weird that this and the function below don't have network in the request or response. Think this through.
+    async def get_token_metadata(self, tokenId: str) -> TokenMetadata:
+        try:
+            tokenIdValue = int(tokenId)
+        except ValueError:
+            raise NotFoundException()
+        if tokenIdValue <= 0 or tokenIdValue > 10000:
+            raise NotFoundException()
+        tokenIndex = tokenIdValue - 1
+        return TokenMetadata(
+            tokenId=tokenId,
+            tokenIndex=tokenIndex,
+            name=f'MDTP Token {tokenId}',
+            description='<description for the token>',
+            image='',
+        )
+
+    async def get_token_default_content(self, tokenId: str) -> TokenMetadata:
+        try:
+            tokenIdValue = int(tokenId)
+        except ValueError:
+            raise NotFoundException()
+        if tokenIdValue <= 0 or tokenIdValue > 10000:
+            raise NotFoundException()
+        tokenIndex = tokenIdValue - 1
+        return TokenMetadata(
+            tokenId=tokenId,
+            tokenIndex=tokenIndex,
+            name=f'MDTP Token {tokenId}',
+            description='<description for the token>',
+            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/f82c6b11-afaf-4724-909b-b41068ab8639/{tokenIndex}.png',
+        )
+
+    async def get_token_default_grid_item(self, tokenId: str) -> GridItem:
+        metadata = await self.get_token_default_content(tokenId=tokenId)
+        return GridItem(
+            gridItemId=tokenId-1,
+            createdDate=date_util.datetime_from_now(),
+            updatedDate=date_util.datetime_from_now(),
+            network='',
+            tokenId=metadata.tokenId,
+            title=metadata.name,
+            description=metadata.description,
+            imageUrl=metadata.image,
+            resizableImageUrl=metadata.image,
+            ownerId='',
+        )
 
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
-        gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
+        gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         return gridItem
 
     async def list_grid_items(self, network: str, updatedSinceDate: Optional[datetime.datetime] = None) -> Sequence[GridItem]:
@@ -90,18 +131,26 @@ class MdtpManager:
         tokenWidth = 10 * scale
         generatedDate = date_util.datetime_from_now()
         outputImage = PILImage.new('RGB', (width, height))
-        latestBaseImage = await self.get_latest_base_image_url(network=network)
-        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
+        try:
+            latestBaseImage = await self.get_latest_base_image_url(network=network)
+        except NotFoundException:
+            latestBaseImage = None
+        if latestBaseImage:
+            gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
+        else:
+            gridItems = [await self.get_token_default_grid_item(tokenId=index + 1) for index in range(0, 10000)]
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None
-        baseImageResponse = await self.requester.get(latestBaseImage.url)
-        contentBuffer = BytesIO(baseImageResponse.content)
-        with PILImage.open(fp=contentBuffer) as baseImage:
-            image = baseImage.resize(size=(width, height))
-            outputImage.paste(image, (0, 0))
+        if latestBaseImage:
+            baseImageResponse = await self.requester.get(latestBaseImage.url)
+            contentBuffer = BytesIO(baseImageResponse.content)
+            with PILImage.open(fp=contentBuffer) as baseImage:
+                image = baseImage.resize(size=(width, height))
+                outputImage.paste(image, (0, 0))
         logging.info(f'Drawing {len(gridItems)} new grid items')
         for gridItem in gridItems:
+            logging.info(f'Drawing grid item {gridItem.gridItemId}')
             imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
             imageResponse = await self.requester.get(imageUrl)
             contentBuffer = BytesIO(imageResponse.content)
@@ -115,21 +164,24 @@ class MdtpManager:
         outputFilePath = 'output.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
-        await file_util.remove_file(filePath=outputFilePath)
+        # await file_util.remove_file(filePath=outputFilePath)
         imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
         return baseImage
 
     async def get_network_summary(self, network: str) -> NetworkSummary:
+        try:
+            contract = self.contractStore.get_contract(network=network)
+        except NotFoundException:
+            return NetworkSummary(marketCapitalization=0, totalSales=0, averagePrice=0)
+        # TODO(krishan711): update this to work with the new contract
         if network == 'rinkeby':
             # NOTE(arthur-fox): OpenSea API requires us to look at the owner's assets
             # so we have to loop through their owned assets' contracts to find the correct one
-            owner_contract = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
-            token_contract = '0x2744fe5e7776bca0af1cdeaf3ba3d1f5cae515d3'
-            response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={owner_contract}&offset=0&limit=300')
+            response = await self.requester.get(url=f'https://rinkeby-api.opensea.io/api/v1/collections?asset_owner={self.ownerAddress}&offset=0&limit=300')
             responseJson = response.json()
             for responseEntry in responseJson:
-                if responseEntry['primary_asset_contracts'][0].get('address') == token_contract:
+                if responseEntry['primary_asset_contracts'][0].get('address').lower() == contract.address.lower():
                     stats = responseEntry['stats']
                     return NetworkSummary(
                         marketCapitalization=float(stats['market_cap']),
@@ -161,16 +213,7 @@ class MdtpManager:
         await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
 
     async def update_tokens(self, network: str) -> None:
-        if network == 'rinkeby':
-            ethClient = self.rinkebyEthClient
-            contractAddress = self.rinkebyContractAddress
-        elif network == 'mumbai':
-            ethClient = self.mumbaiEthClient
-            contractAddress = self.mumbaiContractAddress
-        else:
-            raise Exception('Unknown network')
-        tokenCountResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTotalSupplyMethodAbi, arguments={})
-        tokenCount = tokenCountResponse[0]
+        tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
             await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
@@ -186,24 +229,19 @@ class MdtpManager:
 
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
-        if network == 'rinkeby':
-            ethClient = self.rinkebyEthClient
-            contractAddress = self.rinkebyContractAddress
-        elif network == 'mumbai':
-            ethClient = self.mumbaiEthClient
-            contractAddress = self.mumbaiContractAddress
-        else:
-            raise Exception('Unknown network')
-        tokenMetadataUrlResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractTokenUriAbi, arguments={'tokenId': int(tokenId)})
-        ownerIdResponse = await ethClient.call_function(toAddress=contractAddress, contractAbi=self.contractAbi, functionAbi=self.contractOwnerOfAbi, arguments={'tokenId': int(tokenId)})
-        ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
-        tokenMetadataUrl = tokenMetadataUrlResponse[0].strip()
-        tokenMetadataResponse = await self.requester.make_request(method='GET', url=tokenMetadataUrl)
-        tokenMetadataJson = json.loads(tokenMetadataResponse.text)
-        title = tokenMetadataJson.get('title') or tokenMetadataJson.get('name') or ''
+        try:
+            ownerId = await self.contractStore.get_owner_id(network=network, tokenId=tokenId)
+        except Exception as e:
+            print(e)
+            ownerId = self.ownerAddress
+        tokenContentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+        print('tokenContentUrl', tokenContentUrl)
+        tokenContentResponse = await self.requester.make_request(method='GET', url=tokenContentUrl)
+        tokenContentJson = json.loads(tokenContentResponse.text)
+        title = tokenContentJson.get('title') or tokenContentJson.get('name') or ''
         # TODO(krishan711): pick a better default image
-        imageUrl = tokenMetadataJson.get('imageUrl') or tokenMetadataJson.get('image') or ''
-        description = tokenMetadataJson.get('description')
+        imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or ''
+        description = tokenContentJson.get('description')
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:

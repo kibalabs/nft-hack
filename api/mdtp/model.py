@@ -59,3 +59,11 @@ class BaseImage:
     network: str
     url: str
     generatedDate: datetime.datetime
+
+@dataclasses.dataclass
+class TokenMetadata:
+    tokenId: str
+    tokenIndex: int
+    name: str
+    description: str
+    image: str
