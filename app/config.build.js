@@ -66,14 +66,17 @@ class HtmlWebpackInjectSeo {
 }
 
 module.exports = (config) => {
-  config.resolve = config.resolve || {};
-  config.plugins = [
-    ...config.plugins.filter((plugin) => !(plugin instanceof CreateRuntimeConfigPlugin)),
-    new CreateRuntimeConfigPlugin({
-      'KRT_CONTRACT_ADDRESS': process.env.KRT_CONTRACT_ADDRESS,
-      'KRT_API_URL': process.env.KRT_API_URL,
-    }),
-    new HtmlWebpackInjectSeo(),
-  ];
+  config.webpackConfigModifier = (webpackConfig) => {
+    webpackConfig.resolve = webpackConfig.resolve || {};
+    webpackConfig.plugins = [
+      ...webpackConfig.plugins.filter((plugin) => !(plugin instanceof CreateRuntimeConfigPlugin)),
+      new CreateRuntimeConfigPlugin({
+        'KRT_CONTRACT_ADDRESS': process.env.KRT_CONTRACT_ADDRESS,
+        'KRT_API_URL': process.env.KRT_API_URL,
+      }),
+      new HtmlWebpackInjectSeo(),
+    ];
+    return webpackConfig;
+  }
   return config;
 };

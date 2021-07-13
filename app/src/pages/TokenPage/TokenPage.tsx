@@ -23,11 +23,16 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, contractAddress, requester, apiClient, network } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
+  const [newBuyResult, setNewBuyResult] = React.useState<Result | null>(null);
+  const [hasStartedBuyingToken, setHasStartedBuyingToken] = React.useState<boolean>(false);
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
   const [newTokenSettingResult, setNewTokenSettingResult] = React.useState<Result | null>(null);
-  const [hasStartedUpdating, setHasStartedUpdating] = React.useState<boolean>(false);
+  const [hasStartedUpdatingToken, setHasStartedUpdatingToken] = React.useState<boolean>(false);
+  const [stakingAmount, setStakingAmount] = React.useState<string | null>(null);
+  const [newStakingResult, setNewStakingResult] = React.useState<Result | null>(null);
+  const [hasStartedUpdatingStaking, setHasStartedUpdatingStaking] = React.useState<boolean>(false);
   const [isUpdating, setIsUpdating] = React.useState<boolean>(false);
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const accounts = useAccounts();
@@ -54,54 +59,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       // const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
       // setToken(retrievedToken);
     }
+    setHasStartedBuyingToken(false);
+    setHasStartedUpdatingToken(false);
+    setHasStartedUpdatingStaking(false);
   }, [props.tokenId, network, contract, apiClient]);
 
   React.useEffect((): void => {
     loadToken();
   }, [loadToken]);
-
-  const onUpdateMetadataClicked = async (): Promise<void> => {
-    if (!gridItem || !accountIds || !accounts) {
-      return;
-    }
-
-    setIsUpdating(true);
-    const title = newTitle != null ? newTitle : gridItem.title;
-    const description = newDescription != null ? newDescription : gridItem.description;
-    const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
-    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title || '', description || '', image || '');
-
-    if (!contract) {
-      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
-      setIsUpdating(false);
-      return;
-    }
-
-    setNewTokenSettingResult(null);
-    const tokenId = Number(props.tokenId);
-    try {
-      const signerIndex = accountIds.indexOf(getOwnerId());
-      if (signerIndex === -1) {
-        setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
-        setIsUpdating(false);
-      }
-      const contractWithSigner = contract.connect(accounts[signerIndex]);
-      const transaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
-      setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
-      setIsUpdating(false);
-      await transaction.wait();
-      setNewTokenSettingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
-      apiClient.updateTokenDeferred(network, Number(props.tokenId));
-      loadToken();
-    } catch (error) {
-      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: error.message });
-      setIsUpdating(false);
-    }
-  };
-
-  const onUpdateClicked = () => {
-    setHasStartedUpdating(true);
-  };
 
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
     // TODO(krishan711): ensure there is only one file
@@ -140,7 +105,281 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     return '';
   };
 
-  const inputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
+  const isForSale = (): boolean => {
+    const adminAddress = '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC';
+    const ownedByAdminAddress = getOwnerId() === adminAddress;
+
+    const tokenId = Number(props.tokenId);
+    const inMiddleBlock = (tokenId % 100 >= 38) && (tokenId % 100 <= 62) // xx38 <= w <= xx62
+                          && (tokenId / 100 >= 40) && (tokenId / 100 < 60); // 40xx <= h <= 59xx
+
+    return ownedByAdminAddress && !inMiddleBlock;
+  };
+
+  const callContractForMinting = async (): Promise<void> => {
+    if (!gridItem || !accountIds || !accounts) {
+      return;
+    }
+
+    setIsUpdating(true);
+
+    if (!contract) {
+      setNewBuyResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+      setIsUpdating(false);
+      return;
+    }
+
+    setNewBuyResult(null);
+    const tokenId = Number(props.tokenId);
+    try {
+      const signerIndex = accountIds.indexOf(getOwnerId());
+      if (signerIndex === -1) {
+        setNewBuyResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
+        setIsUpdating(false);
+      }
+      const contractWithSigner = contract.connect(accounts[signerIndex]);
+
+      // TODO(arthur-fox): Call correct function...
+      const transaction = await contractWithSigner.setTokenURI(tokenId, '');
+      // ...
+
+      setNewBuyResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
+      setIsUpdating(false);
+      await transaction.wait();
+      setNewBuyResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
+      apiClient.updateTokenDeferred(network, Number(props.tokenId));
+      loadToken();
+    } catch (error) {
+      setNewBuyResult({ isSuccess: false, isPending: false, message: error.message });
+      setIsUpdating(false);
+    }
+  };
+
+  const callContractForUpdating = async (): Promise<void> => {
+    if (!gridItem || !accountIds || !accounts) {
+      return;
+    }
+
+    setIsUpdating(true);
+    const title = newTitle != null ? newTitle : gridItem.title;
+    const description = newDescription != null ? newDescription : gridItem.description;
+    const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
+    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title || '', description || '', image || '');
+
+    if (!contract) {
+      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+      setIsUpdating(false);
+      return;
+    }
+
+    setNewTokenSettingResult(null);
+    const tokenId = Number(props.tokenId);
+    try {
+      const signerIndex = accountIds.indexOf(getOwnerId());
+      if (signerIndex === -1) {
+        setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
+        setIsUpdating(false);
+      }
+      const contractWithSigner = contract.connect(accounts[signerIndex]);
+      const transaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
+      setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
+      setIsUpdating(false);
+      await transaction.wait();
+      setNewTokenSettingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
+      apiClient.updateTokenDeferred(network, Number(props.tokenId));
+      loadToken();
+    } catch (error) {
+      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: error.message });
+      setIsUpdating(false);
+    }
+  };
+
+  const callContractForStaking = async (): Promise<void> => {
+    if (!gridItem || !accountIds || !accounts) {
+      return;
+    }
+
+    setIsUpdating(true);
+    const stake = stakingAmount != null ? Number(stakingAmount) : 0;
+
+    if (!contract) {
+      setNewStakingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+      setIsUpdating(false);
+      return;
+    }
+
+    setNewStakingResult(null);
+    const tokenId = Number(props.tokenId);
+    try {
+      const signerIndex = accountIds.indexOf(getOwnerId());
+      if (signerIndex === -1) {
+        setNewStakingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
+        setIsUpdating(false);
+      }
+
+      // TODO(arthur-fox): Call correct contract and function...
+      const contractWithSigner = contract.connect(accounts[signerIndex]);
+      const transaction = await contractWithSigner.setTokenURI(tokenId, stake);
+      // ...
+
+      setNewStakingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
+      setIsUpdating(false);
+      await transaction.wait();
+      setNewStakingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
+    } catch (error) {
+      setNewStakingResult({ isSuccess: false, isPending: false, message: error.message });
+      setIsUpdating(false);
+    }
+  };
+
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  const onBuyTokenClicked = (): void => {
+    setHasStartedBuyingToken(true);
+    callContractForMinting();
+  };
+
+  const onUpdateTokenClicked = (): void => {
+    setHasStartedUpdatingToken(true);
+    setHasStartedUpdatingStaking(false);
+  };
+
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  const onUpdateStakingClicked = (): void => {
+    setHasStartedUpdatingStaking(true);
+    setHasStartedUpdatingToken(false);
+  };
+
+  const buyingInputState = (!newBuyResult || newBuyResult.isPending) ? undefined : newBuyResult?.isSuccess ? 'success' : (newBuyResult?.isSuccess === false ? 'error' : undefined);
+
+  const BuyTokenForm = (): React.ReactElement => (
+    <React.Fragment>
+      {isUpdating ? (
+        <React.Fragment>
+          <LoadingSpinner />
+        </React.Fragment>
+      ) : buyingInputState ? (
+        <Text variant='error'>{newBuyResult && newBuyResult.message}</Text>
+      ) : (
+        <Text variant='success'>{newBuyResult && newBuyResult.message}</Text>
+      )}
+    </React.Fragment>
+  );
+
+  const updateInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
+
+  const UpdateTokenForm = (): React.ReactElement => (
+    <React.Fragment>
+      <Form onFormSubmitted={callContractForUpdating} isLoading={isUpdating}>
+        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+          <SingleLineInput
+            inputType={InputType.Text}
+            value={newTitle}
+            onValueChanged={setNewTitle}
+            inputWrapperVariant={updateInputState}
+            placeholderText='Name'
+          />
+          <SingleLineInput
+            inputType={InputType.Text}
+            value={newDescription}
+            onValueChanged={setNewDescription}
+            inputWrapperVariant={updateInputState}
+            placeholderText='Description'
+          />
+          {isUploadingImage ? (
+            <Text>Uploading image...</Text>
+          ) : (
+            <React.Fragment>
+              <SingleLineInput
+                inputType={InputType.Url}
+                value={newImageUrl}
+                onValueChanged={setNewImageUrl}
+                inputWrapperVariant={updateInputState}
+                messageText={newTokenSettingResult?.message}
+                placeholderText='Image URL'
+              />
+              <Text variant='note'>OR</Text>
+              <Dropzone onFilesChosen={onImageFilesChosen} />
+            </React.Fragment>
+          )}
+          <Button variant='primary' text='Update' buttonType='submit' />
+        </Stack>
+      </Form>
+    </React.Fragment>
+  );
+
+  const stakingInputState = (!newStakingResult || newStakingResult.isPending) ? undefined : newStakingResult?.isSuccess ? 'success' : (newStakingResult?.isSuccess === false ? 'error' : undefined);
+
+  const UpdateStakingForm = (): React.ReactElement => (
+    <React.Fragment>
+      <Form onFormSubmitted={callContractForStaking} isLoading={isUpdating}>
+        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+          <Text variant='note'>{'Stake at least $100 in ETH or DAI to get your content featured. The higher the stake the more likely you are to be featured. All stake will remain yours and can be unstaked at any moment.'}</Text>
+          <SingleLineInput
+            inputType={InputType.Text}
+            value={stakingAmount}
+            onValueChanged={setStakingAmount}
+            inputWrapperVariant={stakingInputState}
+            messageText={newStakingResult?.message}
+            placeholderText='Amount to stake'
+          />
+          <Button variant='primary' text='Stake' buttonType='submit' />
+        </Stack>
+      </Form>
+    </React.Fragment>
+  );
+
+  const ButtonsShownOnPage = (): React.ReactElement => (
+    <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+      { isForSale() ? (
+        <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
+      ) : gridItem && accountIds && accountIds.includes(getOwnerId()) ? (
+        <React.Fragment>
+          <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='View on Opensea' />
+          <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
+        </React.Fragment>
+      ) : gridItem ? (
+        <React.Fragment>
+          <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Bid on Token' />
+          <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
+        </React.Fragment>
+      ) : null }
+    </Stack>
+  );
+
+  const OwnershipShownOnPage = (): React.ReactElement => (
+    <React.Fragment>
+      { isForSale() ? (
+        <KeyValue name='Owned by' markdownValue={'Nobody yet, but it could be you!'} />
+      ) : (
+        <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
+      )}
+    </React.Fragment>
+  );
+
+  const FormsShownOnPage = (): React.ReactElement => (
+    <React.Fragment>
+      { (!accounts || !accountIds || !gridItem || !gridItem.tokenId) ? (
+        <LoadingSpinner />
+      ) : ((accounts && accounts.length === 0) || (accountIds && accountIds.length === 0)) ? (
+        <Text variant='note'>{'Please connect your account to view more options if you are the owner.'}</Text>
+      ) : hasStartedBuyingToken ? (
+        <BuyTokenForm />
+      ) : !isForSale() && (accountIds && accountIds.includes(getOwnerId())) ? (
+        <React.Fragment>
+          <Text>👑 This is one of your tokens 👑</Text>
+          <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+            <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
+            {/* <Button variant='primary' text='Stake to be Featured' onClicked={onUpdateStakingClicked}/> */}
+          </Stack>
+          { hasStartedUpdatingToken ? (
+            <UpdateTokenForm />
+          ) : hasStartedUpdatingStaking ? (
+            <UpdateStakingForm />
+          ) : null}
+        </React.Fragment>
+      ) : null}
+    </React.Fragment>
+  );
 
   return (
     <React.Fragment>
@@ -165,60 +404,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Text variant='header2'>{`${gridItem.title}`}</Text>
               <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
-                <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                  <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Trade on OpenSea' />
-                  <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
-                </Stack>
+                <ButtonsShownOnPage />
               </Stack.Item>
-              <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
-              { (accounts === undefined || accountIds === undefined || !gridItem.tokenId) ? (
-                <LoadingSpinner />
-              ) : (accounts === null || accountIds === null) ? (
-                <Text variant='note'>{'Please connect your accounts if you are the owner and want to make changes.'}</Text>
-              ) : (accountIds.includes(getOwnerId())) ? (
-                <React.Fragment>
-                  <Text>👑 This is one of your tokens 👑</Text>
-                  { !hasStartedUpdating ? (
-                    <Button variant='primary' text='Update token' onClicked={onUpdateClicked} />
-                  ) : (
-                    <Form onFormSubmitted={onUpdateMetadataClicked} isLoading={isUpdating}>
-                      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-                        <SingleLineInput
-                          inputType={InputType.Text}
-                          value={newTitle}
-                          onValueChanged={setNewTitle}
-                          inputWrapperVariant={inputState}
-                          placeholderText='Name'
-                        />
-                        <SingleLineInput
-                          inputType={InputType.Text}
-                          value={newDescription}
-                          onValueChanged={setNewDescription}
-                          inputWrapperVariant={inputState}
-                          placeholderText='Description'
-                        />
-                        {isUploadingImage ? (
-                          <Text>Uploading image...</Text>
-                        ) : (
-                          <React.Fragment>
-                            <SingleLineInput
-                              inputType={InputType.Url}
-                              value={newImageUrl}
-                              onValueChanged={setNewImageUrl}
-                              inputWrapperVariant={inputState}
-                              messageText={newTokenSettingResult?.message}
-                              placeholderText='Image URL'
-                            />
-                            <Text variant='note'>OR</Text>
-                            <Dropzone onFilesChosen={onImageFilesChosen} />
-                          </React.Fragment>
-                        )}
-                        <Button variant='primary' text='Update' buttonType='submit' />
-                      </Stack>
-                    </Form>
-                  )}
-                </React.Fragment>
-              ) : null}
+              <OwnershipShownOnPage />
+              <FormsShownOnPage />
             </Stack>
           </React.Fragment>
         )}

@@ -9,7 +9,6 @@ import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
-import { NotificationOverlay } from '../../components/NotificationOverlay';
 import { ShareOverlay } from '../../components/ShareOverlay';
 import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
@@ -39,7 +38,6 @@ export const HomePage = (): React.ReactElement => {
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
-  const [notificationComplete, setNotificationComplete] = useBooleanLocalStorageState('notificationComplete');
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
@@ -88,14 +86,6 @@ export const HomePage = (): React.ReactElement => {
 
   const onWelcomeAboutClicked = (): void => {
     navigator.navigateTo('/about');
-  };
-
-  const onNotificationCloseClicked = (): void => {
-    setNotificationComplete(true);
-  };
-
-  const onNotificationClaimClicked = (): void => {
-    setNotificationComplete(true);
   };
 
   const isTokenPanelShowing = location.pathname.includes('/tokens/');
@@ -155,7 +145,7 @@ export const HomePage = (): React.ReactElement => {
                   </LayerContainer.Layer>
                   <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
                     <Box variant='panelButtonHolder'>
-                      <IconButton icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
+                      <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
                     </Box>
                   </LayerContainer.Layer>
                 </LayerContainer>
@@ -170,10 +160,6 @@ export const HomePage = (): React.ReactElement => {
         ) : !welcomeComplete ? (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
             <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onWelcomeAboutClicked} />
-          </LayerContainer.Layer>
-        ) : !notificationComplete ? (
-          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-            <NotificationOverlay onCloseClicked={onNotificationCloseClicked} onClaimClicked={onNotificationClaimClicked} />
           </LayerContainer.Layer>
         ) : null}
       </LayerContainer>

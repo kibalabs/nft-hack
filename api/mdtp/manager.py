@@ -83,6 +83,21 @@ class MdtpManager:
             image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/f82c6b11-afaf-4724-909b-b41068ab8639/{tokenIndex}.png',
         )
 
+    async def get_token_default_grid_item(self, tokenId: str) -> GridItem:
+        metadata = await self.get_token_default_content(tokenId=tokenId)
+        return GridItem(
+            gridItemId=tokenId-1,
+            createdDate=date_util.datetime_from_now(),
+            updatedDate=date_util.datetime_from_now(),
+            network='',
+            tokenId=metadata.tokenId,
+            title=metadata.name,
+            description=metadata.description,
+            imageUrl=metadata.image,
+            resizableImageUrl=metadata.image,
+            ownerId='',
+        )
+
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
         gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         return gridItem
@@ -120,8 +135,10 @@ class MdtpManager:
             latestBaseImage = await self.get_latest_base_image_url(network=network)
         except NotFoundException:
             latestBaseImage = None
-        lastUpdateDate = latestBaseImage.generatedDate if latestBaseImage else datetime.datetime.fromtimestamp(0)
-        gridItems = await self.list_grid_items(network=network, updatedSinceDate=lastUpdateDate)
+        if latestBaseImage:
+            gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
+        else:
+            gridItems = [await self.get_token_default_grid_item(tokenId=index + 1) for index in range(0, 10000)]
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None
@@ -133,6 +150,7 @@ class MdtpManager:
                 outputImage.paste(image, (0, 0))
         logging.info(f'Drawing {len(gridItems)} new grid items')
         for gridItem in gridItems:
+            logging.info(f'Drawing grid item {gridItem.gridItemId}')
             imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
             imageResponse = await self.requester.get(imageUrl)
             contentBuffer = BytesIO(imageResponse.content)
@@ -146,7 +164,7 @@ class MdtpManager:
         outputFilePath = 'output.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
-        await file_util.remove_file(filePath=outputFilePath)
+        # await file_util.remove_file(filePath=outputFilePath)
         imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
         return baseImage
