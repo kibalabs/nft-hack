@@ -19,8 +19,8 @@ abstract contract ICompERC20 is IERC20 {
 
 // I found an example contract for interacting with compound here: https://github.com/Instadapp/dsa-connectors/blob/main/contracts/mainnet/connectors/compound/main.sol
 
-// TODO: This is meant to be constructed and owned by an ERC721 contract
-contract NftStakingWallet is Ownable {
+// This is meant to be constructed and owned by an ERC721 contract
+contract StakingWallet is Ownable {
     using SafeMath for uint256;
     using Address for address payable;
 
@@ -70,10 +70,10 @@ contract NftStakingWallet is Ownable {
     }
 
     function claimPrize(address payable payee) public onlyOwner {
-        uint256 earnedInterest = getInterestEarned();
-        assert(_redeemCErc20Tokens(earnedInterest) == 0);
-        underlyingERC20.approve(payee, earnedInterest);
-        emit InterestClaimed(payee, earnedInterest);
+        uint256 interestEarned = getInterestEarned();
+        underlyingERC20.approve(payee, interestEarned);
+        assert(_redeemCErc20Tokens(interestEarned) == 0);
+        emit InterestClaimed(payee, interestEarned);
     }
 
     function claimComp() public onlyOwner {
@@ -101,8 +101,12 @@ contract NftStakingWallet is Ownable {
     }
 
     function getInterestEarned() public view returns (uint256) {
-        uint exchangeRateMantissa = cToken.exchangeRateCurrent();
-        uint256 interest = totalOnDeposit / exchangeRateMantissa;
+        uint exchangeRate = cToken.exchangeRateCurrent();
+        uint cTokenBalance = cToken.balanceOf(address(this));
+
+        uint256 valueOnDeposit = cTokenBalance * exchangeRate;
+
+        uint256 interest = valueOnDeposit - totalOnDeposit;
         return interest;
     }
 

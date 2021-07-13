@@ -15,6 +15,7 @@
   "dependencies": {
     "@alch/alchemy-web3": "^1.0.0",
     "@openzeppelin/contracts": "^4.2.0",
-    "@pinata/sdk": "^1.1.13"
+    "@pinata/sdk": "^1.1.13",
+    "proof-of-work": "github:genft-studio/proof-of-work"
   }
 }
