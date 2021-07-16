@@ -209,14 +209,22 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     );
   };
 
-  const FormsShownOnPage = (): React.ReactElement | null => (
-    (!contract ? (
-      null
-    ) : !accounts || !accountIds || !tokenMetadata) ? (
+  const FormsShownOnPage = (): React.ReactElement | null => {
+    if (!contract) {
+      return null;
+    }
+    if (!accounts || !accountIds || !tokenMetadata) {
+      return (
         <LoadingSpinner />
-      ) : ((accounts && accounts.length === 0) || (accountIds && accountIds.length === 0)) ? (
-        <Text variant='note'>{'Please connect your account to view more options if you are the owner.'}</Text>
-      ) : isOwnedByUser ? (
+      );
+    }
+    if ((accounts?.length === 0) || (accountIds?.length === 0)) {
+      return (
+        <Text variant='note'>{'Please connect your account to view more options.'}</Text>
+      );
+    }
+    if (isOwnedByUser) {
+      return (
         <React.Fragment>
           <Text>👑 This is one of your tokens 👑</Text>
           <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
@@ -226,8 +234,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             <UpdateTokenForm />
           )}
         </React.Fragment>
-      ) : null
-  );
+      );
+    }
+    return null;
+  };
 
   return (
     <React.Fragment>
