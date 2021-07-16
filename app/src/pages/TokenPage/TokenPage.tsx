@@ -43,6 +43,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setGridItem(null);
     setChainOwnerId(null);
     setTokenMetadata(null);
+    setHasStartedUpdatingToken(false);
     if (network === null) {
       return;
     }
@@ -59,8 +60,13 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       }
     });
     if (contract) {
-      const receivedTokenOwner = await contract.ownerOf(tokenId);
-      setChainOwnerId(receivedTokenOwner);
+      contract.ownerOf(tokenId).then((retrievedTokenOwner: string): void => {
+        setChainOwnerId(retrievedTokenOwner);
+      }).catch((error: Error): void => {
+        if (!error.message.includes('nonexistent token')) {
+          console.error(error);
+        }
+      });
       // NOTE(krishan711): is it worth pulling the metadata from the contract and showing that?
       // const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
       // const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
@@ -69,7 +75,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       // const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
       // setToken(retrievedToken);
     }
-    setHasStartedUpdatingToken(false);
   }, [props.tokenId, network, contract, apiClient]);
 
   React.useEffect((): void => {
