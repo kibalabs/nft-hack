@@ -8,6 +8,14 @@ export class MdtpClient extends ServiceClient {
     super(requester, baseUrl || 'https://mdtp-api.kibalabs.com');
   }
 
+  public getTokenDefaultContent = async (tokenId: number): Promise<Resources.TokenMetadata> => {
+    const method = RestMethod.GET;
+    const path = `token-default-contents/${tokenId}`;
+    const request = undefined;
+    const response = await this.makeRequest(method, path, request, Resources.TokenMetadata);
+    return response;
+  }
+
   public getLatestBaseImage = async (network: string): Promise<Resources.BaseImage> => {
     const method = RestMethod.GET;
     const path = `v1/networks/${network}/latest-base-image`;

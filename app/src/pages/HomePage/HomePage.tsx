@@ -1,10 +1,8 @@
 import React from 'react';
 
-import { useBooleanLocalStorageState, useNavigator } from '@kibalabs/core-react';
+import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { Outlet, useLocation } from 'react-router';
 import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
@@ -141,7 +139,7 @@ export const HomePage = (): React.ReactElement => {
               <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
                 <LayerContainer>
                   <LayerContainer.Layer>
-                    <Outlet />
+                    <SubRouterOutlet />
                   </LayerContainer.Layer>
                   <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
                     <Box variant='panelButtonHolder'>

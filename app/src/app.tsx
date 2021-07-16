@@ -17,7 +17,6 @@ import MDTPContract from './contract.json';
 import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
-import { NotFoundPage } from './pages/NotFoundPage';
 import { TokenPage } from './pages/TokenPage';
 import { buildMDTPTheme } from './theme';
 import { ChainId, getNetwork } from './util/chainUtil';
@@ -122,11 +121,10 @@ export const App = hot((): React.ReactElement => {
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
             <Router>
-              <Route path='/' page={HomePage}>
+              <Route default={true} page={HomePage}>
                 <Route path='/tokens/:tokenId' page={TokenPage} />
                 <Route path='/about' page={AboutPage} />
               </Route>
-              <Route default={true} page={NotFoundPage} />
             </Router>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />

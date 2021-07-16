@@ -9,8 +9,8 @@ export enum ChainId {
 }
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: 'rinkeby',
-  // [ChainId.Rinkeby]: 'rinkeby2',
+  // [ChainId.Rinkeby]: 'rinkeby',
+  [ChainId.Rinkeby]: 'rinkeby2',
   // [ChainId.Mumbai]: 'mumbai',
 };
 

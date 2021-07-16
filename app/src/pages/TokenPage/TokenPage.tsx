@@ -4,10 +4,11 @@ import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputTy
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { GridItem, PresignedUpload } from '../../client';
+import { GridItem, PresignedUpload, TokenMetadata } from '../../client';
 import { Dropzone } from '../../components/dropzone';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
+import { KibaException } from '@kibalabs/core';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -22,6 +23,7 @@ type Result = {
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, contractAddress, requester, apiClient, network } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
+  const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
   const [newBuyResult, setNewBuyResult] = React.useState<Result | null>(null);
   const [hasStartedBuyingToken, setHasStartedBuyingToken] = React.useState<boolean>(false);
@@ -38,15 +40,27 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
+  const ownerId = chainOwnerId || gridItem?.ownerId || null;
+  const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
+
   const loadToken = React.useCallback(async (): Promise<void> => {
     setGridItem(null);
     setChainOwnerId(null);
+    setTokenMetadata(null);
     if (network === null) {
       return;
     }
     const tokenId = Number(props.tokenId);
     apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
+      setTokenMetadata(new TokenMetadata(String(tokenId), tokenId-1, retrievedGridItem.title, retrievedGridItem.description || '', retrievedGridItem.resizableImageUrl || retrievedGridItem.imageUrl));
+    }).catch((error: KibaException): void => {
+      if (error.statusCode === 404) {
+        // TODO(krishan711): Get the token metadata from the contract
+        apiClient.getTokenDefaultContent(tokenId).then((retrievedTokenMetadata: TokenMetadata): void => {
+          setTokenMetadata(retrievedTokenMetadata);
+        });
+      }
     });
     if (contract) {
       const receivedTokenOwner = await contract.ownerOf(tokenId);
@@ -94,30 +108,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     });
   };
 
-  const getOwnerId = (): string => {
-    return chainOwnerId || gridItem?.ownerId || '';
-  };
-
-  const getOwnerUrl = (): string => {
-    if (network === 'rinkeby') {
-      return `https://rinkeby.etherscan.io/address/${getOwnerId()}`;
+  const getOwnerUrl = (): string | null => {
+    if (!ownerId) {
+      return null;
     }
-    return '';
-  };
-
-  const isForSale = (): boolean => {
-    const adminAddress = '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC';
-    const ownedByAdminAddress = getOwnerId() === adminAddress;
-
-    const tokenId = Number(props.tokenId);
-    const inMiddleBlock = (tokenId % 100 >= 38) && (tokenId % 100 <= 62) // xx38 <= w <= xx62
-                          && (tokenId / 100 >= 40) && (tokenId / 100 < 60); // 40xx <= h <= 59xx
-
-    return ownedByAdminAddress && !inMiddleBlock;
+    if (network === 'rinkeby') {
+      return `https://rinkeby.etherscan.io/address/${ownerId}`;
+    }
+    return null;
   };
 
   const callContractForMinting = async (): Promise<void> => {
-    if (!gridItem || !accountIds || !accounts) {
+    if (!isOwnedByUser) {
       return;
     }
 
@@ -132,7 +134,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setNewBuyResult(null);
     const tokenId = Number(props.tokenId);
     try {
-      const signerIndex = accountIds.indexOf(getOwnerId());
+      const signerIndex = accountIds.indexOf(ownerId);
       if (signerIndex === -1) {
         setNewBuyResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
         setIsUpdating(false);
@@ -175,7 +177,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setNewTokenSettingResult(null);
     const tokenId = Number(props.tokenId);
     try {
-      const signerIndex = accountIds.indexOf(getOwnerId());
+      const signerIndex = accountIds.indexOf(ownerId);
       if (signerIndex === -1) {
         setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
         setIsUpdating(false);
@@ -211,7 +213,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setNewStakingResult(null);
     const tokenId = Number(props.tokenId);
     try {
-      const signerIndex = accountIds.indexOf(getOwnerId());
+      const signerIndex = accountIds.indexOf(ownerId);
       if (signerIndex === -1) {
         setNewStakingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
         setIsUpdating(false);
@@ -252,119 +254,95 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const buyingInputState = (!newBuyResult || newBuyResult.isPending) ? undefined : newBuyResult?.isSuccess ? 'success' : (newBuyResult?.isSuccess === false ? 'error' : undefined);
 
   const BuyTokenForm = (): React.ReactElement => (
-    <React.Fragment>
-      {isUpdating ? (
-        <React.Fragment>
-          <LoadingSpinner />
-        </React.Fragment>
-      ) : buyingInputState ? (
-        <Text variant='error'>{newBuyResult && newBuyResult.message}</Text>
-      ) : (
-        <Text variant='success'>{newBuyResult && newBuyResult.message}</Text>
-      )}
-    </React.Fragment>
+    isUpdating ? (
+      <LoadingSpinner />
+    ) : buyingInputState ? (
+      <Text variant='error'>{newBuyResult && newBuyResult.message}</Text>
+    ) : (
+      <Text variant='success'>{newBuyResult && newBuyResult.message}</Text>
+    )
   );
 
   const updateInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
   const UpdateTokenForm = (): React.ReactElement => (
-    <React.Fragment>
-      <Form onFormSubmitted={callContractForUpdating} isLoading={isUpdating}>
-        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-          <SingleLineInput
-            inputType={InputType.Text}
-            value={newTitle}
-            onValueChanged={setNewTitle}
-            inputWrapperVariant={updateInputState}
-            placeholderText='Name'
-          />
-          <SingleLineInput
-            inputType={InputType.Text}
-            value={newDescription}
-            onValueChanged={setNewDescription}
-            inputWrapperVariant={updateInputState}
-            placeholderText='Description'
-          />
-          {isUploadingImage ? (
-            <Text>Uploading image...</Text>
-          ) : (
-            <React.Fragment>
-              <SingleLineInput
-                inputType={InputType.Url}
-                value={newImageUrl}
-                onValueChanged={setNewImageUrl}
-                inputWrapperVariant={updateInputState}
-                messageText={newTokenSettingResult?.message}
-                placeholderText='Image URL'
-              />
-              <Text variant='note'>OR</Text>
-              <Dropzone onFilesChosen={onImageFilesChosen} />
-            </React.Fragment>
-          )}
-          <Button variant='primary' text='Update' buttonType='submit' />
-        </Stack>
-      </Form>
-    </React.Fragment>
+    <Form onFormSubmitted={callContractForUpdating} isLoading={isUpdating}>
+      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+        <SingleLineInput
+          inputType={InputType.Text}
+          value={newTitle}
+          onValueChanged={setNewTitle}
+          inputWrapperVariant={updateInputState}
+          placeholderText='Name'
+        />
+        <SingleLineInput
+          inputType={InputType.Text}
+          value={newDescription}
+          onValueChanged={setNewDescription}
+          inputWrapperVariant={updateInputState}
+          placeholderText='Description'
+        />
+        {isUploadingImage ? (
+          <Text>Uploading image...</Text>
+        ) : (
+          <React.Fragment>
+            <SingleLineInput
+              inputType={InputType.Url}
+              value={newImageUrl}
+              onValueChanged={setNewImageUrl}
+              inputWrapperVariant={updateInputState}
+              messageText={newTokenSettingResult?.message}
+              placeholderText='Image URL'
+            />
+            <Text variant='note'>OR</Text>
+            <Dropzone onFilesChosen={onImageFilesChosen} />
+          </React.Fragment>
+        )}
+        <Button variant='primary' text='Update' buttonType='submit' />
+      </Stack>
+    </Form>
   );
 
   const stakingInputState = (!newStakingResult || newStakingResult.isPending) ? undefined : newStakingResult?.isSuccess ? 'success' : (newStakingResult?.isSuccess === false ? 'error' : undefined);
 
   const UpdateStakingForm = (): React.ReactElement => (
-    <React.Fragment>
-      <Form onFormSubmitted={callContractForStaking} isLoading={isUpdating}>
-        <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-          <Text variant='note'>{'Stake at least $100 in ETH or DAI to get your content featured. The higher the stake the more likely you are to be featured. All stake will remain yours and can be unstaked at any moment.'}</Text>
-          <SingleLineInput
-            inputType={InputType.Text}
-            value={stakingAmount}
-            onValueChanged={setStakingAmount}
-            inputWrapperVariant={stakingInputState}
-            messageText={newStakingResult?.message}
-            placeholderText='Amount to stake'
-          />
-          <Button variant='primary' text='Stake' buttonType='submit' />
-        </Stack>
-      </Form>
-    </React.Fragment>
+    <Form onFormSubmitted={callContractForStaking} isLoading={isUpdating}>
+      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+        <Text variant='note'>{'Stake at least $100 in ETH or DAI to get your content featured. The higher the stake the more likely you are to be featured. All stake will remain yours and can be unstaked at any moment.'}</Text>
+        <SingleLineInput
+          inputType={InputType.Text}
+          value={stakingAmount}
+          onValueChanged={setStakingAmount}
+          inputWrapperVariant={stakingInputState}
+          messageText={newStakingResult?.message}
+          placeholderText='Amount to stake'
+        />
+        <Button variant='primary' text='Stake' buttonType='submit' />
+      </Stack>
+    </Form>
   );
 
   const ButtonsShownOnPage = (): React.ReactElement => (
     <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-      { isForSale() ? (
+      { !ownerId ? (
         <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
-      ) : gridItem && accountIds && accountIds.includes(getOwnerId()) ? (
+      ) : (
         <React.Fragment>
-          <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='View on Opensea' />
-          <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
+          <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${tokenMetadata.tokenId}`} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'}/>
+          <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${tokenMetadata.tokenId}`} text='View on Etherscan' />
         </React.Fragment>
-      ) : gridItem ? (
-        <React.Fragment>
-          <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${gridItem.tokenId}`} text='Bid on Token' />
-          <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${gridItem.tokenId}`} text='View on Etherscan' />
-        </React.Fragment>
-      ) : null }
+      )}
     </Stack>
   );
 
-  const OwnershipShownOnPage = (): React.ReactElement => (
-    <React.Fragment>
-      { isForSale() ? (
-        <KeyValue name='Owned by' markdownValue={'Nobody yet, but it could be you!'} />
-      ) : (
-        <KeyValue name='Owned by' markdownValue={`[${getOwnerId()}](${getOwnerUrl()})`} />
-      )}
-    </React.Fragment>
-  );
-
   const FormsShownOnPage = (): React.ReactElement => (
-    <React.Fragment>
-      { (!accounts || !accountIds || !gridItem || !gridItem.tokenId) ? (
+    (!accounts || !accountIds || !tokenMetadata) ? (
         <LoadingSpinner />
       ) : ((accounts && accounts.length === 0) || (accountIds && accountIds.length === 0)) ? (
         <Text variant='note'>{'Please connect your account to view more options if you are the owner.'}</Text>
       ) : hasStartedBuyingToken ? (
         <BuyTokenForm />
-      ) : !isForSale() && (accountIds && accountIds.includes(getOwnerId())) ? (
+      ) : isOwnedByUser ? (
         <React.Fragment>
           <Text>👑 This is one of your tokens 👑</Text>
           <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
@@ -377,8 +355,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             <UpdateStakingForm />
           ) : null}
         </React.Fragment>
-      ) : null}
-    </React.Fragment>
+      ) : null
   );
 
   return (
@@ -387,7 +364,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         <title>{`Token ${props.tokenId} | The Million Dollar Token Page`}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        { !gridItem ? (
+        { !tokenMetadata ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />
@@ -396,17 +373,17 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           <React.Fragment>
             <Box maxHeight='250px' variant='tokenHeader'>
               <BackgroundView color='#000000'>
-                <Image isCenteredHorizontally={true} fitType={'cover'} source={gridItem.imageUrl} alternativeText={`${gridItem.title} image`} />
+                <Image isCenteredHorizontally={true} fitType={'cover'} source={tokenMetadata.image} alternativeText={`${tokenMetadata.name} image`} />
               </BackgroundView>
             </Box>
             <Stack direction={Direction.Vertical} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
-              <Text variant='header3'>{`TOKEN #${gridItem.tokenId}`}</Text>
-              <Text variant='header2'>{`${gridItem.title}`}</Text>
-              <Text>{`DESCRIPTION: ${gridItem.description}`}</Text>
+              <Text variant='header3'>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
+              <Text variant='header2'>{`${tokenMetadata.name}`}</Text>
+              <Text>{`DESCRIPTION: ${tokenMetadata.description}`}</Text>
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <ButtonsShownOnPage />
               </Stack.Item>
-              <OwnershipShownOnPage />
+              <KeyValue name='Owned by' markdownValue={ownerId ? `[${ownerId}](${getOwnerUrl()})` : 'Nobody yet, but it could be you!'} />
               <FormsShownOnPage />
             </Stack>
           </React.Fragment>
