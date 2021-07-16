@@ -9,6 +9,7 @@ import { GridItem, PresignedUpload, TokenMetadata } from '../../client';
 import { Dropzone } from '../../components/dropzone';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
+import { getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -200,9 +201,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
       ) : (
         <React.Fragment>
-          {/* NOTE(krishan711): these should be specific to the network */}
-          <Button variant='secondary' target={`https://testnets.opensea.io/assets/${contractAddress}/${props.tokenId}`} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
-          <Button variant='secondary' target={`https://rinkeby.etherscan.io/token/${contractAddress}?a=${props.tokenId}`} text='View on Etherscan' />
+          <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId)} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
+          <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId)} text='View on Etherscan' />
         </React.Fragment>
       )}
     </Stack>
