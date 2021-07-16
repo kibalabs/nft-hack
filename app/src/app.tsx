@@ -110,19 +110,16 @@ export const App = hot((): React.ReactElement => {
   }, [loadAccounts]);
 
   React.useEffect((): void => {
-    console.log('chainId', chainId);
     const newNetwork = chainId ? getNetwork(chainId) : null;
-    console.log('newNetwork', newNetwork);
     setNetwork(newNetwork);
     const newContractAddress = newNetwork ? getContractAddress(newNetwork) : null;
-    console.log('newContractAddress', newContractAddress);
     setContractAddress(newContractAddress);
     if (newContractAddress) {
       setContract(new ethers.Contract(newContractAddress, MDTPContract.abi, web3));
     } else {
       setContract(null);
     }
-  }, [chainId]);
+  }, [chainId, web3]);
 
   return (
     <KibaApp theme={theme}>

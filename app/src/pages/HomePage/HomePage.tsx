@@ -37,7 +37,6 @@ export const HomePage = (): React.ReactElement => {
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
-  console.log('network', network);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
