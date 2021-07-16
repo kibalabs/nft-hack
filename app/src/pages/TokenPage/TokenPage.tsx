@@ -9,7 +9,7 @@ import { GridItem, PresignedUpload, TokenMetadata } from '../../client';
 import { Dropzone } from '../../components/dropzone';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
-import { getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
+import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -22,7 +22,7 @@ type Result = {
 }
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
-  const { contract, contractAddress, requester, apiClient, network } = useGlobals();
+  const { contract, requester, apiClient, network } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
@@ -100,16 +100,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       setNewImageUrl('');
       setIsUploadingImage(false);
     });
-  };
-
-  const getOwnerUrl = (): string | null => {
-    if (!ownerId) {
-      return null;
-    }
-    if (network === 'rinkeby') {
-      return `https://rinkeby.etherscan.io/address/${ownerId}`;
-    }
-    return null;
   };
 
   const callContractForUpdating = async (): Promise<void> => {
@@ -201,8 +191,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
       ) : (
         <React.Fragment>
-          <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId)} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
-          <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId)} text='View on Etherscan' />
+          <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
+          <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
         </React.Fragment>
       )}
     </Stack>
@@ -251,7 +241,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <ButtonsShownOnPage />
               </Stack.Item>
-              <KeyValue name='Owned by' markdownValue={ownerId ? `[${ownerId}](${getOwnerUrl()})` : 'Nobody yet, but it could be you!'} />
+              <KeyValue name='Owned by' markdownValue={ownerId ? `[${ownerId}](${getAccountEtherscanUrl(network, ownerId)})` : 'Nobody yet, but it could be you!'} />
               <FormsShownOnPage />
             </Stack>
           </React.Fragment>

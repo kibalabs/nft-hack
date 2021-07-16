@@ -41,7 +41,6 @@ const globals: Globals = {
   requester,
   localStorageClient,
   contract: null,
-  contractAddress: null,
   apiClient,
   network: null,
   chainId: ChainId.Rinkeby,
@@ -53,7 +52,6 @@ export const App = hot((): React.ReactElement => {
   const [chainId, setChainId] = React.useState<number | null>(null);
   const [network, setNetwork] = React.useState<string | null>(null);
   const [contract, setContract] = React.useState<ethers.Contract | null>(null);
-  const [contractAddress, setContractAddress] = React.useState<string | null>(null);
   const [web3, setWeb3] = React.useState<ethers.providers.Web3Provider | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
@@ -112,10 +110,9 @@ export const App = hot((): React.ReactElement => {
   React.useEffect((): void => {
     const newNetwork = chainId ? getNetwork(chainId) : null;
     setNetwork(newNetwork);
-    const newContractAddress = newNetwork ? getContractAddress(newNetwork) : null;
-    setContractAddress(newContractAddress);
-    if (newContractAddress) {
-      setContract(new ethers.Contract(newContractAddress, MDTPContract.abi, web3));
+    const contractAddress = newNetwork ? getContractAddress(newNetwork) : null;
+    if (contractAddress) {
+      setContract(new ethers.Contract(contractAddress, MDTPContract.abi, web3));
     } else {
       setContract(null);
     }
@@ -123,7 +120,7 @@ export const App = hot((): React.ReactElement => {
 
   return (
     <KibaApp theme={theme}>
-      <GlobalsProvider globals={{ ...globals, network, contract, contractAddress }}>
+      <GlobalsProvider globals={{ ...globals, network, contract }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
             <Router>

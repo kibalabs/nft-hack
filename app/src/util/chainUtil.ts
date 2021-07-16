@@ -8,9 +8,11 @@ export enum ChainId {
   Mumbai = 80001,
 }
 
+const defaultChainId = ChainId.Rinkeby;
+
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: 'rinkeby',
-  // [ChainId.Rinkeby]: 'rinkeby2',
+  // [ChainId.Rinkeby]: 'rinkeby',
+  [ChainId.Rinkeby]: 'rinkeby2',
   [ChainId.Mainnet]: 'mainnet',
 };
 
@@ -19,8 +21,6 @@ const networkContractAddressMap: Record<string, string | null> = {
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
   mainnet: null,
 };
-
-const defaultChainId = ChainId.Rinkeby;
 
 export const getNetwork = (chainId: ChainId): string | null => {
   return validChainIdNetworkMap[chainId] || validChainIdNetworkMap[defaultChainId];
@@ -45,7 +45,8 @@ export const getTokenOpenseaUrl = (network: string, tokenId: string): string | n
   if (network === 'mainnet') {
     return `https://opensea.io/assets/${contractAddress}/${tokenId}`;
   }
-}
+  return null;
+};
 
 export const getTokenEtherscanUrl = (network: string, tokenId: string): string | null => {
   const contractAddress = getContractAddress(network);
@@ -58,4 +59,15 @@ export const getTokenEtherscanUrl = (network: string, tokenId: string): string |
   if (network === 'mainnet') {
     return `https://etherscan.io/token/${contractAddress}?a=${tokenId}`;
   }
-}
+  return null;
+};
+
+export const getAccountEtherscanUrl = (network: string, account: string): string | null => {
+  if (network === 'rinkeby') {
+    return `https://rinkeby.etherscan.io/address/${account}`;
+  }
+  if (network === 'mainnet') {
+    return `https://etherscan.io/address/${account}`;
+  }
+  return null;
+};
