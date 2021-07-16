@@ -14,9 +14,21 @@ const validChainIdNetworkMap: Record<number, string> = {
   // [ChainId.Mumbai]: 'mumbai',
 };
 
-export const getNetwork = (chainId: ChainId): string | null => {
-  return validChainIdNetworkMap[chainId] || validChainIdNetworkMap[ChainId.Rinkeby];
+const networkContractAddressMap: Record<string, string> = {
+  'rinkeby': '0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3',
+  'rinkeby2': '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
+  // [ChainId.Mumbai]: 'mumbai',
 };
+
+const defaultChainId = ChainId.Rinkeby;
+
+export const getNetwork = (chainId: ChainId): string | null => {
+  return validChainIdNetworkMap[chainId] || validChainIdNetworkMap[defaultChainId];
+};
+
+export const getContractAddress = (network: string): string => {
+  return networkContractAddressMap[network];
+}
 
 export const isValidChain = (chainId: ChainId): boolean => {
   return validChainIdNetworkMap[chainId] !== undefined;

@@ -19,11 +19,10 @@ import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { TokenPage } from './pages/TokenPage';
 import { buildMDTPTheme } from './theme';
-import { ChainId, getNetwork } from './util/chainUtil';
+import { ChainId, getContractAddress, getNetwork } from './util/chainUtil';
 
 declare global {
   export interface Window {
-    KRT_CONTRACT_ADDRESS: string;
     KRT_API_URL?: string;
   }
 }
@@ -42,7 +41,7 @@ const globals: Globals = {
   requester,
   localStorageClient,
   contract: null,
-  contractAddress: window.KRT_CONTRACT_ADDRESS,
+  contractAddress: null,
   apiClient,
   network: null,
   chainId: ChainId.Rinkeby,
@@ -54,6 +53,7 @@ export const App = hot((): React.ReactElement => {
   const [chainId, setChainId] = React.useState<number | null>(null);
   const [network, setNetwork] = React.useState<string | null>(null);
   const [contract, setContract] = React.useState<ethers.Contract | null>(null);
+  const [contractAddress, setContractAddress] = React.useState<string | null>(null);
   const [web3, setWeb3] = React.useState<ethers.providers.Web3Provider | null>(null);
 
   const onLinkAccountsClicked = async (): Promise<void> => {
@@ -95,8 +95,6 @@ export const App = hot((): React.ReactElement => {
     if (!web3) {
       return;
     }
-    const connectedContract = new ethers.Contract(window.KRT_CONTRACT_ADDRESS, MDTPContract.abi, web3);
-    setContract(connectedContract);
     setChainId(await web3.provider.request({ method: 'eth_chainId' }));
     web3.provider.on('chainChanged', onChainChanged);
     onAccountsChanged(await web3.provider.request({ method: 'eth_accounts' }));
@@ -112,12 +110,23 @@ export const App = hot((): React.ReactElement => {
   }, [loadAccounts]);
 
   React.useEffect((): void => {
-    setNetwork(chainId ? getNetwork(chainId) : null);
+    console.log('chainId', chainId);
+    const newNetwork = chainId ? getNetwork(chainId) : null;
+    console.log('newNetwork', newNetwork);
+    setNetwork(newNetwork);
+    const newContractAddress = newNetwork ? getContractAddress(newNetwork) : null;
+    console.log('newContractAddress', newContractAddress);
+    setContractAddress(newContractAddress);
+    if (newContractAddress) {
+      setContract(new ethers.Contract(newContractAddress, MDTPContract.abi, web3));
+    } else {
+      setContract(null);
+    }
   }, [chainId]);
 
   return (
     <KibaApp theme={theme}>
-      <GlobalsProvider globals={{ ...globals, network, contract }}>
+      <GlobalsProvider globals={{ ...globals, network, contract, contractAddress }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
             <Router>
