@@ -1,5 +1,27 @@
 import { dateFromString } from '@kibalabs/core';
 
+export class TokenMetadata {
+  // eslint-disable-next-line no-useless-constructor
+  public constructor(
+    readonly tokenId: string,
+    readonly tokenIndex: number,
+    readonly name: string,
+    readonly description: string,
+    readonly image: string,
+    // eslint-disable-next-line no-empty-function
+  ) {}
+
+  public static fromObject = (obj: Record<string, unknown>): TokenMetadata => {
+    return new TokenMetadata(
+      String(obj.tokenId),
+      Number(obj.tokenIndex),
+      String(obj.name),
+      String(obj.description),
+      String(obj.image),
+    );
+  }
+}
+
 export class GridItem {
   // eslint-disable-next-line no-useless-constructor
   public constructor(

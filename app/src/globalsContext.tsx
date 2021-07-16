@@ -12,7 +12,6 @@ export interface Globals {
   requester: Requester;
   localStorageClient: LocalStorageClient;
   contract: ethers.Contract | null;
-  contractAddress: string;
   apiClient: MdtpClient;
   network: string;
   chainId: ChainId;

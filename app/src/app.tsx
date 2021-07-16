@@ -17,14 +17,12 @@ import MDTPContract from './contract.json';
 import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
-import { NotFoundPage } from './pages/NotFoundPage';
 import { TokenPage } from './pages/TokenPage';
 import { buildMDTPTheme } from './theme';
-import { ChainId, getNetwork } from './util/chainUtil';
+import { ChainId, getContractAddress, getNetwork } from './util/chainUtil';
 
 declare global {
   export interface Window {
-    KRT_CONTRACT_ADDRESS: string;
     KRT_API_URL?: string;
   }
 }
@@ -43,7 +41,6 @@ const globals: Globals = {
   requester,
   localStorageClient,
   contract: null,
-  contractAddress: window.KRT_CONTRACT_ADDRESS,
   apiClient,
   network: null,
   chainId: ChainId.Rinkeby,
@@ -96,8 +93,6 @@ export const App = hot((): React.ReactElement => {
     if (!web3) {
       return;
     }
-    const connectedContract = new ethers.Contract(window.KRT_CONTRACT_ADDRESS, MDTPContract.abi, web3);
-    setContract(connectedContract);
     setChainId(await web3.provider.request({ method: 'eth_chainId' }));
     web3.provider.on('chainChanged', onChainChanged);
     onAccountsChanged(await web3.provider.request({ method: 'eth_accounts' }));
@@ -113,8 +108,15 @@ export const App = hot((): React.ReactElement => {
   }, [loadAccounts]);
 
   React.useEffect((): void => {
-    setNetwork(chainId ? getNetwork(chainId) : null);
-  }, [chainId]);
+    const newNetwork = chainId ? getNetwork(chainId) : null;
+    setNetwork(newNetwork);
+    const contractAddress = newNetwork ? getContractAddress(newNetwork) : null;
+    if (contractAddress) {
+      setContract(new ethers.Contract(contractAddress, MDTPContract.abi, web3));
+    } else {
+      setContract(null);
+    }
+  }, [chainId, web3]);
 
   return (
     <KibaApp theme={theme}>
@@ -122,11 +124,10 @@ export const App = hot((): React.ReactElement => {
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <LayerContainer>
             <Router>
-              <Route path='/' page={HomePage}>
+              <Route default={true} page={HomePage}>
                 <Route path='/tokens/:tokenId' page={TokenPage} />
                 <Route path='/about' page={AboutPage} />
               </Route>
-              <Route default={true} page={NotFoundPage} />
             </Router>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />

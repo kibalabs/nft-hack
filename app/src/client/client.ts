@@ -5,7 +5,15 @@ import * as Resources from './resources';
 
 export class MdtpClient extends ServiceClient {
   public constructor(requester: Requester, baseUrl?: string) {
-    super(requester, baseUrl || 'https://mdtp-api.kibalabs.com');
+    super(requester, baseUrl || 'https://api.milliondollartokenpage.com');
+  }
+
+  public getTokenDefaultContent = async (tokenId: number): Promise<Resources.TokenMetadata> => {
+    const method = RestMethod.GET;
+    const path = `token-default-contents/${tokenId}`;
+    const request = undefined;
+    const response = await this.makeRequest(method, path, request, Resources.TokenMetadata);
+    return response;
   }
 
   public getLatestBaseImage = async (network: string): Promise<Resources.BaseImage> => {
