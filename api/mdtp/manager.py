@@ -164,7 +164,7 @@ class MdtpManager:
         outputFilePath = 'output.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
-        # await file_util.remove_file(filePath=outputFilePath)
+        await file_util.remove_file(filePath=outputFilePath)
         imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
         return baseImage
