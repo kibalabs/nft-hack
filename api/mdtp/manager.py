@@ -164,7 +164,7 @@ class MdtpManager:
         outputFilePath = 'output.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
-        # await file_util.remove_file(filePath=outputFilePath)
+        await file_util.remove_file(filePath=outputFilePath)
         imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
         return baseImage
@@ -230,7 +230,7 @@ class MdtpManager:
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
         try:
-            ownerId = await self.contractStore.get_owner_id(network=network, tokenId=tokenId)
+            ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception as e:
             print(e)
             ownerId = self.ownerAddress

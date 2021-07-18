@@ -17,36 +17,30 @@ GAS_LIMIT = 1000000
 @click.option('-t', '--starting-token', 'startTokenId', required=True, type=int)
 @click.option('-w', '--width', 'width', required=True, type=int)
 @click.option('-h', '--height', 'height', required=True, type=int)
-@click.option('-s', '--sendAddress', 'sendAddress', required=True, type=str)
-@click.option('-r', '--receiveAddress', 'receiveAddress', required=True, type=str)
-async def run(startTokenId: int, width: int, height: int, sendAddress: str, receiveAddress: str):
-    network = 'rinkeby2'
-    ACCOUNT_ADDRESS = os.environ['ACCOUNT_ADDRESS']
-    PRIVATE_KEY = os.environ['PRIVATE_KEY']
-
+@click.option('-r', '--receive-address', 'receiveAddress', required=True, type=str)
+async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
+    accountAddress = os.environ['ACCOUNT_ADDRESS']
+    privateKey = os.environ['PRIVATE_KEY']
     requester = Requester()
     rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
-    contractStore = create_contract_store(rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
+    contractStore = create_contract_store(rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient, accountAddress=accountAddress, privateKey=privateKey)
+
+    network = 'rinkeby2'
     contract = contractStore.get_contract(network=network)
-    nonce = await rinkebyEthClient.get_transaction_count(address=ACCOUNT_ADDRESS)
+    ethClient = contract.ethClient
 
     tokensPerRow = 100
-    contractTotalSupplyMethodAbi = [abi for abi in contract.abi if abi.get('name') == 'totalSupply'][0]
-    contractTransferFromMethodAbi = [abi for abi in contract.abi if abi.get('name') == 'transferFrom'][0]
-    tokenCount = (await rinkebyEthClient.call_function(toAddress=contract.address, contractAbi=contract.abi, functionAbi=contractTotalSupplyMethodAbi))[0]
+    tokenCount = await contractStore.get_total_supply(network='rinkeby')
+    nonce = await ethClient.get_transaction_count(address=accountAddress)
     for row in range(0, height):
         for column in range(0, width):
             tokenId = startTokenId + (row * tokensPerRow) + column
             if tokenId <= tokenCount:
-                print(f'Transferring token {tokenId} with nonce {nonce} from {sendAddress} -> {receiveAddress}')
-                data = {
-                    'from': sendAddress,
-                    'to': receiveAddress,
-                    'tokenId': tokenId,
-                }
+                print(f'Transferring token {tokenId} with nonce {nonce} to {receiveAddress}')
                 try:
-                    await rinkebyEthClient.send_transaction(toAddress=contract.address, nonce=nonce, fromAddress=ACCOUNT_ADDRESS, contractAbi=contract.abi, functionAbi=contractTransferFromMethodAbi, arguments=data, gas=GAS_LIMIT, gasPrice=1 * GWEI, privateKey=PRIVATE_KEY)
+                    transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=100000, gasPrice=1 * GWEI)
+                    print('transactionHash', transactionHash)
                 except BadRequestException as exception:
                     print(f'Failed to transfer {tokenId}: {str(exception)}')
                 nonce += 1

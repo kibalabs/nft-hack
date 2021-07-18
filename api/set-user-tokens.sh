@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e -o pipefail
+
+# python3 set_tokens.py -i ~/Downloads/1729.png -n '1729.com' -t 1729 -w 1 -h 1 -d "Learn Skills. Earn Crypto."
+# python3 set_tokens.py -i ~/Downloads/doutore-logo.png -n 'Doutore' -w 10 -h 2 -t 3623 -d 'doutore.com'
+# python3 set_tokens.py -i ~/Downloads/CVZA.png -n 'Earn free airdrops for every Cerveza ($CVZA) you hodl!' -t 96 -w 5 -h 4 -d 'Freibier.io performs Airdorps-as-a-Service on Tezos chain, it helps project owners to execute their airdrops seamlessly. Every airdrop automatically distributes a portion of the drop the the holders of Freibier.io tokens: https://www.freibier.io/'
+# python3 set_tokens.py -i ~/Downloads/eviday.png -n 'Eviday' -t 1417 -w 6 -h 2 -d 'Eviday is a UCL-backed startup offering a solution to businesses trying to make hybrid working work. We are developing an employee experience platform that enables organisations to understand in real-time how their people, technology and workplaces affect the wellbeing and productivity of their people. Find out more here: https://eviday.ai/'
+# python3 set_tokens.py -i ~/Downloads/hashink.png -n 'Hashink NFT Autographs for Everyone!' -t 7563 -w 6 -h 3 -d 'Hashink is the modern version of autographs for celebrities.  NFT autographs, with royalty perks for celebrities and fans, and 100% memorabilia ownership for the end user.'
+# python3 set_tokens.py -i ~/Downloads/shhbuzz.png -n 'Shhh!' -t 6319 -w 4 -h 5 -d 'Use https://shhh.buzz/ to send secret messages to your friends and colleagues.'
+# python3 set_tokens.py -i ~/Downloads/CocoNFT_10-2.png -n 'CocoNFT' -t 2775 -w 10 -h 2 -d "NFTs made easy for creators. Use CocoNFT to turn your social media posts like Instagram into NFTs that you can sell to your fans and followers. Best of all, there's no upfront costs. Get started at CocoNFT.com"
+# python3 set_tokens.py -i ~/Downloads/goodghosting.png -n 'GoodGhosting' -t 5727 -w 4 -h 5 -d 'GoodGhosting is a DeFi saving pool that rewards regular contributions. Jump in at https://goodghosting.com/'
+# python3 set_tokens.py -i ~/Downloads/dappy.png -n 'dAppy Doge' -t 2341 -w 4 -h 5 -d "dAppy Doge is an endless flying game with NFTs! https://dappydoge.com"
+# python3 set_tokens.py -i ~/Downloads/kangaroo.png -n 'Kangaroo Discord Bot' -t 4684 -w 4 -h 4 -d "Kangaroo is an Ethereum tipping bot built on Layer 2. Send and recieve tokens with nearly 100x lower fees. Engage and incentivize your community with crypto funds that your members can actually use. Add to Discord at https://kangaroobot.xyz/."
+# python3 set_tokens.py -i ~/Downloads/azulo-app.jpg -n 'Azulo-app' -t 4967 -w 5 -h 4 -d "Azulo is a decentralized family trust system to manage and govern joint assets without limitations based on location or wealth class. You can find the Azulo app at https://azulo.app/."
+# python3 set_tokens.py -i ~/Downloads/mckurz.png -n 'McKurz Capital DEX' -t 5879 -w 5 -h 3 -d "The McKurz Capital DEX is a decentralized ERC-20 exchange where users can exchange assets from within an Ethereum wallet without the hassle and cost of transferring tokens or NFT's to a centralized exchange. You can find the Kovan deployment of the exchange at https://www.mckurz-dex.com/"
+# python3 set_tokens.py -i ~/Downloads/rarepress.png -n 'Rarepress' -t 2848 -w 6 -h 4 -d "Rarepress is an NFT Operating System that makes it dead simple to programmatically mint, trade, and interact with NFTs on Ethereum, with nothing but a few lines of JavaScript code. https://rarepress.org/"
+# python3 set_tokens.py -i ~/Downloads/logo_poap.png -n 'POAP' -t 3155 -w 5 -h 6 -d "The bookmarks of your life http://poap.xyz/"
+python3 set_tokens.py -i ~/Downloads/kiba.jpg -n 'Kiba Labs' -t 711 -w 1 -h 1 -d "Bringing you the finest digital products https://www.kibalabs.com"

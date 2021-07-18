@@ -190,36 +190,54 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     </Form>
   );
 
-  const ButtonsShownOnPage = (): React.ReactElement => (
-    <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-      { !ownerId ? (
-        <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
-      ) : (
-        <React.Fragment>
-          <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
-          <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
-        </React.Fragment>
-      )}
-    </Stack>
-  );
-
-  const FormsShownOnPage = (): React.ReactElement | null => (
-    (!accounts || !accountIds || !tokenMetadata) ? (
-      <LoadingSpinner />
-    ) : ((accounts && accounts.length === 0) || (accountIds && accountIds.length === 0)) ? (
-      <Text variant='note'>{'Please connect your account to view more options if you are the owner.'}</Text>
-    ) : isOwnedByUser ? (
-      <React.Fragment>
-        <Text>👑 This is one of your tokens 👑</Text>
-        <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-          <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-        </Stack>
-        { hasStartedUpdatingToken && (
-          <UpdateTokenForm />
+  const OwnershipInfo = (): React.ReactElement => {
+    const isBuyable = !ownerId || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC';
+    return (
+      <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
+        { isBuyable ? (
+          <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
+        ) : (
+          <KeyValue name='Owned by' markdownValue={`[${ownerId}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
         )}
-      </React.Fragment>
-    ) : null
-  );
+        { gridItem && (
+          <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+            <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isBuyable || isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
+            <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
+          </Stack>
+        )}
+      </Stack>
+    );
+  };
+
+  const FormsShownOnPage = (): React.ReactElement | null => {
+    if (!contract) {
+      return null;
+    }
+    if (!accounts || !accountIds || !tokenMetadata) {
+      return (
+        <LoadingSpinner />
+      );
+    }
+    if ((accounts?.length === 0) || (accountIds?.length === 0)) {
+      return (
+        <Text variant='note'>{'Please connect your account to view more options.'}</Text>
+      );
+    }
+    if (isOwnedByUser) {
+      return (
+        <React.Fragment>
+          <Text>👑 This is one of your tokens 👑</Text>
+          <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+            <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
+          </Stack>
+          { hasStartedUpdatingToken && (
+            <UpdateTokenForm />
+          )}
+        </React.Fragment>
+      );
+    }
+    return null;
+  };
 
   return (
     <React.Fragment>
@@ -244,9 +262,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Text variant='header2'>{`${tokenMetadata.name}`}</Text>
               <Text>{`DESCRIPTION: ${tokenMetadata.description}`}</Text>
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
-                <ButtonsShownOnPage />
+                <OwnershipInfo />
               </Stack.Item>
-              <KeyValue name='Owned by' markdownValue={ownerId ? `[${ownerId}](${getAccountEtherscanUrl(network, ownerId)})` : 'Nobody yet, but it could be you!'} />
               <FormsShownOnPage />
             </Stack>
           </React.Fragment>

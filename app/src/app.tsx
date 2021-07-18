@@ -111,7 +111,7 @@ export const App = hot((): React.ReactElement => {
     const newNetwork = chainId ? getNetwork(chainId) : null;
     setNetwork(newNetwork);
     const contractAddress = newNetwork ? getContractAddress(newNetwork) : null;
-    if (contractAddress) {
+    if (web3 && contractAddress) {
       setContract(new ethers.Contract(contractAddress, MDTPContract.abi, web3));
     } else {
       setContract(null);
