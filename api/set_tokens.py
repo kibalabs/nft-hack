@@ -40,28 +40,27 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
     ethClient = contract.ethClient
 
     runId = str(uuid.uuid4())
-    runId = '9c21e65e-002e-40ca-8496-d1f6d3cf6f54'
     print(f'Starting run: {runId}')
 
-    # print(f'Splitting and uploading image...')
-    # outputDirectory = 'output'
-    # crop_image(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
-    # await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
-    # print(f'Finished uploading image: s3://mdtp-images/uploads/{runId}')
+    print(f'Splitting and uploading image...')
+    outputDirectory = 'output'
+    crop_image(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
+    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
+    print(f'Finished uploading image: s3://mdtp-images/uploads/{runId}')
 
-    # print(f'Uploading metadatas...')
-    # for chunk in list_util.generate_chunks(list(range(width * height)), 100):
-    #     metadataUploadTasks = []
-    #     for index in chunk:
-    #         tokenId = index + 1
-    #         data = {
-    #             "name" : name.replace('{tokenId}', str(tokenId)),
-    #             "description" : description.replace('{tokenId}', str(tokenId)),
-    #             "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png"
-    #         }
-    #         metadataUploadTasks.append(s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))
-    #     await asyncio.gather(*metadataUploadTasks)
-    # logging.info(f'Finished uploading metadatas: s3://mdtp-images/uploads/{runId}')
+    print(f'Uploading metadatas...')
+    for chunk in list_util.generate_chunks(list(range(width * height)), 100):
+        metadataUploadTasks = []
+        for index in chunk:
+            tokenId = index + 1
+            data = {
+                "name" : name.replace('{tokenId}', str(tokenId)),
+                "description" : description.replace('{tokenId}', str(tokenId)),
+                "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png"
+            }
+            metadataUploadTasks.append(s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))
+        await asyncio.gather(*metadataUploadTasks)
+    logging.info(f'Finished uploading metadatas: s3://mdtp-images/uploads/{runId}')
 
     tokensPerRow = 100
     tokenCount = await contractStore.get_total_supply(network='rinkeby')
@@ -77,14 +76,23 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
                     currentTokenOwner = await contractStore.get_token_owner(network=network, tokenId=tokenId)
                 except BadRequestException as exception:
                     if 'nonexistent token' in exception.message:
+                        print('Minting token...')
                         transactionHash = await contractStore.mint_token(network=network, tokenId=tokenId, nonce=nonce, gas=100000, gasPrice=1 * GWEI)
+                        nonce += 1
+                        # transactionReceipt = None
+                        # while not transactionReceipt:
+                        #     transactionReceipt = await contractStore.get_transaction_receipt(network=network, transactionHash=transactionHash)
+                        # if not transactionReceipt['status'] == 1:
+                        #     raise Exception(f'Transaction to mint token {tokenId} failed')
+                        currentTokenOwner = accountAddress
+                        print('Minted token')
                     else:
                         raise Exception
                 if currentTokenOwner != accountAddress:
                     raise Exception(f'We are not the owner of this token, it is owned by: {currentTokenOwner}')
                 if currentTokenContentUri != tokenContentUri:
                     print(f'Updating token {tokenId}, with index {index}, and nonce {nonce}')
-                    transactionHash = await contractStore.set_token_content_url(network=network, tokenId=tokenId, tokenContentUri=tokenContentUri, nonce=nonce, gas=100000, gasPrice=1 * GWEI)
+                    transactionHash = await contractStore.set_token_content_url(network=network, tokenId=tokenId, tokenContentUri=tokenContentUri, nonce=nonce, gas=200000, gasPrice=1 * GWEI)
                     print('transactionHash', transactionHash)
                     await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
                     await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})

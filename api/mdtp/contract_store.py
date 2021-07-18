@@ -74,8 +74,13 @@ class ContractStore:
         transactionHash = await self._send_transaction(contract=contract, methodName=contract.transferTokenMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
         return transactionHash
 
-    async def min_token(self, network: str, tokenId: int, nonce: int, gas: int, gasPrice: int) -> str:
+    async def mint_token(self, network: str, tokenId: int, nonce: int, gas: int, gasPrice: int) -> str:
         contract = self.get_contract(network=network)
         arguments = {'tokenId': tokenId, 'recipient': self.accountAddress}
         transactionHash = await self._send_transaction(contract=contract, methodName=contract.mintTokenMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
         return transactionHash
+
+    async def get_transaction_receipt(self, network: str, transactionHash: str) -> str:
+        contract = self.get_contract(network=network)
+        transactionReceipt = await contract.ethClient.get_transaction_receipt(transactionHash=transactionHash)
+        return transactionReceipt
