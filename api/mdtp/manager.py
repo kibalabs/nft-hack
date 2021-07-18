@@ -213,6 +213,24 @@ class MdtpManager:
         await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
 
     async def update_tokens(self, network: str) -> None:
+        gridItems = await self.retriever.list_grid_items(fieldFilters=[StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)], orders=[Order(fieldName=GridItemsTable.c.lastUpdateBlockNumber.key, direction=Direction.DESCENDING)], limit=1)
+        latestProcessedBlockNumber = gridItems[0].lastUpdateBlockNumber if gridItems else -1
+        latestBlockNumber = await self.contractStore.get_latest_block_number(network=network)
+        batchSize = 2500
+        tokenIdsToUpdate = set()
+        logging.info(f'Processing blocks from {latestProcessedBlockNumber} to {latestBlockNumber}')
+        for startBlockNumber in range(latestProcessedBlockNumber + 1, latestBlockNumber + 1, batchSize):
+            endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber + 1)
+            transferredTokenIds = await self.contractStore.get_transferred_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
+            logging.info(f'Found {len(transferredTokenIds)} transferred tokens in blocks {startBlockNumber}-{endBlockNumber}')
+            tokenIdsToUpdate.update(transferredTokenIds)
+            updatedTokenIds = await self.contractStore.get_updated_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
+            logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
+            tokenIdsToUpdate.update(updatedTokenIds)
+        for tokenIndex in list(tokenIdsToUpdate):
+            await self.update_token(network=network, tokenId=tokenIndex)
+
+    async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
             await self.update_token(network=network, tokenId=(tokenIndex + 1))

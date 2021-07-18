@@ -16,6 +16,8 @@ def grid_item_from_row(row: Mapping) -> GridItem:
         imageUrl=row[GridItemsTable.c.imageUrl],
         resizableImageUrl=row[GridItemsTable.c.resizableImageUrl],
         ownerId=row[GridItemsTable.c.ownerId],
+        # NOTE(krishan711): default to 0 for backwards compat
+        lastUpdateBlockNumber=row[GridItemsTable.c.lastUpdateBlockNumber] or 0,
     )
 
 def base_image_from_row(row: Mapping) -> BaseImage:
