@@ -197,7 +197,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         { isBuyable ? (
           <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
         ) : (
-          <KeyValue name='Owned by' markdownValue={`[${ownerId}](${getAccountEtherscanUrl(network, ownerId)})`} />
+          <KeyValue name='Owned by' markdownValue={`[${ownerId}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
         )}
         { gridItem && (
           <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
