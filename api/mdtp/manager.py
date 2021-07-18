@@ -230,7 +230,7 @@ class MdtpManager:
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
         try:
-            ownerId = await self.contractStore.get_owner_id(network=network, tokenId=tokenId)
+            ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception as e:
             print(e)
             ownerId = self.ownerAddress

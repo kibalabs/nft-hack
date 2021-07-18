@@ -16,6 +16,8 @@ class Contract:
     totalSupplyMethodName: str
     setTokenContentUriMethodName: str
     setTokenContentUriFieldName: str
+    transferTokenMethodName: str
+    mintTokenMethodName: str
 
 class ContractStore:
 
@@ -42,7 +44,7 @@ class ContractStore:
         transactionHash = await contract.ethClient.send_transaction(toAddress=contract.address, contractAbi=contract.abi, functionAbi=functionAbi, arguments=arguments, fromAddress=self.accountAddress, privateKey=self.privateKey, nonce=nonce, gas=gas, gasPrice=gasPrice)
         return transactionHash
 
-    async def get_owner_id(self, network: str, tokenId: int) -> str:
+    async def get_token_owner(self, network: str, tokenId: int) -> str:
         contract = self.get_contract(network=network)
         ownerIdResponse = await self._call_function(contract=contract, methodName=contract.ownerOfMethodName, arguments={'tokenId': int(tokenId)})
         ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
@@ -64,4 +66,16 @@ class ContractStore:
         contract = self.get_contract(network=network)
         arguments = {'tokenId': tokenId, contract.setTokenContentUriFieldName: tokenContentUri}
         transactionHash = await self._send_transaction(contract=contract, methodName=contract.setTokenContentUriMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
+        return transactionHash
+
+    async def transfer_token(self, network: str, tokenId: int, toAddress: str, nonce: int, gas: int, gasPrice: int) -> str:
+        contract = self.get_contract(network=network)
+        arguments = {'tokenId': tokenId, 'to': toAddress, 'from': self.accountAddress}
+        transactionHash = await self._send_transaction(contract=contract, methodName=contract.transferTokenMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
+        return transactionHash
+
+    async def min_token(self, network: str, tokenId: int, nonce: int, gas: int, gasPrice: int) -> str:
+        contract = self.get_contract(network=network)
+        arguments = {'tokenId': tokenId, 'recipient': self.accountAddress}
+        transactionHash = await self._send_transaction(contract=contract, methodName=contract.mintTokenMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
         return transactionHash

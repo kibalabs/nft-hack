@@ -7,6 +7,7 @@ import time
 
 import asyncclick as click
 import boto3
+from core.exceptions import BadRequestException
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.web3.eth_client import RestEthClient
@@ -72,6 +73,15 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
             if tokenId <= min(tokenCount, 10000):
                 tokenContentUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.json'
                 currentTokenContentUri = await contractStore.get_token_content_url(network=network, tokenId=tokenId)
+                try:
+                    currentTokenOwner = await contractStore.get_token_owner(network=network, tokenId=tokenId)
+                except BadRequestException as exception:
+                    if 'nonexistent token' in exception.message:
+                        transactionHash = await contractStore.mint_token(network=network, tokenId=tokenId, nonce=nonce, gas=100000, gasPrice=1 * GWEI)
+                    else:
+                        raise Exception
+                if currentTokenOwner != accountAddress:
+                    raise Exception(f'We are not the owner of this token, it is owned by: {currentTokenOwner}')
                 if currentTokenContentUri != tokenContentUri:
                     print(f'Updating token {tokenId}, with index {index}, and nonce {nonce}')
                     transactionHash = await contractStore.set_token_content_url(network=network, tokenId=tokenId, tokenContentUri=tokenContentUri, nonce=nonce, gas=100000, gasPrice=1 * GWEI)
