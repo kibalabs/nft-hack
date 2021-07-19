@@ -15,7 +15,6 @@ class GridItem:
     imageUrl: str
     resizableImageUrl: Optional[str]
     ownerId: str
-    lastUpdateBlockNumber: int
 
 @dataclasses.dataclass
 class NetworkSummary:

@@ -45,6 +45,12 @@ class UpdateTokensDeferredRequest(BaseModel):
 class UpdateTokensDeferredResponse(BaseModel):
     pass
 
+class UpdateAllTokensDeferredRequest(BaseModel):
+    delay: Optional[int]
+
+class UpdateAllTokensDeferredResponse(BaseModel):
+    pass
+
 class GoToImageForTokenRequest(BaseModel):
     pass
 

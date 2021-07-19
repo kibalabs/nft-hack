@@ -26,7 +26,7 @@ from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import BaseImage, NetworkSummary, TokenMetadata
 from mdtp.model import GridItem
-from mdtp.messages import BuildBaseImageMessageContent, UpdateTokenMessageContent
+from mdtp.messages import BuildBaseImageMessageContent, UpdateAllTokensMessageContent, UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
@@ -209,9 +209,6 @@ class MdtpManager:
     async def update_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
-    async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int]) -> None:
-        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
-
     async def update_tokens(self, network: str) -> None:
         try:
             networkUpdate = await self.retriever.get_network_update_by_network(network=network)
@@ -234,6 +231,9 @@ class MdtpManager:
             await self.update_token_deferred(network=network, tokenId=tokenIndex)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
 
+    async def update_all_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
+        await self.workQueue.send_message(message=UpdateAllTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
+
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
@@ -248,6 +248,9 @@ class MdtpManager:
         imageId = await self.imageManager.upload_image_from_url(url=gridItem.imageUrl)
         resizableImageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
+
+    async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int]) -> None:
+        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
 
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
