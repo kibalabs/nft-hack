@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { KibaException } from '@kibalabs/core';
-import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputType, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
+import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputType, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
@@ -50,7 +50,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     const tokenId = Number(props.tokenId);
     apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
-      setTokenMetadata(new TokenMetadata(String(tokenId), tokenId - 1, retrievedGridItem.title, retrievedGridItem.description || '', retrievedGridItem.resizableImageUrl || retrievedGridItem.imageUrl));
+      setTokenMetadata(new TokenMetadata(String(tokenId), tokenId - 1, retrievedGridItem.title, retrievedGridItem.description || '', retrievedGridItem.resizableImageUrl || retrievedGridItem.imageUrl, retrievedGridItem.url, retrievedGridItem.blockId));
     }).catch((error: KibaException): void => {
       if (error.statusCode === 404) {
         // TODO(krishan711): Get the token metadata from the contract
@@ -67,13 +67,17 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           console.error(error);
         }
       });
-      // NOTE(krishan711): is it worth pulling the metadata from the contract and showing that?
-      // const tokenMetadataUrl = await contract.methods.tokenURI(tokenId).call();
-      // const tokenMetadataResponse = await requester.makeRequest(RestMethod.GET, tokenMetadataUrl);
-      // const tokenMetadataJson = JSON.parse(tokenMetadataResponse.content);
-      // const tokenMetadata = new TokenMetadata(tokenMetadataJson.name, tokenMetadataJson.description, tokenMetadataJson.image);
-      // const retrievedToken = new Token(tokenId, tokenMetadataUrl, tokenMetadata);
-      // setToken(retrievedToken);
+      // NOTE(krishan711): this only works for the new contracts
+      if (contract.tokenContentURI) {
+        contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
+          requester.makeRequest(RestMethod.GET, tokenMetadataUrl).then((response: KibaResponse): void => {
+            const tokenMetadataJson = JSON.parse(response.content);
+            console.log('tokenMetadataJson', tokenMetadataJson)
+            // NOTE(krishan711): this should validate the content cos if someone
+            setTokenMetadata(TokenMetadata.fromObject({...tokenMetadataJson, tokenId: tokenId}));
+          });
+        });
+      }
     }
   }, [props.tokenId, network, contract, apiClient]);
 
@@ -260,7 +264,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
             <Stack direction={Direction.Vertical} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
               <Text variant='header3'>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
               <Text variant='header2'>{`${tokenMetadata.name}`}</Text>
-              <Text>{`DESCRIPTION: ${tokenMetadata.description}`}</Text>
+              {tokenMetadata.url && (
+                <Link target={tokenMetadata.url} text={tokenMetadata.url} />
+              )}
+              <Text>{tokenMetadata.description}</Text>
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <OwnershipInfo />
               </Stack.Item>

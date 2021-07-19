@@ -1,3 +1,4 @@
+from typing import Optional
 from core.api.kiba_router import KibaRouter
 from pydantic import BaseModel
 
@@ -34,6 +35,8 @@ class GetTokenDefaultContentResponse(BaseModel):
     name: str
     description: str
     image: str
+    url: Optional[str]
+    blockId: Optional[str]
 
     @classmethod
     def from_token_metadata(cls, model: TokenMetadata):
@@ -43,6 +46,8 @@ class GetTokenDefaultContentResponse(BaseModel):
             name=model.name,
             description=model.description,
             image=model.image,
+            url=model.url,
+            blockId=model.blockId,
         )
 
 def create_api(manager: MdtpManager) -> KibaRouter():
