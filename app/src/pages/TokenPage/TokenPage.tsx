@@ -12,6 +12,7 @@ import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
+import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -90,15 +91,16 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [loadToken]);
 
   const loadBlockGridItems = React.useCallback(async (): Promise<void> => {
-    if (tokenMetadata?.blockId) {
-      apiClient.listGridItems(network, true, undefined, tokenMetadata?.blockId).then((retrievedBlockGridItems: GridItem[]): void => {
-        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].blockId !== tokenMetadata?.blockId) {
+    setBlockGridItems(null);
+    if (gridItem && gridItem.blockId) {
+      apiClient.listGridItems(network, true, undefined, gridItem.blockId).then((retrievedBlockGridItems: GridItem[]): void => {
+        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].blockId !== gridItem.blockId) {
           return;
         }
         setBlockGridItems(retrievedBlockGridItems);
       });
     }
-  }, [tokenMetadata?.blockId, network, apiClient]);
+  }, [gridItem, network, apiClient]);
 
   React.useEffect((): void => {
     loadBlockGridItems();
@@ -218,7 +220,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <Box maxHeight='250px' variant='tokenHeader'>
+            <Box maxHeight='400px' variant='tokenHeader'>
               { (gridItem && blockGridItems) ? (
                 <ImageGrid gridItem={gridItem} blockGridItems={blockGridItems} />
               ) : (
@@ -231,7 +233,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Text variant='header3'>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
               <Text variant='header2'>{`${tokenMetadata.name}`}</Text>
               {tokenMetadata.url && (
-                <Link target={tokenMetadata.url} text={tokenMetadata.url} />
+                <Link target={getLinkableUrl(tokenMetadata.url)} text={getUrlDisplayString(tokenMetadata.url)} />
               )}
               {tokenMetadata.description && (
                 <Text>{tokenMetadata.description}</Text>

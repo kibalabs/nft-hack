@@ -22,6 +22,7 @@ const ImageGridItem = styled.div<IImageGridItemProps>`
   outline-width: 1px;
   outline-color: ${(props: IImageGridItemProps): string => (props.isMainItem ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 0, 0, 0)')};
   opacity: ${(props: IImageGridItemProps): string => (props.isMainItem ? '1' : '0.5')};
+  max-height: 200px;
 `;
 
 export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
@@ -54,11 +55,11 @@ export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
   return (
     <Stack direction={Direction.Vertical} isFullHeight={true} isFullWidth={true}>
       {Array.from(Array(height)).map((_, y: number): React.ReactElement => (
-        <Stack.Item key={y} shrinkFactor={1}>
+        <Stack.Item key={y} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
           <Stack direction={Direction.Horizontal} isFullHeight={true}>
             <Stack.Item growthFactor={1} shrinkFactor={1} />
             {Array.from(Array(width)).map((__, x: number): React.ReactElement => (
-              <Stack.Item key={x} shrinkFactor={1}>
+              <Stack.Item key={x} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
                 <ImageGridItem isMainItem={arePointsEqual(adjustGridPoint({ x, y }), mainPoint)}>
                   {getGridItemForGridPoint({ x, y }) && (
                     <Image variant='tokenPageHeaderGrid' fitType={'cover'} source={getGridItemForGridPoint({ x, y })?.imageUrl || ''} alternativeText={'token image'} />
