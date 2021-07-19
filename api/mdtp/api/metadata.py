@@ -15,6 +15,8 @@ class GetTokenMetadataResponse(BaseModel):
     name: str
     description: Optional[str]
     image: str
+    url: Optional[str]
+    blockId: Optional[str]
 
     @classmethod
     def from_token_metadata(cls, model: TokenMetadata):
@@ -24,6 +26,8 @@ class GetTokenMetadataResponse(BaseModel):
             name=model.name,
             description=model.description,
             image=model.image,
+            url=model.url,
+            blockId=model.blockId,
         )
 
 class GetTokenDefaultContentRequest(BaseModel):
