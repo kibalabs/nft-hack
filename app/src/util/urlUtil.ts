@@ -8,8 +8,8 @@ export const getUrlDisplayString = (url: string): string => {
   if (cleanUrl.startsWith('https://')) {
     cleanUrl = cleanUrl.slice('https://'.length);
   }
-  if (cleanUrl.endsWith('/')) {
-    cleanUrl = cleanUrl.slice(0, cleanUrl.length);
+  while (cleanUrl.endsWith('/')) {
+    cleanUrl = cleanUrl.slice(0, cleanUrl.length - 1);
   }
   return cleanUrl;
 };
