@@ -5,7 +5,7 @@ import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputTy
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { GridItem, PresignedUpload, TokenMetadata } from '../../client';
+import { GridItem, TokenMetadata } from '../../client';
 import { Dropzone } from '../../components/dropzone';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
@@ -89,27 +89,27 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     // TODO(krishan711): ensure there is only one file
     setIsUploadingImage(true);
     try {
-    const presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
-    const file = files[0];
-    // @ts-ignore
-    const fileName = file.path.replace(/^\//g, '');
-    const formData = new FormData();
-    Object.keys(presignedUpload.params).forEach((key: string): void => {
-      formData.set(key, presignedUpload.params[key]);
-    });
-    // eslint-disable-next-line no-template-curly-in-string
-    formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
-    formData.set('Content-Type', file.type);
-    formData.append('file', file, file.name);
-    await requester.makeFormRequest(presignedUpload.url, formData)
-    // eslint-disable-next-line no-template-curly-in-string
-    setNewImageUrl(`${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}`);
-    setIsUploadingImage(false);
+      const presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
+      const file = files[0];
+      // @ts-ignore
+      const fileName = file.path.replace(/^\//g, '');
+      const formData = new FormData();
+      Object.keys(presignedUpload.params).forEach((key: string): void => {
+        formData.set(key, presignedUpload.params[key]);
+      });
+      // eslint-disable-next-line no-template-curly-in-string
+      formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
+      formData.set('Content-Type', file.type);
+      formData.append('file', file, file.name);
+      await requester.makeFormRequest(presignedUpload.url, formData);
+      // eslint-disable-next-line no-template-curly-in-string
+      setNewImageUrl(`${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}`);
+      setIsUploadingImage(false);
     } catch (error: unknown) {
       console.error(error);
       setNewImageUrl('');
       setIsUploadingImage(false);
-    };
+    }
   };
 
   const onUpdateTokenFormSubmitted = async (): Promise<void> => {
@@ -146,7 +146,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       } else if (contractWithSigner.setTokenContentURI) {
         transaction = await contractWithSigner.setTokenContentURI(tokenId, tokenMetadataUrl);
       } else {
-
+        setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+        return;
       }
       setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
       setIsUpdating(false);

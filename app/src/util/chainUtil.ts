@@ -43,7 +43,7 @@ export const getContractAddress = (network: string): string | null => {
 
 export const getContractJson = (network: string): ContractInterface | null => {
   return networkContractMap[network] || null;
-}
+};
 
 export const isValidChain = (chainId: ChainId): boolean => {
   return validChainIdNetworkMap[chainId] !== undefined;
