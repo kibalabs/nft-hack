@@ -220,7 +220,7 @@ class MdtpManager:
         tokenIdsToUpdate = set()
         logging.info(f'Processing blocks from {latestProcessedBlockNumber} to {latestBlockNumber}')
         for startBlockNumber in range(latestProcessedBlockNumber + 1, latestBlockNumber + 1, batchSize):
-            endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber + 1)
+            endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber)
             transferredTokenIds = await self.contractStore.get_transferred_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
             logging.info(f'Found {len(transferredTokenIds)} transferred tokens in blocks {startBlockNumber}-{endBlockNumber}')
             tokenIdsToUpdate.update(transferredTokenIds)
