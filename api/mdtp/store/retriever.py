@@ -1,6 +1,5 @@
 from typing import Optional
 from typing import Sequence
-from typing import Optional
 
 from core.store.retriever import Retriever
 from core.store.retriever import FieldFilter

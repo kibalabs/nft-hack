@@ -46,14 +46,16 @@ jobs:
     defaults:
       run:
         working-directory: ./api
+    env:
+      DOCKER_IMAGE: build
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Build docker image
-        run: docker build .
+        run: docker build --tag $DOCKER_IMAGE .
       - name: Run linting
         run: |
-          docker run --name linting-build $DOCKER_IMAGE lint --directory core --output-file linting-results.json --output-format annotations
+          docker run --name linting-build $DOCKER_IMAGE lint --directory mdtp --output-file linting-results.json --output-format annotations
           docker cp linting-build:/app/linting-results.json ./linting-results.json
       - name: Upload build linting results
         uses: kibalabs/github-action-create-annotations@main

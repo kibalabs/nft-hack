@@ -58,12 +58,12 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     router = KibaRouter()
 
     @router.get('/token-metadatas/{tokenId}', response_model=GetTokenMetadataResponse)
-    async def get_token_metadata(tokenId: str) -> GetTokenMetadataResponse: # request: GetTokenMetadataRequest
+    async def get_token_metadata(tokenId: str) -> GetTokenMetadataResponse: # pylint: disable=unused-variable
         tokenMetadata = await manager.get_token_metadata(tokenId=tokenId)
         return GetTokenMetadataResponse.from_token_metadata(model=tokenMetadata)
 
     @router.get('/token-default-contents/{tokenId}', response_model=GetTokenDefaultContentResponse)
-    async def get_token_default_content(tokenId: str) -> GetTokenDefaultContentResponse: # request: GetTokenDefaultContentRequest
+    async def get_token_default_content(tokenId: str) -> GetTokenDefaultContentResponse: # pylint: disable=unused-variable
         tokenMetadata = await manager.get_token_default_content(tokenId=tokenId)
         return GetTokenDefaultContentResponse.from_token_metadata(model=tokenMetadata)
 

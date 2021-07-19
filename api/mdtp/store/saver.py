@@ -1,9 +1,10 @@
+import datetime
 from typing import Optional
 
 from core.store.saver import Saver
 from core.util import date_util
+from mdtp.model import BaseImage, GridItem, NetworkUpdate
 
-from mdtp.model import *
 from mdtp.store.schema import BaseImagesTable, GridItemsTable, NetworkUpdatesTable
 
 _EMPTY_STRING = '_EMPTY_STRING'
@@ -50,7 +51,7 @@ class MdtpSaver(Saver):
             values[GridItemsTable.c.updatedDate.key] = date_util.datetime_from_now()
         await self.database.execute(query=query, values=values)
 
-    async def create_base_image(self, network: str, url: str, generatedDate: datetime.datetime) -> GridItem:
+    async def create_base_image(self, network: str, url: str, generatedDate: datetime.datetime) -> BaseImage:
         createdDate = date_util.datetime_from_now()
         updatedDate = createdDate
         baseImageId = await self._execute(query=BaseImagesTable.insert(), values={
