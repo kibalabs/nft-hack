@@ -67,7 +67,7 @@ class TokenMetadata:
     tokenId: str
     tokenIndex: int
     name: str
-    description: str
+    description: Optional[str]
     image: str
     # MDTP extensions
     url: Optional[str]

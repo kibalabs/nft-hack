@@ -56,6 +56,15 @@ export const buildMDTPTheme = (): ITheme => {
     },
   };
 
+  const imageThemes = {
+    ...defaultTheme.images,
+    tokenPageHeaderGrid: {
+      background: {
+        'border-radius': '0',
+      },
+    },
+  };
+
   const iconButtonThemes: RecursivePartial<ThemeMap<IIconButtonTheme>> = {
     default: {
       normal: {
@@ -99,6 +108,7 @@ export const buildMDTPTheme = (): ITheme => {
     },
     texts: textThemes,
     boxes: boxThemes,
+    images: imageThemes,
     iconButtons: iconButtonThemes,
   });
   return theme;

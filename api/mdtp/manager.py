@@ -63,8 +63,10 @@ class MdtpManager:
             tokenId=tokenId,
             tokenIndex=tokenIndex,
             name=f'MDTP Token {tokenId}',
-            description='<description for the token>',
+            description=None,
             image='',
+            url=None,
+            blockId=None,
         )
 
     async def get_token_default_content(self, tokenId: str) -> TokenMetadata:
@@ -79,8 +81,10 @@ class MdtpManager:
             tokenId=tokenId,
             tokenIndex=tokenIndex,
             name=f'MDTP Token {tokenId}',
-            description='<description for the token>',
+            description=None,
             image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/f82c6b11-afaf-4724-909b-b41068ab8639/{tokenIndex}.png',
+            url=None,
+            blockId=None,
         )
 
     async def get_token_default_grid_item(self, tokenId: str) -> GridItem:
@@ -96,6 +100,8 @@ class MdtpManager:
             imageUrl=metadata.image,
             resizableImageUrl=metadata.image,
             ownerId='',
+            url=metadata.url,
+            blockId=metadata.blockId,
         )
 
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
