@@ -1,4 +1,3 @@
-from os import stat
 import imghdr
 from typing import Optional, List
 import uuid
