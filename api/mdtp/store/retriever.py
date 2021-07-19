@@ -7,9 +7,9 @@ from core.store.retriever import FieldFilter
 from core.store.retriever import Order
 from core.exceptions import NotFoundException
 
-from mdtp.model import GridItem
-from mdtp.store.schema import BaseImagesTable, GridItemsTable
-from mdtp.store.schema_conversions import base_image_from_row, grid_item_from_row
+from mdtp.model import GridItem, NetworkUpdate
+from mdtp.store.schema import BaseImagesTable, GridItemsTable, NetworkUpdatesTable
+from mdtp.store.schema_conversions import base_image_from_row, grid_item_from_row, network_update_from_row
 
 class MdtpRetriever(Retriever):
 
@@ -55,3 +55,12 @@ class MdtpRetriever(Retriever):
             raise NotFoundException(message=f'GridItem with tokenId {tokenId}, network {network} not found')
         gridItem = grid_item_from_row(row)
         return gridItem
+
+    async def get_network_update_by_network(self, network: str) -> NetworkUpdate:
+        query = NetworkUpdatesTable.select() \
+            .where(NetworkUpdatesTable.c.network == network)
+        row = await self.database.fetch_one(query=query)
+        if not row:
+            raise NotFoundException(message=f'NetworkUpdate with network {network} not found')
+        networkUpdate = network_update_from_row(row)
+        return networkUpdate

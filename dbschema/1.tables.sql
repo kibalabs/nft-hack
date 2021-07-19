@@ -9,7 +9,6 @@ CREATE TABLE tbl_grid_items (
     image_url TEXT NOT NULL,
     resizable_image_url TEXT,
     owner_id TEXT NOT NULL,
-    last_update_block_number INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX tbl_grid_items_uq_token_id_network ON tbl_grid_items (token_id, network);
 CREATE INDEX tbl_grid_items_updated_date ON tbl_grid_items (updated_date);
@@ -27,3 +26,12 @@ CREATE TABLE tbl_base_images (
 );
 CREATE INDEX tbl_base_images_updated_date ON tbl_base_images (updated_date);
 CREATE INDEX tbl_base_images_network ON tbl_base_images (network);
+
+CREATE TABLE tbl_network_updates (
+    id BIGSERIAL PRIMARY KEY,
+    created_date TIMESTAMP NOT NULL,
+    updated_date TIMESTAMP NOT NULL,
+    network TEXT NOT NULL,
+    latest_block_number INTEGER NOT NULL
+);
+CREATE UNIQUE INDEX tbl_network_updated_uq_network ON tbl_network_updated (network);

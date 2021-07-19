@@ -68,3 +68,11 @@ class TokenMetadata:
     name: str
     description: str
     image: str
+
+@dataclasses.dataclass
+class NetworkUpdate:
+    networkUpdateId: int
+    createdDate: datetime.datetime
+    updatedDate: datetime.datetime
+    network: str
+    latestBlockNumber: int

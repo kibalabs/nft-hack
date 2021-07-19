@@ -10,7 +10,7 @@ from typing import Optional
 import urllib.parse as urlparse
 import uuid
 
-from core.exceptions import NotFoundException, ServerException
+from core.exceptions import KibaException, NotFoundException, ServerException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.util import date_util, dict_util, file_util
@@ -213,8 +213,11 @@ class MdtpManager:
         await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
 
     async def update_tokens(self, network: str) -> None:
-        gridItems = await self.retriever.list_grid_items(fieldFilters=[StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)], orders=[Order(fieldName=GridItemsTable.c.lastUpdateBlockNumber.key, direction=Direction.DESCENDING)], limit=1)
-        latestProcessedBlockNumber = gridItems[0].lastUpdateBlockNumber if gridItems else -1
+        try:
+            networkUpdate = await self.retriever.get_network_update_by_network(network=network)
+        except NotFoundException:
+            raise KibaException(message=f'No networkUpdate has been created for network {network}')
+        latestProcessedBlockNumber = networkUpdate.latestBlockNumber
         latestBlockNumber = await self.contractStore.get_latest_block_number(network=network)
         batchSize = 2500
         tokenIdsToUpdate = set()
@@ -228,7 +231,8 @@ class MdtpManager:
             logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
             tokenIdsToUpdate.update(updatedTokenIds)
         for tokenIndex in list(tokenIdsToUpdate):
-            await self.update_token(network=network, tokenId=tokenIndex)
+            await self.update_token_deferred(network=network, tokenId=tokenIndex)
+        await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
 
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
@@ -249,8 +253,7 @@ class MdtpManager:
         logging.info(f'Updating token {network}/{tokenId}')
         try:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
-        except Exception as e:
-            print(e)
+        except Exception:
             ownerId = self.ownerAddress
         tokenContentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         print('tokenContentUrl', tokenContentUrl)
