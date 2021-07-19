@@ -12,7 +12,7 @@
     "type-check": "type-check"
   },
   "dependencies": {
-    "@kibalabs/core": "0.5.5-next.0",
+    "@kibalabs/core": "0.5.5-next.1",
     "@kibalabs/core-react": "0.6.2",
     "@kibalabs/everyview-tracker": "0.2.5",
     "@kibalabs/everyview-tracker-react": "0.2.5",

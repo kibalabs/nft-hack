@@ -7,9 +7,11 @@ import { Helmet } from 'react-helmet';
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem, TokenMetadata } from '../../client';
 import { Dropzone } from '../../components/dropzone';
+import { ImageGrid } from '../../components/ImageGrid';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
+import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -25,14 +27,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const { contract, requester, apiClient, network } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null>(null);
+  const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
   const [newUrl, setNewUrl] = React.useState<string | null>(null);
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
-  const [newTokenSettingResult, setNewTokenSettingResult] = React.useState<Result | null>(null);
+  const [updatingTokenResult, setUpdatingTokenResult] = React.useState<Result | null>(null);
   const [hasStartedUpdatingToken, setHasStartedUpdatingToken] = React.useState<boolean>(false);
-  const [isUpdating, setIsUpdating] = React.useState<boolean>(false);
+  const [isUpdatingToken, setIsUpdatingToken] = React.useState<boolean>(false);
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
@@ -42,8 +45,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     setGridItem(null);
-    setChainOwnerId(null);
     setTokenMetadata(null);
+    setBlockGridItems(null);
+    setChainOwnerId(null);
     setHasStartedUpdatingToken(false);
     if (network === null) {
       return;
@@ -51,7 +55,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     const tokenId = Number(props.tokenId);
     apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
-      setTokenMetadata(new TokenMetadata(String(tokenId), tokenId - 1, retrievedGridItem.title, retrievedGridItem.description || '', retrievedGridItem.resizableImageUrl || retrievedGridItem.imageUrl, retrievedGridItem.url, retrievedGridItem.blockId));
+      setTokenMetadata(gridItemToTokenMetadata(retrievedGridItem));
     }).catch((error: KibaException): void => {
       if (error.statusCode === 404) {
         // TODO(krishan711): Get the token metadata from the contract
@@ -85,6 +89,21 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     loadToken();
   }, [loadToken]);
 
+  const loadBlockGridItems = React.useCallback(async (): Promise<void> => {
+    if (tokenMetadata?.blockId) {
+      apiClient.listGridItems(network, true, undefined, tokenMetadata?.blockId).then((retrievedBlockGridItems: GridItem[]): void => {
+        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].blockId !== tokenMetadata?.blockId) {
+          return;
+        }
+        setBlockGridItems(retrievedBlockGridItems);
+      });
+    }
+  }, [tokenMetadata?.blockId, network, apiClient]);
+
+  React.useEffect((): void => {
+    loadBlockGridItems();
+  }, [loadBlockGridItems]);
+
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
     // TODO(krishan711): ensure there is only one file
     setIsUploadingImage(true);
@@ -117,7 +136,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       return;
     }
 
-    setIsUpdating(true);
+    setIsUpdatingToken(true);
     const title = newTitle != null ? newTitle : gridItem.title;
     const description = newDescription != null ? newDescription : gridItem.description;
     const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
@@ -126,18 +145,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title, description || null, image, url, blockId);
 
     if (!contract) {
-      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
-      setIsUpdating(false);
+      setUpdatingTokenResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+      setIsUpdatingToken(false);
       return;
     }
 
-    setNewTokenSettingResult(null);
+    setUpdatingTokenResult(null);
     const tokenId = Number(props.tokenId);
     try {
       const signerIndex = accountIds.indexOf(ownerId);
       if (signerIndex === -1) {
-        setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
-        setIsUpdating(false);
+        setUpdatingTokenResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
+        setIsUpdatingToken(false);
       }
       const contractWithSigner = contract.connect(accounts[signerIndex]);
       let transaction = null;
@@ -146,18 +165,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       } else if (contractWithSigner.setTokenContentURI) {
         transaction = await contractWithSigner.setTokenContentURI(tokenId, tokenMetadataUrl);
       } else {
-        setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+        setUpdatingTokenResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
         return;
       }
-      setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
-      setIsUpdating(false);
+      setUpdatingTokenResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
+      setIsUpdatingToken(false);
       await transaction.wait();
-      setNewTokenSettingResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
+      setUpdatingTokenResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
       apiClient.updateTokenDeferred(network, Number(props.tokenId));
       loadToken();
     } catch (error) {
-      setNewTokenSettingResult({ isSuccess: false, isPending: false, message: error.message });
-      setIsUpdating(false);
+      setUpdatingTokenResult({ isSuccess: false, isPending: false, message: error.message });
+      setIsUpdatingToken(false);
     }
   };
 
@@ -165,7 +184,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setHasStartedUpdatingToken(true);
   };
 
-  const updateInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
+  const updateInputState = (!updatingTokenResult || updatingTokenResult.isPending) ? undefined : updatingTokenResult?.isSuccess ? 'success' : (updatingTokenResult?.isSuccess === false ? 'error' : undefined);
 
   const OwnershipInfo = (): React.ReactElement => {
     const isBuyable = !ownerId || (network === 'rinkeby' && ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
@@ -200,9 +219,13 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         ) : (
           <React.Fragment>
             <Box maxHeight='250px' variant='tokenHeader'>
-              <BackgroundView color='#000000'>
-                <Image isCenteredHorizontally={true} fitType={'cover'} source={tokenMetadata.image} alternativeText={`${tokenMetadata.name} image`} />
-              </BackgroundView>
+              { (gridItem && blockGridItems) ? (
+                <ImageGrid gridItem={gridItem} blockGridItems={blockGridItems} />
+              ) : (
+                <BackgroundView color='#000000'>
+                  <Image isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={`token image`} />
+                </BackgroundView>
+              )}
             </Box>
             <Stack direction={Direction.Vertical} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
               <Text variant='header3'>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
@@ -210,7 +233,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               {tokenMetadata.url && (
                 <Link target={tokenMetadata.url} text={tokenMetadata.url} />
               )}
-              <Text>{tokenMetadata.description}</Text>
+              {tokenMetadata.description && (
+                <Text>{tokenMetadata.description}</Text>
+              )}
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <OwnershipInfo />
               </Stack.Item>
@@ -227,7 +252,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                     <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
                   </Stack>
                   { hasStartedUpdatingToken && (
-                    <Form onFormSubmitted={onUpdateTokenFormSubmitted} isLoading={isUpdating}>
+                    <Form onFormSubmitted={onUpdateTokenFormSubmitted} isLoading={isUpdatingToken}>
                       <Stack direction={Direction.Vertical} shouldAddGutters={true}>
                         <SingleLineInput
                           inputType={InputType.Text}
@@ -259,7 +284,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                               value={newImageUrl}
                               onValueChanged={setNewImageUrl}
                               inputWrapperVariant={updateInputState}
-                              messageText={newTokenSettingResult?.message}
+                              messageText={updatingTokenResult?.message}
                               placeholderText='Image URL'
                             />
                             <Text variant='note'>OR</Text>

@@ -27,6 +27,7 @@ export class ListGridItemsRequest extends RequestData {
   public constructor(
     readonly shouldCompact: boolean,
     readonly updatedSinceDate?: Date,
+    readonly blockId?: string,
   ) {
     super();
   }
@@ -35,6 +36,7 @@ export class ListGridItemsRequest extends RequestData {
     return {
       shouldCompact: this.shouldCompact,
       updatedSinceDate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
+      blockId: this.blockId,
     };
   }
 }

@@ -13,7 +13,7 @@ class GetTokenMetadataResponse(BaseModel):
     tokenId: str
     tokenIndex: int
     name: str
-    description: str
+    description: Optional[str]
     image: str
 
     @classmethod
@@ -33,10 +33,8 @@ class GetTokenDefaultContentResponse(BaseModel):
     tokenId: str
     tokenIndex: int
     name: str
-    description: str
+    description: Optional[str]
     image: str
-    url: Optional[str]
-    blockId: Optional[str]
 
     @classmethod
     def from_token_metadata(cls, model: TokenMetadata):
@@ -46,8 +44,6 @@ class GetTokenDefaultContentResponse(BaseModel):
             name=model.name,
             description=model.description,
             image=model.image,
-            url=model.url,
-            blockId=model.blockId,
         )
 
 def create_api(manager: MdtpManager) -> KibaRouter():
