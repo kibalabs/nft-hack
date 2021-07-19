@@ -168,7 +168,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const updateInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
   const OwnershipInfo = (): React.ReactElement => {
-    const isBuyable = !ownerId || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC';
+    const isBuyable = !ownerId || (network === 'rinkeby' && ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
     return (
       <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isBuyable ? (
