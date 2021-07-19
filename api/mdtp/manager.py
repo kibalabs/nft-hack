@@ -102,10 +102,12 @@ class MdtpManager:
         gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         return gridItem
 
-    async def list_grid_items(self, network: str, updatedSinceDate: Optional[datetime.datetime] = None) -> Sequence[GridItem]:
+    async def list_grid_items(self, network: str, updatedSinceDate: Optional[datetime.datetime] = None, blockId: Optional[str] = None) -> Sequence[GridItem]:
         filters = [StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)]
         if updatedSinceDate:
             filters.append(DateFieldFilter(fieldName=GridItemsTable.c.updatedDate.key, gte=updatedSinceDate.replace(tzinfo=None)))
+        if blockId:
+            filters.append(DateFieldFilter(fieldName=GridItemsTable.c.blockId.key, eq=blockId))
         gridItems = await self.retriever.list_grid_items(fieldFilters=filters)
         return gridItems
 

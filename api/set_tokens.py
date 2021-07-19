@@ -2,6 +2,7 @@ import asyncio
 import os
 import json
 import logging
+from typing import Optional
 import uuid
 import time
 
@@ -26,8 +27,8 @@ GWEI = 1000000000
 @click.option('-t', '--starting-token', 'startTokenId', required=True, type=int)
 @click.option('-w', '--width', 'width', required=True, type=int)
 @click.option('-h', '--height', 'height', required=True, type=int)
-@click.option('-d', '--description', 'description', required=True, type=str)
-async def run(imagePath: str, name: str, url: str, startTokenId: int, width: int, height: int, description: str):
+@click.option('-d', '--description', 'description', required=False, type=str)
+async def run(imagePath: str, name: str, url: Optional[str], description: Optional[str], startTokenId: int, width: int, height: int):
     accountAddress = os.environ['ACCOUNT_ADDRESS']
     privateKey = os.environ['PRIVATE_KEY']
     requester = Requester()
@@ -58,7 +59,7 @@ async def run(imagePath: str, name: str, url: str, startTokenId: int, width: int
             tokenId = index + 1
             data = {
                 "name" : name.replace('{tokenId}', str(tokenId)),
-                "description" : description.replace('{tokenId}', str(tokenId)),
+                "description" : description.replace('{tokenId}', str(tokenId)) if description else None,
                 "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png",
                 "url": url.replace('{tokenId}', str(tokenId)) if url else None,
                 "blockId": runId,
