@@ -223,7 +223,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <ImageGrid gridItem={gridItem} blockGridItems={blockGridItems} />
               ) : (
                 <BackgroundView color='#000000'>
-                  <Image isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={`token image`} />
+                  <Image isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
                 </BackgroundView>
               )}
             </Box>
