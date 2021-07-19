@@ -119,7 +119,7 @@ class MdtpManager:
             raise NotFoundException()
         return baseImages[0]
 
-    async def build_base_image_deferred(self, network: str, delay: Optional[int]) -> Optional[BaseImage]:
+    async def build_base_image_deferred(self, network: str, delay: Optional[int] = None) -> Optional[BaseImage]:
         await self.workQueue.send_message(message=BuildBaseImageMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
     async def build_base_image(self, network: str) -> Optional[BaseImage]:
@@ -206,7 +206,7 @@ class MdtpManager:
         await self.s3Manager.write_file(content=json.dumps(data).encode(), targetPath=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE, contentType='application/json')
         return target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
 
-    async def update_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
+    async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
     async def update_tokens(self, network: str) -> None:
@@ -231,7 +231,7 @@ class MdtpManager:
             await self.update_token_deferred(network=network, tokenId=tokenIndex)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
 
-    async def update_all_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
+    async def update_all_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateAllTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
     async def update_all_tokens(self, network: str) -> None:
@@ -249,7 +249,7 @@ class MdtpManager:
         resizableImageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
 
-    async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int]) -> None:
+    async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
 
     async def update_token(self, network: str, tokenId: int) -> None:
@@ -266,19 +266,21 @@ class MdtpManager:
         # TODO(krishan711): pick a better default image
         imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or ''
         description = tokenContentJson.get('description')
+        url = tokenContentJson.get('url')
+        blockId = tokenContentJson.get('blockId')
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
-            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, ownerId=ownerId)
+            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, blockId=blockId, ownerId=ownerId)
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
         if resizableImageUrl is None:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId)
-        if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.ownerId != ownerId:
+        if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.blockId != blockId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
-            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, ownerId=ownerId)
+            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, blockId=blockId, ownerId=ownerId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)

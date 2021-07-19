@@ -8,6 +8,8 @@ export class TokenMetadata {
     readonly name: string,
     readonly description: string,
     readonly image: string,
+    readonly url: string | null,
+    readonly blockId: string | null,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -18,6 +20,8 @@ export class TokenMetadata {
       String(obj.name),
       String(obj.description),
       String(obj.image),
+      obj.url ? String(obj.url) : null,
+      obj.blockId ? String(obj.blockId) : null,
     );
   }
 }
@@ -34,6 +38,8 @@ export class GridItem {
     readonly imageUrl: string,
     readonly resizableImageUrl: string | null,
     readonly ownerId: string,
+    readonly url: string | null,
+    readonly blockId: string | null,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -48,6 +54,8 @@ export class GridItem {
       String(obj.imageUrl),
       obj.resizableImageUrl ? String(obj.resizableImageUrl) : null,
       String(obj.ownerId),
+      obj.url ? String(obj.url) : null,
+      obj.blockId ? String(obj.blockId) : null,
     );
   }
 }

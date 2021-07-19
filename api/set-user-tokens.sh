@@ -15,4 +15,4 @@ set -e -o pipefail
 # python3 set_tokens.py -i ~/Downloads/mckurz.png -n 'McKurz Capital DEX' -t 5879 -w 5 -h 3 -d "The McKurz Capital DEX is a decentralized ERC-20 exchange where users can exchange assets from within an Ethereum wallet without the hassle and cost of transferring tokens or NFT's to a centralized exchange. You can find the Kovan deployment of the exchange at https://www.mckurz-dex.com/"
 # python3 set_tokens.py -i ~/Downloads/rarepress.png -n 'Rarepress' -t 2848 -w 6 -h 4 -d "Rarepress is an NFT Operating System that makes it dead simple to programmatically mint, trade, and interact with NFTs on Ethereum, with nothing but a few lines of JavaScript code. https://rarepress.org/"
 # python3 set_tokens.py -i ~/Downloads/logo_poap.png -n 'POAP' -t 3155 -w 5 -h 6 -d "The bookmarks of your life http://poap.xyz/"
-python3 set_tokens.py -i ~/Downloads/kiba.jpg -n 'Kiba Labs' -t 711 -w 1 -h 1 -d "Bringing you the finest digital products https://www.kibalabs.com"
+python3 set_tokens.py -i ~/Downloads/kiba.jpg -n 'Kiba Labs' -t 711 -w 1 -h 1 -d "Bringing you the finest digital products" -u "https://www.kibalabs.com"

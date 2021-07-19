@@ -26,7 +26,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         networkSummary = await manager.get_network_summary(network=network)
         return GetNetworkSummaryResponse(networkSummary=ApiNetworkSummary.from_model(model=networkSummary))
 
-    # TODO(krishan711): this can nicely be a GET once we have query params
+    # TODO(krishan711): this can nicely be a GET once we have query params because we want to retrieve by tokenId, not gridItemId
     @router.post('/networks/{network}/retrieve-grid-item', response_model=RetrieveGridItemResponse)
     async def retrieve_grid_item(network: str, request: RetrieveGridItemRequest) -> RetrieveGridItemResponse:
         gridItem = await manager.retrieve_grid_item(network=network, tokenId=request.tokenId)

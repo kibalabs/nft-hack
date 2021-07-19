@@ -18,6 +18,8 @@ class ApiGridItem(BaseModel):
     imageUrl: str
     resizableImageUrl: Optional[str]
     ownerId: str
+    url: Optional[str]
+    blockId: Optional[str]
 
     @classmethod
     def from_model(cls, model: GridItem, shouldCompact: bool = False):
@@ -31,6 +33,8 @@ class ApiGridItem(BaseModel):
             imageUrl=model.imageUrl,
             resizableImageUrl=model.resizableImageUrl,
             ownerId=model.ownerId,
+            url=model.url,
+            blockId=model.blockId,
         )
 
 class ApiNetworkSummary(BaseModel):

@@ -22,11 +22,12 @@ GWEI = 1000000000
 @click.command()
 @click.option('-i', '--image-path', 'imagePath', required=True, type=str)
 @click.option('-n', '--name', 'name', required=True, type=str)
+@click.option('-u', '--url', 'url', required=False, type=str)
 @click.option('-t', '--starting-token', 'startTokenId', required=True, type=int)
 @click.option('-w', '--width', 'width', required=True, type=int)
 @click.option('-h', '--height', 'height', required=True, type=int)
 @click.option('-d', '--description', 'description', required=True, type=str)
-async def run(imagePath: str, name: str, startTokenId: int, width: int, height: int, description: str):
+async def run(imagePath: str, name: str, url: str, startTokenId: int, width: int, height: int, description: str):
     accountAddress = os.environ['ACCOUNT_ADDRESS']
     privateKey = os.environ['PRIVATE_KEY']
     requester = Requester()
@@ -58,7 +59,9 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
             data = {
                 "name" : name.replace('{tokenId}', str(tokenId)),
                 "description" : description.replace('{tokenId}', str(tokenId)),
-                "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png"
+                "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png",
+                "url": url.replace('{tokenId}', str(tokenId)) if url else None,
+                "blockId": runId,
             }
             metadataUploadTasks.append(s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))
         await asyncio.gather(*metadataUploadTasks)

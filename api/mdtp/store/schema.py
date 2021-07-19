@@ -14,7 +14,9 @@ GridItemsTable = sqlalchemy.Table(
     sqlalchemy.Column(key='description', name='description', type_=sqlalchemy.Text, nullable=False),
     sqlalchemy.Column(key='imageUrl', name='image_url', type_=sqlalchemy.Text, nullable=False),
     sqlalchemy.Column(key='resizableImageUrl', name='resizable_image_url', type_=sqlalchemy.Text, nullable=True),
-    sqlalchemy.Column(key='ownerId', name='owner_id', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='url', name='url', type_=sqlalchemy.Text, nullable=True),
+    sqlalchemy.Column(key='blockId', name='block_id', type_=sqlalchemy.Text, nullable=True),
+    sqlalchemy.Column(key='ownerId', name='owner_id', type_=sqlalchemy.Text, nullable=True),
 )
 
 BaseImagesTable = sqlalchemy.Table(

@@ -15,6 +15,8 @@ class GridItem:
     imageUrl: str
     resizableImageUrl: Optional[str]
     ownerId: str
+    url: Optional[str]
+    blockId: Optional[str]
 
 @dataclasses.dataclass
 class NetworkSummary:
@@ -67,6 +69,9 @@ class TokenMetadata:
     name: str
     description: str
     image: str
+    # MDTP extensions
+    url: Optional[str]
+    blockId: Optional[str]
 
 @dataclasses.dataclass
 class NetworkUpdate:
