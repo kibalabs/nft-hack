@@ -128,6 +128,8 @@ export class UploadMetadataForTokenRequest extends RequestData {
     readonly name: string,
     readonly description: string,
     readonly imageUrl: string,
+    readonly url: string | null,
+    readonly blockId: string | null,
   ) {
     super();
   }
@@ -137,6 +139,8 @@ export class UploadMetadataForTokenRequest extends RequestData {
       name: this.name,
       description: this.description,
       imageUrl: this.imageUrl,
+      url: this.url,
+      blockId: this.blockId,
     };
   }
 }

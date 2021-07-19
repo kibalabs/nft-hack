@@ -194,12 +194,13 @@ class MdtpManager:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
 
-    async def upload_metadata_for_token(self, network: str, tokenId: int, name: str, description: str, imageUrl: str) -> str:
+    async def upload_metadata_for_token(self, network: str, tokenId: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str], blockId: Optional[str]) -> str:
         data = {
-            'name': name or '',
-            'description': description or '',
-            # TODO(krishan711): make a better default
-            'imageUrl': imageUrl or '',
+            'name': name,
+            'description': description or None,
+            'image': imageUrl,
+            'url': url,
+            'blockId': blockId,
         }
         dataId = str(uuid.uuid4()).replace('-', '')
         target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/d/{dataId}.json'

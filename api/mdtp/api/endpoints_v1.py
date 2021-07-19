@@ -65,8 +65,10 @@ class GenerateImageUploadForTokenResponse(BaseModel):
 
 class UploadMetadataForTokenRequest(BaseModel):
     name: str
-    description: str
+    description: Optional[str]
     imageUrl: str
+    url: Optional[str]
+    blockId: Optional[str]
 
 class UploadMetadataForTokenResponse(BaseModel):
     url: str
