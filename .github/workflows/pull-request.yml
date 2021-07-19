@@ -55,12 +55,12 @@ jobs:
         run: docker build --tag $DOCKER_IMAGE .
       - name: Run linting
         run: |
-          docker run --name linting-build $DOCKER_IMAGE lint --directory mdtp --output-file linting-results.json --output-format annotations
-          docker cp linting-build:/app/linting-results.json ./linting-results.json
-      - name: Upload build linting results
+          docker run --name linting $DOCKER_IMAGE lint --directory mdtp --output-file linting-results.json --output-format annotations
+          docker cp linting:/app/linting-results.json ./linting-results.json
+      - name: Upload linting results
         uses: kibalabs/github-action-create-annotations@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          json-file-path: ./linting-results.json
+          json-file-path: ./api/linting-results.json
           check-name: lint-api
           fail-on-error: false
