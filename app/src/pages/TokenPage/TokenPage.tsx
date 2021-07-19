@@ -72,14 +72,13 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
           requester.makeRequest(RestMethod.GET, tokenMetadataUrl).then((response: KibaResponse): void => {
             const tokenMetadataJson = JSON.parse(response.content);
-            console.log('tokenMetadataJson', tokenMetadataJson)
-            // NOTE(krishan711): this should validate the content cos if someone
-            setTokenMetadata(TokenMetadata.fromObject({...tokenMetadataJson, tokenId: tokenId}));
+            // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
+            setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId }));
           });
         });
       }
     }
-  }, [props.tokenId, network, contract, apiClient]);
+  }, [props.tokenId, network, contract, apiClient, requester]);
 
   React.useEffect((): void => {
     loadToken();

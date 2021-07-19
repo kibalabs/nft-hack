@@ -71,4 +71,3 @@ export const getAccountEtherscanUrl = (network: string, account: string): string
   }
   return null;
 };
-
