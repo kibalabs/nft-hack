@@ -5,7 +5,7 @@ import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputTy
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { GridItem, PresignedUpload, TokenMetadata } from '../../client';
+import { GridItem, TokenMetadata } from '../../client';
 import { Dropzone } from '../../components/dropzone';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
@@ -28,6 +28,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
+  const [newUrl, setNewUrl] = React.useState<string | null>(null);
   const [newImageUrl, setNewImageUrl] = React.useState<string | null>(null);
   const [newTokenSettingResult, setNewTokenSettingResult] = React.useState<Result | null>(null);
   const [hasStartedUpdatingToken, setHasStartedUpdatingToken] = React.useState<boolean>(false);
@@ -87,7 +88,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
     // TODO(krishan711): ensure there is only one file
     setIsUploadingImage(true);
-    apiClient.generateImageUploadForToken(network, Number(props.tokenId)).then((presignedUpload: PresignedUpload): void => {
+    try {
+      const presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
       const file = files[0];
       // @ts-ignore
       const fileName = file.path.replace(/^\//g, '');
@@ -97,20 +99,20 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       });
       // eslint-disable-next-line no-template-curly-in-string
       formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
-      formData.set('content-type', file.type);
+      formData.set('Content-Type', file.type);
       formData.append('file', file, file.name);
-      requester.makeFormRequest(presignedUpload.url, formData).then((): void => {
-        // eslint-disable-next-line no-template-curly-in-string
-        setNewImageUrl(`${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}`);
-        setIsUploadingImage(false);
-      });
-    }).catch((): void => {
+      await requester.makeFormRequest(presignedUpload.url, formData);
+      // eslint-disable-next-line no-template-curly-in-string
+      setNewImageUrl(`${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}`);
+      setIsUploadingImage(false);
+    } catch (error: unknown) {
+      console.error(error);
       setNewImageUrl('');
       setIsUploadingImage(false);
-    });
+    }
   };
 
-  const callContractForUpdating = async (): Promise<void> => {
+  const onUpdateTokenFormSubmitted = async (): Promise<void> => {
     if (!gridItem || !accountIds || !accounts || !ownerId) {
       return;
     }
@@ -119,7 +121,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     const title = newTitle != null ? newTitle : gridItem.title;
     const description = newDescription != null ? newDescription : gridItem.description;
     const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
-    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title || '', description || '', image || '');
+    const url = newUrl != null ? newUrl : gridItem.url;
+    const blockId = gridItem.blockId;
+    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title, description || null, image, url, blockId);
 
     if (!contract) {
       setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
@@ -136,7 +140,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         setIsUpdating(false);
       }
       const contractWithSigner = contract.connect(accounts[signerIndex]);
-      const transaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
+      let transaction = null;
+      if (contractWithSigner.setTokenURI) {
+        transaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
+      } else if (contractWithSigner.setTokenContentURI) {
+        transaction = await contractWithSigner.setTokenContentURI(tokenId, tokenMetadataUrl);
+      } else {
+        setNewTokenSettingResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
+        return;
+      }
       setNewTokenSettingResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
       setIsUpdating(false);
       await transaction.wait();
@@ -155,44 +167,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   const updateInputState = (!newTokenSettingResult || newTokenSettingResult.isPending) ? undefined : newTokenSettingResult?.isSuccess ? 'success' : (newTokenSettingResult?.isSuccess === false ? 'error' : undefined);
 
-  const UpdateTokenForm = (): React.ReactElement => (
-    <Form onFormSubmitted={callContractForUpdating} isLoading={isUpdating}>
-      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
-        <SingleLineInput
-          inputType={InputType.Text}
-          value={newTitle}
-          onValueChanged={setNewTitle}
-          inputWrapperVariant={updateInputState}
-          placeholderText='Name'
-        />
-        <SingleLineInput
-          inputType={InputType.Text}
-          value={newDescription}
-          onValueChanged={setNewDescription}
-          inputWrapperVariant={updateInputState}
-          placeholderText='Description'
-        />
-        {isUploadingImage ? (
-          <Text>Uploading image...</Text>
-        ) : (
-          <React.Fragment>
-            <SingleLineInput
-              inputType={InputType.Url}
-              value={newImageUrl}
-              onValueChanged={setNewImageUrl}
-              inputWrapperVariant={updateInputState}
-              messageText={newTokenSettingResult?.message}
-              placeholderText='Image URL'
-            />
-            <Text variant='note'>OR</Text>
-            <Dropzone onFilesChosen={onImageFilesChosen} />
-          </React.Fragment>
-        )}
-        <Button variant='primary' text='Update' buttonType='submit' />
-      </Stack>
-    </Form>
-  );
-
   const OwnershipInfo = (): React.ReactElement => {
     const isBuyable = !ownerId || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC';
     return (
@@ -210,36 +184,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         )}
       </Stack>
     );
-  };
-
-  const FormsShownOnPage = (): React.ReactElement | null => {
-    if (!contract) {
-      return null;
-    }
-    if (!accounts || !accountIds || !tokenMetadata) {
-      return (
-        <LoadingSpinner />
-      );
-    }
-    if ((accounts?.length === 0) || (accountIds?.length === 0)) {
-      return (
-        <Text variant='note'>{'Please connect your account to view more options.'}</Text>
-      );
-    }
-    if (isOwnedByUser) {
-      return (
-        <React.Fragment>
-          <Text>👑 This is one of your tokens 👑</Text>
-          <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-            <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-          </Stack>
-          { hasStartedUpdatingToken && (
-            <UpdateTokenForm />
-          )}
-        </React.Fragment>
-      );
-    }
-    return null;
   };
 
   return (
@@ -270,7 +214,64 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
                 <OwnershipInfo />
               </Stack.Item>
-              <FormsShownOnPage />
+              { !contract ? (
+                <Text variant='note'>{'Please connect your wallet to view more options.'}</Text>
+              ) : !accounts || !accountIds || !tokenMetadata ? (
+                <LoadingSpinner />
+              ) : (accounts?.length === 0) || (accountIds?.length === 0) ? (
+                <Text variant='note'>{'Please connect your account to view more options.'}</Text>
+              ) : isOwnedByUser && (
+                <React.Fragment>
+                  <Text>👑 This is one of your tokens 👑</Text>
+                  <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+                    <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
+                  </Stack>
+                  { hasStartedUpdatingToken && (
+                    <Form onFormSubmitted={onUpdateTokenFormSubmitted} isLoading={isUpdating}>
+                      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+                        <SingleLineInput
+                          inputType={InputType.Text}
+                          value={newTitle}
+                          onValueChanged={setNewTitle}
+                          inputWrapperVariant={updateInputState}
+                          placeholderText='Name'
+                        />
+                        <SingleLineInput
+                          inputType={InputType.Text}
+                          value={newDescription}
+                          onValueChanged={setNewDescription}
+                          inputWrapperVariant={updateInputState}
+                          placeholderText='Description'
+                        />
+                        <SingleLineInput
+                          inputType={InputType.Url}
+                          value={newUrl}
+                          onValueChanged={setNewUrl}
+                          inputWrapperVariant={updateInputState}
+                          placeholderText='URL'
+                        />
+                        {isUploadingImage ? (
+                          <Text>Uploading image...</Text>
+                        ) : (
+                          <React.Fragment>
+                            <SingleLineInput
+                              inputType={InputType.Url}
+                              value={newImageUrl}
+                              onValueChanged={setNewImageUrl}
+                              inputWrapperVariant={updateInputState}
+                              messageText={newTokenSettingResult?.message}
+                              placeholderText='Image URL'
+                            />
+                            <Text variant='note'>OR</Text>
+                            <Dropzone onFilesChosen={onImageFilesChosen} />
+                          </React.Fragment>
+                        )}
+                        <Button variant='primary' text='Update' buttonType='submit' />
+                      </Stack>
+                    </Form>
+                  )}
+                </React.Fragment>
+              )}
             </Stack>
           </React.Fragment>
         )}

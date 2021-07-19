@@ -59,7 +59,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
 
     @router.post('/networks/{network}/tokens/{tokenId}/upload-metadata', response_model=UploadMetadataForTokenResponse)
     async def upload_metadata_for_token(network: str, tokenId: int, request: UploadMetadataForTokenRequest):
-        url = await manager.upload_metadata_for_token(network=network, tokenId=tokenId, name=request.name, description=request.description, imageUrl=request.imageUrl)
+        url = await manager.upload_metadata_for_token(network=network, tokenId=tokenId, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url, blockId=request.blockId)
         return UploadMetadataForTokenResponse(url=url)
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)

@@ -13,13 +13,12 @@ import { hot } from 'react-hot-loader/root';
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
 import { MetaMaskConnection } from './components/MetaMaskConnection';
-import MDTPContract from './contract.json';
 import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { TokenPage } from './pages/TokenPage';
 import { buildMDTPTheme } from './theme';
-import { ChainId, getContractAddress, getNetwork } from './util/chainUtil';
+import { ChainId, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
 
 declare global {
   export interface Window {
@@ -111,8 +110,9 @@ export const App = hot((): React.ReactElement => {
     const newNetwork = chainId ? getNetwork(chainId) : null;
     setNetwork(newNetwork);
     const contractAddress = newNetwork ? getContractAddress(newNetwork) : null;
+    const contractJson = newNetwork ? getContractJson(newNetwork) : null;
     if (web3 && contractAddress) {
-      setContract(new ethers.Contract(contractAddress, MDTPContract.abi, web3));
+      setContract(new ethers.Contract(contractAddress, contractJson.abi, web3));
     } else {
       setContract(null);
     }
