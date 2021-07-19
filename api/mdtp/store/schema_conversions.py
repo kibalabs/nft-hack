@@ -1,7 +1,7 @@
 from typing import Mapping
 
-from mdtp.model import BaseImage, GridItem
-from mdtp.store.schema import BaseImagesTable, GridItemsTable
+from mdtp.model import BaseImage, GridItem, NetworkUpdate
+from mdtp.store.schema import BaseImagesTable, GridItemsTable, NetworkUpdatesTable
 
 def grid_item_from_row(row: Mapping) -> GridItem:
     # NOTE(krishan711) these should be of the form row.id but https://github.com/encode/databases/issues/101
@@ -26,4 +26,13 @@ def base_image_from_row(row: Mapping) -> BaseImage:
         network=row[BaseImagesTable.c.network],
         url=row[BaseImagesTable.c.url],
         generatedDate=row[BaseImagesTable.c.generatedDate],
+    )
+
+def network_update_from_row(row: Mapping) -> NetworkUpdate:
+    return NetworkUpdate(
+        networkUpdateId=row[NetworkUpdatesTable.c.networkUpdateId],
+        createdDate=row[NetworkUpdatesTable.c.createdDate],
+        updatedDate=row[NetworkUpdatesTable.c.updatedDate],
+        network=row[NetworkUpdatesTable.c.network],
+        latestBlockNumber=row[NetworkUpdatesTable.c.latestBlockNumber],
     )

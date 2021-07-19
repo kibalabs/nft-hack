@@ -42,6 +42,11 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         await manager.update_tokens_deferred(network=network, delay=request.delay)
         return UpdateTokensDeferredResponse()
 
+    @router.post('/networks/{network}/update-all-tokens-deferred', response_model=UpdateAllTokensDeferredResponse)
+    async def update_all_tokens_deferred(network: str, request: UpdateAllTokensDeferredRequest) -> UpdateAllTokensDeferredResponse:
+        await manager.update_all_tokens_deferred(network=network, delay=request.delay)
+        return UpdateAllTokensDeferredResponse()
+
     @router.get('/networks/{network}/tokens/{tokenId}/go-to-image')
     async def go_to_token_image(network: str, tokenId: int, w: Optional[int] = None, h: Optional[int] = None) -> Response:
         imageUrl = await manager.go_to_token_image(network=network, tokenId=tokenId, width=w, height=h)

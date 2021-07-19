@@ -12,6 +12,7 @@ from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.web3.eth_client import RestEthClient
 from core.util import list_util
+from core.util import file_util
 
 from contracts import create_contract_store
 from crop_image import crop_image
@@ -46,6 +47,7 @@ async def run(imagePath: str, name: str, startTokenId: int, width: int, height: 
     outputDirectory = 'output'
     crop_image(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
     await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
+    await file_util.remove_directory(directory=outputDirectory)
     print(f'Finished uploading image: s3://mdtp-images/uploads/{runId}')
 
     print(f'Uploading metadatas...')

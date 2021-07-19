@@ -4,7 +4,7 @@ from core.store.saver import Saver
 from core.util import date_util
 
 from mdtp.model import *
-from mdtp.store.schema import BaseImagesTable, GridItemsTable
+from mdtp.store.schema import BaseImagesTable, GridItemsTable, NetworkUpdatesTable
 
 _EMPTY_STRING = '_EMPTY_STRING'
 
@@ -55,3 +55,23 @@ class MdtpSaver(Saver):
             BaseImagesTable.c.generatedDate.key: generatedDate,
         })
         return BaseImage(baseImageId=baseImageId, createdDate=createdDate, updatedDate=updatedDate, network=network, url=url, generatedDate=generatedDate)
+
+    async def create_network_update(self, network: str, latestBlockNumber: int) -> NetworkUpdate:
+        createdDate = date_util.datetime_from_now()
+        updatedDate = createdDate
+        networkUpdateId = await self._execute(query=NetworkUpdatesTable.insert(), values={
+            NetworkUpdatesTable.c.createdDate.key: createdDate,
+            NetworkUpdatesTable.c.updatedDate.key: updatedDate,
+            NetworkUpdatesTable.c.network.key: network,
+            NetworkUpdatesTable.c.latestBlockNumber.key: latestBlockNumber,
+        })
+        return NetworkUpdate(networkUpdateId=networkUpdateId, createdDate=createdDate, updatedDate=updatedDate, network=network, latestBlockNumber=latestBlockNumber)
+
+    async def update_network_update(self, networkUpdateId: int, latestBlockNumber: Optional[int] = None) -> None:
+        query = NetworkUpdatesTable.update(NetworkUpdatesTable.c.networkUpdateId == networkUpdateId)
+        values = {}
+        if latestBlockNumber is not None:
+            values[NetworkUpdatesTable.c.latestBlockNumber.key] = latestBlockNumber
+        if len(values) > 0:
+            values[NetworkUpdatesTable.c.updatedDate.key] = date_util.datetime_from_now()
+        await self.database.execute(query=query, values=values)

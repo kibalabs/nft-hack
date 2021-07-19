@@ -18,6 +18,8 @@ class Contract:
     setTokenContentUriFieldName: str
     transferTokenMethodName: str
     mintTokenMethodName: str
+    transferMethodSignature: str
+    updateMethodSignature: Optional[str]
 
 class ContractStore:
 
@@ -84,3 +86,20 @@ class ContractStore:
         contract = self.get_contract(network=network)
         transactionReceipt = await contract.ethClient.get_transaction_receipt(transactionHash=transactionHash)
         return transactionReceipt
+
+    async def get_latest_block_number(self, network: str) -> int:
+        contract = self.get_contract(network=network)
+        blockNumber = await contract.ethClient.get_latest_block_number()
+        return blockNumber
+
+    async def get_transferred_token_ids_in_blocks(self, network: str, startBlockNumber: int, endBlockNumber: int) -> List[int]:
+        contract = self.get_contract(network=network)
+        events = await contract.ethClient.get_log_entries(address=contract.address, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber, topics=[Web3.keccak(text=contract.transferMethodSignature).hex()])
+        return [int.from_bytes(bytes(event['topics'][3]), 'big') for event in events]
+
+    async def get_updated_token_ids_in_blocks(self, network: str, startBlockNumber: int, endBlockNumber: int) -> List[int]:
+        contract = self.get_contract(network=network)
+        if not contract.updateMethodSignature:
+            return []
+        events = await contract.ethClient.get_log_entries(address=contract.address, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber, topics=[Web3.keccak(text=contract.updateMethodSignature).hex()])
+        return [int.from_bytes(bytes(event['topics'][1]), 'big') for event in events]

@@ -10,7 +10,7 @@ from typing import Optional
 import urllib.parse as urlparse
 import uuid
 
-from core.exceptions import NotFoundException, ServerException
+from core.exceptions import KibaException, NotFoundException, ServerException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.util import date_util, dict_util, file_util
@@ -26,7 +26,7 @@ from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.model import BaseImage, NetworkSummary, TokenMetadata
 from mdtp.model import GridItem
-from mdtp.messages import BuildBaseImageMessageContent, UpdateTokenMessageContent
+from mdtp.messages import BuildBaseImageMessageContent, UpdateAllTokensMessageContent, UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.image_manager import ImageManager
@@ -209,10 +209,32 @@ class MdtpManager:
     async def update_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
-    async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int]) -> None:
-        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
-
     async def update_tokens(self, network: str) -> None:
+        try:
+            networkUpdate = await self.retriever.get_network_update_by_network(network=network)
+        except NotFoundException:
+            raise KibaException(message=f'No networkUpdate has been created for network {network}')
+        latestProcessedBlockNumber = networkUpdate.latestBlockNumber
+        latestBlockNumber = await self.contractStore.get_latest_block_number(network=network)
+        batchSize = 2500
+        tokenIdsToUpdate = set()
+        logging.info(f'Processing blocks from {latestProcessedBlockNumber} to {latestBlockNumber}')
+        for startBlockNumber in range(latestProcessedBlockNumber + 1, latestBlockNumber + 1, batchSize):
+            endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber)
+            transferredTokenIds = await self.contractStore.get_transferred_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
+            logging.info(f'Found {len(transferredTokenIds)} transferred tokens in blocks {startBlockNumber}-{endBlockNumber}')
+            tokenIdsToUpdate.update(transferredTokenIds)
+            updatedTokenIds = await self.contractStore.get_updated_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
+            logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
+            tokenIdsToUpdate.update(updatedTokenIds)
+        for tokenIndex in list(tokenIdsToUpdate):
+            await self.update_token_deferred(network=network, tokenId=tokenIndex)
+        await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
+
+    async def update_all_tokens_deferred(self, network: str, delay: Optional[int]) -> None:
+        await self.workQueue.send_message(message=UpdateAllTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
+
+    async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
             await self.update_token(network=network, tokenId=(tokenIndex + 1))
@@ -227,12 +249,14 @@ class MdtpManager:
         resizableImageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
 
+    async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int]) -> None:
+        await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
+
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
         try:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
-        except Exception as e:
-            print(e)
+        except Exception:
             ownerId = self.ownerAddress
         tokenContentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         print('tokenContentUrl', tokenContentUrl)
