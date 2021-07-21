@@ -43,7 +43,7 @@ class ImageManager:
         return f'image/{imageType}'
 
     async def upload_image_from_url(self, url: str) -> str:
-        localFilePath = f'./tmp/download'
+        localFilePath = f'./download-{uuid.uuid4()}'
         await self.requester.get(url=url, outputFilePath=localFilePath)
         imageId = await self.upload_image_from_file(filePath=localFilePath)
         return imageId
@@ -62,12 +62,12 @@ class ImageManager:
         for targetSize in _TARGET_SIZES:
             if image.size.width >= targetSize:
                 resizedImage = await self._resize_image(image=image, size=ImageSize(width=targetSize, height=targetSize * (image.size.height / image.size.width)))
-                resizedFilename = f'./tmp/{uuid.uuid4()}'
+                resizedFilename = f'./resize-{uuid.uuid4()}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/widths/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
             if image.size.height >= targetSize:
                 resizedImage = await self._resize_image(image=image, size=ImageSize(width=targetSize * (image.size.width / image.size.height), height=targetSize))
-                resizedFilename = f'./tmp/{uuid.uuid4()}'
+                resizedFilename = f'./resize-{uuid.uuid4()}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
 
