@@ -65,11 +65,13 @@ class ImageManager:
                 resizedFilename = f'./resize-{uuid.uuid4()}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/widths/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
+                await file_util.remove_file(filePath=resizedFilename)
             if image.size.height >= targetSize:
                 resizedImage = await self._resize_image(image=image, size=ImageSize(width=targetSize * (image.size.width / image.size.height), height=targetSize))
                 resizedFilename = f'./resize-{uuid.uuid4()}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
+                await file_util.remove_file(filePath=resizedFilename)
 
     async def _save_image_to_file(self, image: Image, fileName: str) -> None:
         if image.imageFormat == ImageFormat.JPG:
