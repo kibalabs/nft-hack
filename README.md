@@ -14,8 +14,7 @@ Matic-Mumbai contract address: 0x87084477F7172dfC303A31efd33e9cA6eA8CABCE
 Matic-Mumbai contract url: https://explorer-mumbai.maticvigil.com/address/0x87084477F7172dfC303A31efd33e9cA6eA8CABCE
 -->
 
-Eth-Rinkeby contract address: 0xeDa9C05612579ff3888C5dCd689566406Df54e01
-Eth-Rinkeby contract url: https://rinkeby.etherscan.io/address/0xeDa9C05612579ff3888C5dCd689566406Df54e01
+Eth-Rinkeby contract address: [0xeDa9C05612579ff3888C5dCd689566406Df54e01](https://rinkeby.etherscan.io/address/0xeDa9C05612579ff3888C5dCd689566406Df54e01)
 
 MDTP address: 0xCE11D6fb4f1e006E5a348230449Dc387fde850CC
 

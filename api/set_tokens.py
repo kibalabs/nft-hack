@@ -43,31 +43,30 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
     ethClient = contract.ethClient
 
     runId = str(uuid.uuid4())
-    runId = 'a818bdb4-33c5-4a68-9085-ae1422129ac7'
     print(f'Starting run: {runId}')
 
-    # print(f'Splitting and uploading image...')
-    # outputDirectory = 'output'
-    # crop_image(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
-    # await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
-    # await file_util.remove_directory(directory=outputDirectory)
-    # print(f'Finished uploading image: s3://mdtp-images/uploads/{runId}')
+    print(f'Splitting and uploading image...')
+    outputDirectory = 'output'
+    crop_image(imagePath=imagePath, outputDirectory=outputDirectory, width=width, height=height)
+    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=f's3://mdtp-images/uploads/{runId}', accessControl='public-read', cacheControl='public,max-age=31536000')
+    await file_util.remove_directory(directory=outputDirectory)
+    print(f'Finished uploading image: s3://mdtp-images/uploads/{runId}')
 
-    # print(f'Uploading metadatas...')
-    # for chunk in list_util.generate_chunks(list(range(width * height)), 100):
-    #     metadataUploadTasks = []
-    #     for index in chunk:
-    #         tokenId = index + 1
-    #         data = {
-    #             "name" : name.replace('{tokenId}', str(tokenId)),
-    #             "description" : description.replace('{tokenId}', str(tokenId)) if description else None,
-    #             "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png",
-    #             "url": url.replace('{tokenId}', str(tokenId)) if url else None,
-    #             "blockId": runId,
-    #         }
-    #         metadataUploadTasks.append(s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))
-    #     await asyncio.gather(*metadataUploadTasks)
-    # logging.info(f'Finished uploading metadatas: s3://mdtp-images/uploads/{runId}')
+    print(f'Uploading metadatas...')
+    for chunk in list_util.generate_chunks(list(range(width * height)), 100):
+        metadataUploadTasks = []
+        for index in chunk:
+            tokenId = index + 1
+            data = {
+                "name" : name.replace('{tokenId}', str(tokenId)),
+                "description" : description.replace('{tokenId}', str(tokenId)) if description else None,
+                "image" : f"https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.png",
+                "url": url.replace('{tokenId}', str(tokenId)) if url else None,
+                "blockId": runId,
+            }
+            metadataUploadTasks.append(s3Manager.write_file(content=json.dumps(data).encode(), targetPath=f's3://mdtp-images/uploads/{runId}/{index}.json', accessControl='public-read', cacheControl='public,max-age=31536000'))
+        await asyncio.gather(*metadataUploadTasks)
+    logging.info(f'Finished uploading metadatas: s3://mdtp-images/uploads/{runId}')
 
     tokensPerRow = 100
     tokenCount = await contractStore.get_total_supply(network='rinkeby')
@@ -76,8 +75,6 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
         for column in range(0, width):
             index = (row * width) + column
             tokenId = startTokenId + (row * tokensPerRow) + column
-            if index < 339:
-                continue
             if tokenId <= min(tokenCount, 10000):
                 tokenContentUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.json'
                 currentTokenContentUri = await contractStore.get_token_content_url(network=network, tokenId=tokenId)

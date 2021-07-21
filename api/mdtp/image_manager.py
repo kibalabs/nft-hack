@@ -46,6 +46,7 @@ class ImageManager:
         localFilePath = f'./download-{uuid.uuid4()}'
         await self.requester.get(url=url, outputFilePath=localFilePath)
         imageId = await self.upload_image_from_file(filePath=localFilePath)
+        await file_util.remove_file(filePath=localFilePath)
         return imageId
 
     async def upload_image_from_file(self, filePath: str) -> str:
