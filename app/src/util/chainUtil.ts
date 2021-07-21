@@ -4,11 +4,6 @@ import { ContractInterface } from 'ethers';
 import contract1 from '../contract1.json';
 import contract2 from '../contract2.json';
 
-declare global {
-  export interface Window {
-    KRT_NEW_CONTRACT?: string;
-  }
-}
 export enum ChainId {
   Mainnet = 1,
   Ropsten = 3,
@@ -21,7 +16,7 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby2' : 'rinkeby',
+  [ChainId.Rinkeby]: 'rinkeby2',
   [ChainId.Mainnet]: 'mainnet',
 };
 

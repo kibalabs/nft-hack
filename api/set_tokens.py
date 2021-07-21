@@ -78,6 +78,8 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
             if tokenId <= min(tokenCount, 10000):
                 tokenContentUri = f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/{runId}/{index}.json'
                 currentTokenContentUri = await contractStore.get_token_content_url(network=network, tokenId=tokenId)
+                if currentTokenContentUri == tokenContentUri:
+                    continue
                 try:
                     currentTokenOwner = await contractStore.get_token_owner(network=network, tokenId=tokenId)
                 except BadRequestException as exception:
@@ -85,25 +87,19 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
                         print('Minting token...')
                         transactionHash = await contractStore.mint_token(network=network, tokenId=tokenId, nonce=nonce, gas=100000, gasPrice=1 * GWEI)
                         nonce += 1
-                        # transactionReceipt = None
-                        # while not transactionReceipt:
-                        #     transactionReceipt = await contractStore.get_transaction_receipt(network=network, transactionHash=transactionHash)
-                        # if not transactionReceipt['status'] == 1:
-                        #     raise Exception(f'Transaction to mint token {tokenId} failed')
                         currentTokenOwner = accountAddress
                         print('Minted token')
                     else:
                         raise Exception
                 if currentTokenOwner != accountAddress:
                     raise Exception(f'We are not the owner of this token, it is owned by: {currentTokenOwner}')
-                if currentTokenContentUri != tokenContentUri:
-                    print(f'Updating token {tokenId}, with index {index}, and nonce {nonce}')
-                    transactionHash = await contractStore.set_token_content_url(network=network, tokenId=tokenId, tokenContentUri=tokenContentUri, nonce=nonce, gas=200000, gasPrice=1 * GWEI)
-                    print('transactionHash', transactionHash)
-                    await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
-                    await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
-                    nonce += 1
-                    time.sleep(0.5)
+                print(f'Updating token {tokenId}, with index {index}, and nonce {nonce}')
+                transactionHash = await contractStore.set_token_content_url(network=network, tokenId=tokenId, tokenContentUri=tokenContentUri, nonce=nonce, gas=200000, gasPrice=1 * GWEI)
+                print('transactionHash', transactionHash)
+                await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
+                await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
+                nonce += 1
+                time.sleep(0.5)
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
