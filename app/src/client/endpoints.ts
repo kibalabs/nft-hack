@@ -1,4 +1,4 @@
-import { RequestData, ResponseData } from '@kibalabs/core';
+import { dateToString, RequestData, ResponseData } from '@kibalabs/core';
 
 import * as Resources from './resources';
 
@@ -24,8 +24,19 @@ export class GetLatestBaseImageResponse extends ResponseData {
 }
 
 export class ListGridItemsRequest extends RequestData {
+  public constructor(
+    readonly shouldCompact: boolean,
+    readonly updatedSinceDate?: Date,
+    readonly blockId?: string,
+  ) {
+    super();
+  }
+
   public toObject = (): Record<string, unknown> => {
     return {
+      shouldCompact: this.shouldCompact,
+      updatedSinceDate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
+      blockId: this.blockId,
     };
   }
 }
@@ -72,23 +83,23 @@ export class RetrieveGridItemResponse extends ResponseData {
   }
 }
 
-export class ListStatItemsRequest extends RequestData {
+export class GetNetworkSummaryRequest extends RequestData {
   public toObject = (): Record<string, unknown> => {
     return {
     };
   }
 }
 
-export class ListStatItemsResponse extends ResponseData {
+export class GetNetworkSummaryResponse extends ResponseData {
   public constructor(
-    readonly statItems: Resources.StatItem[],
+    readonly networkSummary: Resources.NetworkSummary,
   ) {
     super();
   }
 
-  public static fromObject = (obj: Record<string, unknown>): ListStatItemsResponse => {
-    return new ListStatItemsResponse(
-      (obj.statItems as Record<string, unknown>[]).map((entry: Record<string, unknown>): Resources.StatItem => Resources.StatItem.fromObject(entry)),
+  public static fromObject = (obj: Record<string, unknown>): GetNetworkSummaryResponse => {
+    return new GetNetworkSummaryResponse(
+      Resources.NetworkSummary.fromObject(obj.networkSummary as Record<string, unknown>),
     );
   }
 }
@@ -117,8 +128,10 @@ export class GenerateImageUploadForTokenResponse extends ResponseData {
 export class UploadMetadataForTokenRequest extends RequestData {
   public constructor(
     readonly name: string,
-    readonly description: string,
+    readonly description: string | null,
     readonly imageUrl: string,
+    readonly url: string | null,
+    readonly blockId: string | null,
   ) {
     super();
   }
@@ -128,6 +141,8 @@ export class UploadMetadataForTokenRequest extends RequestData {
       name: this.name,
       description: this.description,
       imageUrl: this.imageUrl,
+      url: this.url,
+      blockId: this.blockId,
     };
   }
 }

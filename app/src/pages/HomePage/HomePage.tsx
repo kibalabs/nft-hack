@@ -1,37 +1,52 @@
 import React from 'react';
 
-import { Alignment, Box, LayerContainer, LoadingSpinner, Text } from '@kibalabs/ui-react';
+import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
+import { Alignment, Box, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
+import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
 import { ButtonsOverlay } from '../../components/ButtonsOverlay';
-import { NotificationOverlay } from '../../components/NotificationOverlay';
+import { ShareOverlay } from '../../components/ShareOverlay';
+import { StatsOverlay } from '../../components/StatsOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { isValidChain } from '../../util/chainUtil';
 
+const PanelLayer = styled.div`
+  width: 95vw;
+  max-width: 500px;
+  height: 100%;
+`;
+
+const GridOffset = styled.div`
+  width: 95vw;
+  max-width: 500px;
+`;
+
+const MIN_SCALE = 1;
+const MAX_SCALE = 10;
+
 export const HomePage = (): React.ReactElement => {
+  const navigator = useNavigator();
+  const location = useLocation();
   const { chainId, contract, apiClient, network } = useGlobals();
-  const [infoText, setInfoText] = React.useState<string | undefined>(undefined);
-  const [gridItems, setGridItems] = React.useState<GridItem[] | undefined>(undefined);
-  const [baseImage, setBaseImage] = React.useState<BaseImage | undefined>(undefined);
+  const [infoText, setInfoText] = React.useState<string | null>(null);
+  const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
+  const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
+  const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
-    if (!network) {
-      setBaseImage(undefined);
-      setGridItems(undefined);
+    if (network === null) {
       return;
     }
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
-    });
-    apiClient.listGridItems(network).then((retrievedGridItems: GridItem[]): void => {
-      if (retrievedGridItems.length === 0) {
-        setGridItems([]);
-        return;
-      }
-      setGridItems(retrievedGridItems);
+      apiClient.listGridItems(network, true, retrievedBaseImage.generatedDate).then((retrievedGridItems: GridItem[]): void => {
+        setGridItems(retrievedGridItems);
+      });
     });
   }, [network, apiClient]);
 
@@ -47,9 +62,38 @@ export const HomePage = (): React.ReactElement => {
     }
   }, [chainId, contract, loadGridItems]);
 
-  const onGridItemClicked = (gridItem: GridItem) => {
-    window.open(`/tokens/${gridItem.tokenId}`, '_blank');
+  const onTokenIdClicked = (tokenId: number) => {
+    navigator.navigateTo(`/tokens/${tokenId}`);
   };
+
+  const onCloseTokenPanelClicked = (): void => {
+    navigator.navigateTo('/');
+  };
+
+  const onShareOpenClicked = (): void => {
+    setShareDialogOpen(true);
+  };
+
+  const onShareCloseClicked = (): void => {
+    setShareDialogOpen(false);
+  };
+
+  const onWelcomeCloseClicked = (): void => {
+    setWelcomeComplete(true);
+  };
+
+  const onWelcomeAboutClicked = (): void => {
+    navigator.navigateTo('/about');
+  };
+
+  const isTokenPanelShowing = location.pathname.includes('/tokens/');
+  const isAboutPanelShowing = location.pathname.includes('/about');
+  const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing;
+
+  React.useEffect((): void => {
+    // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
+    window.dispatchEvent(new Event('resize'));
+  }, [isPanelShowing]);
 
   return (
     <React.Fragment>
@@ -57,10 +101,24 @@ export const HomePage = (): React.ReactElement => {
         <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
       <LayerContainer>
-        { gridItems === undefined || baseImage === undefined || network === undefined ? (
+        { baseImage === null ? (
           <LoadingSpinner />
         ) : (
-          <TokenGrid baseImage={baseImage} gridItems={gridItems} onGridItemClicked={onGridItemClicked} />
+          <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
+            <HidingView isHidden={!isPanelShowing}>
+              <GridOffset />
+            </HidingView>
+            <Stack.Item shrinkFactor={1} growthFactor={1}>
+              <TokenGrid
+                minScale={MIN_SCALE}
+                maxScale={MAX_SCALE}
+                baseImage={baseImage}
+                newGridItems={gridItems || []}
+                tokenCount={10000}
+                onTokenIdClicked={onTokenIdClicked}
+              />
+            </Stack.Item>
+          </Stack>
         )}
         { infoText && (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Center}>
@@ -69,15 +127,39 @@ export const HomePage = (): React.ReactElement => {
             </Box>
           </LayerContainer.Layer>
         )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-          <NotificationOverlay />
-        </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
-          <ButtonsOverlay />
+          <ButtonsOverlay onShareClicked={onShareOpenClicked} />
         </LayerContainer.Layer>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-          <WelcomeOverlay />
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
+          <StatsOverlay />
         </LayerContainer.Layer>
+        {isPanelShowing && (
+          <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
+            <PanelLayer>
+              <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
+                <LayerContainer>
+                  <LayerContainer.Layer>
+                    <SubRouterOutlet />
+                  </LayerContainer.Layer>
+                  <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+                    <Box variant='panelButtonHolder'>
+                      <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
+                    </Box>
+                  </LayerContainer.Layer>
+                </LayerContainer>
+              </Box>
+            </PanelLayer>
+          </LayerContainer.Layer>
+        )}
+        { shareDialogOpen ? (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+            <ShareOverlay onCloseClicked={onShareCloseClicked} />
+          </LayerContainer.Layer>
+        ) : !welcomeComplete ? (
+          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+            <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onWelcomeAboutClicked} />
+          </LayerContainer.Layer>
+        ) : null}
       </LayerContainer>
     </React.Fragment>
   );

@@ -15,12 +15,14 @@ class GridItem:
     imageUrl: str
     resizableImageUrl: Optional[str]
     ownerId: str
+    url: Optional[str]
+    blockId: Optional[str]
 
 @dataclasses.dataclass
-class StatItem:
-    statItemId: int
-    title: str
-    data: str
+class NetworkSummary:
+    marketCapitalization: float
+    totalSales: int
+    averagePrice: float
 
 @dataclasses.dataclass
 class ImageSize:
@@ -58,3 +60,23 @@ class BaseImage:
     updatedDate: datetime.datetime
     network: str
     url: str
+    generatedDate: datetime.datetime
+
+@dataclasses.dataclass
+class TokenMetadata:
+    tokenId: str
+    tokenIndex: int
+    name: str
+    description: Optional[str]
+    image: str
+    # MDTP extensions
+    url: Optional[str]
+    blockId: Optional[str]
+
+@dataclasses.dataclass
+class NetworkUpdate:
+    networkUpdateId: int
+    createdDate: datetime.datetime
+    updatedDate: datetime.datetime
+    network: str
+    latestBlockNumber: int

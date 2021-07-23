@@ -46,6 +46,23 @@ export const buildMDTPTheme = (): ITheme => {
     tokenHeader: mergeThemePartial(defaultTheme.boxes.card, {
       'border-radius': '0',
     }),
+    homePanel: {
+      'background-color': '$colors.background',
+      'border-radius': '0 1em 1em 0',
+      'box-shadow': 'rgb(50 50 93 / 25%) 13px 0 27px -5px, rgb(0 0 0 / 30%) 8px 0 16px -8px',
+    },
+    panelButtonHolder: {
+      margin: '0.5em 1em',
+    },
+  };
+
+  const imageThemes = {
+    ...defaultTheme.images,
+    tokenPageHeaderGrid: {
+      background: {
+        'border-radius': '0',
+      },
+    },
   };
 
   const iconButtonThemes: RecursivePartial<ThemeMap<IIconButtonTheme>> = {
@@ -91,6 +108,7 @@ export const buildMDTPTheme = (): ITheme => {
     },
     texts: textThemes,
     boxes: boxThemes,
+    images: imageThemes,
     iconButtons: iconButtonThemes,
   });
   return theme;

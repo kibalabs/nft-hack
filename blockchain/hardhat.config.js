@@ -3,12 +3,13 @@
  */
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
+require("@nomiclabs/hardhat-waffle");
 
 const { ALCHEMY_URL, PRIVATE_KEY, ETHERSCAN_API_KEY } = process.env;
 
 module.exports = {
-   solidity: "0.7.3",
-   defaultNetwork: "rinkeby",
+   solidity: "0.8.4",
+   // defaultNetwork: "rinkeby",
    networks: {
       hardhat: {},
       rinkeby: {

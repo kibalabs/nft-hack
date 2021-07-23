@@ -1,7 +1,7 @@
 name: Deploy
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 jobs:
   deploy-app:
     runs-on: ubuntu-latest
@@ -108,7 +108,7 @@ jobs:
           envs: DOCKER_IMAGE,NAME
           script_stop: true
           script: |
-            url="mdtp-api.kibalabs.com"
+            url="mdtp-api.kibalabs.com,api.mdtp.co,api.milliondollartokenpage.com"
             varsFile=~/.${NAME}.vars
             docker pull ${DOCKER_IMAGE}
             docker stop ${NAME} && docker rm ${NAME} || true

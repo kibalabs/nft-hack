@@ -1,5 +1,31 @@
 import { dateFromString } from '@kibalabs/core';
 
+export class TokenMetadata {
+  // eslint-disable-next-line no-useless-constructor
+  public constructor(
+    readonly tokenId: string,
+    readonly tokenIndex: number,
+    readonly name: string,
+    readonly description: string | null,
+    readonly image: string,
+    readonly url: string | null,
+    readonly blockId: string | null,
+    // eslint-disable-next-line no-empty-function
+  ) {}
+
+  public static fromObject = (obj: Record<string, unknown>): TokenMetadata => {
+    return new TokenMetadata(
+      String(obj.tokenId),
+      Number(obj.tokenIndex),
+      String(obj.name),
+      obj.description ? String(obj.description) : null,
+      String(obj.image),
+      obj.url ? String(obj.url) : null,
+      obj.blockId ? String(obj.blockId) : null,
+    );
+  }
+}
+
 export class GridItem {
   // eslint-disable-next-line no-useless-constructor
   public constructor(
@@ -12,6 +38,8 @@ export class GridItem {
     readonly imageUrl: string,
     readonly resizableImageUrl: string | null,
     readonly ownerId: string,
+    readonly url: string | null,
+    readonly blockId: string | null,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -26,24 +54,26 @@ export class GridItem {
       String(obj.imageUrl),
       obj.resizableImageUrl ? String(obj.resizableImageUrl) : null,
       String(obj.ownerId),
+      obj.url ? String(obj.url) : null,
+      obj.blockId ? String(obj.blockId) : null,
     );
   }
 }
 
-export class StatItem {
+export class NetworkSummary {
   // eslint-disable-next-line no-useless-constructor
   public constructor(
-    readonly statItemId: number,
-    readonly title: string,
-    readonly data: string,
+    readonly marketCapitalization: number,
+    readonly totalSales: number,
+    readonly averagePrice: number,
     // eslint-disable-next-line no-empty-function
   ) {}
 
-  public static fromObject = (obj: Record<string, unknown>): StatItem => {
-    return new StatItem(
-      Number(obj.statItemId),
-      String(obj.title),
-      String(obj.data),
+  public static fromObject = (obj: Record<string, unknown>): NetworkSummary => {
+    return new NetworkSummary(
+      Number(obj.marketCapitalization),
+      Number(obj.totalSales),
+      Number(obj.averagePrice),
     );
   }
 }
@@ -68,18 +98,18 @@ export class BaseImage {
   // eslint-disable-next-line no-useless-constructor
   public constructor(
     readonly baseImageId: number,
-    readonly updatedDate: Date,
     readonly network: string,
     readonly url: string,
+    readonly generatedDate: Date,
     // eslint-disable-next-line no-empty-function
   ) {}
 
   public static fromObject = (obj: Record<string, unknown>): BaseImage => {
     return new BaseImage(
       Number(obj.baseImageId),
-      dateFromString(obj.updatedDate as string),
       String(obj.network),
       String(obj.url),
+      dateFromString(obj.generatedDate as string),
     );
   }
 }

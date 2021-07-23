@@ -2,19 +2,16 @@ import React from 'react';
 
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { IMultiAnyChildProps } from '@kibalabs/core-react';
-import Web3 from 'web3';
-import { Contract } from 'web3-eth-contract';
+import { ethers } from 'ethers';
 
 import { MdtpClient } from './client';
 import { ChainId } from './util/chainUtil';
 
 
 export interface Globals {
-  web3: Web3;
   requester: Requester;
   localStorageClient: LocalStorageClient;
-  contract: Contract;
-  contractAddress: string;
+  contract: ethers.Contract | null;
   apiClient: MdtpClient;
   network: string | undefined;
   chainId: ChainId;
