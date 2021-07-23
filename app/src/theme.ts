@@ -24,13 +24,20 @@ export const buildMDTPTheme = (): ITheme => {
 
   const overlayBoxTheme = {
     'background-color': 'rgba(255, 255, 255, 0.75)',
-    padding: '0.5em 1em',
     'backdrop-filter': 'blur(3px)',
+    'border-radius': '0.75em',
+    'margin': '0.5em',
   };
 
   const boxThemes = {
     ...defaultTheme.boxes,
     overlay: overlayBoxTheme,
+    horizontal: {
+      padding: '0.5em 1em',
+    },
+    vertical: {
+      padding: '1em 0.5em',
+    },
     topRightCutoff: {
       'border-radius': '0 1em 0 0',
     },

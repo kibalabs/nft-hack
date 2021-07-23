@@ -13,6 +13,8 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { isValidChain } from '../../util/chainUtil';
+import { MetaMaskConnection } from '../../components/MetaMaskConnection';
+import { GridControl } from '../../components/GridControl';
 
 const PanelLayer = styled.div`
   width: 95vw;
@@ -25,8 +27,9 @@ const GridOffset = styled.div`
   max-width: 500px;
 `;
 
-const MIN_SCALE = 1;
+const MIN_SCALE = 0.5;
 const MAX_SCALE = 10;
+const DEFAULT_SCALE = 1;
 
 export const HomePage = (): React.ReactElement => {
   const navigator = useNavigator();
@@ -35,6 +38,8 @@ export const HomePage = (): React.ReactElement => {
   const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
+  const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
+  console.log('scale', scale);
   const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
   const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
 
@@ -95,6 +100,28 @@ export const HomePage = (): React.ReactElement => {
     window.dispatchEvent(new Event('resize'));
   }, [isPanelShowing]);
 
+  const constrainScale = React.useCallback((newScale: number): number => {
+    return Math.min(Math.max(newScale, MIN_SCALE), MAX_SCALE);
+  }, []);
+
+  const setConstrainedScale = React.useCallback((newScale: number | ((prevState: number) => number)): void => {
+    if (typeof newScale === 'function') {
+      setScale((currentScale: number): number => {
+        return constrainScale(newScale(currentScale));
+      });
+    } else {
+      setScale(constrainScale(newScale));
+    }
+  }, [constrainScale]);
+
+  const onZoomInClicked = (): void => {
+    setConstrainedScale(scale + 1);
+  };
+
+  const onZoomOutClicked = (): void => {
+    setConstrainedScale(scale - 1);
+  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -116,23 +143,32 @@ export const HomePage = (): React.ReactElement => {
                 newGridItems={gridItems || []}
                 tokenCount={10000}
                 onTokenIdClicked={onTokenIdClicked}
+                scale={scale}
+                onScaleChanged={setConstrainedScale}
               />
             </Stack.Item>
           </Stack>
         )}
-        { infoText && (
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
+          <GridControl
+            zoomLevel={`${Math.floor(100 * (scale / MAX_SCALE))}%`}
+            onZoomInClicked={onZoomInClicked}
+            onZoomOutClicked={onZoomOutClicked}
+          />
+        </LayerContainer.Layer>
+        {/* { infoText && (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Center}>
             <Box variant='overlay'>
               <Text variant='error'>{infoText}</Text>
             </Box>
           </LayerContainer.Layer>
-        )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
+        )} */}
+        {/* <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
           <ButtonsOverlay onShareClicked={onShareOpenClicked} />
         </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
           <StatsOverlay />
-        </LayerContainer.Layer>
+        </LayerContainer.Layer> */}
         {isPanelShowing && (
           <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
             <PanelLayer>
@@ -151,6 +187,9 @@ export const HomePage = (): React.ReactElement => {
             </PanelLayer>
           </LayerContainer.Layer>
         )}
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
+          <MetaMaskConnection />
+        </LayerContainer.Layer>
         { shareDialogOpen ? (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
             <ShareOverlay onCloseClicked={onShareCloseClicked} />

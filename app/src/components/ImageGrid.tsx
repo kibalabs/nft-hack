@@ -22,7 +22,6 @@ const ImageGridItem = styled.div<IImageGridItemProps>`
   outline-width: 1px;
   outline-color: ${(props: IImageGridItemProps): string => (props.isMainItem ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 0, 0, 0)')};
   opacity: ${(props: IImageGridItemProps): string => (props.isMainItem ? '1' : '0.5')};
-  height: 100%;
 `;
 
 export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
@@ -64,9 +63,9 @@ export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
                   {getGridItemForGridPoint({ x, y }) && (
                     <Image
                       variant='tokenPageHeaderGrid'
+                      fitType={'cover'}
                       // isFullHeight={true}
                       // isFullWidth={true}
-                      fitType={'contain'}
                       source={getGridItemForGridPoint({ x, y })?.imageUrl || ''}
                       alternativeText={'token image'}
                     />

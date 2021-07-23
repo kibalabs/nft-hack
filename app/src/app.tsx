@@ -3,7 +3,7 @@ import React from 'react';
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { Route, Router, useInitialization } from '@kibalabs/core-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
-import { Alignment, KibaApp, LayerContainer } from '@kibalabs/ui-react';
+import { KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import ReactGA from 'react-ga';
@@ -12,7 +12,6 @@ import { hot } from 'react-hot-loader/root';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
-import { MetaMaskConnection } from './components/MetaMaskConnection';
 import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
@@ -122,17 +121,12 @@ export const App = hot((): React.ReactElement => {
     <KibaApp theme={theme}>
       <GlobalsProvider globals={{ ...globals, network, contract }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
-          <LayerContainer>
-            <Router>
-              <Route default={true} page={HomePage}>
-                <Route path='/tokens/:tokenId' page={TokenPage} />
-                <Route path='/about' page={AboutPage} />
-              </Route>
-            </Router>
-            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
-              <MetaMaskConnection />
-            </LayerContainer.Layer>
-          </LayerContainer>
+          <Router>
+            <Route default={true} page={HomePage}>
+              <Route path='/tokens/:tokenId' page={TokenPage} />
+              <Route path='/about' page={AboutPage} />
+            </Route>
+          </Router>
         </AccountControlProvider>
       </GlobalsProvider>
     </KibaApp>
