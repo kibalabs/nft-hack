@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
-import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputType, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputType, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
@@ -12,6 +12,7 @@ import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
+import { truncate } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
 
 export type TokenPageProps = {
@@ -191,14 +192,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const OwnershipInfo = (): React.ReactElement => {
     const isBuyable = !ownerId || (network === 'rinkeby' && ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
     return (
-      <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
+      <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isBuyable ? (
           <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
         ) : (
-          <KeyValue name='Owned by' markdownValue={`[${ownerId}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
+          <KeyValue name='Owned by' markdownValue={`[${truncate(ownerId, 20)}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
         )}
         { gridItem && (
-          <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+          <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
             <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isBuyable || isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
             <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
           </Stack>
@@ -229,16 +230,16 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 </BackgroundView>
               )}
             </Box>
-            <Stack direction={Direction.Vertical} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
-              <Text variant='header3'>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
-              <Text variant='header2'>{`${tokenMetadata.name}`}</Text>
+            <Stack direction={Direction.Vertical} isFullWidth={true} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
+              <Text variant='header3' alignment={TextAlignment.Center}>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
+              <Text variant='header2' alignment={TextAlignment.Center}>{`${tokenMetadata.name}`}</Text>
               {tokenMetadata.url && (
                 <Link target={getLinkableUrl(tokenMetadata.url)} text={getUrlDisplayString(tokenMetadata.url)} />
               )}
               {tokenMetadata.description && (
                 <Text>{tokenMetadata.description}</Text>
               )}
-              <Stack.Item gutterBefore={PaddingSize.Wide1} gutterAfter={PaddingSize.Wide2}>
+              <Stack.Item gutterBefore={PaddingSize.Default} gutterAfter={PaddingSize.Wide2}>
                 <OwnershipInfo />
               </Stack.Item>
               { !contract ? (
@@ -250,9 +251,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               ) : isOwnedByUser && (
                 <React.Fragment>
                   <Text>👑 This is one of your tokens 👑</Text>
-                  <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-                    <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-                  </Stack>
+                  <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
                   { hasStartedUpdatingToken && (
                     <Form onFormSubmitted={onUpdateTokenFormSubmitted} isLoading={isUpdatingToken}>
                       <Stack direction={Direction.Vertical} shouldAddGutters={true}>

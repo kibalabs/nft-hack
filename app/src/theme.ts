@@ -26,7 +26,7 @@ export const buildMDTPTheme = (): ITheme => {
     'background-color': 'rgba(255, 255, 255, 0.75)',
     'backdrop-filter': 'blur(3px)',
     'border-radius': '0.75em',
-    'margin': '0.5em',
+    margin: '0.5em',
   };
 
   const boxThemes = {
@@ -38,20 +38,15 @@ export const buildMDTPTheme = (): ITheme => {
     vertical: {
       padding: '1em 0.5em',
     },
-    topRightCutoff: {
-      'border-radius': '0 1em 0 0',
-    },
     topLeftCutoff: {
       'border-radius': '1em 0 0 0',
-    },
-    bottomRightCutoff: {
-      'border-radius': '0 0 1em 0',
     },
     bottomLeftCutoff: {
       'border-radius': '0 0 0 1em',
     },
     tokenHeader: mergeThemePartial(defaultTheme.boxes.card, {
       'border-radius': '0',
+      margin: '0',
     }),
     homePanel: {
       'background-color': '$colors.background',

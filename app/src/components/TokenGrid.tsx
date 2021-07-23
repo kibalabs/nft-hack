@@ -31,10 +31,9 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
   const windowSize = useSize(containerRef.current);
-  const [panOffset, startPan] = usePan();
+  const [panOffset, startPanMouse, startPanTouch] = usePan();
   const lastPanOffset = usePreviousValue(panOffset);
   const scale = useScale(containerRef, 0.3, true, props.scale, props.onScaleChanged);
-  console.log('scale', scale);
   const lastScale = usePreviousValue(scale);
   const mousePositionRef = useMousePositionRef(containerRef);
   const [adjustedOffset, setAdjustedOffset] = React.useState<Point>(panOffset);
@@ -163,7 +162,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       const newMouse = scalePoint(mousePositionRef.current, 1.0 / scale);
       const mouseOffset = diffPoints(lastMouse, newMouse);
       updateAdjustedOffset(mouseOffset);
-      props.onScaleChanged(scale);
     }
   }, [scale, lastScale, mousePositionRef, updateAdjustedOffset]);
 
@@ -238,7 +236,8 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
         }}
-        onMouseDown={startPan}
+        onMouseDown={startPanMouse}
+        onTouchStart={startPanTouch}
       >
         <canvas
           ref={canvasRef}
