@@ -214,6 +214,16 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     setIsMoving(false);
   };
 
+  const onTouchStart = (event: React.TouchEvent): void => {
+    if (event.touches.length === 1) {
+      startPanTouch(event);
+    } else {
+      console.log('here');
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  }
+
   return (
     <div
       ref={containerRef}
