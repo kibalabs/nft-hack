@@ -295,7 +295,10 @@ class MdtpManager:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)
 
     async def go_to_token_image(self, network: str, tokenId: int, width: Optional[int] = None, height: Optional[int] = None) -> str:
-        gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
+        try:
+            gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
+        except NotFoundException:
+            gridItem = await self.get_token_default_grid_item(tokenId=tokenId)
         if gridItem.resizableImageUrl:
             if gridItem.resizableImageUrl.startswith('https://mdtp-api.kibalabs.com/v1/images/'):
                 imageId = gridItem.resizableImageUrl.replace('https://mdtp-api.kibalabs.com/v1/images/', '').replace('/go', '')

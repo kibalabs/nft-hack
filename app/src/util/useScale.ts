@@ -2,22 +2,21 @@ import React from 'react';
 
 import { useEventListener } from '@kibalabs/core-react';
 
-export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: number, maxScale: number, scaleRate = 0.1, shouldInvert = false): [number, (newScale: number) => void] => {
-  const [scale, setScale] = React.useState<number>(1);
+export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0.1, shouldInvert = false, scale = 1.0, setScale: React.Dispatch<React.SetStateAction<number>>): number => {
   const increment = shouldInvert ? -scaleRate : scaleRate;
 
-  const constrainScale = (newScale: number): number => {
-    return Math.min(Math.max(newScale, minScale), maxScale);
-  };
-
-  const setScaleManually = (newScale: number): void => {
-    setScale(constrainScale(newScale));
-  };
-
-  const updateScale = (zoomingIn: boolean): void => {
+  useEventListener(ref.current, 'wheel', (e) => {
+    e.preventDefault();
     setScale((currentScale: number): number => {
-      const newScale = currentScale + (zoomingIn ? increment : -increment);
-      return constrainScale(newScale);
+      let newScale = currentScale;
+      // @ts-ignore
+      if (e.deltaY > 0) {
+        newScale = currentScale + increment;
+      // @ts-ignore
+      } else if (e.deltaY < 0) {
+        newScale = currentScale - increment;
+      }
+      return newScale;
     });
   }
 
@@ -39,5 +38,5 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, minScale: num
     }
   });
 
-  return [scale, setScaleManually];
+  return scale;
 };
