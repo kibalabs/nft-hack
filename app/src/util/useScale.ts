@@ -5,37 +5,20 @@ import { useEventListener } from '@kibalabs/core-react';
 export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0.1, shouldInvert = false, scale = 1.0, setScale: React.Dispatch<React.SetStateAction<number>>): number => {
   const increment = shouldInvert ? -scaleRate : scaleRate;
 
-  useEventListener(ref.current, 'wheel', (e) => {
-    e.preventDefault();
+  // @ts-ignore
+  useEventListener(ref.current, 'wheel', (event: React.WheelEvent) => {
+    event.preventDefault();
     setScale((currentScale: number): number => {
       let newScale = currentScale;
       // @ts-ignore
-      if (e.deltaY > 0) {
+      if (event.deltaY > 0) {
         newScale = currentScale + increment;
       // @ts-ignore
-      } else if (e.deltaY < 0) {
+      } else if (event.deltaY < 0) {
         newScale = currentScale - increment;
       }
       return newScale;
     });
-  }
-
-  useEventListener(ref.current, 'wheel', (event: React.WheelEvent) => {
-    event.preventDefault();
-    if (event.deltaY > 0) {
-      updateScale(true);
-    } else if (event.deltaY < 0) {
-      updateScale(false);
-    }
-  });
-
-  useEventListener(ref.current, 'wheel', (event: React.WheelEvent) => {
-    event.preventDefault();
-    if (event.deltaY > 0) {
-      updateScale(true);
-    } else if (event.deltaY < 0) {
-      updateScale(false);
-    }
   });
 
   return scale;
