@@ -191,12 +191,13 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   const OwnershipInfo = (): React.ReactElement => {
     const isBuyable = !ownerId || (network === 'rinkeby' && ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
+    const ownerIdString = ownerId ? truncate(ownerId, 20) : 'unknown';
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isBuyable ? (
           <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
         ) : (
-          <KeyValue name='Owned by' markdownValue={`[${truncate(ownerId, 20)}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
+          <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
         )}
         { gridItem && (
           <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
