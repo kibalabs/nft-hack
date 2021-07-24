@@ -218,11 +218,10 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     if (event.touches.length === 1) {
       startPanTouch(event);
     } else {
-      console.log('here');
       event.stopPropagation();
       event.preventDefault();
     }
-  }
+  };
 
   return (
     <div
