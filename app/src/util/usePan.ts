@@ -1,8 +1,9 @@
+import { useEventListener } from '@kibalabs/core-react';
 import React from 'react';
 
 import { ORIGIN_POINT, Point } from './pointUtil';
 
-export const usePan = (): [Point, (event: React.MouseEvent) => void, (event: TouchEvent) => void] => {
+export const usePan = (ref: React.RefObject<HTMLElement | null>): [Point, (event: React.MouseEvent) => void, (event: React.TouchEvent) => void] => {
   const [panState, setPanState] = React.useState<Point>(ORIGIN_POINT);
   const lastPointRef = React.useRef<Point>(panState);
 
@@ -59,7 +60,7 @@ export const usePan = (): [Point, (event: React.MouseEvent) => void, (event: Tou
     event.target.addEventListener('mouseup', endPanMouse);
   }, [panMouse, endPanMouse]);
 
-  const startPanTouch = React.useCallback((event: TouchEvent): void => {
+  const startPanTouch = React.useCallback((event: React.TouchEvent): void => {
     if (!event.target) {
       return;
     }
@@ -67,6 +68,11 @@ export const usePan = (): [Point, (event: React.MouseEvent) => void, (event: Tou
     event.target.addEventListener('touchmove', panTouch);
     event.target.addEventListener('touchend', endPanTouch);
   }, [panTouch, endPanTouch]);
+
+  // @ts-ignore
+  useEventListener(ref.current, 'mousedown', startPanMouse);
+  // @ts-ignore
+  useEventListener(ref.current, 'touchstart', startPanTouch);
 
   return [panState, startPanMouse, startPanTouch];
 };
