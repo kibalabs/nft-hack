@@ -29,11 +29,12 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const { apiClient, network } = useGlobals();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const canvasWrapperRef = React.useRef<HTMLDivElement | null>(null);
 
   const windowSize = useSize(containerRef.current);
   const [panOffset, startPanMouse, startPanTouch] = usePan();
   const lastPanOffset = usePreviousValue(panOffset);
-  const scale = useScale(containerRef, 0.3, true, props.scale, props.onScaleChanged);
+  const [scale, pinchCenter] = useScale(canvasWrapperRef, 0.3, props.scale, props.onScaleChanged);
   const lastScale = usePreviousValue(scale);
   const mousePositionRef = useMousePositionRef(containerRef);
   const [adjustedOffset, setAdjustedOffset] = React.useState<Point>(panOffset);
@@ -147,7 +148,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
           for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
             const tokenIndex = x + (y * (canvasWidth / tokenWidth));
             if (tokenIndex < props.tokenCount) {
-              drawTokenImageOnCanvas(context, tokenIndex, truncatedScale);
+              // drawTokenImageOnCanvas(context, tokenIndex, truncatedScale);
             }
           }
         }
@@ -157,11 +158,18 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
 
   React.useEffect((): void => {
     if (scale !== lastScale) {
-      // TODO(krishan711): when scaling with the buttons the mouse position should not be used
-      const lastMouse = scalePoint(mousePositionRef.current, 1.0 / lastScale);
-      const newMouse = scalePoint(mousePositionRef.current, 1.0 / scale);
-      const mouseOffset = diffPoints(lastMouse, newMouse);
-      updateAdjustedOffset(mouseOffset);
+      if (pinchCenter) {
+        const lastCenter = scalePoint(pinchCenter, 1.0 / lastScale);
+        const newCenter = scalePoint(pinchCenter, 1.0 / scale);
+        const offset = diffPoints(lastCenter, newCenter);
+        updateAdjustedOffset(offset);
+      } else {
+        // TODO(krishan711): when scaling with the buttons the mouse position should not be used
+        const lastMouse = scalePoint(mousePositionRef.current, 1.0 / lastScale);
+        const newMouse = scalePoint(mousePositionRef.current, 1.0 / scale);
+        const mouseOffset = diffPoints(lastMouse, newMouse);
+        updateAdjustedOffset(mouseOffset);
+      }
     }
   }, [scale, lastScale, mousePositionRef, updateAdjustedOffset]);
 
@@ -214,15 +222,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     setIsMoving(false);
   };
 
-  const onTouchStart = (event: React.TouchEvent): void => {
-    if (event.touches.length === 1) {
-      startPanTouch(event);
-    } else {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  };
-
   return (
     <div
       ref={containerRef}
@@ -235,6 +234,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       }}
     >
       <div
+        ref={canvasWrapperRef}
         style={{
           width: `${canvasWidth * props.maxScale}px`,
           height: `${canvasHeight * props.maxScale}px`,
@@ -246,7 +246,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
           backgroundSize: 'cover',
         }}
         onMouseDown={startPanMouse}
-        onTouchStart={onTouchStart}
+        onTouchStart={startPanTouch}
       >
         <canvas
           ref={canvasRef}

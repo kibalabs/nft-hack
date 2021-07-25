@@ -53,6 +53,7 @@ app.add_middleware(CORSMiddleware, allow_credentials=True, allow_methods=['*'], 
     'https://milliondollartokenpage.com',
     'http://localhost:3000',
     'http://192.168.1.3:3000',
+    'http://192.168.1.75:3000',
 ])
 
 @app.on_event('startup')

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ORIGIN_POINT, Point } from './pointUtil';
 
-export const usePan = (): [Point, (event: React.MouseEvent) => void, (event: React.TouchEvent) => void] => {
+export const usePan = (): [Point, (event: React.MouseEvent) => void, (event: TouchEvent) => void] => {
   const [panState, setPanState] = React.useState<Point>(ORIGIN_POINT);
   const lastPointRef = React.useRef<Point>(panState);
 
@@ -22,37 +22,41 @@ export const usePan = (): [Point, (event: React.MouseEvent) => void, (event: Rea
     });
   }, []);
 
-  const panMouse = React.useCallback((event: MouseEvent): void => {
-    const point = { x: event.pageX, y: event.pageY };
+  const panMouse = React.useCallback((event: Event): void => {
+    const mouseEvent = event as MouseEvent;
+    const point = { x: mouseEvent.pageX, y: mouseEvent.pageY };
     onPanned(point);
   }, [onPanned]);
 
-  const panTouch = React.useCallback((event: TouchEvent): void => {
-    const point = { x: event.touches[0].pageX, y: event.touches[0].pageY };
+  const panTouch = React.useCallback((event: Event): void => {
+    const touchEvent = event as TouchEvent;
+    const point = { x: touchEvent.touches[0].pageX, y: touchEvent.touches[0].pageY };
     onPanned(point);
   }, [onPanned]);
 
-  const endPanMouse = React.useCallback((): void => {
-    document.removeEventListener('mousemove', panMouse);
-    document.removeEventListener('mouseup', endPanMouse);
+  const endPanMouse = React.useCallback((event: Event): void => {
+    event.target.removeEventListener('mousemove', panMouse);
+    event.target.removeEventListener('mouseup', endPanMouse);
   }, [panMouse]);
 
-  const endPanTouch = React.useCallback((): void => {
-    document.removeEventListener('touchmove', panTouch);
-    document.removeEventListener('touchend', endPanTouch);
+  const endPanTouch = React.useCallback((event: Event): void => {
+    event.target.removeEventListener('touchmove', panTouch);
+    event.target.removeEventListener('touchend', endPanTouch);
   }, [panTouch]);
 
   const startPanMouse = React.useCallback((event: React.MouseEvent): void => {
     lastPointRef.current = { x: event.pageX, y: event.pageY };
-    document.addEventListener('mousemove', panMouse);
-    document.addEventListener('mouseup', endPanMouse);
+    event.target.addEventListener('mousemove', panMouse);
+    event.target.addEventListener('mouseup', endPanMouse);
   }, [panMouse, endPanMouse]);
 
-  const startPanTouch = React.useCallback((event: React.TouchEvent): void => {
+  const startPanTouch = React.useCallback((event: TouchEvent): void => {
     lastPointRef.current = { x: event.touches[0].pageX, y: event.touches[0].pageY };
-    document.addEventListener('touchmove', panTouch);
-    document.addEventListener('touchend', endPanTouch);
+    event.target.addEventListener('touchmove', panTouch);
+    event.target.addEventListener('touchend', endPanTouch);
   }, [panTouch, endPanTouch]);
+
+  const a: EventListener = null;
 
   return [panState, startPanMouse, startPanTouch];
 };
