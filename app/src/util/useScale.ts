@@ -20,6 +20,9 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0
   const pinchCenterRef = React.useRef<Point | null>(null);
 
   const zoomTouch = React.useCallback((event: Event): void => {
+    if (!event.target || !pinchDistanceRef.current) {
+      return;
+    }
     event.stopPropagation();
     event.preventDefault();
     const distance = getTouchDistance(event as TouchEvent);
@@ -36,6 +39,9 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0
   }, [setScale]);
 
   const endZoomTouch = React.useCallback((event: Event): void => {
+    if (!event.target) {
+      return;
+    }
     event.target.removeEventListener('touchmove', zoomTouch);
     event.target.removeEventListener('touchend', endZoomTouch);
     event.stopPropagation();
@@ -60,6 +66,9 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0
 
   // @ts-ignore
   useEventListener(ref.current, 'touchstart', (event: TouchEvent) => {
+    if (!event.target) {
+      return;
+    }
     if (event.touches.length > 1) {
       event.target.addEventListener('touchmove', zoomTouch);
       event.target.addEventListener('touchend', endZoomTouch);

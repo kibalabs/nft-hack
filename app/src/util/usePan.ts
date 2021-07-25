@@ -35,22 +35,34 @@ export const usePan = (): [Point, (event: React.MouseEvent) => void, (event: Tou
   }, [onPanned]);
 
   const endPanMouse = React.useCallback((event: Event): void => {
+    if (!event.target) {
+      return;
+    }
     event.target.removeEventListener('mousemove', panMouse);
     event.target.removeEventListener('mouseup', endPanMouse);
   }, [panMouse]);
 
   const endPanTouch = React.useCallback((event: Event): void => {
+    if (!event.target) {
+      return;
+    }
     event.target.removeEventListener('touchmove', panTouch);
     event.target.removeEventListener('touchend', endPanTouch);
   }, [panTouch]);
 
   const startPanMouse = React.useCallback((event: React.MouseEvent): void => {
+    if (!event.target) {
+      return;
+    }
     lastPointRef.current = { x: event.pageX, y: event.pageY };
     event.target.addEventListener('mousemove', panMouse);
     event.target.addEventListener('mouseup', endPanMouse);
   }, [panMouse, endPanMouse]);
 
   const startPanTouch = React.useCallback((event: TouchEvent): void => {
+    if (!event.target) {
+      return;
+    }
     lastPointRef.current = { x: event.touches[0].pageX, y: event.touches[0].pageY };
     event.target.addEventListener('touchmove', panTouch);
     event.target.addEventListener('touchend', endPanTouch);
