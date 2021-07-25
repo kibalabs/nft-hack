@@ -5,10 +5,7 @@ import { useEventListener } from '@kibalabs/core-react';
 import { Point } from './pointUtil';
 
 const getTouchDistance = (event: TouchEvent): number => {
-  return Math.sqrt(
-    Math.pow(event.touches[0].pageX - event.touches[1].pageX, 2)
-    + Math.pow(event.touches[0].pageY - event.touches[1].pageY, 2),
-  );
+  return Math.sqrt((event.touches[0].pageX - event.touches[1].pageX) ** 2 + (event.touches[0].pageY - event.touches[1].pageY) ** 2);
 };
 
 const getTouchCenter = (event: TouchEvent): Point => {
@@ -18,7 +15,7 @@ const getTouchCenter = (event: TouchEvent): Point => {
   };
 };
 
-export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0.1, scale = 1.0, setScale: React.Dispatch<React.SetStateAction<number>>): [number, Point | null] => {
+export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0.1, scale = 1.0, setScale: React.Dispatch<React.SetStateAction<number>>): [number, React.RefObject<Point | null>] => {
   const pinchDistanceRef = React.useRef<number | null>(null);
   const pinchCenterRef = React.useRef<Point | null>(null);
 
@@ -36,7 +33,7 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0
       pinchDistanceRef.current = distance;
       pinchCenterRef.current = getTouchCenter(event as TouchEvent);
     }
-  }, []);
+  }, [setScale]);
 
   const endZoomTouch = React.useCallback((event: Event): void => {
     event.target.removeEventListener('touchmove', zoomTouch);
@@ -74,5 +71,5 @@ export const useScale = (ref: React.RefObject<HTMLElement | null>, scaleRate = 0
     }
   });
 
-  return [scale, pinchCenterRef.current];
+  return [scale, pinchCenterRef];
 };

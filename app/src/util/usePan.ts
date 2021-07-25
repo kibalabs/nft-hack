@@ -56,7 +56,5 @@ export const usePan = (): [Point, (event: React.MouseEvent) => void, (event: Tou
     event.target.addEventListener('touchend', endPanTouch);
   }, [panTouch, endPanTouch]);
 
-  const a: EventListener = null;
-
   return [panState, startPanMouse, startPanTouch];
 };

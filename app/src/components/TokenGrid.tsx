@@ -34,7 +34,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const windowSize = useSize(containerRef.current);
   const [panOffset, startPanMouse, startPanTouch] = usePan();
   const lastPanOffset = usePreviousValue(panOffset);
-  const [scale, pinchCenter] = useScale(canvasWrapperRef, 0.3, props.scale, props.onScaleChanged);
+  const [scale, pinchCenterRef] = useScale(canvasWrapperRef, 0.3, props.scale, props.onScaleChanged);
   const lastScale = usePreviousValue(scale);
   const mousePositionRef = useMousePositionRef(containerRef);
   const [adjustedOffset, setAdjustedOffset] = React.useState<Point>(panOffset);
@@ -158,9 +158,9 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
 
   React.useEffect((): void => {
     if (scale !== lastScale) {
-      if (pinchCenter) {
-        const lastCenter = scalePoint(pinchCenter, 1.0 / lastScale);
-        const newCenter = scalePoint(pinchCenter, 1.0 / scale);
+      if (pinchCenterRef.current) {
+        const lastCenter = scalePoint(pinchCenterRef.current, 1.0 / lastScale);
+        const newCenter = scalePoint(pinchCenterRef.current, 1.0 / scale);
         const offset = diffPoints(lastCenter, newCenter);
         updateAdjustedOffset(offset);
       } else {
@@ -171,7 +171,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
         updateAdjustedOffset(mouseOffset);
       }
     }
-  }, [scale, lastScale, mousePositionRef, updateAdjustedOffset]);
+  }, [scale, lastScale, pinchCenterRef, mousePositionRef, updateAdjustedOffset]);
 
   React.useEffect((): void => {
     const delta = diffPoints(panOffset, lastPanOffset);
