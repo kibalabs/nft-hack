@@ -5,6 +5,7 @@ import { useDebouncedCallback, usePreviousValue, useSize } from '@kibalabs/core-
 
 import { BaseImage, GridItem } from '../client';
 import { useGlobals } from '../globalsContext';
+import { isMobile } from '../util/browserUtil';
 import { arePointRangesEqual, arePointsEqual, diffPoints, floorPoint, ORIGIN_POINT, Point, PointRange, scalePoint, sumPoints } from '../util/pointUtil';
 import { useMousePositionRef } from '../util/useMousePositionRef';
 import { usePan } from '../util/usePan';
@@ -49,6 +50,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const [setRedrawCallback, clearRedrawCallback] = useDebouncedCallback(150);
   const [isMoving, setIsMoving] = React.useState<boolean>(false);
 
+  const isRunningOnMobile = isMobile();
   const canvasHeight = tokenHeight * Math.ceil((props.tokenCount * tokenWidth) / canvasWidth);
 
   const truncateScale = React.useCallback((newScale: number): number => {
@@ -134,6 +136,10 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     if (!hasScaled && !hasMoved) {
       return;
     }
+    // NOTE(krishan711): on android the zooming behaves very badly. Find an alternative and then remove this.
+    if (isRunningOnMobile) {
+      return;
+    }
 
     clearRedrawCallback();
     setRedrawCallback((): void => {
@@ -155,7 +161,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
         }
       }
     });
-  }, [props.tokenCount, props.maxScale, truncateScale, scale, canvasHeight, lastScale, windowSize, setRedrawCallback, clearRedrawCallback, drawTokenImageOnCanvas]);
+  }, [props.tokenCount, props.maxScale, truncateScale, scale, canvasHeight, lastScale, windowSize, isRunningOnMobile, setRedrawCallback, clearRedrawCallback, drawTokenImageOnCanvas]);
 
   React.useEffect((): void => {
     if (scale !== lastScale) {
