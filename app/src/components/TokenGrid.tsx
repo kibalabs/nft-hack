@@ -34,7 +34,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const windowSize = useSize(containerRef.current);
   const panOffset = usePan(canvasWrapperRef);
   const lastPanOffset = usePreviousValue(panOffset);
-  const [scale, pinchCenterRef] = useScale(canvasWrapperRef, 0.3, props.scale, props.onScaleChanged);
+  const [scale, pinchCenterRef] = useScale(canvasWrapperRef, 0.1, props.scale, props.onScaleChanged);
   const lastScale = usePreviousValue(scale);
   const mousePositionRef = useMousePositionRef(containerRef);
   const [adjustedOffset, setAdjustedOffset] = React.useState<Point>(panOffset);
@@ -82,7 +82,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     }
 
     // @ts-ignore TODO(krishan711): make baseUrl visible in ServiceClient
-    image.setAttribute('src', `${apiClient.baseUrl}/v1/networks/${network}/tokens/${tokenId}/go-to-image?w=${tokenWidth * imageScale * window.devicePixelRatio}&h=${tokenHeight * imageScale * window.devicePixelRatio}`);
+    image.setAttribute('src', `${apiClient.baseUrl}/v1/networks/${network}/tokens/${tokenId}/go-to-image?w=${Math.ceil(tokenWidth * imageScale * window.devicePixelRatio)}&h=${Math.ceil(tokenHeight * imageScale * window.devicePixelRatio)}`);
     tokenScales.current.set(tokenIndex, imageScale);
   }, [apiClient, network, props.maxScale]);
 
@@ -241,7 +241,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
           transform: `translate(${-adjustedOffset.x * scale}px, ${-adjustedOffset.y * scale}px) scale(${scale / props.maxScale})`,
           transformOrigin: 'left top',
           overflow: 'hidden',
-          backgroundImage: `url(${props.baseImage.url}?w=${canvasWidth * window.devicePixelRatio}&h=${canvasHeight * window.devicePixelRatio})`,
+          backgroundImage: `url(${props.baseImage.url}?w=${Math.ceil(canvasWidth * window.devicePixelRatio)}&h=${Math.ceil(canvasHeight * window.devicePixelRatio)})`,
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
         }}

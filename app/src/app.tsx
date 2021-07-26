@@ -118,7 +118,7 @@ export const App = hot((): React.ReactElement => {
   }, [chainId, web3]);
 
   return (
-    <KibaApp theme={theme} globalExtraCss={'html,body{width:100%; height:100%; overscroll-behavior:none;} #root{position:relative; width:100%; height:100%;}'} extraCss={'min-height: 100%;'}>
+    <KibaApp theme={theme} isFullPageApp={true}>
       <GlobalsProvider globals={{ ...globals, network, contract }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router>
