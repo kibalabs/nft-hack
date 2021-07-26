@@ -13,7 +13,7 @@ const EMAIL_SHARE = 'mailto:%20?subject=%20&body=Check%20out%20the%20coolest%20a
 
 export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
   return (
-    <Box variant='overlay' maxWidth='500px'>
+    <Box variant='overlayDialog' maxWidth='500px'>
       <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
         <LayerContainer>
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>

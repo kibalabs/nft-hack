@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, Stack } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, Stack } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
@@ -12,6 +12,7 @@ import { ShareOverlay } from '../../components/ShareOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
+import { getProductOpenseaUrl } from '../../util/chainUtil';
 
 const PanelLayer = styled.div`
   width: 95vw;
@@ -32,13 +33,12 @@ export const HomePage = (): React.ReactElement => {
   const navigator = useNavigator();
   const location = useLocation();
   const { apiClient, network } = useGlobals();
-  // const { chainId, contract, apiClient, network } = useGlobals();
-  // const [infoText, setInfoText] = React.useState<string | null>(null);
   const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
   const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
-  const [shareDialogOpen, setShareDialogOpen] = React.useState<boolean>(false);
-  const [welcomeComplete, setWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
+  const [isShareDialogOpen, setIsShareDialogOpen] = React.useState<boolean>(false);
+  const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
+  const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -52,17 +52,6 @@ export const HomePage = (): React.ReactElement => {
     });
   }, [network, apiClient]);
 
-  // React.useEffect((): void => {
-  //   if (!contract) {
-  //     setInfoText('Please install Metamask to interact fully with the website');
-  //   } else if (!isValidChain(chainId)) {
-  //     // NOTE(arthur-fox): currently this case can never happen, as chainId is set to Rinkeby
-  //     setInfoText('We currently only support Rinkeby testnet. Please switch networks in Metamask and refresh');
-  //   } else {
-  //     setInfoText('BETA - this is a beta version currently running on the Rinkeby testnet.');
-  //   }
-  // }, [chainId, contract]);
-
   React.useEffect((): void => {
     loadGridItems();
   }, [loadGridItems]);
@@ -75,20 +64,19 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo('/');
   };
 
-  // eslint-disable-next-line unused-imports/no-unused-vars
   const onShareOpenClicked = (): void => {
-    setShareDialogOpen(true);
+    setIsShareDialogOpen(true);
   };
 
   const onShareCloseClicked = (): void => {
-    setShareDialogOpen(false);
+    setIsShareDialogOpen(false);
   };
 
   const onWelcomeCloseClicked = (): void => {
-    setWelcomeComplete(true);
+    setIsWelcomeComplete(true);
   };
 
-  const onWelcomeAboutClicked = (): void => {
+  const onAboutClicked = () => {
     navigator.navigateTo('/about');
   };
 
@@ -121,6 +109,10 @@ export const HomePage = (): React.ReactElement => {
 
   const onZoomOutClicked = (): void => {
     setConstrainedScale(scale - 1);
+  };
+
+  const onMenuClicked = (): void => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
@@ -157,19 +149,19 @@ export const HomePage = (): React.ReactElement => {
             onZoomOutClicked={onZoomOutClicked}
           />
         </LayerContainer.Layer>
-        {/* { infoText && (
-          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Center}>
-            <Box variant='overlay'>
-              <Text variant='error'>{infoText}</Text>
-            </Box>
-          </LayerContainer.Layer>
-        )} */}
-        {/* <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
-          <ButtonsOverlay onShareClicked={onShareOpenClicked} />
+        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Start}>
+          <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
+            <Button variant='overlay' text='Menu' iconLeft={<KibaIcon iconId={isMenuOpen ? 'ion-close' : 'ion-menu'} />} onClicked={onMenuClicked} />
+            {isMenuOpen && (
+              <React.Fragment>
+                <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
+                <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
+                <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
+                <Button variant='overlay' text='Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network) || ''} />
+              </React.Fragment>
+            )}
+          </Stack>
         </LayerContainer.Layer>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
-          <StatsOverlay />
-        </LayerContainer.Layer> */}
         {isPanelShowing && (
           <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
             <PanelLayer>
@@ -191,13 +183,13 @@ export const HomePage = (): React.ReactElement => {
         <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
           <MetaMaskConnection />
         </LayerContainer.Layer>
-        { shareDialogOpen ? (
+        { isShareDialogOpen ? (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
             <ShareOverlay onCloseClicked={onShareCloseClicked} />
           </LayerContainer.Layer>
-        ) : !welcomeComplete ? (
+        ) : !isWelcomeComplete ? (
           <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-            <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onWelcomeAboutClicked} />
+            <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onAboutClicked} />
           </LayerContainer.Layer>
         ) : null}
       </LayerContainer>

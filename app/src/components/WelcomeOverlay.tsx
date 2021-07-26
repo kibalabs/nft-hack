@@ -86,7 +86,7 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
   );
 
   return (
-    <Box variant='overlay' maxWidth='500px'>
+    <Box variant='overlayDialog' maxWidth='500px'>
       { overlayScreenNumber === 1 ? (
         <OverlayScreen1 />
       ) : overlayScreenNumber === 2 ? (

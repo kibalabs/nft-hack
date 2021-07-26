@@ -85,3 +85,16 @@ export const getAccountEtherscanUrl = (network: string, account: string): string
   }
   return null;
 };
+
+export const getProductOpenseaUrl = (network: string): string | null => {
+  if (network === 'rinkeby') {
+    return 'https://testnets.opensea.io/collection/mdtp-test-2';
+  }
+  if (network === 'rinkeby2') {
+    return 'https://testnets.opensea.io/collection/milliondollartokenpage-v2';
+  }
+  // if (network === 'mainnet') {
+  //   return `https://etherscan.io/address/${account}`;
+  // }
+  return null;
+};
