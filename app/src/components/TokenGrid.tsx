@@ -71,16 +71,13 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       return;
     }
 
-    console.log('drawTokenImageOnCanvas', tokenIndex, imageScale);
     const tokenId = tokenIndex + 1;
     let image = tokenImages.current.get(tokenIndex);
     if (!image) {
-      console.log('creating image');
       const x = (tokenIndex * tokenWidth) % canvasWidth;
       const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
       const newImage = new window.Image();
       newImage.addEventListener('load', (): void => {
-        console.log('drawing image', tokenId);
         context.fillRect(x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
         context.drawImage(newImage, x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
       });
@@ -140,7 +137,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
 
     clearRedrawCallback();
     setRedrawCallback((): void => {
-      console.log('in here');
       const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
       const topLeft = floorPoint(scaledOffset);
       const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSize.width / tokenWidth / scale, y: windowSize.height / tokenHeight / scale }));
@@ -151,8 +147,9 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
           for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
             const tokenIndex = x + (y * (canvasWidth / tokenWidth));
             if (tokenIndex < props.tokenCount) {
-              // window.queueMicrotask(() => drawTokenImageOnCanvas(tokenIndex, truncatedScale));
-              drawTokenImageOnCanvas(tokenIndex, truncatedScale);
+              setTimeout((): void => {
+                drawTokenImageOnCanvas(tokenIndex, truncatedScale);
+              });
             }
           }
         }
