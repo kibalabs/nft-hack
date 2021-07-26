@@ -1,6 +1,5 @@
 import os
 import logging
-import json
 
 import boto3
 from databases import Database
@@ -52,6 +51,8 @@ app.add_middleware(CORSMiddleware, allow_credentials=True, allow_methods=['*'], 
     'https://new.milliondollartokenpage.com',
     'https://milliondollartokenpage.com',
     'http://localhost:3000',
+    'http://192.168.1.3:3000',
+    'http://192.168.1.75:3000',
 ])
 
 @app.on_event('startup')
