@@ -1,5 +1,6 @@
-import { useEventListener } from '@kibalabs/core-react';
 import React from 'react';
+
+import { useEventListener } from '@kibalabs/core-react';
 
 import { ORIGIN_POINT, Point } from './pointUtil';
 

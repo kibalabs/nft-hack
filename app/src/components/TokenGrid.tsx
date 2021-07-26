@@ -36,7 +36,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const lastPanOffset = usePreviousValue(panOffset);
   const [scale, pinchCenterRef] = useScale(canvasWrapperRef, 0.1, props.scale, props.onScaleChanged);
   const lastScale = usePreviousValue(scale);
-  const mousePositionRef = useMousePositionRef(containerRef);
+  const mousePositionRef = useMousePositionRef(canvasWrapperRef);
   const [adjustedOffset, setAdjustedOffset] = React.useState<Point>(panOffset);
   const adjustedOffsetRef = React.useRef<Point>(adjustedOffset);
   // NOTE(krishan711): this is only here so updateAdjustedOffset doesn't need adjustedOffset as a dependency. There must be a better way
@@ -61,19 +61,26 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     return props.maxScale;
   }, [props.minScale, props.maxScale]);
 
-  const drawTokenImageOnCanvas = React.useCallback((context: CanvasRenderingContext2D, tokenIndex: number, imageScale: number) => {
+  const drawTokenImageOnCanvas = React.useCallback((tokenIndex: number, imageScale: number) => {
     const currentScale = tokenScales.current.get(tokenIndex);
     if (currentScale !== undefined && currentScale >= imageScale) {
       return;
     }
+    const context = canvasRef.current?.getContext('2d');
+    if (!context) {
+      return;
+    }
 
+    console.log('drawTokenImageOnCanvas', tokenIndex, imageScale);
     const tokenId = tokenIndex + 1;
     let image = tokenImages.current.get(tokenIndex);
     if (!image) {
+      console.log('creating image');
       const x = (tokenIndex * tokenWidth) % canvasWidth;
       const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
       const newImage = new window.Image();
-      newImage.addEventListener('load', () => {
+      newImage.addEventListener('load', (): void => {
+        console.log('drawing image', tokenId);
         context.fillRect(x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
         context.drawImage(newImage, x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
       });
@@ -87,13 +94,9 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   }, [apiClient, network, props.maxScale]);
 
   React.useEffect((): void => {
-    const context = canvasRef.current?.getContext('2d');
-    if (!context) {
-      return;
-    }
     props.newGridItems.forEach((gridItem: GridItem): void => {
       if (gridItem.updatedDate > props.baseImage.generatedDate) {
-        drawTokenImageOnCanvas(context, gridItem.tokenId - 1, 1);
+        drawTokenImageOnCanvas(gridItem.tokenId - 1, 1);
       }
     });
   }, [props.newGridItems, props.baseImage, drawTokenImageOnCanvas]);
@@ -123,21 +126,21 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
         y: minY + ((maxY - minY) / 2.0),
       };
     }
-    if (arePointsEqual(adjustedOffsetRef.current, constrainedPoint)) {
+    const truncatedScale = truncateScale(scale);
+
+    setAdjustedOffset(constrainedPoint);
+    const hasMoved = !arePointsEqual(adjustedOffsetRef.current, constrainedPoint);
+    const hasScaled = truncatedScale === truncateScale(lastScale);
+    if (truncatedScale < props.maxScale / 2.0) {
+      return;
+    }
+    if (!hasScaled && !hasMoved) {
       return;
     }
 
-    setAdjustedOffset(constrainedPoint);
     clearRedrawCallback();
     setRedrawCallback((): void => {
-      const context = canvasRef.current?.getContext('2d');
-      if (!context) {
-        return;
-      }
-      const truncatedScale = truncateScale(scale);
-      if (truncatedScale < props.maxScale / 2.0) {
-        return;
-      }
+      console.log('in here');
       const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
       const topLeft = floorPoint(scaledOffset);
       const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSize.width / tokenWidth / scale, y: windowSize.height / tokenHeight / scale }));
@@ -148,7 +151,8 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
           for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
             const tokenIndex = x + (y * (canvasWidth / tokenWidth));
             if (tokenIndex < props.tokenCount) {
-              // drawTokenImageOnCanvas(context, tokenIndex, truncatedScale);
+              // window.queueMicrotask(() => drawTokenImageOnCanvas(tokenIndex, truncatedScale));
+              drawTokenImageOnCanvas(tokenIndex, truncatedScale);
             }
           }
         }
