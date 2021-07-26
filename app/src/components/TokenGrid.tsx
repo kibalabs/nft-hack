@@ -32,7 +32,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const canvasWrapperRef = React.useRef<HTMLDivElement | null>(null);
 
   const windowSize = useSize(containerRef.current);
-  const [panOffset, startPanMouse, startPanTouch] = usePan(canvasWrapperRef);
+  const panOffset = usePan(canvasWrapperRef);
   const lastPanOffset = usePreviousValue(panOffset);
   const [scale, pinchCenterRef] = useScale(canvasWrapperRef, 0.3, props.scale, props.onScaleChanged);
   const lastScale = usePreviousValue(scale);

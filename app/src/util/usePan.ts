@@ -3,7 +3,7 @@ import React from 'react';
 
 import { ORIGIN_POINT, Point } from './pointUtil';
 
-export const usePan = (ref: React.RefObject<HTMLElement | null>): [Point, (event: React.MouseEvent) => void, (event: React.TouchEvent) => void] => {
+export const usePan = (ref: React.RefObject<HTMLElement | null>): Point => {
   const [panState, setPanState] = React.useState<Point>(ORIGIN_POINT);
   const lastPointRef = React.useRef<Point>(panState);
 
@@ -74,5 +74,5 @@ export const usePan = (ref: React.RefObject<HTMLElement | null>): [Point, (event
   // @ts-ignore
   useEventListener(ref.current, 'touchstart', startPanTouch);
 
-  return [panState, startPanMouse, startPanTouch];
+  return panState;
 };
