@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e -o pipefail
 
-# python3 set_tokens.py -i ~/Downloads/middleblock.png -t 4038 -w 25 -h 20 -n 'Million Dollar Token Page' -d 'This is an example of what you can with your tokens! Set the description as you like so that when people click they will read this text. You might then want to add an URL to send them to your website.' -u 'https://milliondollartokenpage.com'
+# python3 set_tokens.py -i ~/Downloads/middleblock.png -t 4038 -w 25 -h 20 -n 'Million Dollar Token Page' -d 'This is an example of what you can with your tokens! Set the description as you like so that when people click they will read this text. You might then want to add an URL to send them to your website or do something even more creative, its entirely your choice!' -u 'https://milliondollartokenpage.com'
 # python3 set_tokens.py -i ~/Downloads/kiba.jpg -n 'Kiba Labs' -t 711 -w 1 -h 1 -d "Bringing you the finest digital products" -u "https://www.kibalabs.com"
 # python3 transfer_tokens.py -t 711 -w 1 -h 1 -r '0x18090cDA49B21dEAffC21b4F886aed3eB787d032'
 # python3 set_tokens.py -i ~/Downloads/1729.png -n '1729.com' -t 1729 -w 1 -h 1 -d "Learn Skills. Earn Crypto." -u '1729.com'
