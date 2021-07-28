@@ -155,9 +155,10 @@ export const HomePage = (): React.ReactElement => {
             {isMenuOpen && (
               <React.Fragment>
                 <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
+                <Button variant='overlay' text='Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network) || ''} />
                 <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
                 <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
-                <Button variant='overlay' text='Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network) || ''} />
+                <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtokenpage'} />
               </React.Fragment>
             )}
           </Stack>
