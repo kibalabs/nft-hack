@@ -195,12 +195,19 @@ describe("MillionDollarTokenPage contract", async function() {
       const transaction = mdtp.mint(100);
       await expect(transaction).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
     });
+  })
 
+  describe("Transferring", async function () {
     it("emits a Transfer event when a token is transferred", async function() {
       await mdtp.mint(100);
       const transaction = mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
       await expect(transaction).to.emit(mdtp, 'Transfer').withArgs(myWallet.address, otherWallet.address, 100);
     });
-  })
+
+    it("allows burning a token", async function() {
+      await mdtp.mint(100);
+      mdtp.transferFrom(myWallet.address, '0x0', 100);
+    });
+  });
 
 });
