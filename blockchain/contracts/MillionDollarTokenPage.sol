@@ -109,7 +109,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     }
 
     function _mint(uint256 tokenId) internal {
-        require(tokenId > 0 && tokenId <= 10000, "MDTP: invalid tokenId");
+        require(tokenId > 0 && tokenId <= SUPPLY_LIMIT, "MDTP: invalid tokenId");
         super._safeMint(msg.sender, tokenId);
     }
 
@@ -120,7 +120,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     // IERC721Enumerable
 
     function totalSupply() public pure override returns (uint256) {
-        return 10000;
+        return SUPPLY_LIMIT;
     }
 
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256 tokenId) {
@@ -128,7 +128,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     }
 
     function tokenByIndex(uint256 index) public pure override returns (uint256) {
-        require(index >= 0 && index < 10000, "MDTP: invalid index");
+        require(index >= 0 && index < SUPPLY_LIMIT, "MDTP: invalid index");
         return index + 1;
     }
 
