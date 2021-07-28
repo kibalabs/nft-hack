@@ -203,11 +203,6 @@ describe("MillionDollarTokenPage contract", async function() {
       const transaction = mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
       await expect(transaction).to.emit(mdtp, 'Transfer').withArgs(myWallet.address, otherWallet.address, 100);
     });
-
-    it("allows burning a token", async function() {
-      await mdtp.mint(100);
-      mdtp.transferFrom(myWallet.address, '0x0', 100);
-    });
   });
 
 });
