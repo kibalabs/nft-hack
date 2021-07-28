@@ -2,7 +2,7 @@
 const InjectSeoPlugin = require('@kibalabs/build/scripts/plugins/injectSeoPlugin');
 
 const title = 'Million Dollar Token Page';
-const description = 'MillionDollarTokenPage (MDTP) is a digital advertising space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display what you like, and later re-sold on the secondary-market. So join us and interact, trade and share, and make crypto history!';
+const description = 'MillionDollarTokenPage (MDTP) is a digital content space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display what you like, and later re-sold on the secondary-market. So join us and interact, trade and share, and be part of making crypto history!';
 const imageUrl = 'https://wml-images.s3-eu-west-1.amazonaws.com/mdtp-banner.png';
 const url = 'https://milliondollartokenpage.com'
 
