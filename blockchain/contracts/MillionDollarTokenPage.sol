@@ -63,6 +63,13 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
 
     // Content URIs
 
+    // NOTE(krishan711): contract URIs should point to a JSON file that contains:
+    // name: string -> the high level title for your content. This should be <250 chars.
+    // description: string -> a description of your content. This should be <2500 chars.
+    // image: string -> a URI pointing to and image for your item in the grid. This should be at least 300x300 and will be cropped if not square.
+    // url: optional[string] -> a URI pointing to the location you want visitors of your content to go to.
+    // blockId: optional[string] -> a unique identifier you can use to group multiple grid items together by giving them all the same blockId.
+
     function _defaultBaseContentURI() internal pure returns (string memory) {
         return "https://api.mdtp.co/token-default-contents/";
     }
