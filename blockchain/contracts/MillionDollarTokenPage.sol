@@ -149,9 +149,11 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
                 delete _ownedTokens[from][lastTokenIndex];
                 delete _tokenContentURIs[tokenId];
             }
-            uint256 length = ERC721.balanceOf(to);
-            _ownedTokens[to][length] = tokenId;
-            _ownedTokensIndex[tokenId] = length;
+            if (to != address(0)) {
+                uint256 length = ERC721.balanceOf(to);
+                _ownedTokens[to][length] = tokenId;
+                _ownedTokensIndex[tokenId] = length;
+            }
         }
     }
 
