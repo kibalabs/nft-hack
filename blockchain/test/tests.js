@@ -38,19 +38,19 @@ describe("MillionDollarTokenPage contract", async function() {
 
     it("allows the owner to change the content uri", async function() {
       await mdtp.mint(100);
-      const newUri = "https://google.com/tokens/100"
+      const newUri = "https://www.com/tokens/100"
       await mdtp.setTokenContentURI(100, newUri);
     });
 
     it("does not not allow changing the content uri of non-minted token", async function() {
-      const newUri = "https://google.com/tokens/100";
+      const newUri = "https://www.com/tokens/100";
       const transaction = mdtp.setTokenContentURI(100, newUri);
       await expect(transaction).to.be.reverted;
     });
 
     it("should have the correct content uri for a minted token with an overwritten uri", async function() {
       await mdtp.mint(100);
-      const newUri = "https://google.com/tokens/100"
+      const newUri = "https://www.com/tokens/100"
       await mdtp.setTokenContentURI(100, newUri);
       const contentUri = await mdtp.tokenContentURI(100);
       expect(contentUri).to.equal(newUri);
@@ -59,16 +59,25 @@ describe("MillionDollarTokenPage contract", async function() {
     it("does not allow a non-owner to change the content uri", async function() {
       await mdtp.mint(100);
       await mdtp.transferFrom(myWallet.address, otherWallet.address, 100)
-      const newUri = "https://google.com/tokens/100";
+      const newUri = "https://www.com/tokens/100";
       const transaction = mdtp.setTokenContentURI(100, newUri);
       await expect(transaction).to.be.reverted;
     });
 
     it("emits a TokenContentURIChanged event when a token content is changed", async function() {
       await mdtp.mint(100);
-      const newUri = "https://google.com/tokens/100"
+      const newUri = "https://www.com/tokens/100"
       const transaction = mdtp.setTokenContentURI(100, newUri);
       await expect(transaction).to.emit(mdtp, 'TokenContentURIChanged').withArgs(100);
+    });
+
+    it("should reset content URI when a token is transferred", async function () {
+      await mdtp.mint(100);
+      const newUri = "https://www.com/tokens/100"
+      await mdtp.setTokenContentURI(100, newUri);
+      await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+      const contentUri = await mdtp.tokenContentURI(100);
+      expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
     });
   });
 

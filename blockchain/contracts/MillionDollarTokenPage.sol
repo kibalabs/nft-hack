@@ -134,24 +134,21 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
         super._beforeTokenTransfer(from, to, tokenId);
-        if (from == address(0)) {
-            _mintedTokenIds.push(tokenId);
-        } else {
-            uint256 lastTokenIndex = ERC721.balanceOf(from) - 1;
-            uint256 tokenIndex = _ownedTokensIndex[tokenId];
-            // If any token except the last is being removed, swap it with the last one
-            if (tokenIndex != lastTokenIndex) {
-                uint256 lastTokenId = _ownedTokens[from][lastTokenIndex];
-                _ownedTokens[from][tokenIndex] = lastTokenId;
-                _ownedTokensIndex[lastTokenId] = tokenIndex;
+        if (to != from) {
+            if (from == address(0)) {
+                _mintedTokenIds.push(tokenId);
+            } else {
+                uint256 lastTokenIndex = ERC721.balanceOf(from) - 1;
+                uint256 tokenIndex = _ownedTokensIndex[tokenId];
+                // If any token except the last is being removed, swap it with the last one
+                if (tokenIndex != lastTokenIndex) {
+                    uint256 lastTokenId = _ownedTokens[from][lastTokenIndex];
+                    _ownedTokens[from][tokenIndex] = lastTokenId;
+                    _ownedTokensIndex[lastTokenId] = tokenIndex;
+                }
+                delete _ownedTokens[from][lastTokenIndex];
+                delete _tokenContentURIs[tokenId];
             }
-            delete _ownedTokensIndex[tokenId];
-            delete _ownedTokens[from][lastTokenIndex];
-        }
-        if (to == address(0)) {
-            // If the token is burnt remove the metadata
-            delete _tokenContentURIs[tokenId];
-        } else if (to != from) {
             uint256 length = ERC721.balanceOf(to);
             _ownedTokens[to][length] = tokenId;
             _ownedTokensIndex[tokenId] = length;
