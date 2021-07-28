@@ -195,6 +195,15 @@ describe("MillionDollarTokenPage contract", async function() {
       const transaction = mdtp.mint(100);
       await expect(transaction).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
     });
+
+    it("updates mintedCount when a token is minted", async function() {
+      await mdtp.mint(100);
+      const mintedCount = await mdtp.mintedCount();
+      expect(mintedCount).to.equal(1);
+      await mdtp.mint(101);
+      const mintedCount2 = await mdtp.mintedCount();
+      expect(mintedCount2).to.equal(2);
+    });
   })
 
   describe("Transferring", async function () {
