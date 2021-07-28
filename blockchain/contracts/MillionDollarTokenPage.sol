@@ -36,8 +36,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     uint16 public constant SUPPLY_LIMIT = 10000;
     uint16 public totalMintLimit = 200;
     uint16 public singleMintLimit = 20;
-    // uint256 public constant mintPrice = 50000000000000000; // 0.05 ETH
-    uint256 public constant mintPrice = 0; // 0.05 ETH
+    uint256 public mintPrice = 0; // 50000000000000000 = 0.05 ETH
 
     constructor() ERC721("MillionDollarTokenPage", "\u22A1") {
         _admins[_msgSender()] = true;

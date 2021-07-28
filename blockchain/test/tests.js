@@ -212,6 +212,36 @@ describe("MillionDollarTokenPage contract", async function() {
       const transaction = mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
       await expect(transaction).to.emit(mdtp, 'Transfer').withArgs(myWallet.address, otherWallet.address, 100);
     });
+
+    it("does not change mintedCount when a token is transferred", async function() {
+      await mdtp.mint(100);
+      const mintedCount = await mdtp.mintedCount();
+      expect(mintedCount).to.equal(1);
+      await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+      const mintedCount2 = await mdtp.mintedCount();
+      expect(mintedCount2).to.equal(1);
+    });
   });
 
 });
+
+// NOTE(krishan711): left to do:
+// allow admins to set totalMintLimit (and test)
+// allow admins to set singleMintLimit (and test)
+// allow admins to set mintPrice (and test)
+// test mintAdmin function
+//   - it can mint more than settable limits
+//   - it can mint without any price
+//   - fails if token is already minted
+//   - ...
+// test mintMany function
+//   - mintPrice is abided by
+//   - totalMintLimit is abided by
+//   - singleMintLimit is abided by
+//   - fails if any token is already minted
+//   - ...
+// test mint function
+//   - mintPrice is abided by
+//   - totalMintLimit is abided by
+//   - fails if token is already minted
+//   - ...
