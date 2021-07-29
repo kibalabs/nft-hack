@@ -106,6 +106,12 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
         _mint(tokenId);
     }
 
+    function mintManyAdmin(uint256[] memory tokenIds) public payable {
+        for (uint i = 0; i < tokenIds.length; i++) {
+            _mint(tokenIds[i]);
+        }
+    }
+
     function mint(uint256 tokenId) public payable {
         require(msg.value >= mintPrice, "MDTP: Insufficient payment");
         require(mintedCount() + 1 <= totalMintLimit, "MDTP: reached current minting limit");
@@ -116,7 +122,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
         require(msg.value >= mintPrice.mul(tokenIds.length), "MDTP: Insufficient payment");
         require(mintedCount() + tokenIds.length <= totalMintLimit, "MDTP: reached current minting limit");
         require(tokenIds.length <= singleMintLimit, "MDTP: tokenIds.length is over singleMintLimit");
-        for(uint i = 0; i < tokenIds.length; i++) {
+        for (uint i = 0; i < tokenIds.length; i++) {
             _mint(tokenIds[i]);
         }
     }

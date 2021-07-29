@@ -288,52 +288,6 @@ describe("MillionDollarTokenPage contract", async function() {
     });
   });
 
-  describe("Minting Admin", async function () {
-    it("does not allow minting a token with id over 10000", async function() {
-      const transaction = mdtp.mintAdmin(10001);
-      await expect(transaction).to.be.reverted;
-    });
-
-    it("does not allow minting a token with id 0", async function() {
-      const transaction = mdtp.mintAdmin(0);
-      await expect(transaction).to.be.reverted;
-    });
-
-    it("does not allow minting a token with negative id", async function() {
-      const transaction = mdtp.mintAdmin(-100);
-      await expect(transaction).to.be.reverted;
-    });
-
-    it("does not allow a token to be minted twice", async function() {
-      await mdtp.mintAdmin(100);
-      const transaction = mdtp.mintAdmin(100);
-      await expect(transaction).to.be.reverted;
-    });
-
-    it("emits a Transfer event when a token is minted", async function() {
-      const transaction = mdtp.mintAdmin(100);
-      await expect(transaction).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
-    });
-
-    it("updates mintedCount when a token is minted", async function() {
-      await mdtp.mintAdmin(100);
-      const mintedCount = await mdtp.mintedCount();
-      expect(mintedCount).to.equal(1);
-    });
-
-    it("can mint over the totalMintLimit", async function() {
-      await mdtp.setTotalMintLimit(2);
-      await mdtp.mintAdmin(100);
-      await mdtp.mintAdmin(101);
-      await mdtp.mintAdmin(102);
-    });
-
-    it("can mint with less money than the mintPrice", async function() {
-      await mdtp.setMintPrice(2);
-      await mdtp.mintAdmin(100);
-    });
-  });
-
   describe("Minting Many", async function () {
     it("does not allow minting any token with id over 10000", async function() {
       const transaction = mdtp.mintMany([100, 10001]);
@@ -358,7 +312,10 @@ describe("MillionDollarTokenPage contract", async function() {
 
     it("emits Transfer events when tokens are minted", async function() {
       const transaction = mdtp.mintMany([100, 101, 103]);
-      await expect(transaction).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
+      const receipt = await transaction;
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 101);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 103);
     });
 
     it("updates mintedCount when tokens are minted", async function() {
@@ -400,6 +357,74 @@ describe("MillionDollarTokenPage contract", async function() {
     it("can mint with money above the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       mdtp.mintMany([100, 101], {value: 5});
+    });
+  });
+
+  describe("Minting Many Admin", async function () {
+    it("does not allow minting any token with id over 10000", async function() {
+      const transaction = mdtp.mintManyAdmin([100, 10001]);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow minting any token with id 0", async function() {
+      const transaction = mdtp.mintManyAdmin([100, 0]);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow minting any token with negative id", async function() {
+      const transaction = mdtp.mintManyAdmin([100, -100]);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow any token to be minted twice", async function() {
+      await mdtp.mintManyAdmin([100, 101, 102]);
+      const transaction = mdtp.mintManyAdmin([102, 103]);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("emits Transfer events when tokens are minted", async function() {
+      const transaction = mdtp.mintManyAdmin([100, 101, 103]);
+      const receipt = await transaction;
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 101);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 103);
+    });
+
+    it("updates mintedCount when tokens are minted", async function() {
+      await mdtp.mintManyAdmin([1100, 101, 102, 03, 104, 105, 106, 107, 108, 109]);
+      const mintedCount = await mdtp.mintedCount();
+      expect(mintedCount).to.equal(10);
+    });
+
+    it("can mint over the singleMintLimit", async function() {
+      await mdtp.setSingleMintLimit(2);
+      await mdtp.mintManyAdmin([100, 101, 102]);
+    });
+
+    it("can mint over the totalMintLimit in separate transactions", async function() {
+      await mdtp.setTotalMintLimit(3);
+      await mdtp.mintManyAdmin([100, 101]);
+      await mdtp.mintManyAdmin([102, 103]);
+    });
+
+    it("can mint over the totalMintLimit in a single transactions", async function() {
+      await mdtp.setTotalMintLimit(3);
+      await mdtp.mintManyAdmin([100, 101, 102, 103]);
+    });
+
+    it("can mint with less money than the mintPrice", async function() {
+      await mdtp.setMintPrice(2);
+      await mdtp.mintManyAdmin([100, 101])
+    });
+
+    it("can mint with money equal to the mintPrice", async function() {
+      await mdtp.setMintPrice(2);
+      mdtp.mintManyAdmin([100, 101], {value: 4});
+    });
+
+    it("can mint with money above the mintPrice", async function() {
+      await mdtp.setMintPrice(2);
+      mdtp.mintManyAdmin([100, 101], {value: 5});
     });
   });
 
