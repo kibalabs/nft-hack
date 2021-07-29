@@ -420,7 +420,3 @@ describe("MillionDollarTokenPage contract", async function() {
     });
   });
 });
-
-// NOTE(krishan711): left to do:
-// move base uri to be a settable var?
-// move default content uri to be a settable var?
