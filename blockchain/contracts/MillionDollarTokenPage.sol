@@ -34,7 +34,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     event TokenContentURIChanged(uint256 indexed tokenId);
 
     uint16 public constant SUPPLY_LIMIT = 10000;
-    uint16 public totalMintLimit = 200;
+    uint16 public totalMintLimit = 1000;
     uint16 public singleMintLimit = 20;
     uint256 public mintPrice = 0; // 50000000000000000 = 0.05 ETH
 
@@ -42,11 +42,25 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
         _admins[_msgSender()] = true;
     }
 
-    // Ownership
+    // Utils
 
     modifier onlyTokenOwner(uint256 tokenId) {
         require(ownerOf(tokenId) == _msgSender(), "MDTP: caller is not the tokenOwner");
         _;
+    }
+
+    // Admin
+
+    function setTotalMintLimit(uint16 newTotalMintLimit) external onlyAdmin {
+        totalMintLimit = newTotalMintLimit;
+    }
+
+    function setSingleMintLimit(uint16 newSingleMintLimit) external onlyAdmin {
+        singleMintLimit = newSingleMintLimit;
+    }
+
+    function setMintPrice(uint256 newMintPrice) external onlyAdmin {
+        mintPrice = newMintPrice;
     }
 
     // Metadata URIs
