@@ -124,6 +124,7 @@ export const App = hot((): React.ReactElement => {
           <Router>
             <Route default={true} page={HomePage}>
               <Route path='/tokens/:tokenId' page={TokenPage} />
+              <Route path='/tokens/:tokenId/update' page={TokenUpdatePage} />
               <Route path='/about' page={AboutPage} />
             </Route>
           </Router>
