@@ -34,20 +34,33 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     event TokenContentURIChanged(uint256 indexed tokenId);
 
     uint16 public constant SUPPLY_LIMIT = 10000;
-    uint16 public totalMintLimit = 200;
+    uint16 public totalMintLimit = 1000;
     uint16 public singleMintLimit = 20;
-    // uint256 public constant mintPrice = 50000000000000000; // 0.05 ETH
-    uint256 public constant mintPrice = 0; // 0.05 ETH
+    uint256 public mintPrice = 0; // 50000000000000000 = 0.05 ETH
 
     constructor() ERC721("MillionDollarTokenPage", "\u22A1") {
         _admins[_msgSender()] = true;
     }
 
-    // Ownership
+    // Utils
 
     modifier onlyTokenOwner(uint256 tokenId) {
         require(ownerOf(tokenId) == _msgSender(), "MDTP: caller is not the tokenOwner");
         _;
+    }
+
+    // Admin
+
+    function setTotalMintLimit(uint16 newTotalMintLimit) external onlyAdmin {
+        totalMintLimit = newTotalMintLimit;
+    }
+
+    function setSingleMintLimit(uint16 newSingleMintLimit) external onlyAdmin {
+        singleMintLimit = newSingleMintLimit;
+    }
+
+    function setMintPrice(uint256 newMintPrice) external onlyAdmin {
+        mintPrice = newMintPrice;
     }
 
     // Metadata URIs
@@ -62,6 +75,13 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     }
 
     // Content URIs
+
+    // NOTE(krishan711): contract URIs should point to a JSON file that contains:
+    // name: string -> the high level title for your content. This should be <250 chars.
+    // description: string -> a description of your content. This should be <2500 chars.
+    // image: string -> a URI pointing to and image for your item in the grid. This should be at least 300x300 and will be cropped if not square.
+    // url: optional[string] -> a URI pointing to the location you want visitors of your content to go to.
+    // blockId: optional[string] -> a unique identifier you can use to group multiple grid items together by giving them all the same blockId.
 
     function _defaultBaseContentURI() internal pure returns (string memory) {
         return "https://api.mdtp.co/token-default-contents/";
@@ -86,6 +106,12 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
         _mint(tokenId);
     }
 
+    function mintManyAdmin(uint256[] memory tokenIds) public payable {
+        for (uint i = 0; i < tokenIds.length; i++) {
+            _mint(tokenIds[i]);
+        }
+    }
+
     function mint(uint256 tokenId) public payable {
         require(msg.value >= mintPrice, "MDTP: Insufficient payment");
         require(mintedCount() + 1 <= totalMintLimit, "MDTP: reached current minting limit");
@@ -96,13 +122,13 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
         require(msg.value >= mintPrice.mul(tokenIds.length), "MDTP: Insufficient payment");
         require(mintedCount() + tokenIds.length <= totalMintLimit, "MDTP: reached current minting limit");
         require(tokenIds.length <= singleMintLimit, "MDTP: tokenIds.length is over singleMintLimit");
-        for(uint i = 0; i < tokenIds.length; i++) {
+        for (uint i = 0; i < tokenIds.length; i++) {
             _mint(tokenIds[i]);
         }
     }
 
     function _mint(uint256 tokenId) internal {
-        require(tokenId > 0 && tokenId <= 10000, "MDTP: invalid tokenId");
+        require(tokenId > 0 && tokenId <= SUPPLY_LIMIT, "MDTP: invalid tokenId");
         super._safeMint(msg.sender, tokenId);
     }
 
@@ -113,7 +139,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     // IERC721Enumerable
 
     function totalSupply() public pure override returns (uint256) {
-        return 10000;
+        return SUPPLY_LIMIT;
     }
 
     function tokenOfOwnerByIndex(address owner, uint256 index) public view override returns (uint256 tokenId) {
@@ -121,33 +147,32 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     }
 
     function tokenByIndex(uint256 index) public pure override returns (uint256) {
-        require(index >= 0 && index < 10000, "MDTP: invalid index");
+        require(index >= 0 && index < SUPPLY_LIMIT, "MDTP: invalid index");
         return index + 1;
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
         super._beforeTokenTransfer(from, to, tokenId);
-        if (from == address(0)) {
-            _mintedTokenIds.push(tokenId);
-        } else {
-            uint256 lastTokenIndex = ERC721.balanceOf(from) - 1;
-            uint256 tokenIndex = _ownedTokensIndex[tokenId];
-            // If any token except the last is being removed, swap it with the last one
-            if (tokenIndex != lastTokenIndex) {
-                uint256 lastTokenId = _ownedTokens[from][lastTokenIndex];
-                _ownedTokens[from][tokenIndex] = lastTokenId;
-                _ownedTokensIndex[lastTokenId] = tokenIndex;
+        if (to != from) {
+            if (from == address(0)) {
+                _mintedTokenIds.push(tokenId);
+            } else {
+                uint256 lastTokenIndex = ERC721.balanceOf(from) - 1;
+                uint256 tokenIndex = _ownedTokensIndex[tokenId];
+                // If any token except the last is being removed, swap it with the last one
+                if (tokenIndex != lastTokenIndex) {
+                    uint256 lastTokenId = _ownedTokens[from][lastTokenIndex];
+                    _ownedTokens[from][tokenIndex] = lastTokenId;
+                    _ownedTokensIndex[lastTokenId] = tokenIndex;
+                }
+                delete _ownedTokens[from][lastTokenIndex];
+                delete _tokenContentURIs[tokenId];
             }
-            delete _ownedTokensIndex[tokenId];
-            delete _ownedTokens[from][lastTokenIndex];
-        }
-        if (to == address(0)) {
-            // If the token is burnt remove the metadata
-            delete _tokenContentURIs[tokenId];
-        } else if (to != from) {
-            uint256 length = ERC721.balanceOf(to);
-            _ownedTokens[to][length] = tokenId;
-            _ownedTokensIndex[tokenId] = length;
+            if (to != address(0)) {
+                uint256 length = ERC721.balanceOf(to);
+                _ownedTokens[to][length] = tokenId;
+                _ownedTokensIndex[tokenId] = length;
+            }
         }
     }
 
