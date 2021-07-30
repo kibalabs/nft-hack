@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -22,7 +23,7 @@ contract AdminManageable {
 
 }
 
-contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
+contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, Ownable {
     using SafeMath for uint256;
     using Strings for uint256;
 
@@ -38,7 +39,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     uint16 public singleMintLimit = 20;
     uint256 public mintPrice = 0; // 50000000000000000 = 0.05 ETH
 
-    constructor() ERC721("MillionDollarTokenPage", "\u22A1") {
+    constructor() ERC721("MillionDollarTokenPage", "\u22A1") Ownable() {
         _admins[_msgSender()] = true;
     }
 
@@ -61,6 +62,11 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
 
     function setMintPrice(uint256 newMintPrice) external onlyAdmin {
         mintPrice = newMintPrice;
+    }
+
+    function withdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(msg.sender).transfer(balance);
     }
 
     // Metadata URIs
@@ -88,6 +94,10 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     }
 
     function setTokenContentURI(uint256 tokenId, string memory metadataURI) public onlyTokenOwner(tokenId) {
+        _setTokenContentURI(tokenId, metadataURI);
+    }
+
+    function _setTokenContentURI(uint256 tokenId, string memory metadataURI) internal {
         _tokenContentURIs[tokenId] = metadataURI;
         emit TokenContentURIChanged(tokenId);
     }
@@ -130,6 +140,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable {
     function _mint(uint256 tokenId) internal {
         require(tokenId > 0 && tokenId <= SUPPLY_LIMIT, "MDTP: invalid tokenId");
         super._safeMint(msg.sender, tokenId);
+        // _setTokenContentURI(tokenId, tokenURI(tokenId))
     }
 
     function mintedCount() public view returns (uint256) {

@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "deploy-dev": "hardhat run --network rinkeby scripts/deploy.js",
+    "verify-dev": "hardhat verify --network rinkeby"
   },
   "author": "",
   "license": "ISC",

@@ -87,7 +87,7 @@ describe("MillionDollarTokenPage contract", async function() {
       expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
     });
 
-    it("should have the correct content uri for a minted token without an overwritten uri", async function() {
+    it("should have the correct content uri for a minted token", async function() {
       await mdtp.mint(100);
       const contentUri = await mdtp.tokenContentURI(100);
       expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");

@@ -82,7 +82,7 @@ class MdtpManager:
             tokenIndex=tokenIndex,
             name=f'MDTP Token {tokenId}',
             description=None,
-            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/f82c6b11-afaf-4724-909b-b41068ab8639/{tokenIndex}.png',
+            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/f1447b83-18b8-472a-81a4-1cd9dfce5c03/{tokenIndex}.png',
             url=None,
             blockId=None,
         )
