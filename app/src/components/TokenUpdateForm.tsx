@@ -1,8 +1,8 @@
 import React from "react";
 
 import { Button, Direction, Form, InputType, SingleLineInput, Stack, Text } from "@kibalabs/ui-react";
+import Dropzone from "react-dropzone";
 import { useGlobals } from "../globalsContext";
-import { Dropzone } from "./dropzone";
 
 type TokenUpdateResult = {
   isPending: boolean;
@@ -11,11 +11,11 @@ type TokenUpdateResult = {
 }
 
 interface ITokenUpdateFormProps {
-  tokenId: string;
+  onTokenUpdateFormSubmitted: (title: string | null, description: string | null, url: string | null, imageUrl: string | null) => Promise<TokenUpdateResult>;
 }
 
-export const TokenUpdateFormPage = (props: ITokenUpdateFormProps): React.ReactElement => {
-  const { apiClient, network, requester } = useGlobals();
+const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElement => {
+  const { apiClient, network } = useGlobals();
   const [newTitle, setNewTitle] = React.useState<string | null>(null);
   const [newDescription, setNewDescription] = React.useState<string | null>(null);
   const [newUrl, setNewUrl] = React.useState<string | null>(null);
@@ -23,6 +23,13 @@ export const TokenUpdateFormPage = (props: ITokenUpdateFormProps): React.ReactEl
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const [updatingTokenResult, setUpdatingTokenResult] = React.useState<TokenUpdateResult | null>(null);
   const [isUpdatingToken, setIsUpdatingToken] = React.useState<boolean>(false);
+
+  const onTokenUpdateFormSubmitted = async (): Promise<void> => {
+    setIsUpdatingToken(true);
+    const result = await props.onTokenUpdateFormSubmitted(newTitle, newDescription, newUrl, newImageUrl);
+    setIsUpdatingToken(false);
+    setUpdatingTokenResult(result);
+  }
 
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
     // TODO(krishan711): ensure there is only one file
@@ -51,54 +58,51 @@ export const TokenUpdateFormPage = (props: ITokenUpdateFormProps): React.ReactEl
     }
   };
 
-  const onUpdateTokenFormSubmitted = async (): Promise<void> => {
-    setIsUpdatingToken(true);
-    const title = newTitle != null ? newTitle : gridItem.title;
-    const description = newDescription != null ? newDescription : gridItem.description;
-    const image = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
-    const url = newUrl != null ? newUrl : gridItem.url;
-    const blockId = gridItem.blockId;
-    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title, description || null, image, url, blockId);
-
-    if (!contract) {
-      setUpdatingTokenResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
-      setIsUpdatingToken(false);
-      return;
-    }
-
-    setUpdatingTokenResult(null);
-    const tokenId = Number(props.tokenId);
-    try {
-      const signerIndex = accountIds.indexOf(ownerId);
-      if (signerIndex === -1) {
-        setUpdatingTokenResult({ isSuccess: false, isPending: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' });
-        setIsUpdatingToken(false);
-      }
-      const contractWithSigner = contract.connect(accounts[signerIndex]);
-      let transaction = null;
-      if (contractWithSigner.setTokenURI) {
-        transaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
-      } else if (contractWithSigner.setTokenContentURI) {
-        transaction = await contractWithSigner.setTokenContentURI(tokenId, tokenMetadataUrl);
-      } else {
-        setUpdatingTokenResult({ isSuccess: false, isPending: false, message: 'Could not connect to contract. Please refresh and try again.' });
-        return;
-      }
-      setUpdatingTokenResult({ isSuccess: false, isPending: true, message: `Transaction in progress. Hash is: ${transaction.hash}.` });
-      setIsUpdatingToken(false);
-      await transaction.wait();
-      setUpdatingTokenResult({ isSuccess: true, isPending: false, message: '🚀 Transaction complete' });
-      apiClient.updateTokenDeferred(network, Number(props.tokenId));
-      loadToken();
-    } catch (error) {
-      setUpdatingTokenResult({ isSuccess: false, isPending: false, message: error.message });
-      setIsUpdatingToken(false);
-    }
-  };
-
   const updateInputState = (!updatingTokenResult || updatingTokenResult.isPending) ? undefined : updatingTokenResult?.isSuccess ? 'success' : (updatingTokenResult?.isSuccess === false ? 'error' : undefined);
 
   return (
+    <Form onFormSubmitted={onTokenUpdateFormSubmitted} isLoading={isUpdatingToken}>
+      <Stack direction={Direction.Vertical} shouldAddGutters={true}>
+        <SingleLineInput
+          inputType={InputType.Text}
+          value={newTitle}
+          onValueChanged={setNewTitle}
+          inputWrapperVariant={updateInputState}
+          placeholderText='Name'
+        />
+        <SingleLineInput
+          inputType={InputType.Text}
+          value={newDescription}
+          onValueChanged={setNewDescription}
+          inputWrapperVariant={updateInputState}
+          placeholderText='Description'
+        />
+        <SingleLineInput
+          inputType={InputType.Url}
+          value={newUrl}
+          onValueChanged={setNewUrl}
+          inputWrapperVariant={updateInputState}
+          placeholderText='URL'
+        />
+        {isUploadingImage ? (
+          <Text>Uploading image...</Text>
+        ) : (
+          <React.Fragment>
+            <SingleLineInput
+              inputType={InputType.Url}
+              value={newImageUrl}
+              onValueChanged={setNewImageUrl}
+              inputWrapperVariant={updateInputState}
+              messageText={updatingTokenResult?.message}
+              placeholderText='Image URL'
+            />
+            <Text variant='note'>OR</Text>
+            <Dropzone onFilesChosen={onImageFilesChosen} />
+          </React.Fragment>
+        )}
+        <Button variant='primary' text='Update' buttonType='submit' />
+      </Stack>
+    </Form>
 
   );
 }
