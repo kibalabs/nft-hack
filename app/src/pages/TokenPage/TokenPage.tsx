@@ -212,7 +212,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   return (
     <React.Fragment>
       <Helmet>
-        <title>{`Token ${props.tokenId} | The Million Dollar Token Page`}</title>
+        <title>{`Token ${props.tokenId} | Million Dollar Token Page`}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
         { !tokenMetadata ? (
