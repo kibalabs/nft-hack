@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Direction, Stack } from '@kibalabs/ui-react';
+import { Alignment, Direction, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { Helmet } from 'react-helmet';
 import { useGlobals } from '../../globalsContext';
@@ -77,7 +77,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       <Helmet>
         <title>{`Token ${props.tokenId} | The Million Dollar Token Page`}</title>
       </Helmet>
-      <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
+      <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
+        <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${props.tokenId}`}</Text>
+        <Spacing />
         <TokenUpdateForm
           onTokenUpdateFormSubmitted={onTokenUpdateFormSubmitted}
           onImageFilesChosen={onImageFilesChosen}

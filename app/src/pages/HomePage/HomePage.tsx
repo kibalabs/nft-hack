@@ -83,7 +83,7 @@ export const HomePage = (): React.ReactElement => {
   const isTokenUpdatePanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/update');
   const isTokenPanelShowing = !isTokenUpdatePanelShowing && location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
-  const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing;
+  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isAboutPanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself

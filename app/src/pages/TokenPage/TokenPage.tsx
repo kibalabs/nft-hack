@@ -1,12 +1,11 @@
 import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
-import { Alignment, BackgroundView, Box, Button, Direction, Form, Image, InputType, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, Image, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem, TokenMetadata } from '../../client';
-import { Dropzone } from '../../components/dropzone';
 import { ImageGrid } from '../../components/ImageGrid';
 import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
@@ -38,7 +37,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     setTokenMetadata(null);
     setBlockGridItems(null);
     setChainOwnerId(null);
-    setHasStartedUpdatingToken(false);
     if (network === null) {
       return;
     }
