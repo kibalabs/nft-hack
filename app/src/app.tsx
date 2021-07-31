@@ -16,6 +16,7 @@ import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { TokenPage } from './pages/TokenPage';
+import { TokenUpdatePage } from './pages/TokenUpdatePage';
 import { buildMDTPTheme } from './theme';
 import { ChainId, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
 
