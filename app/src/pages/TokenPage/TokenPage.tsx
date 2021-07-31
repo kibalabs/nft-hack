@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
+import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Image, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
@@ -13,7 +14,6 @@ import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncate } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
-import { useNavigator } from '@kibalabs/core-react';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -98,8 +98,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const onBuyClicked = (): void => {
-
-  }
+    navigator.navigateTo(`/tokens/${props.tokenId}/mint`);
+  };
 
   const OwnershipInfo = (): React.ReactElement => {
     const isBuyable = !ownerId || (network === 'rinkeby' && ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');

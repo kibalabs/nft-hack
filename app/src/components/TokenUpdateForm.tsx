@@ -1,7 +1,8 @@
-import React from "react";
+import React from 'react';
 
-import { Button, Direction, Form, InputType, MultiLineInput, SingleLineInput, Stack, Text } from "@kibalabs/ui-react";
-import { Dropzone } from "./dropzone";
+import { Button, Direction, Form, InputType, MultiLineInput, SingleLineInput, Stack, Text } from '@kibalabs/ui-react';
+
+import { Dropzone } from './dropzone';
 
 export type UpdateResult = {
   isSuccess: boolean;
@@ -29,7 +30,7 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
     const result = await props.onTokenUpdateFormSubmitted(newTitle, newDescription, newUrl, newImageUrl);
     setUpdatingTokenResult(result);
     setIsUpdatingToken(false);
-  }
+  };
 
   const onImageFilesChosen = async (files: File[]): Promise<void> => {
     setUpdatingImageResult(null);
@@ -89,4 +90,4 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
     </Form>
 
   );
-}
+};

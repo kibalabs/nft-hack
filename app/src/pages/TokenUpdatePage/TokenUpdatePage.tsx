@@ -1,8 +1,9 @@
 import React from 'react';
 
 import { Alignment, Direction, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
-import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { Helmet } from 'react-helmet';
+
+import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 
 export type TokenUpdatePageProps = {
