@@ -14,19 +14,19 @@ import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncate } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
-import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
+import { useNavigator } from '@kibalabs/core-react';
 
 export type TokenPageProps = {
   tokenId: string;
 }
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
+  const navigator = useNavigator();
   const { contract, requester, apiClient, network } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null>(null);
   const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
-  const [hasStartedUpdatingToken, setHasStartedUpdatingToken] = React.useState<boolean>(false);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
@@ -96,7 +96,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [loadBlockGridItems]);
 
   const onUpdateTokenClicked = (): void => {
-    setHasStartedUpdatingToken(true);
+    navigator.navigateTo(`/tokens/${props.tokenId}/update`);
   };
 
   const onBuyClicked = (): void => {
@@ -121,67 +121,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         )}
       </Stack>
     );
-  };
-
-  const onImageFilesChosen = async (files: File[]): Promise<UpdateResult> => {
-    // TODO(krishan711): ensure there is only one file
-    try {
-      const presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
-      const file = files[0];
-      // @ts-ignore
-      const fileName = file.path.replace(/^\//g, '');
-      const formData = new FormData();
-      Object.keys(presignedUpload.params).forEach((key: string): void => {
-        formData.set(key, presignedUpload.params[key]);
-      });
-      // eslint-disable-next-line no-template-curly-in-string
-      formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
-      formData.set('Content-Type', file.type);
-      formData.append('file', file, file.name);
-      await requester.makeFormRequest(presignedUpload.url, formData);
-      // eslint-disable-next-line no-template-curly-in-string
-      return { isSuccess: true, message: `${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}` };
-    } catch (error: unknown) {
-      return { isSuccess: false, message: error.message };
-    }
-  };
-
-  const onTokenUpdateFormSubmitted = async (newTitle: string | null, newDescription: string | null, newUrl: string | null, newImageUrl: string | null): Promise<TokenUpdateResult> => {
-    const title = newTitle != null ? newTitle : gridItem.title;
-    const description = newDescription != null ? newDescription : gridItem.description;
-    const imageUrl = newImageUrl != null ? newImageUrl : gridItem.imageUrl;
-    const url = newUrl != null ? newUrl : gridItem.url;
-    const blockId = gridItem.blockId;
-    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(gridItem.network, gridItem.tokenId, title, description || null, imageUrl, url, blockId);
-
-    if (!contract) {
-      return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
-      return;
-    }
-
-    const tokenId = Number(props.tokenId);
-    try {
-      const signerIndex = accountIds.indexOf(ownerId);
-      if (signerIndex === -1) {
-        return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
-      }
-      const contractWithSigner = contract.connect(accounts[signerIndex]);
-      let transaction = null;
-      if (contractWithSigner.setTokenURI) {
-        transaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
-      } else if (contractWithSigner.setTokenContentURI) {
-        transaction = await contractWithSigner.setTokenContentURI(tokenId, tokenMetadataUrl);
-      } else {
-        return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
-      }
-      return { isSuccess: false, message: `Transaction in progress. Hash is: ${transaction.hash}.` };
-      // await transaction.wait();
-      // return { isSuccess: true, message: '🚀 Transaction complete' };
-      // apiClient.updateTokenDeferred(network, Number(props.tokenId));
-      // loadToken();
-    } catch (error) {
-      return { isSuccess: false, message: error.message };
-    }
   };
 
   return (
@@ -228,12 +167,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <React.Fragment>
                   <Text>👑 This is one of your tokens 👑</Text>
                   <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-                  { hasStartedUpdatingToken && (
-                    <TokenUpdateForm
-                      onTokenUpdateFormSubmitted={onTokenUpdateFormSubmitted}
-                      onImageFilesChosen={onImageFilesChosen}
-                    />
-                  )}
                 </React.Fragment>
               )}
             </Stack>
