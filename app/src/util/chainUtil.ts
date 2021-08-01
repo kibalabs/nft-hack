@@ -77,6 +77,16 @@ export const getTokenEtherscanUrl = (network: string, tokenId: string): string |
   return null;
 };
 
+export const getTransactionEtherscanUrl = (network: string, transactionHash: string): string | null => {
+  if (network === 'rinkeby' || network === 'rinkeby2') {
+    return `https://rinkeby.etherscan.io/tx/${transactionHash}`;
+  }
+  if (network === 'mainnet') {
+    return `https://etherscan.io/tx/${transactionHash}`;
+  }
+  return null;
+};
+
 export const getAccountEtherscanUrl = (network: string, account: string): string | null => {
   if (network === 'rinkeby' || network === 'rinkeby2') {
     return `https://rinkeby.etherscan.io/address/${account}`;
