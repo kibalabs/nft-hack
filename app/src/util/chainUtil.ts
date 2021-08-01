@@ -23,6 +23,7 @@ const validChainIdNetworkMap: Record<number, string> = {
 const networkContractAddressMap: Record<string, string | null> = {
   rinkeby: '0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3',
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
+  rinkeby3: '0x956c3796856ca478B5A45b3d2bFa4DA42Aea5182',
   mainnet: null,
 };
 
@@ -72,6 +73,16 @@ export const getTokenEtherscanUrl = (network: string, tokenId: string): string |
   }
   if (network === 'mainnet') {
     return `https://etherscan.io/token/${contractAddress}?a=${tokenId}`;
+  }
+  return null;
+};
+
+export const getTransactionEtherscanUrl = (network: string, transactionHash: string): string | null => {
+  if (network === 'rinkeby' || network === 'rinkeby2') {
+    return `https://rinkeby.etherscan.io/tx/${transactionHash}`;
+  }
+  if (network === 'mainnet') {
+    return `https://etherscan.io/tx/${transactionHash}`;
   }
   return null;
 };

@@ -80,9 +80,10 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo('/about');
   };
 
-  const isTokenPanelShowing = location.pathname.includes('/tokens/');
+  const isTokenUpdatePanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/update');
+  const isTokenPanelShowing = !isTokenUpdatePanelShowing && location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
-  const isPanelShowing = isTokenPanelShowing || isAboutPanelShowing;
+  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isAboutPanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
@@ -154,7 +155,7 @@ export const HomePage = (): React.ReactElement => {
             <Button variant='overlay' text='Menu' iconLeft={<KibaIcon iconId={isMenuOpen ? 'ion-close' : 'ion-menu'} />} onClicked={onMenuClicked} />
             {isMenuOpen && (
               <React.Fragment>
-                <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />                
+                <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
                 <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
                 <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
                 <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtokenpage'} />

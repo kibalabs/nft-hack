@@ -1,6 +1,7 @@
 
 import React from 'react';
 
+import { Text } from '@kibalabs/ui-react';
 import * as ReactDropzone from 'react-dropzone';
 import styled from 'styled-components';
 
@@ -13,14 +14,14 @@ const StyledDropzone = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 0.5em 0.5em;
   border-width: 2px;
   border-radius: 2px;
   border-color: #ccc;
   border-style: dashed;
   background-color: #eee;
-  color: #bdbdbd;
   outline: none;
+  cursor: pointer;
   transition: border .24s ease-in-out;
 `;
 
@@ -30,16 +31,12 @@ export const Dropzone = (props: IDropzoneProps): React.ReactElement => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.onFilesChosen]);
 
-  const { getRootProps, getInputProps, isDragActive } = ReactDropzone.useDropzone({ onDrop, maxFiles: 1, accept: ['image/png', 'image/jpeg', 'image/jpg'] });
+  const { getRootProps, getInputProps } = ReactDropzone.useDropzone({ onDrop, maxFiles: 1, accept: ['image/png', 'image/jpeg', 'image/jpg'] });
 
   return (
-    <StyledDropzone {...getRootProps()} style={{ padding: '20px' }}>
+    <StyledDropzone {...getRootProps()}>
       <input {...getInputProps()} />
-      { isDragActive ? (
-        <p>Drop the files here ...</p>
-      ) : (
-        <p>Drag and drop an image here, or click to select a file</p>
-      )}
+      <Text variant='note'>UPLOAD</Text>
     </StyledDropzone>
   );
 };
