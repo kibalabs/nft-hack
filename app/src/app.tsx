@@ -16,6 +16,7 @@ import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { TokenPage } from './pages/TokenPage';
+import { TokenUpdatePage } from './pages/TokenUpdatePage';
 import { buildMDTPTheme } from './theme';
 import { ChainId, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
 
@@ -124,6 +125,7 @@ export const App = hot((): React.ReactElement => {
           <Router>
             <Route default={true} page={HomePage}>
               <Route path='/tokens/:tokenId' page={TokenPage} />
+              <Route path='/tokens/:tokenId/update' page={TokenUpdatePage} />
               <Route path='/about' page={AboutPage} />
             </Route>
           </Router>
