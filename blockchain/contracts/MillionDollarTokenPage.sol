@@ -89,7 +89,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
     // description: string -> a description of your content. This should be <2500 chars.
     // image: string -> a URI pointing to and image for your item in the grid. This should be at least 300x300 and will be cropped if not square.
     // url: optional[string] -> a URI pointing to the location you want visitors of your content to go to.
-    // blockId: optional[string] -> a unique identifier you can use to group multiple grid items together by giving them all the same blockId.
+    // groupId: optional[string] -> a unique identifier you can use to group multiple grid items together by giving them all the same groupId.
 
     function _defaultBaseContentURI() internal pure returns (string memory) {
         return "https://api.mdtp.co/token-default-contents/";
@@ -131,7 +131,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
     function mintGroup(uint256 tokenId, uint8 width, uint8 height) public payable {
         require(msg.value >= mintPrice.mul(width * height), "MDTP: Insufficient payment");
         require(mintedCount() + (width * height) <= totalMintLimit, "MDTP: reached current minting limit");
-        require(width * height <= singleMintLimit, "MDTP: tokenIds.length is over singleMintLimit");
+        require(width * height <= singleMintLimit, "MDTP: requested token count is over singleMintLimit");
         _mintGroup(tokenId, width, height);
     }
 

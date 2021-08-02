@@ -24,10 +24,10 @@ export class MdtpClient extends ServiceClient {
     return response.baseImage;
   }
 
-  public listGridItems = async (network: string, shouldCompact = false, updatedSinceDate?: Date, blockId?: string): Promise<Resources.GridItem[]> => {
+  public listGridItems = async (network: string, shouldCompact = false, updatedSinceDate?: Date, groupId?: string): Promise<Resources.GridItem[]> => {
     const method = RestMethod.GET;
     const path = `v1/networks/${network}/grid-items`;
-    const request = new Endpoints.ListGridItemsRequest(shouldCompact, updatedSinceDate, blockId);
+    const request = new Endpoints.ListGridItemsRequest(shouldCompact, updatedSinceDate, groupId);
     const response = await this.makeRequest(method, path, request, Endpoints.ListGridItemsResponse);
     return response.gridItems;
   }
@@ -56,10 +56,10 @@ export class MdtpClient extends ServiceClient {
     return response.presignedUpload;
   }
 
-  public uploadMetadataForToken = async (network: string, tokenId: number, name: string, description: string | null, imageUrl: string, url: string | null, blockId: string | null): Promise<string> => {
+  public uploadMetadataForToken = async (network: string, tokenId: number, name: string, description: string | null, imageUrl: string, url: string | null, groupId: string | null): Promise<string> => {
     const method = RestMethod.POST;
     const path = `v1/networks/${network}/tokens/${tokenId}/upload-metadata`;
-    const request = new Endpoints.UploadMetadataForTokenRequest(name, description, imageUrl, url, blockId);
+    const request = new Endpoints.UploadMetadataForTokenRequest(name, description, imageUrl, url, groupId);
     const response = await this.makeRequest(method, path, request, Endpoints.UploadMetadataForTokenResponse);
     return response.url;
   }

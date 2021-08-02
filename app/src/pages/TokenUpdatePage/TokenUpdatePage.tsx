@@ -92,8 +92,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     }
 
     const tokenId = Number(props.tokenId);
-    const blockId = tokenMetadata.blockId;
-    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(network, Number(props.tokenId), title, description, imageUrl, url, blockId);
+    const groupId = tokenMetadata.groupId;
+    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(network, Number(props.tokenId), title, description, imageUrl, url, groupId);
     try {
       const signerIndex = accountIds.indexOf(ownerId);
       if (signerIndex === -1) {

@@ -17,7 +17,7 @@ def grid_item_from_row(row: Mapping) -> GridItem:
         resizableImageUrl=row[GridItemsTable.c.resizableImageUrl],
         ownerId=row[GridItemsTable.c.ownerId],
         url=row[GridItemsTable.c.url],
-        blockId=row[GridItemsTable.c.blockId],
+        groupId=row[GridItemsTable.c.groupId],
     )
 
 def base_image_from_row(row: Mapping) -> BaseImage:

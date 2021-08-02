@@ -17,7 +17,7 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: 'rinkeby3',
+  [ChainId.Rinkeby]: 'rinkeby2',
   [ChainId.Mainnet]: 'mainnet',
 };
 

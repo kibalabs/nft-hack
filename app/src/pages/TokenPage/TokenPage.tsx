@@ -79,9 +79,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   const loadBlockGridItems = React.useCallback(async (): Promise<void> => {
     setBlockGridItems(null);
-    if (gridItem && gridItem.blockId) {
-      apiClient.listGridItems(network, true, undefined, gridItem.blockId).then((retrievedBlockGridItems: GridItem[]): void => {
-        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].blockId !== gridItem.blockId) {
+    if (gridItem && gridItem.groupId) {
+      apiClient.listGridItems(network, true, undefined, gridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
+        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== gridItem.groupId) {
           return;
         }
         setBlockGridItems(retrievedBlockGridItems);
