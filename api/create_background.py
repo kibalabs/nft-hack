@@ -7,6 +7,7 @@ import uuid
 import asyncclick as click
 import boto3
 from core.s3_manager import S3Manager
+from core.util import file_util
 from PIL import Image
 
 from crop_image import crop_image
@@ -25,7 +26,7 @@ async def main(imagePath: str, overlayImagePath: str, middleImagePath: str):
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
-    # NOTE(krishan711): this script assumes the overlay image is the correct sizes already
+    # # NOTE(krishan711): this script assumes the overlay image is the correct sizes already
     angle = 45
     scaleX = 1.7
     scaleY = 0.9
@@ -56,9 +57,10 @@ async def main(imagePath: str, overlayImagePath: str, middleImagePath: str):
     runId = str(uuid.uuid4())
     uploadPath = f's3://mdtp-images/uploads/{runId}'
     outputDirectory = 'output'
-    crop_image(imagePath=imagePath, outputDirectory=outputDirectory, height=100, width=100)
+    crop_image(imagePath=outputFilePath, outputDirectory=outputDirectory, height=100, width=100)
     await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=uploadPath, accessControl='public-read', cacheControl='public,max-age=31536000')
     logging.info(f'Uploaded to {uploadPath}')
+    await file_util.remove_directory(outputDirectory)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

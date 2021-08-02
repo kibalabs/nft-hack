@@ -73,6 +73,18 @@ export const buildMDTPTheme = (): ITheme => {
   };
 
   const buttonThemes: RecursivePartial<ThemeMap<IButtonTheme>> = {
+    default: {
+      disabled: {
+        default: {
+          background: {
+            'border-color': '$colors.backgroundDark25',
+          },
+          text: {
+            color: '$colors.backgroundDark25',
+          },
+        },
+      },
+    },
     overlay: {
       normal: {
         default: {

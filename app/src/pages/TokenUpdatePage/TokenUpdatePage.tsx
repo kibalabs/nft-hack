@@ -22,8 +22,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   const colors = useColors();
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null | undefined>(undefined);
-  const [transaction, setTransaction] = React.useState<ContractTransaction | undefined>(undefined);
-  const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | undefined>(undefined);
+  const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
+  const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
@@ -130,7 +130,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   return (
     <React.Fragment>
       <Helmet>
-        <title>{`Token ${props.tokenId} | The Million Dollar Token Page`}</title>
+        <title>{`Update Token ${props.tokenId} | Million Dollar Token Page`}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
         <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${props.tokenId}`}</Text>

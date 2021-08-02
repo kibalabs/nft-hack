@@ -82,7 +82,7 @@ class MdtpManager:
             tokenIndex=tokenIndex,
             name=f'MDTP Token {tokenId}',
             description=None,
-            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/f1447b83-18b8-472a-81a4-1cd9dfce5c03/{tokenIndex}.png',
+            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/b88762dd-7605-4447-949b-d8ba99e6f44d/{tokenIndex}.png',
             url=None,
             blockId=None,
         )
@@ -139,10 +139,11 @@ class MdtpManager:
         tokenWidth = 10 * scale
         generatedDate = date_util.datetime_from_now()
         outputImage = PILImage.new('RGB', (width, height))
-        try:
-            latestBaseImage = await self.get_latest_base_image_url(network=network)
-        except NotFoundException:
-            latestBaseImage = None
+        latestBaseImage = None
+        # try:
+        #     latestBaseImage = await self.get_latest_base_image_url(network=network)
+        # except NotFoundException:
+        #     latestBaseImage = None
         if latestBaseImage:
             gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
         else:

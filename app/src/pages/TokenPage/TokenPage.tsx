@@ -97,12 +97,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     navigator.navigateTo(`/tokens/${props.tokenId}/update`);
   };
 
+  const onMintClicked = (): void => {
+    navigator.navigateTo(`/tokens/${props.tokenId}/mint`);
+  };
+
   const OwnershipInfo = (): React.ReactElement => {
+    const isMintable = ownerId == null && contract.mintMany != null;
     const isBuyable = !ownerId || (network === 'rinkeby' && ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
     const ownerIdString = ownerId ? truncate(ownerId, 20) : 'unknown';
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
-        { isBuyable ? (
+        { isMintable ? (
+          <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
+        ) : isBuyable ? (
           <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
         ) : (
           <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />

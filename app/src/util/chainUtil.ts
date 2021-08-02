@@ -3,6 +3,7 @@ import { ContractInterface } from 'ethers';
 
 import contract1 from '../contract1.json';
 import contract2 from '../contract2.json';
+import contract3 from '../contract3.json';
 
 export enum ChainId {
   Mainnet = 1,
@@ -30,6 +31,7 @@ const networkContractAddressMap: Record<string, string | null> = {
 const networkContractMap: Record<string, ContractInterface | null> = {
   rinkeby: contract1 as unknown as ContractInterface,
   rinkeby2: contract2 as unknown as ContractInterface,
+  rinkeby3: contract3 as unknown as ContractInterface,
   mainnet: null,
 };
 
@@ -54,7 +56,7 @@ export const getTokenOpenseaUrl = (network: string, tokenId: string): string | n
   if (!contractAddress) {
     return null;
   }
-  if (network === 'rinkeby' || network === 'rinkeby2') {
+  if (network.startsWith('rinkeby')) {
     return `https://testnets.opensea.io/assets/${contractAddress}/${tokenId}`;
   }
   if (network === 'mainnet') {
@@ -68,7 +70,7 @@ export const getTokenEtherscanUrl = (network: string, tokenId: string): string |
   if (!contractAddress) {
     return null;
   }
-  if (network === 'rinkeby' || network === 'rinkeby2') {
+  if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/token/${contractAddress}?a=${tokenId}`;
   }
   if (network === 'mainnet') {
@@ -78,7 +80,7 @@ export const getTokenEtherscanUrl = (network: string, tokenId: string): string |
 };
 
 export const getTransactionEtherscanUrl = (network: string, transactionHash: string): string | null => {
-  if (network === 'rinkeby' || network === 'rinkeby2') {
+  if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/tx/${transactionHash}`;
   }
   if (network === 'mainnet') {
@@ -88,7 +90,7 @@ export const getTransactionEtherscanUrl = (network: string, transactionHash: str
 };
 
 export const getAccountEtherscanUrl = (network: string, account: string): string | null => {
-  if (network === 'rinkeby' || network === 'rinkeby2') {
+  if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/address/${account}`;
   }
   if (network === 'mainnet') {
