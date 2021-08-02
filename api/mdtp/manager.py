@@ -139,11 +139,10 @@ class MdtpManager:
         tokenWidth = 10 * scale
         generatedDate = date_util.datetime_from_now()
         outputImage = PILImage.new('RGB', (width, height))
-        latestBaseImage = None
-        # try:
-        #     latestBaseImage = await self.get_latest_base_image_url(network=network)
-        # except NotFoundException:
-        #     latestBaseImage = None
+        try:
+            latestBaseImage = await self.get_latest_base_image_url(network=network)
+        except NotFoundException:
+            latestBaseImage = None
         if latestBaseImage:
             gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
         else:
