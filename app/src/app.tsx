@@ -7,6 +7,7 @@ import { KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import ReactGA from 'react-ga';
+import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
 
@@ -121,6 +122,9 @@ export const App = hot((): React.ReactElement => {
 
   return (
     <KibaApp theme={theme} isFullPageApp={true}>
+      <Helmet>
+        <link href='https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;600;700;800;900&display=swap' rel='stylesheet' />
+      </Helmet>
       <GlobalsProvider globals={{ ...globals, network, contract }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router>
