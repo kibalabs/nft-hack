@@ -27,7 +27,7 @@ export class ListGridItemsRequest extends RequestData {
   public constructor(
     readonly shouldCompact: boolean,
     readonly updatedSinceDate?: Date,
-    readonly blockId?: string,
+    readonly groupId?: string,
   ) {
     super();
   }
@@ -36,7 +36,7 @@ export class ListGridItemsRequest extends RequestData {
     return {
       shouldCompact: this.shouldCompact,
       updatedSinceDate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
-      blockId: this.blockId,
+      groupId: this.groupId,
     };
   }
 }
@@ -131,7 +131,7 @@ export class UploadMetadataForTokenRequest extends RequestData {
     readonly description: string | null,
     readonly imageUrl: string,
     readonly url: string | null,
-    readonly blockId: string | null,
+    readonly groupId: string | null,
   ) {
     super();
   }
@@ -142,7 +142,7 @@ export class UploadMetadataForTokenRequest extends RequestData {
       description: this.description,
       imageUrl: this.imageUrl,
       url: this.url,
-      blockId: this.blockId,
+      groupId: this.groupId,
     };
   }
 }

@@ -79,9 +79,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   const loadBlockGridItems = React.useCallback(async (): Promise<void> => {
     setBlockGridItems(null);
-    if (gridItem && gridItem.blockId) {
-      apiClient.listGridItems(network, true, undefined, gridItem.blockId).then((retrievedBlockGridItems: GridItem[]): void => {
-        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].blockId !== gridItem.blockId) {
+    if (gridItem && gridItem.groupId) {
+      apiClient.listGridItems(network, true, undefined, gridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
+        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== gridItem.groupId) {
           return;
         }
         setBlockGridItems(retrievedBlockGridItems);
@@ -97,12 +97,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     navigator.navigateTo(`/tokens/${props.tokenId}/update`);
   };
 
+  const onMintClicked = (): void => {
+    navigator.navigateTo(`/tokens/${props.tokenId}/mint`);
+  };
+
   const OwnershipInfo = (): React.ReactElement => {
+    const isMintable = !ownerId && contract && contract.mintGroup != null;
     const isBuyable = !ownerId || (network === 'rinkeby' && ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
     const ownerIdString = ownerId ? truncate(ownerId, 10) : 'unknown';
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
-        { isBuyable ? (
+        { isMintable ? (
+          <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
+        ) : isBuyable ? (
           <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
         ) : (
           <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
@@ -120,7 +127,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   return (
     <React.Fragment>
       <Helmet>
-        <title>{`Token ${props.tokenId} | The Million Dollar Token Page`}</title>
+        <title>{`Token ${props.tokenId} | Million Dollar Token Page`}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
         { !tokenMetadata ? (

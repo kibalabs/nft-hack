@@ -3,6 +3,13 @@ import { ContractInterface } from 'ethers';
 
 import contract1 from '../contract1.json';
 import contract2 from '../contract2.json';
+import contract3 from '../contract3.json';
+
+declare global {
+  export interface Window {
+    KRT_NEW_CONTRACT?: string;
+  }
+}
 
 export enum ChainId {
   Mainnet = 1,
@@ -16,20 +23,21 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: 'rinkeby2',
+  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby3' : 'rinkeby2',
   [ChainId.Mainnet]: 'mainnet',
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
   rinkeby: '0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3',
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
-  rinkeby3: '0x956c3796856ca478B5A45b3d2bFa4DA42Aea5182',
+  rinkeby3: '0x220c7bB89EbF6bC81461D37E197572219b9725fC',
   mainnet: null,
 };
 
 const networkContractMap: Record<string, ContractInterface | null> = {
   rinkeby: contract1 as unknown as ContractInterface,
   rinkeby2: contract2 as unknown as ContractInterface,
+  rinkeby3: contract3 as unknown as ContractInterface,
   mainnet: null,
 };
 
@@ -54,7 +62,7 @@ export const getTokenOpenseaUrl = (network: string, tokenId: string): string | n
   if (!contractAddress) {
     return null;
   }
-  if (network === 'rinkeby' || network === 'rinkeby2') {
+  if (network.startsWith('rinkeby')) {
     return `https://testnets.opensea.io/assets/${contractAddress}/${tokenId}`;
   }
   if (network === 'mainnet') {
@@ -68,7 +76,7 @@ export const getTokenEtherscanUrl = (network: string, tokenId: string): string |
   if (!contractAddress) {
     return null;
   }
-  if (network === 'rinkeby' || network === 'rinkeby2') {
+  if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/token/${contractAddress}?a=${tokenId}`;
   }
   if (network === 'mainnet') {
@@ -78,7 +86,7 @@ export const getTokenEtherscanUrl = (network: string, tokenId: string): string |
 };
 
 export const getTransactionEtherscanUrl = (network: string, transactionHash: string): string | null => {
-  if (network === 'rinkeby' || network === 'rinkeby2') {
+  if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/tx/${transactionHash}`;
   }
   if (network === 'mainnet') {
@@ -88,7 +96,7 @@ export const getTransactionEtherscanUrl = (network: string, transactionHash: str
 };
 
 export const getAccountEtherscanUrl = (network: string, account: string): string | null => {
-  if (network === 'rinkeby' || network === 'rinkeby2') {
+  if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/address/${account}`;
   }
   if (network === 'mainnet') {

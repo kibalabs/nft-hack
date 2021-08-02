@@ -81,9 +81,10 @@ export const HomePage = (): React.ReactElement => {
   };
 
   const isTokenUpdatePanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/update');
+  const isTokenMintPanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/mint');
   const isTokenPanelShowing = !isTokenUpdatePanelShowing && location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
-  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isAboutPanelShowing;
+  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
@@ -119,7 +120,7 @@ export const HomePage = (): React.ReactElement => {
   return (
     <React.Fragment>
       <Helmet>
-        <title>{'The Million Dollar Token Page - Own a piece of crypto history!'}</title>
+        <title>{'Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
       <LayerContainer>
         { baseImage === null ? (
@@ -158,7 +159,7 @@ export const HomePage = (): React.ReactElement => {
                 <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
                 <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
                 <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
-                <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtokenpage'} />
+                <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
                 <Button variant='overlay' text='Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network) || ''} />
               </React.Fragment>
             )}

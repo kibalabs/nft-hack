@@ -68,7 +68,7 @@ class UploadMetadataForTokenRequest(BaseModel):
     description: Optional[str]
     imageUrl: str
     url: Optional[str]
-    blockId: Optional[str]
+    groupId: Optional[str]
 
 class UploadMetadataForTokenResponse(BaseModel):
     url: str

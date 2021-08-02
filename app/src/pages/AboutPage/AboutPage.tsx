@@ -48,7 +48,7 @@ Come along and join us now by interacting, trading and sharing on milliondollart
 
   return (
     <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
-      <Text variant='header1'>{'The Million Dollar Token Page'}</Text>
+      <Text variant='header1'>{'Million Dollar Token Page'}</Text>
       <Markdown source={text} />
     </Stack>
   );

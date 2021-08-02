@@ -31,3 +31,7 @@ set -e -o pipefail
 # python3 transfer_tokens.py -t 2848 -w 6 -h 4 -r '0xFb7b2717F7a2a30B42e21CEf03Dd0fC76Ef761E9'
 # python3 set_tokens.py -i ~/Downloads/logo_poap.png -n 'POAP' -t 3155 -w 5 -h 6 -d "The bookmarks of your life" -u 'http://poap.xyz/'
 # python3 transfer_tokens.py -t 3155 -w 5 -h 6 -r '0xf6B6F07862A02C85628B3A9688beae07fEA9C863'
+# python3 set_tokens.py -i ~/Downloads/avastar-james.png -n 'Avastars' -t 6643 -w 5 -h 5 -d "Generative Art Stored Entirely On The Blockchain.  Second Generation NFT allowing #Trueownership of Digital Art." -u "https://avastars.io/"
+# python3 transfer_tokens.py -t 6643 -w 5 -h 5 -r '0xafB5b05AFB592fBA50d094d294b3Cf3F0cBA93a3'
+# python3 set_tokens.py -i ~/Downloads/alien.jpeg -n "VOID #4815" -t 4815 -w 3 -h 3 -d "Visitor of Imma Degen #4815, aka \"The Party\"" -u "https://twitter.com/VOID4815"
+# python3 transfer_tokens.py -t 4815 -w 3 -h 3 -r '0x594612E533db57C2401D0645BEc5920364acCa6C'

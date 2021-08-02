@@ -17,8 +17,8 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return BaseImageUrlResponse(baseImage=ApiBaseImage.from_model(model=baseImage))
 
     @router.get('/networks/{network}/grid-items', response_model=ListGridItemsResponse)
-    async def list_grid_items(network: str, shouldCompact: bool = False, updatedSinceDate: Optional[datetime.datetime] = None, blockId: Optional[str] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
-        gridItems = await manager.list_grid_items(network=network, updatedSinceDate=updatedSinceDate, blockId=blockId)
+    async def list_grid_items(network: str, shouldCompact: bool = False, updatedSinceDate: Optional[datetime.datetime] = None, groupId: Optional[str] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
+        gridItems = await manager.list_grid_items(network=network, updatedSinceDate=updatedSinceDate, groupId=groupId)
         return ListGridItemsResponse(gridItems=[ApiGridItem.from_model(model=gridItem, shouldCompact=shouldCompact) for gridItem in gridItems])
 
     @router.get('/networks/{network}/summary', response_model=GetNetworkSummaryResponse)
@@ -59,7 +59,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
 
     @router.post('/networks/{network}/tokens/{tokenId}/upload-metadata', response_model=UploadMetadataForTokenResponse)
     async def upload_metadata_for_token(network: str, tokenId: int, request: UploadMetadataForTokenRequest):
-        url = await manager.upload_metadata_for_token(network=network, tokenId=tokenId, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url, blockId=request.blockId)
+        url = await manager.upload_metadata_for_token(network=network, tokenId=tokenId, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url, groupId=request.groupId)
         return UploadMetadataForTokenResponse(url=url)
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)

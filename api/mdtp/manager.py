@@ -62,11 +62,11 @@ class MdtpManager:
         return TokenMetadata(
             tokenId=tokenId,
             tokenIndex=tokenIndex,
-            name=f'MDTP Token {tokenId}',
+            name=f'MDTP #{tokenId}',
             description=None,
             image='',
             url=None,
-            blockId=None,
+            groupId=None,
         )
 
     async def get_token_default_content(self, tokenId: str) -> TokenMetadata:
@@ -82,9 +82,9 @@ class MdtpManager:
             tokenIndex=tokenIndex,
             name=f'MDTP Token {tokenId}',
             description=None,
-            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/f82c6b11-afaf-4724-909b-b41068ab8639/{tokenIndex}.png',
+            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/b88762dd-7605-4447-949b-d8ba99e6f44d/{tokenIndex}.png',
             url=None,
-            blockId=None,
+            groupId=None,
         )
 
     async def get_token_default_grid_item(self, tokenId: str) -> GridItem:
@@ -101,19 +101,19 @@ class MdtpManager:
             resizableImageUrl=metadata.image,
             ownerId='',
             url=metadata.url,
-            blockId=metadata.blockId,
+            groupId=metadata.groupId,
         )
 
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
         gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         return gridItem
 
-    async def list_grid_items(self, network: str, updatedSinceDate: Optional[datetime.datetime] = None, blockId: Optional[str] = None) -> Sequence[GridItem]:
+    async def list_grid_items(self, network: str, updatedSinceDate: Optional[datetime.datetime] = None, groupId: Optional[str] = None) -> Sequence[GridItem]:
         filters = [StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network)]
         if updatedSinceDate:
             filters.append(DateFieldFilter(fieldName=GridItemsTable.c.updatedDate.key, gte=updatedSinceDate.replace(tzinfo=None)))
-        if blockId:
-            filters.append(DateFieldFilter(fieldName=GridItemsTable.c.blockId.key, eq=blockId))
+        if groupId:
+            filters.append(DateFieldFilter(fieldName=GridItemsTable.c.groupId.key, eq=groupId))
         gridItems = await self.retriever.list_grid_items(fieldFilters=filters)
         return gridItems
 
@@ -202,13 +202,13 @@ class MdtpManager:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
 
-    async def upload_metadata_for_token(self, network: str, tokenId: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str], blockId: Optional[str]) -> str:
+    async def upload_metadata_for_token(self, network: str, tokenId: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str], groupId: Optional[str]) -> str:
         data = {
             'name': name,
             'description': description or None,
             'image': imageUrl,
             'url': url,
-            'blockId': blockId,
+            'groupId': groupId,
         }
         dataId = str(uuid.uuid4()).replace('-', '')
         target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/d/{dataId}.json'
@@ -276,20 +276,20 @@ class MdtpManager:
         imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or ''
         description = tokenContentJson.get('description')
         url = tokenContentJson.get('url')
-        blockId = tokenContentJson.get('blockId')
+        groupId = tokenContentJson.get('groupId') or tokenContentJson.get('blockId')
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
-            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, blockId=blockId, ownerId=ownerId)
+            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, groupId=groupId, ownerId=ownerId)
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
         if resizableImageUrl is None:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId)
-        if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.blockId != blockId or gridItem.ownerId != ownerId:
+        if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
-            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, blockId=blockId, ownerId=ownerId)
+            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)
