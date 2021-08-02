@@ -7,6 +7,7 @@ import { KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import ReactGA from 'react-ga';
+import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
 
@@ -19,7 +20,6 @@ import { TokenPage } from './pages/TokenPage';
 import { TokenUpdatePage } from './pages/TokenUpdatePage';
 import { buildMDTPTheme } from './theme';
 import { ChainId, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
-import { Helmet } from 'react-helmet';
 
 declare global {
   export interface Window {
