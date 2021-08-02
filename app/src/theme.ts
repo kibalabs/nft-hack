@@ -12,7 +12,7 @@ export const buildMDTPTheme = (): ITheme => {
   const textThemes = {
     ...defaultTheme.texts,
     default: mergeTheme(defaultTheme.texts.default, {
-      'font-family': "'Open Sans', sans-serif",
+      'font-family': "'Roboto Slab', sans-serif",
       'font-weight': '400',
     }),
     light: {

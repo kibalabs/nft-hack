@@ -19,6 +19,7 @@ import { TokenPage } from './pages/TokenPage';
 import { TokenUpdatePage } from './pages/TokenUpdatePage';
 import { buildMDTPTheme } from './theme';
 import { ChainId, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
+import { Helmet } from 'react-helmet';
 
 declare global {
   export interface Window {
@@ -120,6 +121,9 @@ export const App = hot((): React.ReactElement => {
 
   return (
     <KibaApp theme={theme} isFullPageApp={true}>
+      <Helmet>
+        <link href='https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;600;700;800;900&display=swap' rel='stylesheet' />
+      </Helmet>
       <GlobalsProvider globals={{ ...globals, network, contract }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router>
