@@ -62,7 +62,7 @@ class MdtpManager:
         return TokenMetadata(
             tokenId=tokenId,
             tokenIndex=tokenIndex,
-            name=f'MDTP Token {tokenId}',
+            name=f'MDTP #{tokenId}',
             description=None,
             image='',
             url=None,
