@@ -17,14 +17,14 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: 'rinkeby2',
+  [ChainId.Rinkeby]: 'rinkeby3',
   [ChainId.Mainnet]: 'mainnet',
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
   rinkeby: '0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3',
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
-  rinkeby3: '0x956c3796856ca478B5A45b3d2bFa4DA42Aea5182',
+  rinkeby3: '0x220c7bB89EbF6bC81461D37E197572219b9725fC',
   mainnet: null,
 };
 

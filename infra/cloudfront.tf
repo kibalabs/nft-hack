@@ -5,7 +5,7 @@ resource "aws_cloudfront_distribution" "images" {
   }
 
   origin {
-    domain_name = "mdtp-api.kibalabs.com"
+    domain_name = "api.mdtp.co"
     origin_id = "api"
     custom_origin_config {
       http_port = 80

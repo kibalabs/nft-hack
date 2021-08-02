@@ -286,145 +286,242 @@ describe("MillionDollarTokenPage contract", async function() {
     it("does not allow access to the _mint function", async function() {
       expect(() => mdtp._mint(100)).to.throw(TypeError);
     });
+
+    it("sets the owner to the caller", async function() {
+      await mdtp.mint(100);
+      const owner = await mdtp.ownerOf(100);
+      expect(owner).to.equal(myWallet.address)
+    });
   });
 
-  describe("Minting Many", async function () {
+  describe("Minting Group", async function () {
+    it("sets the owner to the caller", async function() {
+      await mdtp.mintGroup(100, 2, 2);
+      const owner = await mdtp.ownerOf(100);
+      expect(owner).to.equal(myWallet.address)
+      const owner2 = await mdtp.ownerOf(101);
+      expect(owner2).to.equal(myWallet.address)
+      const owner3 = await mdtp.ownerOf(200);
+      expect(owner3).to.equal(myWallet.address)
+      const owner4 = await mdtp.ownerOf(201);
+      expect(owner4).to.equal(myWallet.address)
+    });
+
+    it("does not allow a width < 0", async function() {
+      const transaction = mdtp.mintGroup(100, -1, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow a width = 0", async function() {
+      const transaction = mdtp.mintGroup(100, 0, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow a height < 0", async function() {
+      const transaction = mdtp.mintGroup(100, 1, -1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow a height = 0", async function() {
+      const transaction = mdtp.mintGroup(100, 1, 0);
+      await expect(transaction).to.be.reverted;
+    });
+
     it("does not allow minting any token with id over 10000", async function() {
-      const transaction = mdtp.mintMany([100, 10001]);
+      const transaction = mdtp.mintGroup(10001, 1, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow minting any token with id over 10000", async function() {
+      const transaction = mdtp.mintGroup(10001, 1, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow minting any token with id over 10000 (with height overflow)", async function() {
+      const transaction = mdtp.mintGroup(9999, 1, 2);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow minting any token with id over 10000 (with width overflow)", async function() {
+      const transaction = mdtp.mintGroup(9999, 3, 1);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow minting any token with id 0", async function() {
-      const transaction = mdtp.mintMany([100, 0]);
+      const transaction = mdtp.mintGroup(0);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow minting any token with negative id", async function() {
-      const transaction = mdtp.mintMany([100, -100]);
+      const transaction = mdtp.mintGroup(-100);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow any token to be minted twice", async function() {
-      await mdtp.mintMany([100, 101, 102]);
-      const transaction = mdtp.mintMany([102, 103]);
+      await mdtp.mintGroup(100, 2, 1);
+      const transaction = mdtp.mintGroup(101);
       await expect(transaction).to.be.reverted;
     });
 
     it("emits Transfer events when tokens are minted", async function() {
-      const transaction = mdtp.mintMany([100, 101, 103]);
+      const transaction = mdtp.mintGroup(100, 2, 2);
       const receipt = await transaction;
       expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
       expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 101);
-      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 103);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 200);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 201);
     });
 
     it("updates mintedCount when tokens are minted", async function() {
-      await mdtp.mintMany([1100, 101, 102, 03, 104, 105, 106, 107, 108, 109]);
+      await mdtp.mintGroup(100, 5, 2);
       const mintedCount = await mdtp.mintedCount();
       expect(mintedCount).to.equal(10);
     });
 
     it("cannot mint over the singleMintLimit", async function() {
       await mdtp.setSingleMintLimit(2);
-      const transaction = mdtp.mintMany([100, 101, 102]);
+      const transaction = mdtp.mintGroup(100, 3, 1);
       expect(transaction).to.be.reverted;
     });
 
     it("cannot mint over the totalMintLimit in separate transactions", async function() {
       await mdtp.setTotalMintLimit(3);
-      await mdtp.mintMany([100, 101]);
-      const transaction = mdtp.mintMany([102, 103]);
+      await mdtp.mintGroup(100, 2, 1);
+      const transaction = mdtp.mintGroup(102, 2, 1);
       expect(transaction).to.be.reverted;
     });
 
     it("cannot mint over the totalMintLimit in a single transactions", async function() {
       await mdtp.setTotalMintLimit(3);
-      const transaction = mdtp.mintMany([100, 101, 102, 103]);
+      const transaction = mdtp.mintGroup(100, 4, 1);
       expect(transaction).to.be.reverted;
     });
 
     it("cannot mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      const transaction = mdtp.mintMany([100, 101], {value: 3});
+      const transaction = mdtp.mintGroup(100, 2, 1, {value: 3});
       expect(transaction).to.be.reverted;
     });
 
     it("can mint with money equal to the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      mdtp.mintMany([100, 101], {value: 4});
+      mdtp.mintGroup(100, 2, 1, {value: 4});
     });
 
     it("can mint with money above the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      mdtp.mintMany([100, 101], {value: 5});
+      mdtp.mintGroup(100, 2, 1, {value: 5});
     });
   });
 
-  describe("Minting Many Admin", async function () {
+  describe("Minting Group Admin", async function () {
+    it("sets the owner to the caller", async function() {
+      await mdtp.mintGroupAdmin(100, 2, 2);
+      const owner = await mdtp.ownerOf(100);
+      expect(owner).to.equal(myWallet.address)
+      const owner2 = await mdtp.ownerOf(101);
+      expect(owner2).to.equal(myWallet.address)
+      const owner3 = await mdtp.ownerOf(200);
+      expect(owner3).to.equal(myWallet.address)
+      const owner4 = await mdtp.ownerOf(201);
+      expect(owner4).to.equal(myWallet.address)
+    });
+
+    it("does not allow a width < 0", async function() {
+      const transaction = mdtp.mintGroup(100, -1, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow a width = 0", async function() {
+      const transaction = mdtp.mintGroup(100, 0, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow a height < 0", async function() {
+      const transaction = mdtp.mintGroup(100, 1, -1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow a height = 0", async function() {
+      const transaction = mdtp.mintGroup(100, 1, 0);
+      await expect(transaction).to.be.reverted;
+    });
+
     it("does not allow minting any token with id over 10000", async function() {
-      const transaction = mdtp.mintManyAdmin([100, 10001]);
+      const transaction = mdtp.mintGroupAdmin(10001, 1, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow minting any token with id over 10000 (with height overflow)", async function() {
+      const transaction = mdtp.mintGroupAdmin(9999, 1, 2);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("does not allow minting any token with id over 10000 (with width overflow)", async function() {
+      const transaction = mdtp.mintGroupAdmin(9999, 3, 1);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow minting any token with id 0", async function() {
-      const transaction = mdtp.mintManyAdmin([100, 0]);
+      const transaction = mdtp.mintGroupAdmin(0);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow minting any token with negative id", async function() {
-      const transaction = mdtp.mintManyAdmin([100, -100]);
+      const transaction = mdtp.mintGroupAdmin(-100);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow any token to be minted twice", async function() {
-      await mdtp.mintManyAdmin([100, 101, 102]);
-      const transaction = mdtp.mintManyAdmin([102, 103]);
+      await mdtp.mintGroupAdmin(100, 2, 1);
+      const transaction = mdtp.mintGroupAdmin(101);
       await expect(transaction).to.be.reverted;
     });
 
     it("emits Transfer events when tokens are minted", async function() {
-      const transaction = mdtp.mintManyAdmin([100, 101, 103]);
+      const transaction = mdtp.mintGroupAdmin(100, 2, 2);
       const receipt = await transaction;
       expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
       expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 101);
-      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 103);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 200);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 201);
     });
 
     it("updates mintedCount when tokens are minted", async function() {
-      await mdtp.mintManyAdmin([1100, 101, 102, 03, 104, 105, 106, 107, 108, 109]);
+      await mdtp.mintGroupAdmin(100, 5, 2);
       const mintedCount = await mdtp.mintedCount();
       expect(mintedCount).to.equal(10);
     });
 
     it("can mint over the singleMintLimit", async function() {
       await mdtp.setSingleMintLimit(2);
-      await mdtp.mintManyAdmin([100, 101, 102]);
+      await mdtp.mintGroupAdmin(100, 3, 1);
     });
 
     it("can mint over the totalMintLimit in separate transactions", async function() {
       await mdtp.setTotalMintLimit(3);
-      await mdtp.mintManyAdmin([100, 101]);
-      await mdtp.mintManyAdmin([102, 103]);
+      await mdtp.mintGroupAdmin(100, 2, 1);
+      await mdtp.mintGroupAdmin(102, 2, 1);
     });
 
     it("can mint over the totalMintLimit in a single transactions", async function() {
       await mdtp.setTotalMintLimit(3);
-      await mdtp.mintManyAdmin([100, 101, 102, 103]);
+      await mdtp.mintGroupAdmin(100, 4, 1);
     });
 
     it("can mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      await mdtp.mintManyAdmin([100, 101])
+      await mdtp.mintGroupAdmin(100, 2, 1, {value: 3});
     });
 
     it("can mint with money equal to the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      mdtp.mintManyAdmin([100, 101], {value: 4});
+      mdtp.mintGroupAdmin(100, 2, 1, {value: 4});
     });
 
     it("can mint with money above the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      mdtp.mintManyAdmin([100, 101], {value: 5});
+      mdtp.mintGroupAdmin(100, 2, 1, {value: 5});
     });
   });
 

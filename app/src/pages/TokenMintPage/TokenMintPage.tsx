@@ -126,16 +126,6 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     setIsMintingMultiple(false);
   };
 
-  const getMintingTokenIds = (): number[] => {
-    const tokenIds = [];
-    for (let y = 0; y < requestHeight; y += 1) {
-      for (let x = 0; x < requestWidth; x += 1) {
-        tokenIds.push(Number(props.tokenId) + (100 * y) + x);
-      }
-    }
-    return tokenIds;
-  };
-
   const onConfirmClicked = async (): Promise<void> => {
     if (!contract || !accounts) {
       return;
@@ -146,7 +136,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     let newTransaction = null;
     try {
       if (isMintingMultiple) {
-        newTransaction = await contractWithSigner.mintMany(getMintingTokenIds());
+        newTransaction = await contractWithSigner.mintGroup(Number(props.tokenId), requestWidth, requestHeight);
       } else {
         newTransaction = await contractWithSigner.mint(Number(props.tokenId));
       }

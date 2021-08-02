@@ -34,7 +34,9 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
 
     event TokenContentURIChanged(uint256 indexed tokenId);
 
-    uint16 public constant SUPPLY_LIMIT = 10000;
+    uint16 public constant COLUMN_COUNT = 100;
+    uint16 public constant ROW_COUNT = 100;
+    uint16 public constant SUPPLY_LIMIT = COLUMN_COUNT * ROW_COUNT;
     uint16 public totalMintLimit = 1000;
     uint16 public singleMintLimit = 20;
     uint256 public mintPrice = 0; // 50000000000000000 = 0.05 ETH
@@ -116,10 +118,8 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
         _mint(tokenId);
     }
 
-    function mintManyAdmin(uint256[] memory tokenIds) public payable {
-        for (uint i = 0; i < tokenIds.length; i++) {
-            _mint(tokenIds[i]);
-        }
+    function mintGroupAdmin(uint256 tokenId, uint8 width, uint8 height) public payable {
+        _mintGroup(tokenId, width, height);
     }
 
     function mint(uint256 tokenId) public payable {
@@ -128,12 +128,20 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
         _mint(tokenId);
     }
 
-    function mintMany(uint256[] memory tokenIds) public payable {
-        require(msg.value >= mintPrice.mul(tokenIds.length), "MDTP: Insufficient payment");
-        require(mintedCount() + tokenIds.length <= totalMintLimit, "MDTP: reached current minting limit");
-        require(tokenIds.length <= singleMintLimit, "MDTP: tokenIds.length is over singleMintLimit");
-        for (uint i = 0; i < tokenIds.length; i++) {
-            _mint(tokenIds[i]);
+    function mintGroup(uint256 tokenId, uint8 width, uint8 height) public payable {
+        require(msg.value >= mintPrice.mul(width * height), "MDTP: Insufficient payment");
+        require(mintedCount() + (width * height) <= totalMintLimit, "MDTP: reached current minting limit");
+        require(width * height <= singleMintLimit, "MDTP: tokenIds.length is over singleMintLimit");
+        _mintGroup(tokenId, width, height);
+    }
+
+    function _mintGroup(uint256 tokenId, uint8 width, uint8 height) internal {
+        require(width > 0, "MDTP: width must be > 0");
+        require(height > 0, "MDTP: height must be > 0");
+        for (uint8 y = 0; y < height; y++) {
+            for (uint8 x = 0; x < width; x++) {
+                _mint(tokenId + (ROW_COUNT * y) + x);
+            }
         }
     }
 
