@@ -4,7 +4,7 @@ from io import BytesIO
 import json
 import logging
 import math
-from typing import Dict
+from typing import Dict, List
 from typing import Sequence
 from typing import Optional
 import urllib.parse as urlparse
@@ -202,18 +202,40 @@ class MdtpManager:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
 
-    async def upload_metadata_for_token(self, network: str, tokenId: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str], groupId: Optional[str]) -> str:
+    async def create_metadata_for_token(self, network: str, tokenId: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> str:
         data = {
             'name': name,
             'description': description or None,
             'image': imageUrl,
             'url': url,
-            'groupId': groupId,
+            'groupId': None,
         }
         dataId = str(uuid.uuid4()).replace('-', '')
         target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/d/{dataId}.json'
         await self.s3Manager.write_file(content=json.dumps(data).encode(), targetPath=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE, contentType='application/json')
         return target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
+
+    async def create_metadata_for_token_group(self, network: str, tokenId: int, width: int, height: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> List[str]:
+        imageId = await self.imageManager.upload_image_from_url(url=imageUrl)
+        croppedImageIds = await self.imageManager.crop_image(imageId=imageId, width=width, height=height)
+        tokenMetadataUrls = []
+        groupId = str(uuid.uuid4())
+        # NOTE(krishan711): this can be done in parallel
+        for row in range(0, height):
+            for column in range(0, width):
+                index = (row * width) + column
+                data = {
+                    'name': name,
+                    'description': description or None,
+                    'image': await self.imageManager.get_image_url(imageId=croppedImageIds[index]),
+                    'url': url or None,
+                    'groupId': groupId,
+                }
+                target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/d/{str(uuid.uuid4())}.json'
+                await self.s3Manager.write_file(content=json.dumps(data).encode(), targetPath=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE, contentType='application/json')
+                tokenMetadataUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
+                tokenMetadataUrls.append(tokenMetadataUrl)
+        return tokenMetadataUrls
 
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)

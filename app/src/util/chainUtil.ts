@@ -30,7 +30,7 @@ const validChainIdNetworkMap: Record<number, string> = {
 const networkContractAddressMap: Record<string, string | null> = {
   rinkeby: '0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3',
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
-  rinkeby3: '0x220c7bB89EbF6bC81461D37E197572219b9725fC',
+  rinkeby3: '0x19559Ac1471e2e4887d63c9363C85BF9f85Fdb67',
   mainnet: null,
 };
 

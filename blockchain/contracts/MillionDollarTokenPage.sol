@@ -47,8 +47,24 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
 
     // Utils
 
+    modifier onlyValidGroup(uint256 tokenId, uint8 width, uint8 height) {
+        require(width > 0, "MDTP: width must be > 0");
+        require(height > 0, "MDTP: height must be > 0");
+        _;
+    }
+
     modifier onlyTokenOwner(uint256 tokenId) {
         require(ownerOf(tokenId) == _msgSender(), "MDTP: caller is not the tokenOwner");
+        _;
+    }
+
+    modifier onlyTokenGroupOwner(uint256 tokenId, uint8 width, uint8 height) {
+        for (uint8 y = 0; y < height; y++) {
+            for (uint8 x = 0; x < width; x++) {
+                uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
+                require(ownerOf(innerTokenId) == _msgSender(), "MDTP: caller is not the tokenOwner of all tokens in group");
+            }
+        }
         _;
     }
 
@@ -99,6 +115,17 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
         _setTokenContentURI(tokenId, metadataURI);
     }
 
+    function setTokenGroupContentURIs(uint256 tokenId, uint8 width, uint8 height, string[] memory metadataURIs) public onlyTokenGroupOwner(tokenId, width, height) onlyValidGroup(tokenId, width, height) {
+        require(width * height == metadataURIs.length, "MDTP: length of metadataURIs must be the same as width * height");
+        for (uint8 y = 0; y < height; y++) {
+            for (uint8 x = 0; x < width; x++) {
+                uint16 index = (width * y) + x;
+                uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
+                _setTokenContentURI(innerTokenId, metadataURIs[index]);
+            }
+        }
+    }
+
     function _setTokenContentURI(uint256 tokenId, string memory metadataURI) internal {
         _tokenContentURIs[tokenId] = metadataURI;
         emit TokenContentURIChanged(tokenId);
@@ -118,8 +145,8 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
         _mint(tokenId);
     }
 
-    function mintGroupAdmin(uint256 tokenId, uint8 width, uint8 height) public payable {
-        _mintGroup(tokenId, width, height);
+    function mintTokenGroupAdmin(uint256 tokenId, uint8 width, uint8 height) public payable {
+        _mintTokenGroup(tokenId, width, height);
     }
 
     function mint(uint256 tokenId) public payable {
@@ -128,19 +155,18 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
         _mint(tokenId);
     }
 
-    function mintGroup(uint256 tokenId, uint8 width, uint8 height) public payable {
+    function mintTokenGroup(uint256 tokenId, uint8 width, uint8 height) public payable {
         require(msg.value >= mintPrice.mul(width * height), "MDTP: Insufficient payment");
         require(mintedCount() + (width * height) <= totalMintLimit, "MDTP: reached current minting limit");
         require(width * height <= singleMintLimit, "MDTP: requested token count is over singleMintLimit");
-        _mintGroup(tokenId, width, height);
+        _mintTokenGroup(tokenId, width, height);
     }
 
-    function _mintGroup(uint256 tokenId, uint8 width, uint8 height) internal {
-        require(width > 0, "MDTP: width must be > 0");
-        require(height > 0, "MDTP: height must be > 0");
+    function _mintTokenGroup(uint256 tokenId, uint8 width, uint8 height) internal onlyValidGroup(tokenId, width, height) {
         for (uint8 y = 0; y < height; y++) {
             for (uint8 x = 0; x < width; x++) {
-                _mint(tokenId + (ROW_COUNT * y) + x);
+                uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
+                _mint(innerTokenId);
             }
         }
     }
