@@ -33,9 +33,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
 
   const requestCount = isMintingMultiple ? (requestHeight * requestWidth) : 1;
   const totalPrice = mintPrice ? mintPrice.mul(requestCount) : undefined;
-  const isOverSingleLimit = singleMintLimit ? requestCount > singleMintLimit : true;
-  const isOverTotalLimit = (totalMintLimit && mintedCount) ? requestCount + mintedCount > totalMintLimit : true;
-  const isOverBalance = (balance && totalPrice) ? balance < totalPrice : true;
+  const isOverSingleLimit = singleMintLimit ? requestCount > singleMintLimit : false;
+  const isOverTotalLimit = (totalMintLimit && mintedCount) ? requestCount + mintedCount > totalMintLimit : false;
+  const isOverBalance = (balance && totalPrice) ? balance < totalPrice : false;
 
   const loadData = React.useCallback(async (): Promise<void> => {
     if (network === null || contract === null) {
@@ -84,8 +84,8 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       setSingleMintLimit(null);
     }
     if (contract.mintedCount) {
-      contract.mintedCount().then((retrievedMintedCount: number): void => {
-        setMintedCount(retrievedMintedCount);
+      contract.mintedCount().then((retrievedMintedCount: BigNumber): void => {
+        setMintedCount(retrievedMintedCount.toNumber());
       }).catch((error: unknown) => {
         console.error(error);
         setMintedCount(null);
@@ -136,7 +136,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     let newTransaction = null;
     try {
       if (isMintingMultiple) {
-        newTransaction = await contractWithSigner.mintGroup(Number(props.tokenId), requestWidth, requestHeight);
+        newTransaction = await contractWithSigner.mintTokenGroup(Number(props.tokenId), requestWidth, requestHeight);
       } else {
         newTransaction = await contractWithSigner.mint(Number(props.tokenId));
       }
@@ -240,13 +240,15 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
               { transactionError && (
                 <Text variant='error' alignment={TextAlignment.Center}>{String(transactionError.message)}</Text>
               )}
-              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true}>
+              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} isFullWidth={true}>
                 { isMintingMultiple ? (
                   <Button variant='secondary' text='Mint single' onClicked={onMintSingleClicked} />
                 ) : (
                   <Button variant='secondary' text='Mint multiple' onClicked={onMintMultipleClicked} />
                 )}
-                <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance} />
+                <Stack.Item growthFactor={1} shrinkFactor={1}>
+                  <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance} />
+                </Stack.Item>
               </Stack>
             </Stack>
           </Form>

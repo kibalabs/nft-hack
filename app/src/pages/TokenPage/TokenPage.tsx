@@ -102,8 +102,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const OwnershipInfo = (): React.ReactElement => {
-    const isMintable = !ownerId && contract && contract.mintGroup != null;
-    const isBuyable = !ownerId || (network === 'rinkeby' && ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
+    const isMintable = accounts && !ownerId && contract && contract.mintTokenGroup != null;
+    const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
     const ownerIdString = ownerId ? truncate(ownerId, 10) : 'unknown';
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>

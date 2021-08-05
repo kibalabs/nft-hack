@@ -14,6 +14,7 @@ interface ITokenUpdateFormProps {
   description: string;
   url: string;
   imageUrl: string;
+  isEnabled: boolean;
   onTokenUpdateFormSubmitted: (title: string, description: string, url: string, imageUrl: string) => Promise<UpdateResult>;
   onImageFilesChosen: (files: File[]) => Promise<UpdateResult>;
 }
@@ -90,14 +91,14 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
               </Box>
             </Stack>
             {updatingTokenResult && !updatingTokenResult.isSuccess && (
-              <Text variant='note-error'>{updatingTokenResult.message}</Text>
+              <Text variant='error'>{updatingTokenResult.message}</Text>
             )}
             {updatingImageResult && !updatingImageResult.isSuccess && (
-              <Text variant='note-error'>{updatingImageResult.message}</Text>
+              <Text variant='error'>{updatingImageResult.message}</Text>
             )}
           </React.Fragment>
         )}
-        <Button variant='primary' text='Update' buttonType='submit' />
+        <Button variant='primary' text='Update' buttonType='submit' isEnabled={props.isEnabled} />
       </Stack>
     </Form>
 

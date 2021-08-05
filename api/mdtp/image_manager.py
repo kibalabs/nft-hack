@@ -43,33 +43,57 @@ class ImageManager:
         return f'image/{imageType}'
 
     async def upload_image_from_url(self, url: str) -> str:
-        localFilePath = f'./download-{uuid.uuid4()}'
+        localFilePath = f'./download-{str(uuid.uuid4())}'
         await self.requester.get(url=url, outputFilePath=localFilePath)
         imageId = await self.upload_image_from_file(filePath=localFilePath)
         await file_util.remove_file(filePath=localFilePath)
         return imageId
 
-    async def upload_image_from_file(self, filePath: str) -> str:
+    async def upload_image_from_file(self, filePath: str, shouldResize: bool = True) -> str:
         imageId = str(uuid.uuid4()).replace('-', '')
         # TODO(krishan711): save with extensions once implemented in pablo
         # mimetype = self._get_image_type_from_file(fileName=localFilePath)
         # extension = mimetypes.guess_extension(type=mimetype)
         await self.s3Manager.upload_file(filePath=filePath, targetPath=f'{_BUCKET}/{imageId}/original', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
-        await self.resize_image(imageId=imageId)
+        if shouldResize:
+            await self.resize_image(imageId=imageId)
         return imageId
+
+    async def crop_image(self, imageId: str, width: int, height: int) -> List[str]:
+        # NOTE(krishan711): this can be done in parallel
+        image = await self._load_image(imageId=imageId)
+        targetSize = ImageSize(int(image.size.width / width), int(image.size.height / height))
+        urls = []
+        if image.imageFormat not in {ImageFormat.JPG, ImageFormat.PNG, ImageFormat.WEBP}:
+            raise Exception(f'Unable to crop image of type {image.imageFormat}')
+        contentBuffer = BytesIO(image.content)
+        with PILImage.open(fp=contentBuffer) as pilImage:
+            for row in range(0, height):
+                for column in range(0, width):
+                    croppedFilename = f'./crop-{str(uuid.uuid4())}'
+                    box = (column * targetSize.width, row * targetSize.height, (column + 1) * targetSize.width, (row + 1) * targetSize.height)
+                    croppedPilImage = pilImage.crop(box)
+                    content = BytesIO()
+                    croppedPilImage.save(fp=content, format=image.imageFormat.replace('image/', ''))
+                    croppedImage = ImageData(content=content.getvalue(), size=targetSize, imageFormat=image.imageFormat)
+                    await self._save_image_to_file(image=croppedImage, fileName=croppedFilename)
+                    imageId = await self.upload_image_from_file(filePath=croppedFilename, shouldResize=False)
+                    await file_util.remove_file(filePath=croppedFilename)
+                    urls.append(imageId)
+        return urls
 
     async def resize_image(self, imageId: str):
         image = await self._load_image(imageId=imageId)
         for targetSize in _TARGET_SIZES:
             if image.size.width >= targetSize:
                 resizedImage = await self._resize_image(image=image, size=ImageSize(width=targetSize, height=targetSize * (image.size.height / image.size.width)))
-                resizedFilename = f'./resize-{uuid.uuid4()}'
+                resizedFilename = f'./resize-{str(uuid.uuid4())}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/widths/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
                 await file_util.remove_file(filePath=resizedFilename)
             if image.size.height >= targetSize:
                 resizedImage = await self._resize_image(image=image, size=ImageSize(width=targetSize * (image.size.width / image.size.height), height=targetSize))
-                resizedFilename = f'./resize-{uuid.uuid4()}'
+                resizedFilename = f'./resize-{str(uuid.uuid4())}'
                 await self._save_image_to_file(image=resizedImage, fileName=resizedFilename)
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
                 await file_util.remove_file(filePath=resizedFilename)
@@ -97,9 +121,9 @@ class ImageManager:
         if image.imageFormat in {ImageFormat.JPG, ImageFormat.PNG, ImageFormat.WEBP}:
             contentBuffer = BytesIO(image.content)
             with PILImage.open(fp=contentBuffer) as pilImage:
-                pilImage = pilImage.resize(size=(size.width, size.height))
+                newPilImage = pilImage.resize(size=(size.width, size.height))
                 content = BytesIO()
-                pilImage.save(fp=content, format=image.imageFormat.replace('image/', ''))
+                newPilImage.save(fp=content, format=image.imageFormat.replace('image/', ''))
                 return ImageData(content=content.getvalue(), size=size, imageFormat=image.imageFormat)
         raise KibaException(message=f'Cannot determine image size from image format: {image.imageFormat}')
 

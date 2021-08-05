@@ -1,5 +1,7 @@
 import { dateFromString } from '@kibalabs/core';
 
+export type RawObject = Record<string, unknown>;
+
 export class TokenMetadata {
   // eslint-disable-next-line no-useless-constructor
   public constructor(

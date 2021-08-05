@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { KibaResponse, RestMethod } from '@kibalabs/core';
+import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { Link } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, KibaIcon, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
@@ -21,32 +21,21 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   const { contract, requester, apiClient, network } = useGlobals();
   const colors = useColors();
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
-  const [chainOwnerId, setChainOwnerId] = React.useState<string | null | undefined>(undefined);
+  const [chainOwnerIds, setChainOwnerIds] = React.useState<Map<number, string> | null | undefined>(undefined);
+  const [isUpdatingMultiple, setIsUpdatingMultiple] = React.useState<boolean>(false);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
   const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
+  const [requestHeight, setRequestHeight] = React.useState<number>(1);
+  const [requestWidth, setRequestWidth] = React.useState<number>(1);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
-  const ownerId = chainOwnerId || null;
-  const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
-
   const loadToken = React.useCallback(async (): Promise<void> => {
     setTokenMetadata(undefined);
-    setChainOwnerId(undefined);
     if (network === null || contract === null) {
       setTokenMetadata(null);
-      setChainOwnerId(null);
       return;
     }
-    contract.ownerOf(Number(props.tokenId)).then((retrievedTokenOwner: string): void => {
-      setChainOwnerId(retrievedTokenOwner);
-    }).catch((error: Error): void => {
-      if (!error.message.includes('nonexistent token')) {
-        console.error(error);
-      }
-      setTokenMetadata(null);
-      setChainOwnerId(null);
-    });
     // NOTE(krishan711): this only works for the new contracts
     if (contract.tokenContentURI) {
       contract.tokenContentURI(Number(props.tokenId)).then((tokenMetadataUrl: string): void => {
@@ -62,6 +51,46 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   React.useEffect((): void => {
     loadToken();
   }, [loadToken]);
+
+  const loadOwners = React.useCallback(async (): Promise<void> => {
+    setChainOwnerIds(undefined);
+    if (network === null || contract === null) {
+      setChainOwnerIds(null);
+      return;
+    }
+    const tokenId = Number(props.tokenId);
+    const tokenIds = [];
+    if (isUpdatingMultiple) {
+      for (let y = 0; y < requestHeight; y += 1) {
+        for (let x = 0; x < requestWidth; x += 1) {
+          tokenIds.push(tokenId + (y * 100) + x);
+        }
+      }
+    } else {
+      tokenIds.push(tokenId);
+    }
+
+    const chainOwnerIdPromises = tokenIds.map(async (internalTokenId: number): Promise<string | null> => {
+      try {
+        return await contract.ownerOf(internalTokenId);
+      } catch (error: unknown) {
+        if (!(error as Error).message.includes('nonexistent token')) {
+          console.error(error);
+        }
+        return null;
+      }
+    });
+    const retrievedChainOwnerIds = await Promise.all(chainOwnerIdPromises);
+    const calculatedChainOwnerIds = tokenIds.reduce((accumulator: Map<number, string>, internalTokenId: number, index: number): Map<number, string> => {
+      accumulator.set(internalTokenId, retrievedChainOwnerIds[index] as string);
+      return accumulator;
+    }, new Map<number, string>());
+    setChainOwnerIds(calculatedChainOwnerIds);
+  }, [props.tokenId, isUpdatingMultiple, network, contract, requestHeight, requestWidth]);
+
+  React.useEffect((): void => {
+    loadOwners();
+  }, [loadOwners]);
 
   const onImageFilesChosen = async (files: File[]): Promise<UpdateResult> => {
     // TODO(krishan711): ensure there is only one file
@@ -87,32 +116,48 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   };
 
   const onTokenUpdateFormSubmitted = async (title: string, description: string, url: string, imageUrl: string): Promise<UpdateResult> => {
-    if (!contract || !tokenMetadata || !ownerId || !accounts || !accountIds) {
+    if (!contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
     const tokenId = Number(props.tokenId);
-    const groupId = tokenMetadata.groupId;
-    const tokenMetadataUrl = await apiClient.uploadMetadataForToken(network, Number(props.tokenId), title, description, imageUrl, url, groupId);
+    const chainOwnerId = chainOwnerIds.get(tokenId);
+    const signerIndex = accountIds.indexOf(chainOwnerId || '0x0');
+    if (signerIndex === -1) {
+      return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
+    }
+
+    let tokenMetadataUrls: string[];
     try {
-      const signerIndex = accountIds.indexOf(ownerId);
-      if (signerIndex === -1) {
-        return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
+      if (isUpdatingMultiple) {
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, requestWidth, requestHeight, title, description, imageUrl, url);
+      } else {
+        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, title, description, imageUrl, url);
+        tokenMetadataUrls = [tokenMetadataUrl];
       }
+    } catch (error: unknown) {
+      if (error instanceof KibaException && error.statusCode === 500) {
+        return { isSuccess: false, message: 'Failed to upload your metadata. Please refresh and try again.' };
+      }
+      throw error;
+    }
+    let newTransaction = null;
+    try {
       const contractWithSigner = contract.connect(accounts[signerIndex]);
-      let newTransaction = null;
-      if (contractWithSigner.setTokenURI) {
-        newTransaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrl);
-      } else if (contractWithSigner.setTokenContentURI) {
-        newTransaction = await contractWithSigner.setTokenContentURI(tokenId, tokenMetadataUrl);
+      if (isUpdatingMultiple && contractWithSigner.setTokenGroupContentURIs) {
+        newTransaction = await contractWithSigner.setTokenGroupContentURIs(tokenId, requestWidth, requestHeight, tokenMetadataUrls);
+      } else if (!isUpdatingMultiple && contractWithSigner.setTokenContentURI) {
+        newTransaction = await contractWithSigner.setTokenContentURI(tokenId, tokenMetadataUrls[0]);
+      } else if (!isUpdatingMultiple && contractWithSigner.setTokenURI) {
+        newTransaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrls[0]);
       } else {
         return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
       }
-      setTransaction(newTransaction);
-      return { isSuccess: false, message: `Transaction in progress. Hash is: ${newTransaction.hash}.` };
     } catch (error) {
       return { isSuccess: false, message: error.message };
     }
+    setTransaction(newTransaction);
+    return { isSuccess: false, message: `Transaction in progress. Hash is: ${newTransaction.hash}.` };
   };
 
   const waitForTransaction = React.useCallback(async (): Promise<void> => {
@@ -127,6 +172,30 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     waitForTransaction();
   }, [waitForTransaction]);
 
+  const onTabKeySelected = (tabKey: string): void => {
+    setIsUpdatingMultiple(tabKey === 'multiple');
+  };
+
+  const onRequestHeightChanged = (value: string): void => {
+    if (parseInt(value, 10)) {
+      setRequestHeight(parseInt(value, 10));
+    }
+  };
+
+  const onRequestWidthChanged = (value: string): void => {
+    if (parseInt(value, 10)) {
+      setRequestWidth(parseInt(value, 10));
+    }
+  };
+
+  const unownedTokenIds = chainOwnerIds ? Array.from(chainOwnerIds.entries()).reduce((accumulator: number[], value: [number, string]): number[] => {
+    if (value[1] == null || !accountIds || !accountIds.includes(value[1])) {
+      accumulator.push(value[0]);
+    }
+    return accumulator;
+  }, []) : [];
+  const isOwnerOfTokens = unownedTokenIds.length === 0;
+
   return (
     <React.Fragment>
       <Helmet>
@@ -136,12 +205,10 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { (tokenMetadata === null || chainOwnerId === null) ? (
+        { (tokenMetadata === null || chainOwnerIds === null || chainOwnerIds === null || accountIds === null) ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : (tokenMetadata === undefined || chainOwnerId === undefined) ? (
+        ) : (tokenMetadata === undefined || chainOwnerIds === undefined || chainOwnerIds === undefined || accountIds === undefined) ? (
           <LoadingSpinner />
-        ) : (!isOwnedByUser) ? (
-          <Text variant='error'>Your connected account is not the owner of this token. Please connect the correct account or go to another token.</Text>
         ) : transactionReceipt ? (
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
@@ -158,14 +225,40 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             />
           </React.Fragment>
         ) : (
-          <TokenUpdateForm
-            title={tokenMetadata.name}
-            description={tokenMetadata.description || ''}
-            url={tokenMetadata.url || ''}
-            imageUrl={tokenMetadata.image || ''}
-            onTokenUpdateFormSubmitted={onTokenUpdateFormSubmitted}
-            onImageFilesChosen={onImageFilesChosen}
-          />
+          <React.Fragment>
+            <TabBar selectedTabKey={isUpdatingMultiple ? 'multiple' : 'single'} onTabKeySelected={onTabKeySelected}>
+              <TabBar.Item tabKey='single' text='Update single' />
+              <TabBar.Item tabKey='multiple' text='Update multiple' isEnabled={contract && contract.setTokenGroupContentURIs} />
+            </TabBar>
+            { isUpdatingMultiple && (
+              <React.Fragment>
+                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                  <Text>Block height:</Text>
+                  <Box width='5em'>
+                    <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
+                  </Box>
+                </Stack>
+                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                  <Text>Block width:</Text>
+                  <Box width='5em'>
+                    <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
+                  </Box>
+                </Stack>
+              </React.Fragment>
+            )}
+            <TokenUpdateForm
+              title={tokenMetadata.name}
+              description={tokenMetadata.description || ''}
+              url={tokenMetadata.url || ''}
+              imageUrl={tokenMetadata.image || ''}
+              onTokenUpdateFormSubmitted={onTokenUpdateFormSubmitted}
+              onImageFilesChosen={onImageFilesChosen}
+              isEnabled={isOwnerOfTokens}
+            />
+            {!isOwnerOfTokens && (
+              <Text variant='error'>{`You don't own these tokens: ${unownedTokenIds}`}</Text>
+            )}
+          </React.Fragment>
         )}
       </Stack>
     </React.Fragment>
