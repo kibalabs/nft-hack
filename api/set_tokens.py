@@ -38,7 +38,7 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
-    network = 'rinkeby2'
+    network = 'rinkeby3'
     contract = contractStore.get_contract(network=network)
     ethClient = contract.ethClient
 
@@ -85,7 +85,7 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
                 except BadRequestException as exception:
                     if 'nonexistent token' in exception.message:
                         print('Minting token...')
-                        transactionHash = await contractStore.mint_token(network=network, tokenId=tokenId, nonce=nonce, gas=100000, gasPrice=1 * GWEI)
+                        transactionHash = await contractStore.mint_token(network=network, tokenId=tokenId, nonce=nonce, gas=150000, gasPrice=1 * GWEI)
                         nonce += 1
                         currentTokenOwner = accountAddress
                         print('Minted token')
@@ -96,8 +96,8 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
                 print(f'Updating token {tokenId}, with index {index}, and nonce {nonce}')
                 transactionHash = await contractStore.set_token_content_url(network=network, tokenId=tokenId, tokenContentUri=tokenContentUri, nonce=nonce, gas=200000, gasPrice=1 * GWEI)
                 print('transactionHash', transactionHash)
-                await requester.post(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
-                await requester.post_json(url=f'https://mdtp-api.kibalabs.com/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
+                await requester.post(url=f'https://api.mdtp.co/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
+                await requester.post_json(url=f'https://api.mdtp.co/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
                 nonce += 1
                 time.sleep(0.5)
             else:
