@@ -93,14 +93,14 @@ describe("MillionDollarTokenPage contract", async function() {
       expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
     });
 
-    it("should reset content URI when a token is transferred", async function () {
-      await mdtp.mint(100);
-      const newUri = "https://www.com/tokens/100"
-      await mdtp.setTokenContentURI(100, newUri);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
-      const contentUri = await mdtp.tokenContentURI(100);
-      expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
-    });
+    // it("should reset content URI when a token is transferred", async function () {
+    //   await mdtp.mint(100);
+    //   const newUri = "https://www.com/tokens/100"
+    //   await mdtp.setTokenContentURI(100, newUri);
+    //   await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+    //   const contentUri = await mdtp.tokenContentURI(100);
+    //   expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
+    // });
   });
 
   describe("Set Token Content URIs", async function() {

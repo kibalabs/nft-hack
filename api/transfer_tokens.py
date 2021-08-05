@@ -26,7 +26,7 @@ async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     contractStore = create_contract_store(rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient, accountAddress=accountAddress, privateKey=privateKey)
 
-    network = 'rinkeby3'
+    network = 'rinkeby4'
     contract = contractStore.get_contract(network=network)
     ethClient = contract.ethClient
 

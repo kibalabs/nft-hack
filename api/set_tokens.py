@@ -38,7 +38,7 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
-    network = 'rinkeby3'
+    network = 'rinkeby4'
     contract = contractStore.get_contract(network=network)
     ethClient = contract.ethClient
 
