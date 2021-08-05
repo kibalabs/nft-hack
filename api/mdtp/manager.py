@@ -258,8 +258,8 @@ class MdtpManager:
             updatedTokenIds = await self.contractStore.get_updated_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
             logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
             tokenIdsToUpdate.update(updatedTokenIds)
-        for tokenIndex in list(tokenIdsToUpdate):
-            await self.update_token_deferred(network=network, tokenId=tokenIndex)
+        for tokenId in list(tokenIdsToUpdate):
+            await self.update_token_deferred(network=network, tokenId=tokenId)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
 
     async def update_all_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
