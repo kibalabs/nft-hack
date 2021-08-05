@@ -4,6 +4,7 @@ import { ContractInterface } from 'ethers';
 import contract1 from '../contract1.json';
 import contract2 from '../contract2.json';
 import contract3 from '../contract3.json';
+import contract4 from '../contract4.json';
 
 declare global {
   export interface Window {
@@ -39,6 +40,7 @@ const networkContractMap: Record<string, ContractInterface | null> = {
   rinkeby: contract1 as unknown as ContractInterface,
   rinkeby2: contract2 as unknown as ContractInterface,
   rinkeby3: contract3 as unknown as ContractInterface,
+  rinkeby4: contract4 as unknown as ContractInterface,
   mainnet: null,
 };
 
