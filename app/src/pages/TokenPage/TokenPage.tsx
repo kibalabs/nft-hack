@@ -12,7 +12,7 @@ import { KeyValue } from '../../components/KeyValue';
 import { useGlobals } from '../../globalsContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
-import { truncate } from '../../util/stringUtil';
+import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
 
 export type TokenPageProps = {
@@ -104,7 +104,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const OwnershipInfo = (): React.ReactElement => {
     const isMintable = accounts && !ownerId && contract && contract.mintTokenGroup != null;
     const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
-    const ownerIdString = ownerId ? truncate(ownerId, 10) : 'unknown';
+    const ownerIdString = ownerId ? truncateMiddle(ownerId, 10) : 'unknown';
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isMintable ? (
@@ -150,7 +150,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Text variant='header3' alignment={TextAlignment.Center}>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
               <Text variant='header2' alignment={TextAlignment.Center}>{`${tokenMetadata.name}`}</Text>
               {tokenMetadata.url && (
-                <Link target={getLinkableUrl(tokenMetadata.url)} text={getUrlDisplayString(tokenMetadata.url)} />
+                <Link target={getLinkableUrl(tokenMetadata.url)} text={truncateStart(getUrlDisplayString(tokenMetadata.url), 40)} />
               )}
               {tokenMetadata.description && (
                 <Text>{tokenMetadata.description}</Text>

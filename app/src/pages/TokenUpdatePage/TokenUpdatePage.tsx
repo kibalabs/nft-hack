@@ -164,9 +164,13 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     if (transaction) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
-      apiClient.updateTokenDeferred(network, Number(props.tokenId));
+      for (let y = 0; y <= requestHeight; y += 1) {
+        for (let x = 0; x <= requestWidth; x += 1) {
+          apiClient.updateTokenDeferred(network, Number(props.tokenId) + (100 * y) + x);
+        }
+      }
     }
-  }, [transaction, apiClient, network, props.tokenId]);
+  }, [transaction, apiClient, network, props.tokenId, requestHeight, requestWidth]);
 
   React.useEffect((): void => {
     waitForTransaction();
@@ -228,7 +232,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
           <React.Fragment>
             <TabBar selectedTabKey={isUpdatingMultiple ? 'multiple' : 'single'} onTabKeySelected={onTabKeySelected}>
               <TabBar.Item tabKey='single' text='Update single' />
-              <TabBar.Item tabKey='multiple' text='Update multiple' isEnabled={contract && contract.setTokenGroupContentURIs} />
+              <TabBar.Item tabKey='multiple' text='Update group' isEnabled={contract && contract.setTokenGroupContentURIs} />
             </TabBar>
             { isUpdatingMultiple && (
               <React.Fragment>
