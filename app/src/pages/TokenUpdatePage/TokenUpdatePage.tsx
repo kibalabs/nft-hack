@@ -122,7 +122,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
 
     const tokenId = Number(props.tokenId);
     const chainOwnerId = chainOwnerIds.get(tokenId);
-    const signerIndex = accountIds.indexOf(chainOwnerId || '0x0');
+    const signerIndex = accountIds.indexOf(chainOwnerId || '0x0000000000000000000000000000000000000000');
     if (signerIndex === -1) {
       return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
     }

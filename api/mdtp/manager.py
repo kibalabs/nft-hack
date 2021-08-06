@@ -270,8 +270,8 @@ class MdtpManager:
         for tokenIndex in range(tokenCount):
             await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
-    async def upload_token_image_deferred(self, network: str, tokenId: int) -> None:
-        await self.workQueue.send_message(message=UploadTokenImageMessageContent(network=network, tokenId=tokenId).to_message())
+    async def upload_token_image_deferred(self, network: str, tokenId: int, delay: Optional[int] = None) -> None:
+        await self.workQueue.send_message(message=UploadTokenImageMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
 
     async def upload_token_image(self, network: str, tokenId: int) -> None:
         logging.info(f'Uploading image for token {tokenId}')
@@ -288,13 +288,11 @@ class MdtpManager:
         try:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception:
-            ownerId = self.ownerAddress
+            ownerId = '0x0000000000000000000000000000000000000000'
         tokenContentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-        print('tokenContentUrl', tokenContentUrl)
         tokenContentResponse = await self.requester.make_request(method='GET', url=tokenContentUrl)
         tokenContentJson = json.loads(tokenContentResponse.text)
         title = tokenContentJson.get('title') or tokenContentJson.get('name') or ''
-        # TODO(krishan711): pick a better default image
         imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or ''
         description = tokenContentJson.get('description')
         url = tokenContentJson.get('url')
@@ -307,8 +305,8 @@ class MdtpManager:
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
-        if resizableImageUrl is None:
-            await self.upload_token_image_deferred(network=network, tokenId=tokenId)
+        if not resizableImageUrl:
+            await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
         if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
