@@ -151,9 +151,13 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     if (transaction) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
-      apiClient.updateTokenDeferred(network, Number(props.tokenId));
+      for (let y = 0; y <= requestHeight; y += 1) {
+        for (let x = 0; x <= requestWidth; x += 1) {
+          apiClient.updateTokenDeferred(network, Number(props.tokenId) + (100 * y) + x);
+        }
+      }
     }
-  }, [transaction, apiClient, network, props.tokenId]);
+  }, [transaction, apiClient, network, props.tokenId, requestHeight, requestWidth]);
 
   React.useEffect((): void => {
     waitForTransaction();
@@ -180,10 +184,10 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         <Text variant='header2' alignment={TextAlignment.Center}>{`Mint Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || mintedCount === undefined || balance === undefined ? (
-          <LoadingSpinner />
-        ) : mintPrice === null || totalMintLimit === null || singleMintLimit === null || mintedCount === null || balance === null ? (
+        { mintPrice === null || totalMintLimit === null || singleMintLimit === null || mintedCount === null || balance === null ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
+        ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || mintedCount === undefined || balance === undefined ? (
+          <LoadingSpinner />
         ) : chainOwnerId ? (
           <Text variant='error'>This token has already been bought. Please try to mint another.</Text>
         ) : transactionReceipt ? (
@@ -244,7 +248,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
                 { isMintingMultiple ? (
                   <Button variant='secondary' text='Mint single' onClicked={onMintSingleClicked} />
                 ) : (
-                  <Button variant='secondary' text='Mint multiple' onClicked={onMintMultipleClicked} />
+                  <Button variant='secondary' text='Mint group' onClicked={onMintMultipleClicked} />
                 )}
                 <Stack.Item growthFactor={1} shrinkFactor={1}>
                   <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance} />

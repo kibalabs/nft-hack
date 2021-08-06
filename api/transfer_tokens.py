@@ -1,3 +1,4 @@
+import asyncio
 import os
 import json
 import logging
@@ -33,14 +34,14 @@ async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
     tokensPerRow = 100
     tokenCount = await contractStore.get_total_supply(network='rinkeby')
     nonce = await ethClient.get_transaction_count(address=accountAddress)
+    transactionHash = None
     for row in range(0, height):
         for column in range(0, width):
             tokenId = startTokenId + (row * tokensPerRow) + column
             if tokenId <= tokenCount:
                 print(f'Transferring token {tokenId} with nonce {nonce} to {receiveAddress}')
                 try:
-                    transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=150000, gasPrice=1 * GWEI)
-                    print('transactionHash', transactionHash)
+                    transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=150000, gasPrice=int(1 * GWEI))
                 except BadRequestException as exception:
                     print(f'Failed to transfer {tokenId}: {str(exception)}')
                 nonce += 1
@@ -48,6 +49,15 @@ async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
+    if transactionHash:
+        print(f'Waiting for last transaction to finish: {transactionHash}')
+        transactionReceipt = None
+        while not transactionReceipt:
+            print(f'Still waiting...')
+            await asyncio.sleep(15)
+            transactionReceipt = await contractStore.get_transaction_receipt(network=network, transactionHash=transactionHash)
+        if not transactionReceipt['status'] == 1:
+            raise Exception(f'Last transaction failed: {transactionReceipt}')
     await requester.close_connections()
 
 

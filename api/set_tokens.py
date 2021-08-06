@@ -71,6 +71,7 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
     tokensPerRow = 100
     tokenCount = await contractStore.get_total_supply(network='rinkeby')
     nonce = await ethClient.get_transaction_count(address=accountAddress)
+    transactionHash = None
     for row in range(0, height):
         for column in range(0, width):
             index = (row * width) + column
@@ -84,18 +85,16 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
                     currentTokenOwner = await contractStore.get_token_owner(network=network, tokenId=tokenId)
                 except BadRequestException as exception:
                     if 'nonexistent token' in exception.message:
-                        print('Minting token...')
-                        transactionHash = await contractStore.mint_token(network=network, tokenId=tokenId, nonce=nonce, gas=150000, gasPrice=1 * GWEI)
+                        print(f'Minting token {tokenId}')
+                        await contractStore.mint_token(network=network, tokenId=tokenId, nonce=nonce, gas=150000, gasPrice=int(1 * GWEI))
                         nonce += 1
                         currentTokenOwner = accountAddress
-                        print('Minted token')
                     else:
                         raise Exception
                 if currentTokenOwner != accountAddress:
-                    raise Exception(f'We are not the owner of this token, it is owned by: {currentTokenOwner}')
+                    raise Exception(f'We are not the owner of token {tokenId}, it is owned by: {currentTokenOwner}')
                 print(f'Updating token {tokenId}, with index {index}, and nonce {nonce}')
-                transactionHash = await contractStore.set_token_content_url(network=network, tokenId=tokenId, tokenContentUri=tokenContentUri, nonce=nonce, gas=200000, gasPrice=1 * GWEI)
-                print('transactionHash', transactionHash)
+                transactionHash = await contractStore.set_token_content_url(network=network, tokenId=tokenId, tokenContentUri=tokenContentUri, nonce=nonce, gas=200000, gasPrice=int(1 * GWEI))
                 await requester.post(url=f'https://api.mdtp.co/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
                 await requester.post_json(url=f'https://api.mdtp.co/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={'delay': 120})
                 nonce += 1
@@ -103,6 +102,15 @@ async def run(imagePath: str, name: str, url: Optional[str], description: Option
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
+    if transactionHash:
+        print(f'Waiting for last transaction to finish: {transactionHash}')
+        transactionReceipt = None
+        while not transactionReceipt:
+            print(f'Still waiting...')
+            await asyncio.sleep(15)
+            transactionReceipt = await contractStore.get_transaction_receipt(network=network, transactionHash=transactionHash)
+        if not transactionReceipt['status'] == 1:
+            raise Exception(f'Last transaction failed: {transactionReceipt}')
     await requester.close_connections()
 
 
