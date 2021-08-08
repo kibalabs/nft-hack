@@ -1,9 +1,11 @@
+import asyncio
 import dataclasses
 from typing import Any, List, Optional
 
 from core.exceptions import NotFoundException
 from core.web3.eth_client import EthClientInterface
 from web3.main import Web3
+from web3.types import TxReceipt
 
 @dataclasses.dataclass
 class Contract:
@@ -16,6 +18,7 @@ class Contract:
     totalSupplyMethodName: str
     setTokenContentUriMethodName: str
     setTokenContentUriFieldName: str
+    setTokenGroupContentUriMethodName: Optional[str]
     transferTokenMethodName: str
     mintTokenMethodName: str
     transferMethodSignature: str
@@ -70,6 +73,14 @@ class ContractStore:
         transactionHash = await self._send_transaction(contract=contract, methodName=contract.setTokenContentUriMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
         return transactionHash
 
+    async def set_token_group_content_urls(self, network: str, tokenId: int, width: int, height: int, tokenContentUris: List[str], nonce: int, gas: int, gasPrice: int) -> str:
+        if width * height != len(tokenContentUris):
+            raise Exception(f'length of tokenContentUris ({len(tokenContentUris)}) must be equal to width * height ({width * height})')
+        contract = self.get_contract(network=network)
+        arguments = {'tokenId': tokenId, 'width': width, 'height': height, 'contentURIs': tokenContentUris}
+        transactionHash = await self._send_transaction(contract=contract, methodName=contract.setTokenGroupContentUriMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
+        return transactionHash
+
     async def transfer_token(self, network: str, tokenId: int, toAddress: str, nonce: int, gas: int, gasPrice: int) -> str:
         contract = self.get_contract(network=network)
         arguments = {'tokenId': tokenId, 'to': toAddress, 'from': self.accountAddress}
@@ -88,7 +99,7 @@ class ContractStore:
         transactionHash = await self._send_transaction(contract=contract, methodName=contract.mintTokenMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
         return transactionHash
 
-    async def get_transaction_receipt(self, network: str, transactionHash: str) -> str:
+    async def get_transaction_receipt(self, network: str, transactionHash: str) -> TxReceipt:
         contract = self.get_contract(network=network)
         transactionReceipt = await contract.ethClient.get_transaction_receipt(transactionHash=transactionHash)
         return transactionReceipt
@@ -109,3 +120,10 @@ class ContractStore:
             return []
         events = await contract.ethClient.get_log_entries(address=contract.address, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber, topics=[Web3.keccak(text=contract.updateMethodSignature).hex()])
         return [int.from_bytes(bytes(event['topics'][1]), 'big') for event in events]
+
+    async def wait_for_transaction(self, network: str, transactionHash: str, sleepTime: int = 15) -> TxReceipt:
+        transactionReceipt = None
+        while not transactionReceipt:
+            await asyncio.sleep(sleepTime)
+            transactionReceipt = await self.get_transaction_receipt(network=network, transactionHash=transactionHash)
+        return transactionReceipt

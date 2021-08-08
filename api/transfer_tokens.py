@@ -51,11 +51,7 @@ async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
                 break
     if transactionHash:
         print(f'Waiting for last transaction to finish: {transactionHash}')
-        transactionReceipt = None
-        while not transactionReceipt:
-            print(f'Still waiting...')
-            await asyncio.sleep(15)
-            transactionReceipt = await contractStore.get_transaction_receipt(network=network, transactionHash=transactionHash)
+        transactionReceipt = await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
         if not transactionReceipt['status'] == 1:
             raise Exception(f'Last transaction failed: {transactionReceipt}')
     await requester.close_connections()
