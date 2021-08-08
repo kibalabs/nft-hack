@@ -105,23 +105,23 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     // url: optional[string] -> a URI pointing to the location you want visitors of your content to go to.
     // groupId: optional[string] -> a unique identifier you can use to group multiple grid items together by giving them all the same groupId.
 
-    function setTokenContentURI(uint256 tokenId, string memory metadataURI) public onlyTokenOwner(tokenId) {
-        _setTokenContentURI(tokenId, metadataURI);
+    function setTokenContentURI(uint256 tokenId, string memory contentURI) public onlyTokenOwner(tokenId) {
+        _setTokenContentURI(tokenId, contentURI);
     }
 
-    function setTokenGroupContentURIs(uint256 tokenId, uint8 width, uint8 height, string[] memory metadataURIs) public onlyTokenGroupOwner(tokenId, width, height) onlyValidGroup(tokenId, width, height) {
-        require(width * height == metadataURIs.length, "MDTP: length of metadataURIs must be the same as width * height");
+    function setTokenGroupContentURIs(uint256 tokenId, uint8 width, uint8 height, string[] memory contentURIs) public onlyTokenGroupOwner(tokenId, width, height) onlyValidGroup(tokenId, width, height) {
+        require(width * height == contentURIs.length, "MDTP: length of contentURIs must be the same as width * height");
         for (uint8 y = 0; y < height; y++) {
             for (uint8 x = 0; x < width; x++) {
                 uint16 index = (width * y) + x;
                 uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
-                _setTokenContentURI(innerTokenId, metadataURIs[index]);
+                _setTokenContentURI(innerTokenId, contentURIs[index]);
             }
         }
     }
 
-    function _setTokenContentURI(uint256 tokenId, string memory metadataURI) internal {
-        _tokenContentURIs[tokenId] = metadataURI;
+    function _setTokenContentURI(uint256 tokenId, string memory contentURI) internal {
+        _tokenContentURIs[tokenId] = contentURI;
         emit TokenContentURIChanged(tokenId);
     }
 

@@ -1,16 +1,17 @@
+import json
 import os
 import math
 import logging
 import asyncio
-import uuid
 
 import asyncclick as click
-import boto3
-from core.s3_manager import S3Manager
+from core.http.basic_authentication import BasicAuthentication
+from core.requester import Requester
 from core.util import file_util
 from PIL import Image
 
 from crop_image import crop_image
+from mdtp.ipfs_manager import IpfsManager
 
 GRID_WIDTH = 100
 GRID_HEIGHT = 100
@@ -18,20 +19,12 @@ BLOCK_WIDTH = 10
 BLOCK_HEIGHT = 10
 MAX_ZOOM = 10
 
-@click.command()
-@click.option('-i', '--image-path', 'imagePath', required=True, type=str)
-@click.option('-a', '--overlay-image-path', 'overlayImagePath', required=True, type=str)
-@click.option('-m', '--middle-image-path', 'middleImagePath', required=True, type=str)
-@click.option('-u', '--upload', 'shouldUpload', required=False, is_flag=True, default=False)
-async def main(imagePath: str, overlayImagePath: str, middleImagePath: str, shouldUpload: bool):
-    s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
-    s3Manager = S3Manager(s3Client=s3Client)
-
-    # # NOTE(krishan711): this script assumes the overlay image is the correct sizes already
+async def generate_background(baseImagePath: str, overlayImagePath: str, middleImagePath: str) -> Image:
+    # NOTE(krishan711): this script assumes the overlay image is the correct sizes already
     angle = 45
     scaleX = 1.7
     scaleY = 0.9
-    image = Image.open(imagePath)
+    image = Image.open(baseImagePath)
     imageWidth, imageHeight = image.size
     if imageWidth != GRID_WIDTH * BLOCK_WIDTH * MAX_ZOOM or imageHeight != GRID_HEIGHT * BLOCK_HEIGHT * MAX_ZOOM:
         raise Exception(f'baseImage must have dimensions: width={GRID_WIDTH * BLOCK_WIDTH * MAX_ZOOM} height={GRID_HEIGHT * BLOCK_HEIGHT * MAX_ZOOM}')
@@ -52,17 +45,59 @@ async def main(imagePath: str, overlayImagePath: str, middleImagePath: str, shou
     middleImage = Image.open(middleImagePath)
     middleImage = middleImage.resize(size=(middleImageWidth * BLOCK_WIDTH * MAX_ZOOM, middleImageHeight * BLOCK_HEIGHT * MAX_ZOOM))
     image.paste(middleImage, middleImagePosition, middleImage)
-    outputFilePath = 'output.png'
-    image.save(outputFilePath)
 
+
+@click.command()
+@click.option('-i', '--image-path', 'baseImagePath', required=True, type=str)
+@click.option('-a', '--overlay-image-path', 'overlayImagePath', required=True, type=str)
+@click.option('-m', '--middle-image-path', 'middleImagePath', required=True, type=str)
+@click.option('-u', '--upload', 'shouldUpload', required=False, is_flag=True, default=False)
+async def main(baseImagePath: str, overlayImagePath: str, middleImagePath: str, shouldUpload: bool):
+    tokenIds = list(range(1, 10000 + 1))
+    infuraIpfsAuth = BasicAuthentication(username=os.environ['INFURA_IPFS_PROJECT_ID'], password=os.environ['INFURA_IPFS_PROJECT_SECRET'])
+    infuraIpfsRequester = Requester(headers={'authorization': f'Basic {infuraIpfsAuth.to_string()}'})
+    ipfsManager = IpfsManager(requester=infuraIpfsRequester)
+
+    imagesOutputDirectory = 'output/default-content-images'
+    await file_util.create_directory(directory=imagesOutputDirectory)
+    metadataOutputDirectory = 'output/default-content-metadatas'
+    await file_util.create_directory(directory=metadataOutputDirectory)
+
+    outputFilePath = 'output/default-content.png'
+    image = generate_background(baseImagePath=baseImagePath, overlayImagePath=overlayImagePath, middleImagePath=middleImagePath)
+    image.save(outputFilePath)
+    crop_image(imagePath=outputFilePath, outputDirectory=imagesOutputDirectory, height=100, width=100)
+
+    imageUrls = {}
+    for tokenId in tokenIds:
+        imagePath = os.path.join(metadataOutputDirectory, f'{tokenId - 1}.png')
+        if shouldUpload:
+            print(f'Uploading image for {tokenId}')
+            with open(imagePath, 'rb') as imageFile:
+                cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+            imageUrls[tokenId] = f'ipfs://{cid}'
+        else:
+            imageUrls[tokenId] = imagePath
+
+    for tokenId in tokenIds:
+      print(f'Generating metadata for {tokenId}')
+      metadata = {
+        "tokenId": tokenId,
+        "tokenIndex": tokenId - 1,
+        "name": f'MDTP Token {tokenId}',
+        "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). It hasn't been claimed yet so click mint now to buy it!",
+        "image": imageUrls[tokenId],
+        "url": None,
+      }
+      with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
+        metadataFile.write(json.dumps(metadata))
     if shouldUpload:
-        logging.info(f'Uploading')
-        runId = str(uuid.uuid4())
-        uploadPath = f's3://mdtp-images/uploads/{runId}'
-        outputDirectory = 'output'
-        crop_image(imagePath=outputFilePath, outputDirectory=outputDirectory, height=100, width=100)
-        await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=uploadPath, accessControl='public-read', cacheControl='public,max-age=31536000')
-        logging.info(f'Uploaded to {uploadPath}')
+      print(f'Uploading metadata')
+      fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
+      cid = await ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
+      for openFile in fileContentMap.values():
+        openFile.close()
+      print(f'Uploaded metadata to ipfs://{cid}')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

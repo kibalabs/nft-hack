@@ -1,13 +1,14 @@
 import os
-import json
 import logging
-from typing import Dict, Optional
+from typing import Optional
 
 import asyncclick as click
-from core.requester import FileContent, Requester
+from core.requester import Requester
 from core.util import file_util
 from core.http.basic_authentication import BasicAuthentication
 from PIL import Image, ImageDraw, ImageFont
+
+from mdtp.ipfs_manager import IpfsManager
 
 IMAGE_SIZE = 1000
 GRID_COUNT = 20
@@ -120,20 +121,6 @@ def generate_image(tokenId: int) -> Image:
     return image
 
 
-async def upload_file_to_ipfs(requester: Requester, fileContent: FileContent) -> str:
-  response = await requester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?pin=true', formDataDict={'file': fileContent}, timeout=60)
-  repsonseDict = json.loads(response.text)
-  return repsonseDict["Hash"]
-
-
-async def upload_files_to_ipfs(requester: Requester, fileContentMap: Dict[str, FileContent]) -> str:
-  response = await requester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?wrap-with-directory=true&pin=true', formDataDict=fileContentMap, timeout=600)
-  repsonseDict = json.loads(response.text.split('\n')[-2])
-  if not repsonseDict["Name"] == "":
-    raise Exception(f'upload seems to have gone wrong: {response.text}')
-  return repsonseDict["Hash"]
-
-
 @click.command()
 @click.option('-t', '--token-id', 'tokenId', required=False, type=int, default=None)
 @click.option('-u', '--upload', 'shouldUpload', required=False, is_flag=True, default=False)
@@ -142,42 +129,46 @@ async def run(tokenId: Optional[int], shouldUpload: bool):
 
     infuraIpfsAuth = BasicAuthentication(username=os.environ['INFURA_IPFS_PROJECT_ID'], password=os.environ['INFURA_IPFS_PROJECT_SECRET'])
     infuraIpfsRequester = Requester(headers={'authorization': f'Basic {infuraIpfsAuth.to_string()}'})
+    ipfsManager = IpfsManager(requester=infuraIpfsRequester)
+
     imagesOutputDirectory = f'output/images'
     await file_util.create_directory(directory=imagesOutputDirectory)
     metadataOutputDirectory = f'output/metadatas'
     await file_util.create_directory(directory=metadataOutputDirectory)
-    imageUrls = {}
-    for tokenId in tokenIds:
-      print(f'Generating image for {tokenId}')
-      imagePath = os.path.join(imagesOutputDirectory, f'{tokenId}.png')
-      tokenImage = generate_image(tokenId=tokenId)
-      tokenImage.save(imagePath)
-      if shouldUpload:
-        print(f'Uploading image for {tokenId}')
-        with open(imagePath, 'rb') as imageFile:
-          cid = await upload_file_to_ipfs(requester=infuraIpfsRequester, fileContent=imageFile)
-        imageUrls[tokenId] = f'ipfs://{cid}'
-      else:
-        imageUrls[tokenId] = imagePath
-    for tokenId in tokenIds:
-      print(f'Generating metadata for {tokenId}')
-      metadata = {
-        "tokenId": tokenId,
-        "tokenIndex": tokenId - 1,
-        "name": f'MDTP Token {tokenId}',
-        "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP).\nMDTP is a digital content-sharing space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display the content you like, and later re-sold.\nSo join us and interact, trade and share, and be a part of making crypto history!",
-        "image": imageUrls[tokenId],
-        "url": None,
-      }
-      with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
-        metadataFile.write(json.dumps(metadata))
+
+    # imageUrls = {}
+    # for tokenId in tokenIds:
+    #   print(f'Generating image for {tokenId}')
+    #   imagePath = os.path.join(imagesOutputDirectory, f'{tokenId}.png')
+    #   tokenImage = generate_image(tokenId=tokenId)
+    #   tokenImage.save(imagePath)
+    #   if shouldUpload:
+    #     print(f'Uploading image for {tokenId}')
+    #     with open(imagePath, 'rb') as imageFile:
+    #       cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+    #     imageUrls[tokenId] = f'ipfs://{cid}'
+    #   else:
+    #     imageUrls[tokenId] = imagePath
+
+    # for tokenId in tokenIds:
+    #   print(f'Generating metadata for {tokenId}')
+    #   metadata = {
+    #     "tokenId": tokenId,
+    #     "tokenIndex": tokenId - 1,
+    #     "name": f'MDTP Token {tokenId}',
+    #     "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP).\nMDTP is a digital content-sharing space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display the content you like, and later re-sold.\nSo join us and interact, trade and share, and be a part of making crypto history!",
+    #     "image": imageUrls[tokenId],
+    #     "url": None,
+    #   }
+    #   with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
+    #     metadataFile.write(json.dumps(metadata))
     if shouldUpload:
       print(f'Uploading metadata')
       fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
-      cid = await upload_files_to_ipfs(requester=infuraIpfsRequester, fileContentMap=fileContentMap)
+      cid = await ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
       for openFile in fileContentMap.values():
         openFile.close()
-      print(f'Uploaded metadatas to ipfs://{cid}')
+      print(f'Uploaded metadata to ipfs://{cid}')
     await infuraIpfsRequester.close_connections()
 
 if __name__ == '__main__':
