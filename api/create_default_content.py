@@ -22,7 +22,8 @@ MAX_ZOOM = 10
 @click.option('-i', '--image-path', 'imagePath', required=True, type=str)
 @click.option('-a', '--overlay-image-path', 'overlayImagePath', required=True, type=str)
 @click.option('-m', '--middle-image-path', 'middleImagePath', required=True, type=str)
-async def main(imagePath: str, overlayImagePath: str, middleImagePath: str):
+@click.option('-u', '--upload', 'shouldUpload', required=False, is_flag=True, default=False)
+async def main(imagePath: str, overlayImagePath: str, middleImagePath: str, shouldUpload: bool):
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
@@ -54,13 +55,14 @@ async def main(imagePath: str, overlayImagePath: str, middleImagePath: str):
     outputFilePath = 'output.png'
     image.save(outputFilePath)
 
-    runId = str(uuid.uuid4())
-    uploadPath = f's3://mdtp-images/uploads/{runId}'
-    outputDirectory = 'output'
-    crop_image(imagePath=outputFilePath, outputDirectory=outputDirectory, height=100, width=100)
-    await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=uploadPath, accessControl='public-read', cacheControl='public,max-age=31536000')
-    logging.info(f'Uploaded to {uploadPath}')
-    await file_util.remove_directory(outputDirectory)
+    if shouldUpload:
+        logging.info(f'Uploading')
+        runId = str(uuid.uuid4())
+        uploadPath = f's3://mdtp-images/uploads/{runId}'
+        outputDirectory = 'output'
+        crop_image(imagePath=outputFilePath, outputDirectory=outputDirectory, height=100, width=100)
+        await s3Manager.upload_directory(sourceDirectory=outputDirectory, target=uploadPath, accessControl='public-read', cacheControl='public,max-age=31536000')
+        logging.info(f'Uploaded to {uploadPath}')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
