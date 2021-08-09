@@ -69,29 +69,25 @@ async def main(baseImagePath: str, overlayImagePath: str, middleImagePath: str, 
     # image.save(outputFilePath)
     # crop_image(imagePath=outputFilePath, outputDirectory=imagesOutputDirectory, height=100, width=100)
 
-    imageUrls = {}
     for tokenId in tokenIds:
         imagePath = os.path.join(imagesOutputDirectory, f'{tokenId - 1}.png')
+        imageUrl = imagePath
         if shouldUpload:
             print(f'Uploading image for {tokenId}')
             with open(imagePath, 'rb') as imageFile:
                 cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
-            imageUrls[tokenId] = f'ipfs://{cid}'
-        else:
-            imageUrls[tokenId] = imagePath
-
-    for tokenId in tokenIds:
-      print(f'Generating metadata for {tokenId}')
-      metadata = {
-        "tokenId": tokenId,
-        "tokenIndex": tokenId - 1,
-        "name": f'MDTP Token {tokenId}',
-        "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). It hasn't been claimed yet so click mint now to buy it!",
-        "image": imageUrls[tokenId],
-        "url": None,
-      }
-      with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
-        metadataFile.write(json.dumps(metadata))
+            imageUrl = f'ipfs://{cid}'
+        print(f'Generating metadata for {tokenId}')
+        metadata = {
+            "tokenId": tokenId,
+            "tokenIndex": tokenId - 1,
+            "name": f'MDTP Token {tokenId}',
+            "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). It hasn't been claimed yet so click mint now to buy it!",
+            "image": imageUrl,
+            "url": None,
+        }
+        with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
+            metadataFile.write(json.dumps(metadata))
     if shouldUpload:
         print(f'Uploading metadata')
         fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
