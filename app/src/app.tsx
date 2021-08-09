@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { LocalStorageClient, Requester } from '@kibalabs/core';
-import { Route, Router, useInitialization } from '@kibalabs/core-react';
+import { Route, Router, useFavicon, useInitialization } from '@kibalabs/core-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
 import { KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
@@ -48,6 +48,7 @@ const globals: Globals = {
 };
 
 export const App = hot((): React.ReactElement => {
+  useFavicon('/assets/favicon.svg');
   const [accounts, setAccounts] = React.useState<ethers.Signer[] | undefined | null>(undefined);
   const [accountIds, setAccountIds] = React.useState<string[] | undefined | null>(undefined);
   const [chainId, setChainId] = React.useState<number | null>(null);
