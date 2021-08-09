@@ -8,7 +8,7 @@ module.exports = {
   solidity: {
     version: "0.8.4",
   },
-  defaultNetwork: "rinkeby",
+  defaultNetwork: "hardhat",
   networks: {
     hardhat: {},
     rinkeby: {
