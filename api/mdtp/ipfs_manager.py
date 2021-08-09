@@ -14,9 +14,9 @@ class IpfsManager:
         repsonseDict = json.loads(response.text)
         return repsonseDict["Hash"]
 
-
     async def upload_files_to_ipfs(self, fileContentMap: Dict[str, FileContent]) -> str:
-        response = await self.requester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?wrap-with-directory=true&silent=true&pin=false', formDataDict=fileContentMap, timeout=600)
+        # NOTE(krishan711): pinning straight away seems to fail so this uploads first and then pins separately
+        response = await self.requester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?wrap-with-directory=true&silent=true&pin=false', formDataDict=fileContentMap, timeout=len(fileContentMap) * 10)
         allUploadDicts = []
         for line in response.text.split('\n'):
             if line:
@@ -24,4 +24,6 @@ class IpfsManager:
         directoryUploadDict = next((uploadDict for uploadDict in allUploadDicts if uploadDict['Name'] == ''), None)
         if not directoryUploadDict:
             raise Exception(f'Failed to find directory upload: {response.text}')
-        return directoryUploadDict["Hash"]
+        cid = directoryUploadDict["Hash"]
+        await self.requester.post(url=f'https://ipfs.infura.io:5001/api/v0/pin/add?arg={cid}', timeout=len(fileContentMap) * 10)
+        return cid

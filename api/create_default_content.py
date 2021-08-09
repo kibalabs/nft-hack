@@ -45,6 +45,7 @@ async def generate_background(baseImagePath: str, overlayImagePath: str, middleI
     middleImage = Image.open(middleImagePath)
     middleImage = middleImage.resize(size=(middleImageWidth * BLOCK_WIDTH * MAX_ZOOM, middleImageHeight * BLOCK_HEIGHT * MAX_ZOOM))
     image.paste(middleImage, middleImagePosition, middleImage)
+    return image
 
 
 @click.command()
@@ -63,14 +64,14 @@ async def main(baseImagePath: str, overlayImagePath: str, middleImagePath: str, 
     metadataOutputDirectory = 'output/default-content-metadatas'
     await file_util.create_directory(directory=metadataOutputDirectory)
 
-    outputFilePath = 'output/default-content.png'
-    image = generate_background(baseImagePath=baseImagePath, overlayImagePath=overlayImagePath, middleImagePath=middleImagePath)
-    image.save(outputFilePath)
-    crop_image(imagePath=outputFilePath, outputDirectory=imagesOutputDirectory, height=100, width=100)
+    # outputFilePath = 'output/default-content.png'
+    # image = await generate_background(baseImagePath=baseImagePath, overlayImagePath=overlayImagePath, middleImagePath=middleImagePath)
+    # image.save(outputFilePath)
+    # crop_image(imagePath=outputFilePath, outputDirectory=imagesOutputDirectory, height=100, width=100)
 
     imageUrls = {}
     for tokenId in tokenIds:
-        imagePath = os.path.join(metadataOutputDirectory, f'{tokenId - 1}.png')
+        imagePath = os.path.join(imagesOutputDirectory, f'{tokenId - 1}.png')
         if shouldUpload:
             print(f'Uploading image for {tokenId}')
             with open(imagePath, 'rb') as imageFile:
@@ -92,12 +93,12 @@ async def main(baseImagePath: str, overlayImagePath: str, middleImagePath: str, 
       with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
         metadataFile.write(json.dumps(metadata))
     if shouldUpload:
-      print(f'Uploading metadata')
-      fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
-      cid = await ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
-      for openFile in fileContentMap.values():
-        openFile.close()
-      print(f'Uploaded metadata to ipfs://{cid}')
+        print(f'Uploading metadata')
+        fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
+        cid = await ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
+        for openFile in fileContentMap.values():
+            openFile.close()
+        print(f'Uploaded metadata to ipfs://{cid}')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
