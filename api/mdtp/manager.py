@@ -1,26 +1,25 @@
-from dataclasses import field
 import datetime
 from io import BytesIO
 import json
 import logging
 import math
-from typing import Dict, List
+from typing import List
 from typing import Sequence
 from typing import Optional
 import urllib.parse as urlparse
 import uuid
 
-from core.exceptions import KibaException, NotFoundException, ServerException
+from core.exceptions import KibaException, NotFoundException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.util import date_util, dict_util, file_util
-from core.web3.eth_client import EthClientInterface
 from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
 from core.store.retriever import DateFieldFilter, Direction, Order, StringFieldFilter
 from PIL import Image as PILImage
 from web3 import Web3
 from mdtp.contract_store import ContractStore
+from mdtp.ipfs_manager import IpfsManager
 
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
@@ -39,7 +38,7 @@ _CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager):
+    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager, ipfsManager: IpfsManager):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
@@ -48,9 +47,14 @@ class MdtpManager:
         self.contractStore = contractStore
         self.workQueue = workQueue
         self.imageManager = imageManager
+        self.ipfsManager = ipfsManager
         self.ownerAddress = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
 
     # NOTE(krishan711): it feels weird that this and the function below don't have network in the request or response. Think this through.
+    async def get_token_metadata(self, network: str, tokenId: str) -> TokenMetadata:
+        self.contractStore.get_token_metadata_url(network=network, tokenId=tokenId)
+
+    # NOTE(krishan711): these methods are old and should be removed once we no longer support the old contracts
     async def get_token_metadata(self, tokenId: str) -> TokenMetadata:
         try:
             tokenIdValue = int(tokenId)
@@ -143,10 +147,7 @@ class MdtpManager:
             latestBaseImage = await self.get_latest_base_image_url(network=network)
         except NotFoundException:
             latestBaseImage = None
-        if latestBaseImage:
-            gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
-        else:
-            gridItems = [await self.get_token_default_grid_item(tokenId=index + 1) for index in range(0, 10000)]
+        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate if latestBaseImage else None)
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None
@@ -268,6 +269,7 @@ class MdtpManager:
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
+            # await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
             await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
     async def upload_token_image_deferred(self, network: str, tokenId: int, delay: Optional[int] = None) -> None:
@@ -289,11 +291,15 @@ class MdtpManager:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception:
             ownerId = '0x0000000000000000000000000000000000000000'
-        tokenContentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-        tokenContentResponse = await self.requester.make_request(method='GET', url=tokenContentUrl)
-        tokenContentJson = json.loads(tokenContentResponse.text)
-        title = tokenContentJson.get('title') or tokenContentJson.get('name') or ''
-        imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or ''
+        metadata = await self.get_token_metadata(tokenId=tokenId)
+        contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+        if contentUrl.startswith('ipfs://'):
+            contentResponse = await self.ipfsManager.read_file(cid=contentUrl.replace('ipfs://', ''))
+        else:
+            contentResponse = await self.requester.make_request(method='GET', url=contentUrl)
+        tokenContentJson = json.loads(contentResponse.text)
+        title = tokenContentJson.get('title') or tokenContentJson.get('name') or metadata.title
+        imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or metadata.image
         description = tokenContentJson.get('description')
         url = tokenContentJson.get('url')
         groupId = tokenContentJson.get('groupId') or tokenContentJson.get('blockId')
@@ -301,15 +307,16 @@ class MdtpManager:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
-            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, groupId=groupId, ownerId=ownerId)
+            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, groupId=groupId, ownerId=ownerId)
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
         if not resizableImageUrl:
-            await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
-        if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
+            # await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
+            await self.upload_token_image(network=network, tokenId=tokenId)
+        if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
-            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
+            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)

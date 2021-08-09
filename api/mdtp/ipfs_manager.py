@@ -1,13 +1,17 @@
 import json
 
-from typing import Dict
-from core.requester import FileContent, Requester
+from typing import Dict, Optional
+from core.requester import FileContent, KibaResponse, Requester
 
 
 class IpfsManager:
 
     def __init__(self, requester: Requester):
         self.requester = requester
+
+    async def read_file(self, cid: str, outputFilePath: Optional[str] = None) -> KibaResponse:
+        response = await self.requester.post(url=f'https://ipfs.infura.io:5001/api/v0/cat?arg={cid}', outputFilePath=outputFilePath)
+        return response
 
     async def upload_file_to_ipfs(self, fileContent: FileContent) -> str:
         response = await self.requester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?pin=true', formDataDict={'file': fileContent}, timeout=60)

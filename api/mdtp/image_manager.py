@@ -8,6 +8,7 @@ from core.util import file_util
 from core.exceptions import InternalServerErrorException, KibaException, NotFoundException
 from core.s3_manager import S3Manager
 from PIL import Image as PILImage
+from mdtp.ipfs_manager import IpfsManager
 
 from mdtp.model import ImageData, ImageFormat, ImageSize, Image, ImageVariant
 from core.requester import Requester
@@ -26,9 +27,10 @@ class UnknownImageType(InternalServerErrorException):
 
 class ImageManager:
 
-    def __init__(self, requester: Requester, s3Manager: S3Manager):
+    def __init__(self, requester: Requester, s3Manager: S3Manager, ipfsManager: IpfsManager):
         self.requester = requester
         self.s3Manager = s3Manager
+        self.ipfsManager = ipfsManager
 
     def _get_image_type_from_file(self, fileName: str) -> str:
         imageType = imghdr.what(fileName)
@@ -44,7 +46,10 @@ class ImageManager:
 
     async def upload_image_from_url(self, url: str) -> str:
         localFilePath = f'./download-{str(uuid.uuid4())}'
-        await self.requester.get(url=url, outputFilePath=localFilePath)
+        if url.startswith('ipfs://'):
+            await self.ipfsManager.read_file(cid=url.replace('ipfs://', ''), outputFilePath=localFilePath)
+        else:
+            await self.requester.get(url=url, outputFilePath=localFilePath)
         imageId = await self.upload_image_from_file(filePath=localFilePath)
         await file_util.remove_file(filePath=localFilePath)
         return imageId

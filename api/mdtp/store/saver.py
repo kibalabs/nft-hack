@@ -10,7 +10,7 @@ _EMPTY_STRING = '_EMPTY_STRING'
 
 class MdtpSaver(Saver):
 
-    async def create_grid_item(self, tokenId: int, network: str, title: str, description: Optional[str], imageUrl: str, resizableImageUrl: Optional[str], url: Optional[str], groupId: Optional[str], ownerId: str) -> GridItem:
+    async def create_grid_item(self, tokenId: int, network: str, contentUrl: Optional[str], title: str, description: Optional[str], imageUrl: str, resizableImageUrl: Optional[str], url: Optional[str], groupId: Optional[str], ownerId: str) -> GridItem:
         createdDate = date_util.datetime_from_now()
         updatedDate = createdDate
         gridItemId = await self._execute(query=GridItemsTable.insert(), values={
@@ -18,6 +18,7 @@ class MdtpSaver(Saver):
             GridItemsTable.c.updatedDate.key: updatedDate,
             GridItemsTable.c.network.key: network,
             GridItemsTable.c.tokenId.key: tokenId,
+            GridItemsTable.c.contentUrl.key: contentUrl,
             GridItemsTable.c.title.key: title,
             GridItemsTable.c.description.key: description,
             GridItemsTable.c.imageUrl.key: imageUrl,
@@ -26,12 +27,14 @@ class MdtpSaver(Saver):
             GridItemsTable.c.url.key: url,
             GridItemsTable.c.groupId.key: groupId,
         })
-        return GridItem(gridItemId=gridItemId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
+        return GridItem(gridItemId=gridItemId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
 
-    # NOTE(krishan711): resizableImageUrl is optional so _EMPTY_STRING allows it to be passed in as None. Maybe there is a nicer way to do this.
-    async def update_grid_item(self, gridItemId: int, title: Optional[str] = None, description: Optional[str] = _EMPTY_STRING, imageUrl: Optional[str] = None, resizableImageUrl: Optional[str] = _EMPTY_STRING, url: Optional[str] = _EMPTY_STRING, groupId: Optional[str] = _EMPTY_STRING, ownerId: Optional[str] = None) -> None:
+    # NOTE(krishan711): some fields is optional so _EMPTY_STRING allows it to be passed in as None. Maybe there is a nicer way to do this.
+    async def update_grid_item(self, gridItemId: int, contentUrl: Optional[str] = _EMPTY_STRING, title: Optional[str] = None, description: Optional[str] = _EMPTY_STRING, imageUrl: Optional[str] = None, resizableImageUrl: Optional[str] = _EMPTY_STRING, url: Optional[str] = _EMPTY_STRING, groupId: Optional[str] = _EMPTY_STRING, ownerId: Optional[str] = None) -> None:
         query = GridItemsTable.update(GridItemsTable.c.gridItemId == gridItemId)
         values = {}
+        if contentUrl != _EMPTY_STRING:
+            values[GridItemsTable.c.contentUrl.key] = description
         if title is not None:
             values[GridItemsTable.c.title.key] = title
         if description != _EMPTY_STRING:
