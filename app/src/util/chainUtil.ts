@@ -5,6 +5,7 @@ import contract1 from '../contract1.json';
 import contract2 from '../contract2.json';
 import contract3 from '../contract3.json';
 import contract4 from '../contract4.json';
+import contract5 from '../contract5.json';
 
 declare global {
   export interface Window {
@@ -24,7 +25,7 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: 'rinkeby4',
+  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby5' : 'rinkeby4',
   [ChainId.Mainnet]: 'mainnet',
 };
 
@@ -33,6 +34,7 @@ const networkContractAddressMap: Record<string, string | null> = {
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
   rinkeby3: '0x19559Ac1471e2e4887d63c9363C85BF9f85Fdb67',
   rinkeby4: '0x9B84318C9aC64F564eEc4a703f2dbb742a4D1401',
+  rinkeby5: '0x7F042D0c65a891130621eA2fb5b7BbBDFD8C9cE2',
   mainnet: null,
 };
 
@@ -41,6 +43,7 @@ const networkContractMap: Record<string, ContractInterface | null> = {
   rinkeby2: contract2 as unknown as ContractInterface,
   rinkeby3: contract3 as unknown as ContractInterface,
   rinkeby4: contract4 as unknown as ContractInterface,
+  rinkeby5: contract5 as unknown as ContractInterface,
   mainnet: null,
 };
 

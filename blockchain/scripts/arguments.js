@@ -1,0 +1,8 @@
+
+const METADATA_BASE_URI = 'ipfs://123/';
+const DEFAULT_CONTENT_BASE_URI = 'ipfs://QmYWKVsSizmsLxfA213x2UW31mB8UxKr2pyynG794Cd497/'
+
+module.exports = [
+  METADATA_BASE_URI,
+  DEFAULT_CONTENT_BASE_URI
+];

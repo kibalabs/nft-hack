@@ -26,14 +26,14 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     uint16 public singleMintLimit = 20;
     uint256 public mintPrice = 0; // 50000000000000000 = 0.05 ETH
 
-    string public _metadataBaseURI;
-    string public _defaultContentBaseURI;
+    string public metadataBaseURI;
+    string public defaultContentBaseURI;
 
     event TokenContentURIChanged(uint256 indexed tokenId);
 
     constructor(string memory newMetadataBaseURI, string memory newDefaultContentBaseURI) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() {
-        _metadataBaseURI = newMetadataBaseURI;
-        _defaultContentBaseURI = newDefaultContentBaseURI;
+        metadataBaseURI = newMetadataBaseURI;
+        defaultContentBaseURI = newDefaultContentBaseURI;
     }
 
     // Utils
@@ -74,11 +74,11 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     }
 
     function setMetadataBaseURI(string memory newMetadataBaseURI) external onlyOwner {
-        _metadataBaseURI = newMetadataBaseURI;
+        metadataBaseURI = newMetadataBaseURI;
     }
 
     function setDefaultContentBaseURI(string memory newDefaultContentBaseURI) external onlyOwner {
-        _defaultContentBaseURI = newDefaultContentBaseURI;
+        defaultContentBaseURI = newDefaultContentBaseURI;
     }
 
     function withdraw() external onlyOwner {
@@ -88,12 +88,8 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
 
     // Metadata URIs
 
-    function metadataBaseURI() internal view returns (string memory) {
-        return _metadataBaseURI;
-    }
-
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        return string(abi.encodePacked(metadataBaseURI(), Strings.toString(tokenId), ".json"));
+        return string(abi.encodePacked(metadataBaseURI, Strings.toString(tokenId), ".json"));
     }
 
     // Content URIs
@@ -125,16 +121,12 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
         emit TokenContentURIChanged(tokenId);
     }
 
-    function defaultContentBaseURI() internal view returns (string memory) {
-        return _defaultContentBaseURI;
-    }
-
     function tokenContentURI(uint256 tokenId) public view returns (string memory) {
         string memory _tokenContentURI = _tokenContentURIs[tokenId];
         if (bytes(_tokenContentURI).length > 0) {
             return _tokenContentURI;
         }
-        return string(abi.encodePacked(defaultContentBaseURI(), Strings.toString(tokenId), ".json"));
+        return string(abi.encodePacked(defaultContentBaseURI, Strings.toString(tokenId), ".json"));
     }
 
     // Minting
