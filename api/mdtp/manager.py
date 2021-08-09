@@ -70,21 +70,21 @@ class MdtpManager:
             groupId=metadataJson.get('groupId'),
         )
 
-    async def get_token_default_content(self, network: str, tokenId: str) -> TokenMetadata:
+    async def get_token_content(self, network: str, tokenId: str) -> TokenMetadata:
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-        tokenContentJson = await self._get_json_content(url=contentUrl)
+        contentJson = await self._get_json_content(url=contentUrl)
         return TokenMetadata(
-            tokenId=tokenContentJson['tokenId'],
-            tokenIndex=tokenContentJson.get('tokenIndex') or tokenContentJson['tokenId'] - 1,
-            name=tokenContentJson.get('name') or tokenContentJson.get('title') or '',
-            description=tokenContentJson.get('description'),
-            image=tokenContentJson.get('image') or tokenContentJson.get('imageUrl') or '',
-            url=tokenContentJson.get('url'),
-            groupId=tokenContentJson.get('groupId'),
+            tokenId=contentJson['tokenId'],
+            tokenIndex=contentJson.get('tokenIndex') or contentJson['tokenId'] - 1,
+            name=contentJson.get('name') or contentJson.get('title') or '',
+            description=contentJson.get('description'),
+            image=contentJson.get('image') or contentJson.get('imageUrl') or '',
+            url=contentJson.get('url'),
+            groupId=contentJson.get('groupId'),
         )
 
     async def get_token_default_grid_item(self, tokenId: str) -> GridItem:
-        metadata = await self.get_token_default_content(tokenId=tokenId)
+        metadata = await self.get_token_content(tokenId=tokenId)
         return GridItem(
             gridItemId=tokenId-1,
             createdDate=date_util.datetime_from_now(),
