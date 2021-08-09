@@ -3,6 +3,10 @@ const { ethers } = require("hardhat");
 
 const METADATA_BASE_URI = 'ipfs://123/';
 const DEFAULT_CONTENT_BASE_URI = 'ipfs://456/';
+const DEFAULT_TOTAL_MINT_LIMIT = 1000;
+const DEFAULT_SINGLE_MINT_LIMIT = 20;
+const DEFAULT_OWNERSHIP_MINT_LIMIT = 45;
+const DEFAULT_MINT_PRICE = 0;
 
 describe("MillionDollarTokenPage contract", async function() {
   let myWallet;
@@ -12,14 +16,13 @@ describe("MillionDollarTokenPage contract", async function() {
   beforeEach(async () => {
     [myWallet, otherWallet] = await ethers.getSigners();
     const contract = await ethers.getContractFactory("MillionDollarTokenPage");
-    mdtp = await contract.deploy(METADATA_BASE_URI, DEFAULT_CONTENT_BASE_URI);
+    mdtp = await contract.deploy(DEFAULT_TOTAL_MINT_LIMIT, DEFAULT_SINGLE_MINT_LIMIT, DEFAULT_OWNERSHIP_MINT_LIMIT, DEFAULT_MINT_PRICE, METADATA_BASE_URI, DEFAULT_CONTENT_BASE_URI);
   });
 
   describe("Admin", async function() {
     it("should have a default totalMintLimit", async function() {
-      const defaultLimit = 1000;
       const totalMintLimit = await mdtp.totalMintLimit();
-      expect(totalMintLimit).to.equal(defaultLimit);
+      expect(totalMintLimit).to.equal(DEFAULT_TOTAL_MINT_LIMIT);
     });
 
     it("should allow admins to setTotalMintLimit", async function() {
@@ -35,9 +38,8 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("should have a default singleMintLimit", async function() {
-      const defaultLimit = 20;
       const singleMintLimit = await mdtp.singleMintLimit();
-      expect(singleMintLimit).to.equal(defaultLimit);
+      expect(singleMintLimit).to.equal(DEFAULT_SINGLE_MINT_LIMIT);
     });
 
     it("should allow admins to setSingleMintLimit", async function() {
@@ -52,10 +54,26 @@ describe("MillionDollarTokenPage contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
+    it("should have a default ownershipMintLimit", async function() {
+      const ownershipMintLimit = await mdtp.ownershipMintLimit();
+      expect(ownershipMintLimit).to.equal(DEFAULT_OWNERSHIP_MINT_LIMIT);
+    });
+
+    it("should allow admins to setOwnershipMintLimit", async function() {
+      const newLimit = 123;
+      await mdtp.setOwnershipMintLimit(newLimit);
+      const ownershipMintLimit = await mdtp.ownershipMintLimit();
+      expect(ownershipMintLimit).to.equal(newLimit);
+    });
+
+    it("should not allow non-admins to setOwnershipMintLimit", async function() {
+      const transaction = mdtp.connect(otherWallet).setOwnershipMintLimit(100);
+      await expect(transaction).to.be.reverted;
+    });
+
     it("should have a default mintPrice", async function() {
-      const defaultPrice = 0;
       const mintPrice = await mdtp.mintPrice();
-      expect(mintPrice).to.equal(defaultPrice);
+      expect(mintPrice).to.equal(DEFAULT_MINT_PRICE);
     });
 
     it("should allow admins to setMintPrice", async function() {
@@ -383,6 +401,14 @@ describe("MillionDollarTokenPage contract", async function() {
       expect(transaction).to.be.reverted;
     });
 
+    it("cannot mint over the ownershipMintLimit", async function() {
+      await mdtp.setOwnershipMintLimit(2);
+      await mdtp.mint(100);
+      await mdtp.mint(101);
+      const transaction = mdtp.mint(102);
+      expect(transaction).to.be.reverted;
+    });
+
     it("cannot mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       const transaction = mdtp.mint(100, {value: 1});
@@ -509,6 +535,19 @@ describe("MillionDollarTokenPage contract", async function() {
 
     it("cannot mint over the totalMintLimit in a single transactions", async function() {
       await mdtp.setTotalMintLimit(3);
+      const transaction = mdtp.mintTokenGroup(100, 4, 1);
+      expect(transaction).to.be.reverted;
+    });
+
+    it("cannot mint over the ownershipMintLimit in separate transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
+      await mdtp.mintTokenGroup(100, 2, 1);
+      const transaction = mdtp.mintTokenGroup(102, 2, 1);
+      expect(transaction).to.be.reverted;
+    });
+
+    it("cannot mint over the ownershipMintLimit in a single transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
       const transaction = mdtp.mintTokenGroup(100, 4, 1);
       expect(transaction).to.be.reverted;
     });

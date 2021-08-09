@@ -13,27 +13,32 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     using SafeMath for uint256;
     using Strings for uint256;
 
-    mapping (uint256 => string) private _tokenContentURIs;
-    mapping (address => mapping(uint256 => uint256)) private _ownedTokens;
-    mapping (uint256 => uint256) private _ownedTokensIndex;
+    mapping(uint256 => string) private _tokenContentURIs;
+    mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
+    mapping(uint256 => uint256) private _ownedTokensIndex;
     uint256[] private _mintedTokenIds;
 
     uint16 public constant COLUMN_COUNT = 100;
     uint16 public constant ROW_COUNT = 100;
     uint16 public constant SUPPLY_LIMIT = COLUMN_COUNT * ROW_COUNT;
 
-    uint16 public totalMintLimit = 1000;
-    uint16 public singleMintLimit = 20;
-    uint256 public mintPrice = 0; // 50000000000000000 = 0.05 ETH
+    uint16 public totalMintLimit;
+    uint16 public singleMintLimit;
+    uint16 public ownershipMintLimit;
+    uint256 public mintPrice; // 50000000000000000 = 0.05 ETH
 
     string public _metadataBaseURI;
     string public _defaultContentBaseURI;
 
     event TokenContentURIChanged(uint256 indexed tokenId);
 
-    constructor(string memory newMetadataBaseURI, string memory newDefaultContentBaseURI) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() {
+    constructor(uint16 initialTotalMintLimit, uint16 initialSingleMintLimit, uint16 initialOwnershipMintLimit, uint256 initialMintPrice, string memory newMetadataBaseURI, string memory newDefaultContentBaseURI) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() {
         _metadataBaseURI = newMetadataBaseURI;
         _defaultContentBaseURI = newDefaultContentBaseURI;
+        totalMintLimit = initialTotalMintLimit;
+        singleMintLimit = initialSingleMintLimit;
+        ownershipMintLimit = initialOwnershipMintLimit;
+        mintPrice = initialMintPrice;
     }
 
     // Utils
@@ -67,6 +72,10 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
 
     function setSingleMintLimit(uint16 newSingleMintLimit) external onlyOwner {
         singleMintLimit = newSingleMintLimit;
+    }
+
+    function setOwnershipMintLimit(uint16 newOwnershipMintLimit) external onlyOwner {
+        ownershipMintLimit = newOwnershipMintLimit;
     }
 
     function setMintPrice(uint256 newMintPrice) external onlyOwner {
@@ -150,13 +159,16 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     function mint(uint256 tokenId) public payable {
         require(msg.value >= mintPrice, "MDTP: Insufficient payment");
         require(mintedCount() + 1 <= totalMintLimit, "MDTP: reached current minting limit");
+        require(balanceOf(msg.sender) + 1 <= ownershipMintLimit, "MDTP: reached current ownership limit");
         _mint(tokenId);
     }
 
     function mintTokenGroup(uint256 tokenId, uint8 width, uint8 height) public payable {
-        require(msg.value >= mintPrice.mul(width * height), "MDTP: Insufficient payment");
-        require(mintedCount() + (width * height) <= totalMintLimit, "MDTP: reached current minting limit");
-        require(width * height <= singleMintLimit, "MDTP: requested token count is over singleMintLimit");
+        uint256 quantity = (width * height);
+        require(msg.value >= mintPrice.mul(quantity), "MDTP: Insufficient payment");
+        require(mintedCount() + quantity <= totalMintLimit, "MDTP: reached current minting limit");
+        require(balanceOf(msg.sender) + quantity <= ownershipMintLimit, "MDTP: reached current ownership limit");
+        require(quantity <= singleMintLimit, "MDTP: requested token count is over singleMintLimit");
         _mintTokenGroup(tokenId, width, height);
     }
 
