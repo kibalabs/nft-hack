@@ -64,10 +64,10 @@ async def main(baseImagePath: str, overlayImagePath: str, middleImagePath: str, 
     metadataOutputDirectory = 'output/default-content-metadatas'
     await file_util.create_directory(directory=metadataOutputDirectory)
 
-    # outputFilePath = 'output/default-content.png'
-    # image = await generate_background(baseImagePath=baseImagePath, overlayImagePath=overlayImagePath, middleImagePath=middleImagePath)
-    # image.save(outputFilePath)
-    # crop_image(imagePath=outputFilePath, outputDirectory=imagesOutputDirectory, height=100, width=100)
+    outputFilePath = 'output/default-content.png'
+    image = await generate_background(baseImagePath=baseImagePath, overlayImagePath=overlayImagePath, middleImagePath=middleImagePath)
+    image.save(outputFilePath)
+    crop_image(imagePath=outputFilePath, outputDirectory=imagesOutputDirectory, height=100, width=100)
 
     for tokenId in tokenIds:
         imagePath = os.path.join(imagesOutputDirectory, f'{tokenId - 1}.png')

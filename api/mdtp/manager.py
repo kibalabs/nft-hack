@@ -50,10 +50,6 @@ class MdtpManager:
         self.ipfsManager = ipfsManager
         self.ownerAddress = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
 
-    # NOTE(krishan711): it feels weird that this and the function below don't have network in the request or response. Think this through.
-    async def get_token_metadata(self, network: str, tokenId: str) -> TokenMetadata:
-        self.contractStore.get_token_metadata_url(network=network, tokenId=tokenId)
-
     # NOTE(krishan711): these methods are old and should be removed once we no longer support the old contracts
     async def get_token_metadata(self, tokenId: str) -> TokenMetadata:
         try:
@@ -268,7 +264,7 @@ class MdtpManager:
 
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
-        for tokenIndex in range(tokenCount):
+        for tokenIndex in range(2840, tokenCount):
             # await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
             await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
@@ -291,18 +287,27 @@ class MdtpManager:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception:
             ownerId = '0x0000000000000000000000000000000000000000'
-        metadata = await self.get_token_metadata(tokenId=tokenId)
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         if contentUrl.startswith('ipfs://'):
             contentResponse = await self.ipfsManager.read_file(cid=contentUrl.replace('ipfs://', ''))
         else:
             contentResponse = await self.requester.make_request(method='GET', url=contentUrl)
         tokenContentJson = json.loads(contentResponse.text)
-        title = tokenContentJson.get('title') or tokenContentJson.get('name') or metadata.title
-        imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or metadata.image
+        title = tokenContentJson.get('title') or tokenContentJson.get('name') or None
+        imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or None
         description = tokenContentJson.get('description')
         url = tokenContentJson.get('url')
         groupId = tokenContentJson.get('groupId') or tokenContentJson.get('blockId')
+        if title is None or imageUrl is None:
+            logging.info(f'Getting metadata because title or image is None')
+            metadataUrl = await self.contractStore.get_token_metadata_url(network=network, tokenId=tokenId)
+            if metadataUrl.startswith('ipfs://'):
+                metadataResponse = await self.ipfsManager.read_file(cid=metadataUrl.replace('ipfs://', ''))
+            else:
+                metadataResponse = await self.requester.make_request(method='GET', url=metadataUrl)
+            metadataJson = json.loads(metadataResponse.text)
+            title = title or metadataJson.get('title') or metadataJson.get('name') or ''
+            imageUrl = imageUrl or metadataJson.get('imageUrl') or tokenContentJson.get('image') or ''
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
