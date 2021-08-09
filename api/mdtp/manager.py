@@ -283,12 +283,12 @@ class MdtpManager:
         except Exception:
             ownerId = '0x0000000000000000000000000000000000000000'
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-        tokenContentJson = self._get_json_content(url=contentUrl)
-        title = tokenContentJson.get('title') or tokenContentJson.get('name') or None
-        imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or None
-        description = tokenContentJson.get('description')
-        url = tokenContentJson.get('url')
-        groupId = tokenContentJson.get('groupId') or tokenContentJson.get('blockId')
+        contentJson = self._get_json_content(url=contentUrl)
+        title = contentJson.get('title') or contentJson.get('name') or None
+        imageUrl = contentJson.get('imageUrl') or contentJson.get('image') or None
+        description = contentJson.get('description')
+        url = contentJson.get('url')
+        groupId = contentJson.get('groupId') or contentJson.get('blockId')
         if title is None or imageUrl is None:
             logging.info(f'Getting metadata because title or image is None')
             metadata = await self.get_token_metadata(network=network, tokenId=tokenId)
