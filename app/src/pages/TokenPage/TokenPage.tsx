@@ -2,13 +2,14 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, BackgroundView, Box, Button, Direction, Image, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem, TokenMetadata } from '../../client';
 import { ImageGrid } from '../../components/ImageGrid';
 import { KeyValue } from '../../components/KeyValue';
+import { MdtpImage } from '../../components/MdtpImage';
 import { useGlobals } from '../../globalsContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
@@ -142,7 +143,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <ImageGrid gridItem={gridItem} blockGridItems={blockGridItems} />
               ) : (
                 <BackgroundView color='#000000'>
-                  <Image isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
+                  <MdtpImage isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
                 </BackgroundView>
               )}
             </Box>

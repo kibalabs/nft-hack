@@ -3,7 +3,7 @@ from io import BytesIO
 import json
 import logging
 import math
-from typing import List
+from typing import Any, Dict, List
 from typing import Sequence
 from typing import Optional
 import urllib.parse as urlparse
@@ -50,41 +50,37 @@ class MdtpManager:
         self.ipfsManager = ipfsManager
         self.ownerAddress = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
 
-    # NOTE(krishan711): these methods are old and should be removed once we no longer support the old contracts
-    async def get_token_metadata(self, tokenId: str) -> TokenMetadata:
-        try:
-            tokenIdValue = int(tokenId)
-        except ValueError:
-            raise NotFoundException()
-        if tokenIdValue <= 0 or tokenIdValue > 10000:
-            raise NotFoundException()
-        tokenIndex = tokenIdValue - 1
+    async def _get_json_content(self, url: str) -> Dict[str, Any]:
+        if url.startswith('ipfs://'):
+            response = await self.ipfsManager.read_file(cid=url.replace('ipfs://', ''))
+        else:
+            response = await self.requester.make_request(method='GET', url=url)
+        return json.loads(response.text)
+
+    async def get_token_metadata(self, network: str, tokenId: str) -> TokenMetadata:
+        metadataUrl = await self.contractStore.get_token_metadata_url(network=network, tokenId=tokenId)
+        metadataJson = await self._get_json_content(url=metadataUrl)
         return TokenMetadata(
-            tokenId=tokenId,
-            tokenIndex=tokenIndex,
-            name=f'MDTP #{tokenId}',
-            description=None,
-            image='',
-            url=None,
-            groupId=None,
+            tokenId=metadataJson['tokenId'],
+            tokenIndex=metadataJson.get('tokenIndex') or metadataJson['tokenId'] - 1,
+            name=metadataJson.get('name') or metadataJson.get('title') or '',
+            description=metadataJson.get('description'),
+            image=metadataJson.get('image') or metadataJson.get('imageUrl') or '',
+            url=metadataJson.get('url'),
+            groupId=metadataJson.get('groupId'),
         )
 
-    async def get_token_default_content(self, tokenId: str) -> TokenMetadata:
-        try:
-            tokenIdValue = int(tokenId)
-        except ValueError:
-            raise NotFoundException()
-        if tokenIdValue <= 0 or tokenIdValue > 10000:
-            raise NotFoundException()
-        tokenIndex = tokenIdValue - 1
+    async def get_token_default_content(self, network: str, tokenId: str) -> TokenMetadata:
+        contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+        tokenContentJson = await self._get_json_content(url=contentUrl)
         return TokenMetadata(
-            tokenId=tokenId,
-            tokenIndex=tokenIndex,
-            name=f'MDTP Token {tokenId}',
-            description=None,
-            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/b88762dd-7605-4447-949b-d8ba99e6f44d/{tokenIndex}.png',
-            url=None,
-            groupId=None,
+            tokenId=tokenContentJson['tokenId'],
+            tokenIndex=tokenContentJson.get('tokenIndex') or tokenContentJson['tokenId'] - 1,
+            name=tokenContentJson.get('name') or tokenContentJson.get('title') or '',
+            description=tokenContentJson.get('description'),
+            image=tokenContentJson.get('image') or tokenContentJson.get('imageUrl') or '',
+            url=tokenContentJson.get('url'),
+            groupId=tokenContentJson.get('groupId'),
         )
 
     async def get_token_default_grid_item(self, tokenId: str) -> GridItem:
@@ -300,14 +296,9 @@ class MdtpManager:
         groupId = tokenContentJson.get('groupId') or tokenContentJson.get('blockId')
         if title is None or imageUrl is None:
             logging.info(f'Getting metadata because title or image is None')
-            metadataUrl = await self.contractStore.get_token_metadata_url(network=network, tokenId=tokenId)
-            if metadataUrl.startswith('ipfs://'):
-                metadataResponse = await self.ipfsManager.read_file(cid=metadataUrl.replace('ipfs://', ''))
-            else:
-                metadataResponse = await self.requester.make_request(method='GET', url=metadataUrl)
-            metadataJson = json.loads(metadataResponse.text)
-            title = title or metadataJson.get('title') or metadataJson.get('name') or ''
-            imageUrl = imageUrl or metadataJson.get('imageUrl') or tokenContentJson.get('image') or ''
+            metadata = await self.get_token_metadata(network=network, tokenId=tokenId)
+            title = title or metadata.title
+            imageUrl = imageUrl or metadata.image
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
