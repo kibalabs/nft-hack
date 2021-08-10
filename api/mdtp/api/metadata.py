@@ -29,7 +29,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
 
     @router.get('/token-default-contents/{tokenId}', response_model=GetTokenDefaultContentResponse)
     async def get_token_default_content(tokenId: str) -> GetTokenDefaultContentResponse: # request: GetTokenDefaultContentRequest
-        tokenMetadata = await manager.get_token_default_content(network='rinkeby5', tokenId=tokenId)
+        tokenMetadata = await manager.get_token_content(network='rinkeby5', tokenId=tokenId)
         return GetTokenDefaultContentResponse.from_model(model=tokenMetadata)
 
     return router
