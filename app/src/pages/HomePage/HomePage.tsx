@@ -80,6 +80,10 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo('/about');
   };
 
+  const onRoadmapClicked = () => {
+    navigator.navigateTo('/roadmap');
+  };
+
   const isTokenUpdatePanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/update');
   const isTokenMintPanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/mint');
   const isTokenPanelShowing = !isTokenUpdatePanelShowing && location.pathname.includes('/tokens/');
@@ -157,6 +161,7 @@ export const HomePage = (): React.ReactElement => {
             {isMenuOpen && (
               <React.Fragment>
                 <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
+                <Button variant='overlay' text='Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} onClicked={onRoadmapClicked} />
                 <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
                 <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
                 <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
