@@ -42,7 +42,6 @@ async def generate_background(baseImagePath: str, overlayImagePath: str, middleI
     middleImageWidth = 25
     middleImageHeight = 20
     middleImagePosition = (BLOCK_WIDTH * MAX_ZOOM * math.floor((GRID_WIDTH - middleImageWidth) / 2), BLOCK_HEIGHT * MAX_ZOOM * math.floor((GRID_HEIGHT - middleImageHeight) / 2))
-    print('middleImagePosition', middleImagePosition)
     middleImage = Image.open(middleImagePath)
     middleImage = middleImage.resize(size=(middleImageWidth * BLOCK_WIDTH * MAX_ZOOM, middleImageHeight * BLOCK_HEIGHT * MAX_ZOOM))
     image.paste(middleImage, middleImagePosition, middleImage)

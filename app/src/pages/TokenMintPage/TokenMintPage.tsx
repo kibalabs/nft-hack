@@ -5,7 +5,7 @@ import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, LoadingSp
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 import { Helmet } from 'react-helmet';
 
-import { useAccounts } from '../../accountsContext';
+import { useAccountIds, useAccounts } from '../../accountsContext';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
 
@@ -18,6 +18,8 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const [mintPrice, setMintPrice] = React.useState<BigNumber | undefined | null>(undefined);
   const [totalMintLimit, setTotalMintLimit] = React.useState<number | undefined | null>(undefined);
   const [singleMintLimit, setSingleMintLimit] = React.useState<number | undefined | null>(undefined);
+  const [ownershipMintLimit, setOwnershipMintLimit] = React.useState<number | undefined | null>(undefined);
+  const [userOwnedCount, setUserOwnedCount] = React.useState<number | undefined | null>(undefined);
   const [mintedCount, setMintedCount] = React.useState<number | undefined | null>(undefined);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null | undefined>(undefined);
   const [balance, setBalance] = React.useState<BigNumber | undefined | null>(undefined);
@@ -29,12 +31,14 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const [transactionError, setTransactionError] = React.useState<Error | null>(null);
   const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
   const accounts = useAccounts();
+  const accountIds = useAccountIds();
   const colors = useColors();
 
   const requestCount = isMintingMultiple ? (requestHeight * requestWidth) : 1;
   const totalPrice = mintPrice ? mintPrice.mul(requestCount) : undefined;
   const isOverSingleLimit = singleMintLimit ? requestCount > singleMintLimit : false;
   const isOverTotalLimit = (totalMintLimit && mintedCount) ? requestCount + mintedCount > totalMintLimit : false;
+  const isOverOwnershipLimit = (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
   const isOverBalance = (balance && totalPrice) ? balance < totalPrice : false;
 
   const loadData = React.useCallback(async (): Promise<void> => {
@@ -46,6 +50,11 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       setMintedCount(null);
       return;
     }
+    setChainOwnerId(undefined);
+    setMintPrice(undefined);
+    setTotalMintLimit(undefined);
+    setSingleMintLimit(undefined);
+    setMintedCount(undefined);
     contract.ownerOf(Number(props.tokenId)).then((retrievedTokenOwner: string): void => {
       setChainOwnerId(retrievedTokenOwner);
     }).catch((error: Error): void => {
@@ -86,6 +95,17 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       console.error('Contract does not support singleMintLimit');
       setSingleMintLimit(null);
     }
+    if (contract.ownershipMintLimit) {
+      contract.ownershipMintLimit().then((retrievedOwnershipMintLimit: number): void => {
+        setOwnershipMintLimit(retrievedOwnershipMintLimit);
+      }).catch((error: unknown) => {
+        console.error(error);
+        setOwnershipMintLimit(null);
+      });
+    } else {
+      console.error('Contract does not support ownershipMintLimit');
+      setOwnershipMintLimit(null);
+    }
     if (contract.mintedCount) {
       contract.mintedCount().then((retrievedMintedCount: BigNumber): void => {
         setMintedCount(retrievedMintedCount.toNumber());
@@ -104,18 +124,31 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   }, [loadData]);
 
   const loadBalance = React.useCallback(async (): Promise<void> => {
-    if (accounts && accounts.length > 0) {
-      accounts[0].getBalance().then((retrievedBalance: BigNumber): void => {
-        setBalance(retrievedBalance);
+    if (!accounts || accounts.length === 0 || !accountIds || accountIds.length === 0 || !contract) {
+      setBalance(null);
+      setUserOwnedCount(null);
+      return;
+    }
+    setBalance(undefined);
+    setUserOwnedCount(undefined);
+    accounts[0].getBalance().then((retrievedBalance: BigNumber): void => {
+      setBalance(retrievedBalance);
+    }).catch((error: unknown) => {
+      console.error(error);
+      setBalance(null);
+    });
+    if (contract.balanceOf) {
+      contract.balanceOf(accountIds[0]).then((retrievedBalance: BigNumber): void => {
+        setUserOwnedCount(retrievedBalance.toNumber());
       }).catch((error: unknown) => {
         console.error(error);
-        setBalance(null);
+        setUserOwnedCount(null);
       });
     } else {
-      console.error('accounts is null');
-      setBalance(null);
+      console.error('Failed to get the userOwnedCount');
+      setUserOwnedCount(null);
     }
-  }, [accounts]);
+  }, [accounts, accountIds, contract]);
 
   React.useEffect((): void => {
     loadBalance();
@@ -187,9 +220,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         <Text variant='header2' alignment={TextAlignment.Center}>{`Mint Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { mintPrice === null || totalMintLimit === null || singleMintLimit === null || mintedCount === null || balance === null ? (
+        { mintPrice === null || totalMintLimit === null || singleMintLimit === null || ownershipMintLimit === null || userOwnedCount === null || mintedCount === null || balance === null ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || mintedCount === undefined || balance === undefined ? (
+        ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || ownershipMintLimit === undefined || userOwnedCount === null || mintedCount === undefined || balance === undefined ? (
           <LoadingSpinner />
         ) : chainOwnerId ? (
           <Text variant='error'>This token has already been bought. Please try to mint another.</Text>
@@ -243,6 +276,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
               )}
               { isOverBalance && (
                 <Text variant='error' alignment={TextAlignment.Center}>{'You do not have enough Ξ in your connected wallet. Please add some funds, refresh and try again.'}</Text>
+              )}
+              { isOverOwnershipLimit && (
+                <Text variant='error' alignment={TextAlignment.Center}>{'You have reached the ownership limit so you cannot mint more tokens at this time. If you\'re really keen reach out to the admins on our discord and we\'ll see what we can do 👀.'}</Text>
               )}
               { transactionError && (
                 <Text variant='error' alignment={TextAlignment.Center}>{String(transactionError.message)}</Text>
