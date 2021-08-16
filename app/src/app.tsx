@@ -94,7 +94,7 @@ export const App = hot((): React.ReactElement => {
 
   const onLinkAccountsClicked = async (): Promise<void> => {
     if (web3) {
-      web3.provider.request({ method: "eth_requestAccounts", params: [] }).then(async (): Promise<void> => {
+      web3.provider.request({ method: 'eth_requestAccounts', params: [] }).then(async (): Promise<void> => {
         await loadWeb3();
       });
     }
