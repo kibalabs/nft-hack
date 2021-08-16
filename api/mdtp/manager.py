@@ -252,8 +252,7 @@ class MdtpManager:
             logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
             tokenIdsToUpdate.update(updatedTokenIds)
         for tokenId in list(tokenIdsToUpdate):
-            # await self.update_token_deferred(network=network, tokenId=tokenId)
-            await self.update_token(network=network, tokenId=tokenId)
+            await self.update_token_deferred(network=network, tokenId=tokenId)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
 
     async def update_all_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
@@ -304,8 +303,7 @@ class MdtpManager:
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
         if not resizableImageUrl:
-            # await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
-            await self.upload_token_image(network=network, tokenId=tokenId)
+            await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
         if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
