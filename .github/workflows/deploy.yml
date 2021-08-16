@@ -81,6 +81,36 @@ jobs:
                 --env LETSENCRYPT_HOST=${url} \
                 --env-file ${varsFile} \
                 ${DOCKER_IMAGE}
+  run-app-new:
+    needs: deploy-app
+    runs-on: ubuntu-latest
+    env:
+      NAME: mdtp-app-new
+      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app-new:latest
+    steps:
+      - name: executing remote ssh commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FREEBOX_URL }}
+          username: ${{ secrets.FREEBOX_USER }}
+          key: ${{ secrets.FREEBOX_SSH_KEY }}
+          envs: DOCKER_IMAGE,NAME
+          script_stop: true
+          script: |
+            url="new.milliondollartokenpage.com"
+            varsFile=~/.${NAME}.vars
+            docker pull ${DOCKER_IMAGE}
+            docker stop ${NAME} && docker rm ${NAME} || true
+            docker run \
+                --name ${NAME} \
+                --detach \
+                --publish-all \
+                --restart on-failure \
+                --env NAME=${NAME} \
+                --env VIRTUAL_HOST=${url} \
+                --env LETSENCRYPT_HOST=${url} \
+                --env-file ${varsFile} \
+                ${DOCKER_IMAGE}
   run-worker:
     needs: deploy-api
     runs-on: ubuntu-latest

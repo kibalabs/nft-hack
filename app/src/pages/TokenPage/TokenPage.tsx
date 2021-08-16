@@ -66,7 +66,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       // NOTE(krishan711): this only works for the new contracts
       if (contract.tokenContentURI) {
         contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
-          requester.makeRequest(RestMethod.GET, tokenMetadataUrl).then((response: KibaResponse): void => {
+          const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : tokenMetadataUrl;
+          requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
             const tokenMetadataJson = JSON.parse(response.content);
             // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
             setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId }));

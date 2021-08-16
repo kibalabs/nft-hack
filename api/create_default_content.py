@@ -42,7 +42,6 @@ async def generate_background(baseImagePath: str, overlayImagePath: str, middleI
     middleImageWidth = 25
     middleImageHeight = 20
     middleImagePosition = (BLOCK_WIDTH * MAX_ZOOM * math.floor((GRID_WIDTH - middleImageWidth) / 2), BLOCK_HEIGHT * MAX_ZOOM * math.floor((GRID_HEIGHT - middleImageHeight) / 2))
-    print('middleImagePosition', middleImagePosition)
     middleImage = Image.open(middleImagePath)
     middleImage = middleImage.resize(size=(middleImageWidth * BLOCK_WIDTH * MAX_ZOOM, middleImageHeight * BLOCK_HEIGHT * MAX_ZOOM))
     image.paste(middleImage, middleImagePosition, middleImage)
@@ -65,30 +64,30 @@ async def main(baseImagePath: str, overlayImagePath: str, middleImagePath: str, 
     metadataOutputDirectory = 'output/default-content-metadatas'
     await file_util.create_directory(directory=metadataOutputDirectory)
 
-    # outputFilePath = 'output/default-content.png'
-    # image = await generate_background(baseImagePath=baseImagePath, overlayImagePath=overlayImagePath, middleImagePath=middleImagePath)
-    # image.save(outputFilePath)
-    # crop_image(imagePath=outputFilePath, outputDirectory=imagesOutputDirectory, height=100, width=100)
+    outputFilePath = 'output/default-content.png'
+    image = await generate_background(baseImagePath=baseImagePath, overlayImagePath=overlayImagePath, middleImagePath=middleImagePath)
+    image.save(outputFilePath)
+    crop_image(imagePath=outputFilePath, outputDirectory=imagesOutputDirectory, height=100, width=100)
 
-    # for tokenId in tokenIds:
-    #     imagePath = os.path.join(imagesOutputDirectory, f'{tokenId - 1}.png')
-    #     imageUrl = imagePath
-    #     if shouldUpload:
-    #         print(f'Uploading image for {tokenId}')
-    #         with open(imagePath, 'rb') as imageFile:
-    #             cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
-    #         imageUrl = f'ipfs://{cid}'
-    #     print(f'Generating metadata for {tokenId}')
-    #     metadata = {
-    #         "tokenId": tokenId,
-    #         "tokenIndex": tokenId - 1,
-    #         "name": f'MDTP Token {tokenId}',
-    #         "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). It hasn't been claimed yet so click mint now to buy it!",
-    #         "image": imageUrl,
-    #         "url": None,
-    #     }
-    #     with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
-    #         metadataFile.write(json.dumps(metadata))
+    for tokenId in tokenIds:
+        imagePath = os.path.join(imagesOutputDirectory, f'{tokenId - 1}.png')
+        imageUrl = imagePath
+        if shouldUpload:
+            print(f'Uploading image for {tokenId}')
+            with open(imagePath, 'rb') as imageFile:
+                cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+            imageUrl = f'ipfs://{cid}'
+        print(f'Generating metadata for {tokenId}')
+        metadata = {
+            "tokenId": tokenId,
+            "tokenIndex": tokenId - 1,
+            "name": f'MDTP Token {tokenId}',
+            "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). It hasn't been claimed yet so click mint now to buy it!",
+            "image": imageUrl,
+            "url": None,
+        }
+        with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
+            metadataFile.write(json.dumps(metadata))
     if shouldUpload:
         print(f'Uploading metadata')
         fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
