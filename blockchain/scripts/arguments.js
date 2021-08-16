@@ -1,6 +1,7 @@
 
 const METADATA_BASE_URI = 'ipfs://QmTe1nLyhSPeNUK5euzVo8S89YtwZe9CUzdGbczXGQLoce/';
-const DEFAULT_CONTENT_BASE_URI = 'ipfs://QmYWKVsSizmsLxfA213x2UW31mB8UxKr2pyynG794Cd497/'
+// const DEFAULT_CONTENT_BASE_URI = 'ipfs://QmYWKVsSizmsLxfA213x2UW31mB8UxKr2pyynG794Cd497/'
+const DEFAULT_CONTENT_BASE_URI = 'ipfs://QmNVbQuRDnwgeJ3otZKizHJpBi2XGcdLWdT9XmBuDPpjcK/'
 
 module.exports = [
   METADATA_BASE_URI,
