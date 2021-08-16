@@ -82,7 +82,7 @@ jobs:
                 --env-file ${varsFile} \
                 ${DOCKER_IMAGE}
   run-app-new:
-    needs: deploy-app-new
+    needs: deploy-app
     runs-on: ubuntu-latest
     env:
       NAME: mdtp-app-new
