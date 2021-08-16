@@ -58,6 +58,22 @@ class MdtpManager:
         return json.loads(response.text)
 
     async def get_token_metadata(self, network: str, tokenId: str) -> TokenMetadata:
+        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4'}:
+            try:
+                tokenIdValue = int(tokenId)
+            except ValueError:
+                raise NotFoundException()
+            if tokenIdValue <= 0 or tokenIdValue > 10000:
+                raise NotFoundException()
+            return TokenMetadata(
+                tokenId=tokenId,
+                tokenIndex=tokenIdValue - 1,
+                name=f'MDTP #{tokenId}',
+                description=None,
+                image='',
+                url=None,
+                groupId=None,
+            )
         metadataUrl = await self.contractStore.get_token_metadata_url(network=network, tokenId=tokenId)
         metadataJson = await self._get_json_content(url=metadataUrl)
         return TokenMetadata(
@@ -71,6 +87,23 @@ class MdtpManager:
         )
 
     async def get_token_content(self, network: str, tokenId: str) -> TokenMetadata:
+        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4'}:
+            try:
+                tokenIdValue = int(tokenId)
+            except ValueError:
+                raise NotFoundException()
+            if tokenIdValue <= 0 or tokenIdValue > 10000:
+                raise NotFoundException()
+            tokenIndex = tokenIdValue - 1
+            return TokenMetadata(
+                tokenId=tokenId,
+                tokenIndex=tokenIndex,
+                name=f'MDTP Token {tokenId}',
+                description=None,
+                image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/b88762dd-7605-4447-949b-d8ba99e6f44d/{tokenIndex}.png',
+                url=None,
+                groupId=None,
+            )
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         contentJson = await self._get_json_content(url=contentUrl)
         return TokenMetadata(
