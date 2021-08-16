@@ -11,6 +11,7 @@ def grid_item_from_row(row: Mapping) -> GridItem:
         updatedDate=row[GridItemsTable.c.updatedDate],
         network=row[GridItemsTable.c.network],
         tokenId=row[GridItemsTable.c.tokenId],
+        contentUrl=row[GridItemsTable.c.contentUrl],
         title=row[GridItemsTable.c.title],
         description=row[GridItemsTable.c.description],
         imageUrl=row[GridItemsTable.c.imageUrl],

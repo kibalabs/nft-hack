@@ -1,6 +1,9 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
+const METADATA_BASE_URI = 'ipfs://123/';
+const DEFAULT_CONTENT_BASE_URI = 'ipfs://456/';
+
 describe("MillionDollarTokenPage contract", async function() {
   let myWallet;
   let otherWallet;
@@ -9,7 +12,7 @@ describe("MillionDollarTokenPage contract", async function() {
   beforeEach(async () => {
     [myWallet, otherWallet] = await ethers.getSigners();
     const contract = await ethers.getContractFactory("MillionDollarTokenPage");
-    mdtp = await contract.deploy();
+    mdtp = await contract.deploy(METADATA_BASE_URI, DEFAULT_CONTENT_BASE_URI);
   });
 
   describe("Admin", async function() {
@@ -66,31 +69,55 @@ describe("MillionDollarTokenPage contract", async function() {
       const transaction = mdtp.connect(otherWallet).setMintPrice(100);
       await expect(transaction).to.be.reverted;
     });
+
+    it("should allow admins to setMetadataBaseURI", async function() {
+      const newUri = 'abc/';
+      await mdtp.setMetadataBaseURI(newUri);
+      const tokenURI = await mdtp.tokenURI(1);
+      expect(tokenURI).to.equal(`${newUri}1.json`);
+    });
+
+    it("should not allow non-admins to setMetadataBaseURI", async function() {
+      const transaction = mdtp.connect(otherWallet).setMetadataBaseURI(100);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("should allow admins to setDefaultContentBaseURI", async function() {
+      const newUri = 'abc/';
+      await mdtp.setDefaultContentBaseURI(newUri);
+      const tokenContentURI = await mdtp.tokenContentURI(1);
+      expect(tokenContentURI).to.equal(`${newUri}1.json`);
+    });
+
+    it("should not allow non-admins to setDefaultContentBaseURI", async function() {
+      const transaction = mdtp.connect(otherWallet).setDefaultContentBaseURI(100);
+      await expect(transaction).to.be.reverted;
+    });
   });
 
   describe("Metadata URIs", async function() {
     it("should have the correct metadata uri for a non-minted token", async function() {
       const metadataUri = await mdtp.tokenURI(100);
-      expect(metadataUri).to.equal("https://api.mdtp.co/token-metadatas/100");
+      expect(metadataUri).to.equal(`${METADATA_BASE_URI}100.json`);
     });
 
     it("should have the correct metadata uri for a minted token", async function() {
       await mdtp.mint(100);
       const metadataUri = await mdtp.tokenURI(100);
-      expect(metadataUri).to.equal("https://api.mdtp.co/token-metadatas/100");
+      expect(metadataUri).to.equal(`${METADATA_BASE_URI}100.json`);
     });
   });
 
   describe("Token Content URIs", async function() {
     it("should have the correct content uri for a non-minted token", async function() {
       const contentUri = await mdtp.tokenContentURI(100);
-      expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
+      expect(contentUri).to.equal(`${DEFAULT_CONTENT_BASE_URI}100.json`);
     });
 
     it("should have the correct content uri for a minted token", async function() {
       await mdtp.mint(100);
       const contentUri = await mdtp.tokenContentURI(100);
-      expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
+      expect(contentUri).to.equal(`${DEFAULT_CONTENT_BASE_URI}100.json`);
     });
 
     // it("should reset content URI when a token is transferred", async function () {
@@ -99,11 +126,9 @@ describe("MillionDollarTokenPage contract", async function() {
     //   await mdtp.setTokenContentURI(100, newUri);
     //   await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
     //   const contentUri = await mdtp.tokenContentURI(100);
-    //   expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
+    //   expect(contentUri).to.equal(`${DEFAULT_CONTENT_BASE_URI}100.json`);
     // });
-  });
 
-  describe("Set Token Content URIs", async function() {
     it("allows the owner to change the content uri", async function() {
       await mdtp.mint(100);
       const newUri = "https://www.com/tokens/100"
@@ -137,6 +162,16 @@ describe("MillionDollarTokenPage contract", async function() {
       const newUri = "https://www.com/tokens/100"
       const transaction = mdtp.setTokenContentURI(100, newUri);
       await expect(transaction).to.emit(mdtp, 'TokenContentURIChanged').withArgs(100);
+    });
+
+    it("setting setDefaultContentBaseURI should not change existing URIs", async function() {
+      await mdtp.mint(100);
+      const newUri = "https://www.com/tokens/100"
+      await mdtp.setTokenContentURI(100, newUri);
+      const newUri2 = 'abc/';
+      await mdtp.setDefaultContentBaseURI(newUri2);
+      const tokenContentURI = await mdtp.tokenContentURI(100);
+      expect(tokenContentURI).to.equal(newUri);
     });
   });
 

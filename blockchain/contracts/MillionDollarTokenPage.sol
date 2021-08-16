@@ -8,22 +8,8 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 // import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-contract AdminManageable {
 
-    mapping (address => bool) public _admins;
-
-    modifier onlyAdmin() {
-        require(_admins[msg.sender], "Admin: caller is not an admin");
-        _;
-    }
-
-    function setAdmin(address admin, bool state) public onlyAdmin {
-        _admins[admin] = state;
-    }
-
-}
-
-contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, Ownable {
+contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     using SafeMath for uint256;
     using Strings for uint256;
 
@@ -32,17 +18,22 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
     mapping (uint256 => uint256) private _ownedTokensIndex;
     uint256[] private _mintedTokenIds;
 
-    event TokenContentURIChanged(uint256 indexed tokenId);
-
     uint16 public constant COLUMN_COUNT = 100;
     uint16 public constant ROW_COUNT = 100;
     uint16 public constant SUPPLY_LIMIT = COLUMN_COUNT * ROW_COUNT;
+
     uint16 public totalMintLimit = 1000;
     uint16 public singleMintLimit = 20;
     uint256 public mintPrice = 0; // 50000000000000000 = 0.05 ETH
 
-    constructor() ERC721("MillionDollarTokenPage", "\u22A1") Ownable() {
-        _admins[_msgSender()] = true;
+    string public metadataBaseURI;
+    string public defaultContentBaseURI;
+
+    event TokenContentURIChanged(uint256 indexed tokenId);
+
+    constructor(string memory newMetadataBaseURI, string memory newDefaultContentBaseURI) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() {
+        metadataBaseURI = newMetadataBaseURI;
+        defaultContentBaseURI = newDefaultContentBaseURI;
     }
 
     // Utils
@@ -70,16 +61,24 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
 
     // Admin
 
-    function setTotalMintLimit(uint16 newTotalMintLimit) external onlyAdmin {
+    function setTotalMintLimit(uint16 newTotalMintLimit) external onlyOwner {
         totalMintLimit = newTotalMintLimit;
     }
 
-    function setSingleMintLimit(uint16 newSingleMintLimit) external onlyAdmin {
+    function setSingleMintLimit(uint16 newSingleMintLimit) external onlyOwner {
         singleMintLimit = newSingleMintLimit;
     }
 
-    function setMintPrice(uint256 newMintPrice) external onlyAdmin {
+    function setMintPrice(uint256 newMintPrice) external onlyOwner {
         mintPrice = newMintPrice;
+    }
+
+    function setMetadataBaseURI(string memory newMetadataBaseURI) external onlyOwner {
+        metadataBaseURI = newMetadataBaseURI;
+    }
+
+    function setDefaultContentBaseURI(string memory newDefaultContentBaseURI) external onlyOwner {
+        defaultContentBaseURI = newDefaultContentBaseURI;
     }
 
     function withdraw() external onlyOwner {
@@ -89,13 +88,8 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
 
     // Metadata URIs
 
-    function _baseURI() internal pure override returns (string memory) {
-        return "https://api.mdtp.co/token-metadatas/";
-    }
-
-    function tokenURI(uint256 tokenId) public pure override returns (string memory) {
-        string memory baseURI = _baseURI();
-        return string(abi.encodePacked(baseURI, Strings.toString(tokenId)));
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        return string(abi.encodePacked(metadataBaseURI, Strings.toString(tokenId), ".json"));
     }
 
     // Content URIs
@@ -107,27 +101,23 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
     // url: optional[string] -> a URI pointing to the location you want visitors of your content to go to.
     // groupId: optional[string] -> a unique identifier you can use to group multiple grid items together by giving them all the same groupId.
 
-    function _defaultBaseContentURI() internal pure returns (string memory) {
-        return "https://api.mdtp.co/token-default-contents/";
+    function setTokenContentURI(uint256 tokenId, string memory contentURI) public onlyTokenOwner(tokenId) {
+        _setTokenContentURI(tokenId, contentURI);
     }
 
-    function setTokenContentURI(uint256 tokenId, string memory metadataURI) public onlyTokenOwner(tokenId) {
-        _setTokenContentURI(tokenId, metadataURI);
-    }
-
-    function setTokenGroupContentURIs(uint256 tokenId, uint8 width, uint8 height, string[] memory metadataURIs) public onlyTokenGroupOwner(tokenId, width, height) onlyValidGroup(tokenId, width, height) {
-        require(width * height == metadataURIs.length, "MDTP: length of metadataURIs must be the same as width * height");
+    function setTokenGroupContentURIs(uint256 tokenId, uint8 width, uint8 height, string[] memory contentURIs) public onlyTokenGroupOwner(tokenId, width, height) onlyValidGroup(tokenId, width, height) {
+        require(width * height == contentURIs.length, "MDTP: length of contentURIs must be the same as width * height");
         for (uint8 y = 0; y < height; y++) {
             for (uint8 x = 0; x < width; x++) {
                 uint16 index = (width * y) + x;
                 uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
-                _setTokenContentURI(innerTokenId, metadataURIs[index]);
+                _setTokenContentURI(innerTokenId, contentURIs[index]);
             }
         }
     }
 
-    function _setTokenContentURI(uint256 tokenId, string memory metadataURI) internal {
-        _tokenContentURIs[tokenId] = metadataURI;
+    function _setTokenContentURI(uint256 tokenId, string memory contentURI) internal {
+        _tokenContentURIs[tokenId] = contentURI;
         emit TokenContentURIChanged(tokenId);
     }
 
@@ -136,12 +126,12 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, AdminManageable, O
         if (bytes(_tokenContentURI).length > 0) {
             return _tokenContentURI;
         }
-        return string(abi.encodePacked(_defaultBaseContentURI(), Strings.toString(tokenId)));
+        return string(abi.encodePacked(defaultContentBaseURI, Strings.toString(tokenId), ".json"));
     }
 
     // Minting
 
-    function mintAdmin(uint256 tokenId) public onlyAdmin {
+    function mintAdmin(uint256 tokenId) public onlyOwner {
         _mint(tokenId);
     }
 

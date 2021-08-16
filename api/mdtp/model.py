@@ -10,6 +10,7 @@ class GridItem:
     updatedDate: datetime.datetime
     network: str
     tokenId: int
+    contentUrl: Optional[str]
     title: str
     description: Optional[str]
     imageUrl: str

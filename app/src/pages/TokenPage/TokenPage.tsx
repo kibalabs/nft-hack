@@ -2,15 +2,16 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, BackgroundView, Box, Button, Direction, Image, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem, TokenMetadata } from '../../client';
 import { ImageGrid } from '../../components/ImageGrid';
 import { KeyValue } from '../../components/KeyValue';
+import { MdtpImage } from '../../components/MdtpImage';
 import { useGlobals } from '../../globalsContext';
-import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
+import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
@@ -29,7 +30,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
-  const ownerId = chainOwnerId || gridItem?.ownerId || null;
+  const ownerId = chainOwnerId || gridItem?.ownerId || NON_OWNER;
   const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
 
   const loadToken = React.useCallback(async (): Promise<void> => {
@@ -56,7 +57,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       contract.ownerOf(tokenId).then((retrievedTokenOwner: string): void => {
         setChainOwnerId(retrievedTokenOwner);
       }).catch((error: Error): void => {
-        if (!error.message.includes('nonexistent token')) {
+        if (error.message.includes('nonexistent token')) {
+          setChainOwnerId(NON_OWNER);
+        } else {
           console.error(error);
         }
       });
@@ -102,8 +105,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const OwnershipInfo = (): React.ReactElement => {
-    const isMintable = accounts && !ownerId && contract && contract.mintTokenGroup != null;
-    const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
+    const isMintable = accounts && (!ownerId || ownerId === NON_OWNER) && contract && contract.mintTokenGroup != null;
+    const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === NON_OWNER || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
     const ownerIdString = ownerId ? truncateMiddle(ownerId, 10) : 'unknown';
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
@@ -142,7 +145,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <ImageGrid gridItem={gridItem} blockGridItems={blockGridItems} />
               ) : (
                 <BackgroundView color='#000000'>
-                  <Image isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
+                  <MdtpImage isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
                 </BackgroundView>
               )}
             </Box>

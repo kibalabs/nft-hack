@@ -41,6 +41,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     if (network === null || contract === null) {
       setChainOwnerId(null);
       setMintPrice(null);
+      setTotalMintLimit(null);
+      setSingleMintLimit(null);
+      setMintedCount(null);
       return;
     }
     contract.ownerOf(Number(props.tokenId)).then((retrievedTokenOwner: string): void => {
@@ -101,7 +104,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   }, [loadData]);
 
   const loadBalance = React.useCallback(async (): Promise<void> => {
-    if (accounts) {
+    if (accounts && accounts.length > 0) {
       accounts[0].getBalance().then((retrievedBalance: BigNumber): void => {
         setBalance(retrievedBalance);
       }).catch((error: unknown) => {
@@ -210,7 +213,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
             <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
               <Text variant='note' alignment={TextAlignment.Center}>{'You found an un-minted token, nice one! You\'re about to become a part of crypto history 🚀'}</Text>
               <Text alignment={TextAlignment.Center}>{`Current token price: Ξ${etherUtils.formatEther(mintPrice)}`}</Text>
-              <Text alignment={TextAlignment.Center}>{`Connected account balance price: Ξ${etherUtils.formatEther(balance)}`}</Text>
+              <Text alignment={TextAlignment.Center}>{`Connected account balance: Ξ${etherUtils.formatEther(balance)}`}</Text>
               <Spacing />
               { isMintingMultiple && (
                 <React.Fragment>
