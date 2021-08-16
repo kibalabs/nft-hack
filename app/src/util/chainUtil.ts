@@ -27,7 +27,7 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby4' : 'rinkeby4',
+  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby5' : 'rinkeby4',
   [ChainId.Mainnet]: 'mainnet',
 };
 
