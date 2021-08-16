@@ -5,7 +5,7 @@ import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, LoadingSp
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 import { Helmet } from 'react-helmet';
 
-import { useAccounts } from '../../accountsContext';
+import { useAccountIds, useAccounts } from '../../accountsContext';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
 
@@ -31,6 +31,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const [transactionError, setTransactionError] = React.useState<Error | null>(null);
   const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
   const accounts = useAccounts();
+  const accountIds = useAccountIds();
   const colors = useColors();
 
   const requestCount = isMintingMultiple ? (requestHeight * requestWidth) : 1;
@@ -49,6 +50,11 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       setMintedCount(null);
       return;
     }
+    setChainOwnerId(undefined);
+    setMintPrice(undefined);
+    setTotalMintLimit(undefined);
+    setSingleMintLimit(undefined);
+    setMintedCount(undefined);
     contract.ownerOf(Number(props.tokenId)).then((retrievedTokenOwner: string): void => {
       setChainOwnerId(retrievedTokenOwner);
     }).catch((error: Error): void => {
@@ -118,19 +124,21 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   }, [loadData]);
 
   const loadBalance = React.useCallback(async (): Promise<void> => {
-    if (accounts && accounts.length > 0) {
-      accounts[0].getBalance().then((retrievedBalance: BigNumber): void => {
-        setBalance(retrievedBalance);
-      }).catch((error: unknown) => {
-        console.error(error);
-        setBalance(null);
-      });
-    } else {
-      console.error('accounts is null');
+    if (!accounts || accounts.length === 0 || !accountIds || accountIds.length === 0 || !contract) {
       setBalance(null);
+      setUserOwnedCount(null);
+      return;
     }
-    if (accounts && accounts.length > 0 && contract.balanceOf) {
-      contract.balanceOf(accounts[0]).then((retrievedBalance: BigNumber): void => {
+    setBalance(undefined);
+    setUserOwnedCount(undefined);
+    accounts[0].getBalance().then((retrievedBalance: BigNumber): void => {
+      setBalance(retrievedBalance);
+    }).catch((error: unknown) => {
+      console.error(error);
+      setBalance(null);
+    });
+    if (contract.balanceOf) {
+      contract.balanceOf(accountIds[0]).then((retrievedBalance: BigNumber): void => {
         setUserOwnedCount(retrievedBalance.toNumber());
       }).catch((error: unknown) => {
         console.error(error);
@@ -140,7 +148,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       console.error('Failed to get the userOwnedCount');
       setUserOwnedCount(null);
     }
-  }, [accounts]);
+  }, [accounts, accountIds, contract]);
 
   React.useEffect((): void => {
     loadBalance();

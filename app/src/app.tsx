@@ -28,7 +28,7 @@ declare global {
   }
 }
 
-const requester = new Requester();
+const requester = new Requester(undefined, undefined, false);
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const apiClient = new MdtpClient(requester, window.KRT_API_URL);
 

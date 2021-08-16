@@ -5,7 +5,7 @@ const METADATA_BASE_URI = 'ipfs://123/';
 const DEFAULT_CONTENT_BASE_URI = 'ipfs://456/';
 const DEFAULT_TOTAL_MINT_LIMIT = 1000;
 const DEFAULT_SINGLE_MINT_LIMIT = 20;
-const DEFAULT_OWNERSHIP_MINT_LIMIT = 45;
+const DEFAULT_OWNERSHIP_MINT_LIMIT = 35;
 const DEFAULT_MINT_PRICE = 0;
 
 describe("MillionDollarTokenPage contract", async function() {
