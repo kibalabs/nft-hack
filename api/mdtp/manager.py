@@ -1,26 +1,25 @@
-from dataclasses import field
 import datetime
 from io import BytesIO
 import json
 import logging
 import math
-from typing import Dict, List
+from typing import Any, Dict, List
 from typing import Sequence
 from typing import Optional
 import urllib.parse as urlparse
 import uuid
 
-from core.exceptions import KibaException, NotFoundException, ServerException
+from core.exceptions import KibaException, NotFoundException
 from core.requester import Requester
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.util import date_util, dict_util, file_util
-from core.web3.eth_client import EthClientInterface
 from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
 from core.store.retriever import DateFieldFilter, Direction, Order, StringFieldFilter
 from PIL import Image as PILImage
 from web3 import Web3
 from mdtp.contract_store import ContractStore
+from mdtp.ipfs_manager import IpfsManager
 
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.retriever import MdtpRetriever
@@ -39,7 +38,7 @@ _CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager):
+    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager, ipfsManager: IpfsManager):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
@@ -48,47 +47,77 @@ class MdtpManager:
         self.contractStore = contractStore
         self.workQueue = workQueue
         self.imageManager = imageManager
+        self.ipfsManager = ipfsManager
         self.ownerAddress = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
 
-    # NOTE(krishan711): it feels weird that this and the function below don't have network in the request or response. Think this through.
-    async def get_token_metadata(self, tokenId: str) -> TokenMetadata:
-        try:
-            tokenIdValue = int(tokenId)
-        except ValueError:
-            raise NotFoundException()
-        if tokenIdValue <= 0 or tokenIdValue > 10000:
-            raise NotFoundException()
-        tokenIndex = tokenIdValue - 1
+    async def _get_json_content(self, url: str) -> Dict[str, Any]:
+        if url.startswith('ipfs://'):
+            response = await self.ipfsManager.read_file(cid=url.replace('ipfs://', ''))
+        else:
+            response = await self.requester.make_request(method='GET', url=url)
+        return json.loads(response.text)
+
+    async def get_token_metadata(self, network: str, tokenId: str) -> TokenMetadata:
+        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4'}:
+            try:
+                tokenIdValue = int(tokenId)
+            except ValueError:
+                raise NotFoundException()
+            if tokenIdValue <= 0 or tokenIdValue > 10000:
+                raise NotFoundException()
+            return TokenMetadata(
+                tokenId=tokenId,
+                tokenIndex=tokenIdValue - 1,
+                name=f'MDTP #{tokenId}',
+                description=None,
+                image='',
+                url=None,
+                groupId=None,
+            )
+        metadataUrl = await self.contractStore.get_token_metadata_url(network=network, tokenId=tokenId)
+        metadataJson = await self._get_json_content(url=metadataUrl)
         return TokenMetadata(
-            tokenId=tokenId,
-            tokenIndex=tokenIndex,
-            name=f'MDTP #{tokenId}',
-            description=None,
-            image='',
-            url=None,
-            groupId=None,
+            tokenId=metadataJson['tokenId'],
+            tokenIndex=metadataJson.get('tokenIndex') or metadataJson['tokenId'] - 1,
+            name=metadataJson.get('name') or metadataJson.get('title') or '',
+            description=metadataJson.get('description'),
+            image=metadataJson.get('image') or metadataJson.get('imageUrl') or '',
+            url=metadataJson.get('url'),
+            groupId=metadataJson.get('groupId'),
         )
 
-    async def get_token_default_content(self, tokenId: str) -> TokenMetadata:
-        try:
-            tokenIdValue = int(tokenId)
-        except ValueError:
-            raise NotFoundException()
-        if tokenIdValue <= 0 or tokenIdValue > 10000:
-            raise NotFoundException()
-        tokenIndex = tokenIdValue - 1
+    async def get_token_content(self, network: str, tokenId: str) -> TokenMetadata:
+        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4'}:
+            try:
+                tokenIdValue = int(tokenId)
+            except ValueError:
+                raise NotFoundException()
+            if tokenIdValue <= 0 or tokenIdValue > 10000:
+                raise NotFoundException()
+            tokenIndex = tokenIdValue - 1
+            return TokenMetadata(
+                tokenId=tokenId,
+                tokenIndex=tokenIndex,
+                name=f'MDTP Token {tokenId}',
+                description=None,
+                image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/b88762dd-7605-4447-949b-d8ba99e6f44d/{tokenIndex}.png',
+                url=None,
+                groupId=None,
+            )
+        contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+        contentJson = await self._get_json_content(url=contentUrl)
         return TokenMetadata(
-            tokenId=tokenId,
-            tokenIndex=tokenIndex,
-            name=f'MDTP Token {tokenId}',
-            description=None,
-            image=f'https://mdtp-images.s3-eu-west-1.amazonaws.com/uploads/b88762dd-7605-4447-949b-d8ba99e6f44d/{tokenIndex}.png',
-            url=None,
-            groupId=None,
+            tokenId=contentJson['tokenId'],
+            tokenIndex=contentJson.get('tokenIndex') or contentJson['tokenId'] - 1,
+            name=contentJson.get('name') or contentJson.get('title') or '',
+            description=contentJson.get('description'),
+            image=contentJson.get('image') or contentJson.get('imageUrl') or '',
+            url=contentJson.get('url'),
+            groupId=contentJson.get('groupId'),
         )
 
     async def get_token_default_grid_item(self, tokenId: str) -> GridItem:
-        metadata = await self.get_token_default_content(tokenId=tokenId)
+        metadata = await self.get_token_content(tokenId=tokenId)
         return GridItem(
             gridItemId=tokenId-1,
             createdDate=date_util.datetime_from_now(),
@@ -143,10 +172,7 @@ class MdtpManager:
             latestBaseImage = await self.get_latest_base_image_url(network=network)
         except NotFoundException:
             latestBaseImage = None
-        if latestBaseImage:
-            gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate)
-        else:
-            gridItems = [await self.get_token_default_grid_item(tokenId=index + 1) for index in range(0, 10000)]
+        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate if latestBaseImage else None)
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None
@@ -268,7 +294,7 @@ class MdtpManager:
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
-            await self.update_token(network=network, tokenId=(tokenIndex + 1))
+            await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
 
     async def upload_token_image_deferred(self, network: str, tokenId: int, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UploadTokenImageMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
@@ -289,27 +315,31 @@ class MdtpManager:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception:
             ownerId = '0x0000000000000000000000000000000000000000'
-        tokenContentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-        tokenContentResponse = await self.requester.make_request(method='GET', url=tokenContentUrl)
-        tokenContentJson = json.loads(tokenContentResponse.text)
-        title = tokenContentJson.get('title') or tokenContentJson.get('name') or ''
-        imageUrl = tokenContentJson.get('imageUrl') or tokenContentJson.get('image') or ''
-        description = tokenContentJson.get('description')
-        url = tokenContentJson.get('url')
-        groupId = tokenContentJson.get('groupId') or tokenContentJson.get('blockId')
+        contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+        contentJson = await self._get_json_content(url=contentUrl)
+        title = contentJson.get('title') or contentJson.get('name') or None
+        imageUrl = contentJson.get('imageUrl') or contentJson.get('image') or None
+        description = contentJson.get('description')
+        url = contentJson.get('url')
+        groupId = contentJson.get('groupId') or contentJson.get('blockId')
+        if title is None or imageUrl is None:
+            logging.info(f'Getting metadata because title or image is None')
+            metadata = await self.get_token_metadata(network=network, tokenId=tokenId)
+            title = title or metadata.title
+            imageUrl = imageUrl or metadata.image
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
-            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, groupId=groupId, ownerId=ownerId)
+            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, groupId=groupId, ownerId=ownerId)
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
         if not resizableImageUrl:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
-        if gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
+        if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
-            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
+            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)

@@ -14,6 +14,7 @@ class Contract:
     abi: dict
     ethClient: EthClientInterface
     ownerOfMethodName: str
+    metadataUriMethodName: str
     tokenContentUriMethodName: str
     totalSupplyMethodName: str
     setTokenContentUriMethodName: str
@@ -60,6 +61,12 @@ class ContractStore:
         tokenCountResponse = await self._call_function(contract=contract, methodName=contract.totalSupplyMethodName)
         tokenCount = int(tokenCountResponse[0])
         return tokenCount
+
+    async def get_token_metadata_url(self, network: str, tokenId: int) -> int:
+        contract = self.get_contract(network=network)
+        tokenUriResponse = await self._call_function(contract=contract, methodName=contract.metadataUriMethodName, arguments={'tokenId': int(tokenId)})
+        tokenUri = tokenUriResponse[0].strip()
+        return tokenUri
 
     async def get_token_content_url(self, network: str, tokenId: int) -> int:
         contract = self.get_contract(network=network)

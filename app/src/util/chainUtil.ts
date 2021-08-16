@@ -5,6 +5,9 @@ import contract1 from '../contract1.json';
 import contract2 from '../contract2.json';
 import contract3 from '../contract3.json';
 import contract4 from '../contract4.json';
+import contract5 from '../contract5.json';
+
+export const NON_OWNER = '0x0000000000000000000000000000000000000000';
 
 declare global {
   export interface Window {
@@ -24,7 +27,7 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: 'rinkeby4',
+  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby5' : 'rinkeby4',
   [ChainId.Mainnet]: 'mainnet',
 };
 
@@ -33,6 +36,7 @@ const networkContractAddressMap: Record<string, string | null> = {
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
   rinkeby3: '0x19559Ac1471e2e4887d63c9363C85BF9f85Fdb67',
   rinkeby4: '0x9B84318C9aC64F564eEc4a703f2dbb742a4D1401',
+  rinkeby5: '0x7BA72b8be642DA3ad81324D71AfFffb290a3f92a',
   mainnet: null,
 };
 
@@ -41,6 +45,7 @@ const networkContractMap: Record<string, ContractInterface | null> = {
   rinkeby2: contract2 as unknown as ContractInterface,
   rinkeby3: contract3 as unknown as ContractInterface,
   rinkeby4: contract4 as unknown as ContractInterface,
+  rinkeby5: contract5 as unknown as ContractInterface,
   mainnet: null,
 };
 
@@ -120,6 +125,9 @@ export const getProductOpenseaUrl = (network: string): string | null => {
   }
   if (network === 'rinkeby4') {
     return 'https://testnets.opensea.io/collection/milliondollartokenpage4';
+  }
+  if (network === 'rinkeby5') {
+    return 'https://testnets.opensea.io/collection/milliondollartokenpage5';
   }
   // if (network === 'mainnet') {
   //   return `https://etherscan.io/address/${account}`;

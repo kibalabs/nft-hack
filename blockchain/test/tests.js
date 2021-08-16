@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 const METADATA_BASE_URI = 'ipfs://123/';
-const DEFAULT_CONTENT_BASE_URI = 'ipfs://456/'; // ipfs://QmYWKVsSizmsLxfA213x2UW31mB8UxKr2pyynG794Cd497
+const DEFAULT_CONTENT_BASE_URI = 'ipfs://456/';
 const DEFAULT_TOTAL_MINT_LIMIT = 1000;
 const DEFAULT_SINGLE_MINT_LIMIT = 20;
 const DEFAULT_OWNERSHIP_MINT_LIMIT = 45;

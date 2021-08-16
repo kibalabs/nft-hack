@@ -1,9 +1,10 @@
 import React from 'react';
 
-import { Direction, Image, Stack } from '@kibalabs/ui-react';
+import { Direction, Stack } from '@kibalabs/ui-react';
 import styled from 'styled-components';
 
 import { GridItem } from '../client';
+import { MdtpImage } from '../components/MdtpImage';
 import { getPointFromGridItem, getTokenIdFromPoint } from '../util/gridItemUtil';
 import { arePointsEqual, Point, sumPoints } from '../util/pointUtil';
 
@@ -62,7 +63,7 @@ export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
               <Stack.Item key={x} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
                 <ImageGridItem isMainItem={arePointsEqual(adjustGridPoint({ x, y }), mainPoint)}>
                   {getGridItemForGridPoint({ x, y }) && (
-                    <Image
+                    <MdtpImage
                       variant='tokenPageHeaderGrid'
                       fitType={'contain'}
                       source={getGridItemForGridPoint({ x, y })?.imageUrl || ''}

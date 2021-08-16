@@ -32,9 +32,9 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
 
     event TokenContentURIChanged(uint256 indexed tokenId);
 
-    constructor(uint16 initialTotalMintLimit, uint16 initialSingleMintLimit, uint16 initialOwnershipMintLimit, uint256 initialMintPrice, string memory newMetadataBaseURI, string memory newDefaultContentBaseURI) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() {
-        _metadataBaseURI = newMetadataBaseURI;
-        _defaultContentBaseURI = newDefaultContentBaseURI;
+    constructor(uint16 initialTotalMintLimit, uint16 initialSingleMintLimit, uint16 initialOwnershipMintLimit, uint256 initialMintPrice, string memory initialMetadataBaseURI, string memory initialDefaultContentBaseURI) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() {
+        _metadataBaseURI = initialMetadataBaseURI;
+        _defaultContentBaseURI = initialDefaultContentBaseURI;
         totalMintLimit = initialTotalMintLimit;
         singleMintLimit = initialSingleMintLimit;
         ownershipMintLimit = initialOwnershipMintLimit;

@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+import json
+>>>>>>> main
 import os
 import logging
 from typing import Optional
@@ -136,39 +140,35 @@ async def run(tokenId: Optional[int], shouldUpload: bool):
     metadataOutputDirectory = f'output/metadatas'
     await file_util.create_directory(directory=metadataOutputDirectory)
 
-    # imageUrls = {}
-    # for tokenId in tokenIds:
-    #   print(f'Generating image for {tokenId}')
-    #   imagePath = os.path.join(imagesOutputDirectory, f'{tokenId}.png')
-    #   tokenImage = generate_image(tokenId=tokenId)
-    #   tokenImage.save(imagePath)
-    #   if shouldUpload:
-    #     print(f'Uploading image for {tokenId}')
-    #     with open(imagePath, 'rb') as imageFile:
-    #       cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
-    #     imageUrls[tokenId] = f'ipfs://{cid}'
-    #   else:
-    #     imageUrls[tokenId] = imagePath
-
-    # for tokenId in tokenIds:
-    #   print(f'Generating metadata for {tokenId}')
-    #   metadata = {
-    #     "tokenId": tokenId,
-    #     "tokenIndex": tokenId - 1,
-    #     "name": f'MDTP Token {tokenId}',
-    #     "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP).\nMDTP is a digital content-sharing space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display the content you like, and later re-sold.\nSo join us and interact, trade and share, and be a part of making crypto history!",
-    #     "image": imageUrls[tokenId],
-    #     "url": None,
-    #   }
-    #   with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
-    #     metadataFile.write(json.dumps(metadata))
+    for tokenId in tokenIds:
+        print(f'Generating image for {tokenId}')
+        imagePath = os.path.join(imagesOutputDirectory, f'{tokenId}.png')
+        imageUrl = imagePath
+        #   tokenImage = generate_image(tokenId=tokenId)
+        #   tokenImage.save(imagePath)
+        if shouldUpload:
+            print(f'Uploading image for {tokenId}')
+            with open(imagePath, 'rb') as imageFile:
+                cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+            imageUrl = f'ipfs://{cid}'
+        print(f'Generating metadata for {tokenId}')
+        metadata = {
+            "tokenId": tokenId,
+            "tokenIndex": tokenId - 1,
+            "name": f'MDTP Token {tokenId}',
+            "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP).\nMDTP is a digital content-sharing space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display the content you like, and later re-sold.\nSo join us and interact, trade and share, and be a part of making crypto history!",
+            "image": imageUrl,
+            "url": None,
+        }
+        with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
+            metadataFile.write(json.dumps(metadata))
     if shouldUpload:
-      print(f'Uploading metadata')
-      fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
-      cid = await ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
-      for openFile in fileContentMap.values():
-        openFile.close()
-      print(f'Uploaded metadata to ipfs://{cid}')
+        print(f'Uploading metadata')
+        fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
+        cid = await ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
+        for openFile in fileContentMap.values():
+            openFile.close()
+        print(f'Uploaded metadata to ipfs://{cid}')
     await infuraIpfsRequester.close_connections()
 
 if __name__ == '__main__':
