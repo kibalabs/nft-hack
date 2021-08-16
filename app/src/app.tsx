@@ -55,27 +55,6 @@ export const App = hot((): React.ReactElement => {
   const [contract, setContract] = React.useState<ethers.Contract | null>(null);
   const [web3, setWeb3] = React.useState<ethers.providers.Web3Provider | null>(null);
 
-  const onLinkAccountsClicked = async (): Promise<void> => {
-    if (web3) {
-      web3.provider.enable().then(async (): Promise<void> => {
-        await loadWeb3();
-      });
-    }
-  };
-
-  const onChainChanged = (): void => {
-    window.location.reload();
-  };
-
-  const onAccountsChanged = React.useCallback(async (accountAddresses: string[]): Promise<void> => {
-    // NOTE(krishan711): metamask only deals with one account at the moment but returns an array for future compatibility
-    const linkedAccounts = accountAddresses.map((accountAddress: string): ethers.Signer => web3.getSigner(accountAddress));
-    setAccounts(linkedAccounts);
-    Promise.all(linkedAccounts.map((account: ethers.Signer): Promise<string> => account.getAddress())).then((retrievedAccountIds: string[]): void => {
-      setAccountIds(retrievedAccountIds);
-    });
-  }, [web3]);
-
   const loadWeb3 = async (): Promise<void> => {
     const provider = await detectEthereumProvider();
     if (!provider) {
@@ -90,6 +69,19 @@ export const App = hot((): React.ReactElement => {
     setWeb3(web3Connection);
   };
 
+  const onAccountsChanged = React.useCallback(async (accountAddresses: string[]): Promise<void> => {
+    // NOTE(krishan711): metamask only deals with one account at the moment but returns an array for future compatibility
+    const linkedAccounts = accountAddresses.map((accountAddress: string): ethers.Signer => web3.getSigner(accountAddress));
+    setAccounts(linkedAccounts);
+    Promise.all(linkedAccounts.map((account: ethers.Signer): Promise<string> => account.getAddress())).then((retrievedAccountIds: string[]): void => {
+      setAccountIds(retrievedAccountIds);
+    });
+  }, [web3]);
+
+  const onChainChanged = React.useCallback((): void => {
+    window.location.reload();
+  }, []);
+
   const loadAccounts = React.useCallback(async (): Promise<void> => {
     if (!web3) {
       return;
@@ -98,7 +90,15 @@ export const App = hot((): React.ReactElement => {
     web3.provider.on('chainChanged', onChainChanged);
     onAccountsChanged(await web3.provider.request({ method: 'eth_accounts' }));
     web3.provider.on('accountsChanged', onAccountsChanged);
-  }, [web3, onAccountsChanged]);
+  }, [web3, onChainChanged, onAccountsChanged]);
+
+  const onLinkAccountsClicked = async (): Promise<void> => {
+    if (web3) {
+      web3.provider.request({ method: "eth_requestAccounts", params: [] }).then(async (): Promise<void> => {
+        await loadWeb3();
+      });
+    }
+  };
 
   useInitialization((): void => {
     loadWeb3();
