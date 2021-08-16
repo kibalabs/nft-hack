@@ -7,7 +7,7 @@ import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { TokenMetadata } from '../../client';
+import { PresignedUpload, TokenMetadata } from '../../client';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
@@ -92,10 +92,15 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     loadOwners();
   }, [loadOwners]);
 
-  const onImageFilesChosen = async (files: File[]): Promise<UpdateResult> => {
+  const onImageFilesChosen = async (shouldUseIpfs: boolean, files: File[]): Promise<UpdateResult> => {
     // TODO(krishan711): ensure there is only one file
+    let presignedUpload: PresignedUpload;
     try {
-      const presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
+      presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
+    } catch (error: unknown) {
+      return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}`};
+    }
+    try {
       const file = files[0];
       // @ts-ignore
       const fileName = file.path.replace(/^\//g, '');
@@ -209,9 +214,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { (tokenMetadata === null || chainOwnerIds === null || chainOwnerIds === null || accountIds === null) ? (
+        { (tokenMetadata === null || chainOwnerIds === null || accountIds === null) ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : (tokenMetadata === undefined || chainOwnerIds === undefined || chainOwnerIds === undefined || accountIds === undefined) ? (
+        ) : (tokenMetadata === undefined || accountIds === undefined) ? (
           <LoadingSpinner />
         ) : transactionReceipt ? (
           <React.Fragment>
@@ -237,12 +242,12 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             { isUpdatingMultiple && (
               <React.Fragment>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                  <Text>Block height:</Text>
+                  <Text>Block size:</Text>
                   <Box width='5em'>
                     <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
                   </Box>
-                </Stack>
-                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                {/* </Stack>
+                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}> */}
                   <Text>Block width:</Text>
                   <Box width='5em'>
                     <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
@@ -252,15 +257,15 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             )}
             <TokenUpdateForm
               title={tokenMetadata.name}
-              description={tokenMetadata.description || ''}
-              url={tokenMetadata.url || ''}
-              imageUrl={tokenMetadata.image || ''}
+              description={tokenMetadata.description}
+              url={tokenMetadata.url}
+              imageUrl={isUpdatingMultiple ? undefined : tokenMetadata.image}
               onTokenUpdateFormSubmitted={onTokenUpdateFormSubmitted}
               onImageFilesChosen={onImageFilesChosen}
               isEnabled={isOwnerOfTokens}
             />
             {!isOwnerOfTokens && (
-              <Text variant='error'>{`You don't own these tokens: ${unownedTokenIds}`}</Text>
+              <Text variant='error'>{`You don't own these tokens: ${unownedTokenIds.join(", ")}`}</Text>
             )}
           </React.Fragment>
         )}

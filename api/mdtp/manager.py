@@ -153,7 +153,10 @@ class MdtpManager:
         for gridItem in gridItems:
             logging.info(f'Drawing grid item {gridItem.gridItemId}')
             imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
-            imageResponse = await self.requester.get(imageUrl)
+            if imageUrl.startswith('ipfs://'):
+                imageResponse = await self.ipfsManager.read_file(cid=imageUrl.replace('ipfs://', ''))
+            else:
+                imageResponse = await self.requester.get(url=imageUrl)
             contentBuffer = BytesIO(imageResponse.content)
             with PILImage.open(fp=contentBuffer) as tokenImage:
                 tokenIndex = gridItem.tokenId - 1

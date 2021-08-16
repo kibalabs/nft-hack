@@ -24,7 +24,8 @@
     "react-dropzone": "11.3.4",
     "react-ga": "3.3.0",
     "react-helmet": "6.1.0",
-    "styled-components": "5.3.0"
+    "styled-components": "5.3.0",
+    "web3.storage": "^3.2.0"
   },
   "devDependencies": {
     "@kibalabs/build": "0.7.1",
