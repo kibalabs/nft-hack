@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-=======
-import json
->>>>>>> main
 import os
+import json
 import logging
 from typing import Optional
 
