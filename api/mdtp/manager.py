@@ -260,7 +260,6 @@ class MdtpManager:
         coppedImageFilePaths = await self.imageManager.crop_image(imageId=imageId, width=width, height=height)
         imageUrls = []
         for imageFilePath in coppedImageFilePaths:
-            print('imageFilePath', imageFilePath)
             if shouldUseIpfs:
                 with open(imageFilePath, 'rb') as openFile:
                     cid = await self.ipfsManager.upload_file_to_ipfs(fileContent=openFile)
