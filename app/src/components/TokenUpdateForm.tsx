@@ -3,6 +3,7 @@ import React from 'react';
 import { Box, Button, Checkbox, Direction, Form, Image, InputType, MultiLineInput, SingleLineInput, Stack, Text } from '@kibalabs/ui-react';
 
 import { Dropzone } from './dropzone';
+import { MdtpImage } from './MdtpImage';
 
 export type UpdateResult = {
   isSuccess: boolean;
@@ -93,7 +94,7 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
               </Stack.Item>
               {imageUrl && (
                 <Box height='2.5em' width='2.5em' isFullWidth={false}>
-                  <Image source={imageUrl} alternativeText='Token image preview' />
+                  <MdtpImage source={imageUrl} alternativeText='Token image preview' />
                 </Box>
               )}
             </Stack>

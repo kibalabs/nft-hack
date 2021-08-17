@@ -18,7 +18,7 @@ export type TokenUpdatePageProps = {
 }
 
 export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement => {
-  const { contract, requester, apiClient, network } = useGlobals();
+  const { contract, requester, apiClient, network, web3StorageClient } = useGlobals();
   const colors = useColors();
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
   const [chainOwnerIds, setChainOwnerIds] = React.useState<Map<number, string> | null | undefined>(undefined);
@@ -30,22 +30,62 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
+  const relevantTokenIds = React.useMemo((): number[] => {
+    const tokenId = Number(props.tokenId);
+    const tokenIds = [];
+    if (isUpdatingMultiple) {
+      for (let y = 0; y < requestHeight; y += 1) {
+        for (let x = 0; x < requestWidth; x += 1) {
+          tokenIds.push(tokenId + (y * 100) + x);
+        }
+      }
+    } else {
+      tokenIds.push(tokenId);
+    }
+    return tokenIds;
+  }, [props.tokenId, requestHeight, requestWidth, isUpdatingMultiple]);
+
   const loadToken = React.useCallback(async (): Promise<void> => {
     setTokenMetadata(undefined);
-    if (network === null || contract === null) {
+    // setTokenMetadataMap(undefined);
+    if (network === null || contract === null || !contract.tokenContentURI) {
       setTokenMetadata(null);
+      // setTokenMetadataMap(null);
       return;
     }
+    setTokenMetadata(undefined);
+    // setTokenMetadataMap(undefined);
     // NOTE(krishan711): this only works for the new contracts
-    if (contract.tokenContentURI) {
-      contract.tokenContentURI(Number(props.tokenId)).then((tokenMetadataUrl: string): void => {
-        requester.makeRequest(RestMethod.GET, tokenMetadataUrl).then((response: KibaResponse): void => {
-          const tokenMetadataJson = JSON.parse(response.content);
-          // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
-          setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId: Number(props.tokenId) }));
-        });
+    contract.tokenContentURI(Number(props.tokenId)).then((tokenMetadataUrl: string): void => {
+      const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : tokenMetadataUrl;
+      requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
+        const tokenMetadataJson = JSON.parse(response.content);
+        // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
+        setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId: Number(props.tokenId) }));
       });
-    }
+    });
+    // const metadataPromises = relevantTokenIds.map(async (tokenId: number): Promise<TokenMetadata | null> => {
+    //   return contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): TokenMetadata => {
+    //     const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : tokenMetadataUrl;
+    //     return requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): TokenMetadata => {
+    //       const tokenMetadataJson = JSON.parse(response.content);
+    //       return TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId: Number(props.tokenId) });
+    //     });
+    //   }).catch((error: unknown): void => {
+    //     if (!(error as Error).message.includes('nonexistent token')) {
+    //       console.error(error);
+    //     }
+    //     return null;
+    //   });
+    // });
+    // const retrievedMetadataMap = await Promise.all(metadataPromises);
+    // const calculatedMetadataMap = retrievedMetadataMap.reduce((accumulator: Map<number, TokenMetadata>, value: TokenMetadata | null): Map<number, TokenMetadata> => {
+    //   if (value) {
+    //     accumulator.set(Number(value.tokenId), value);
+    //   }
+    //   return accumulator;
+    // }, new Map<number, TokenMetadata>());
+    // setTokenMetadataMap(calculatedMetadataMap);
   }, [props.tokenId, network, contract, requester]);
 
   React.useEffect((): void => {
@@ -58,19 +98,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       setChainOwnerIds(null);
       return;
     }
-    const tokenId = Number(props.tokenId);
-    const tokenIds = [];
-    if (isUpdatingMultiple) {
-      for (let y = 0; y < requestHeight; y += 1) {
-        for (let x = 0; x < requestWidth; x += 1) {
-          tokenIds.push(tokenId + (y * 100) + x);
-        }
-      }
-    } else {
-      tokenIds.push(tokenId);
-    }
-
-    const chainOwnerIdPromises = tokenIds.map(async (internalTokenId: number): Promise<string | null> => {
+    setChainOwnerIds(undefined);
+    const chainOwnerIdPromises = relevantTokenIds.map(async (internalTokenId: number): Promise<string | null> => {
       try {
         return await contract.ownerOf(internalTokenId);
       } catch (error: unknown) {
@@ -81,7 +110,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       }
     });
     const retrievedChainOwnerIds = await Promise.all(chainOwnerIdPromises);
-    const calculatedChainOwnerIds = tokenIds.reduce((accumulator: Map<number, string>, internalTokenId: number, index: number): Map<number, string> => {
+    const calculatedChainOwnerIds = relevantTokenIds.reduce((accumulator: Map<number, string>, internalTokenId: number, index: number): Map<number, string> => {
       accumulator.set(internalTokenId, retrievedChainOwnerIds[index] as string);
       return accumulator;
     }, new Map<number, string>());
@@ -94,24 +123,33 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
 
   const onImageFilesChosen = async (shouldUseIpfs: boolean, files: File[]): Promise<UpdateResult> => {
     // TODO(krishan711): ensure there is only one file
+    const file = files[0];
+    if (shouldUseIpfs) {
+      try {
+        const cid = await web3StorageClient.put([file], { wrapWithDirectory: false });
+        return { isSuccess: true, message: `ipfs://${cid}`};
+      } catch (error: unknown) {
+        console.error(error);
+        return { isSuccess: false, message: `Failed to upload file to IPFS. Please try without IPFS whilst we look into what's happening.`};
+      }
+    }
+    // @ts-ignore
+    const fileName = file.path.replace(/^\//g, '');
+    const formData = new FormData();
+    formData.set('Content-Type', file.type);
+    formData.append('file', file, file.name);
     let presignedUpload: PresignedUpload;
     try {
       presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
     } catch (error: unknown) {
       return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}`};
     }
+    Object.keys(presignedUpload.params).forEach((key: string): void => {
+      formData.set(key, presignedUpload.params[key]);
+    });
+    // eslint-disable-next-line no-template-curly-in-string
+    formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
     try {
-      const file = files[0];
-      // @ts-ignore
-      const fileName = file.path.replace(/^\//g, '');
-      const formData = new FormData();
-      Object.keys(presignedUpload.params).forEach((key: string): void => {
-        formData.set(key, presignedUpload.params[key]);
-      });
-      // eslint-disable-next-line no-template-curly-in-string
-      formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
-      formData.set('Content-Type', file.type);
-      formData.append('file', file, file.name);
       await requester.makeFormRequest(presignedUpload.url, formData);
       // eslint-disable-next-line no-template-curly-in-string
       return { isSuccess: true, message: `${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}` };
@@ -120,7 +158,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     }
   };
 
-  const onTokenUpdateFormSubmitted = async (title: string, description: string, url: string, imageUrl: string): Promise<UpdateResult> => {
+  const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description?: string, url?: string, imageUrl?: string): Promise<UpdateResult> => {
     if (!contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
@@ -135,9 +173,12 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     let tokenMetadataUrls: string[];
     try {
       if (isUpdatingMultiple) {
-        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, requestWidth, requestHeight, title, description, imageUrl, url);
+        if (!imageUrl) {
+          return { isSuccess: false, message: 'To update multiple tokens you must provide an image.' };
+        }
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
       } else {
-        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, title, description, imageUrl, url);
+        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl, url);
         tokenMetadataUrls = [tokenMetadataUrl];
       }
     } catch (error: unknown) {
@@ -169,11 +210,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     if (transaction) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
-      for (let y = 0; y <= requestHeight; y += 1) {
-        for (let x = 0; x <= requestWidth; x += 1) {
-          apiClient.updateTokenDeferred(network, Number(props.tokenId) + (100 * y) + x);
-        }
-      }
+      relevantTokenIds.forEach((tokenId: number): void => {
+        apiClient.updateTokenDeferred(network, tokenId);
+      });
     }
   }, [transaction, apiClient, network, props.tokenId, requestHeight, requestWidth]);
 
@@ -242,12 +281,12 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             { isUpdatingMultiple && (
               <React.Fragment>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                  <Text>Block size:</Text>
+                  <Text>Block height:</Text>
                   <Box width='5em'>
                     <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
                   </Box>
-                {/* </Stack>
-                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}> */}
+                </Stack>
+                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
                   <Text>Block width:</Text>
                   <Box width='5em'>
                     <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />

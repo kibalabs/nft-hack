@@ -64,6 +64,7 @@ class GenerateImageUploadForTokenResponse(BaseModel):
     presignedUpload: ApiPresignedUpload
 
 class CreateMetadataForTokenRequest(BaseModel):
+    shouldUseIpfs: bool = True
     name: str
     description: Optional[str]
     imageUrl: str
@@ -74,6 +75,7 @@ class CreateMetadataForTokenResponse(BaseModel):
     tokenMetadataUrl: str
 
 class CreateMetadataForTokenGroupRequest(BaseModel):
+    shouldUseIpfs: bool = True
     width: int
     height: int
     name: str

@@ -127,6 +127,7 @@ export class GenerateImageUploadForTokenResponse extends ResponseData {
 
 export class UploadMetadataForTokenRequest extends RequestData {
   public constructor(
+    readonly shouldUseIpfs: boolean,
     readonly name: string,
     readonly description: string | null,
     readonly imageUrl: string,
@@ -137,6 +138,7 @@ export class UploadMetadataForTokenRequest extends RequestData {
 
   public toObject = (): Resources.RawObject => {
     return {
+      shouldUseIpfs: this.shouldUseIpfs,
       name: this.name,
       description: this.description,
       imageUrl: this.imageUrl,
@@ -161,6 +163,7 @@ export class UploadMetadataForTokenResponse extends ResponseData {
 
 export class UploadMetadataForTokenGroupRequest extends RequestData {
   public constructor(
+    readonly shouldUseIpfs: boolean,
     readonly width: number,
     readonly height: number,
     readonly name: string,
@@ -173,6 +176,7 @@ export class UploadMetadataForTokenGroupRequest extends RequestData {
 
   public toObject = (): Resources.RawObject => {
     return {
+      shouldUseIpfs: this.shouldUseIpfs,
       width: this.width,
       height: this.height,
       name: this.name,

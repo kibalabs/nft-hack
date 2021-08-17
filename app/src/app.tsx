@@ -33,6 +33,7 @@ declare global {
 const requester = new Requester(undefined, undefined, false);
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const apiClient = new MdtpClient(requester, window.KRT_API_URL);
+console.log('window.KRT_WEB3STORAGE_API_KEY', window.KRT_WEB3STORAGE_API_KEY);
 const web3StorageClient = new Web3Storage({ token: window.KRT_WEB3STORAGE_API_KEY });
 
 ReactGA.initialize('UA-31771231-11');

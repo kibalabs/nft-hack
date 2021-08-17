@@ -56,18 +56,18 @@ export class MdtpClient extends ServiceClient {
     return response.presignedUpload;
   }
 
-  public createMetadataForToken = async (network: string, tokenId: number, name: string, description: string | null, imageUrl: string, url: string | null): Promise<string> => {
+  public createMetadataForToken = async (network: string, tokenId: number, shouldUseIpfs: boolean, name: string, description: string | null, imageUrl: string, url: string | null): Promise<string> => {
     const method = RestMethod.POST;
     const path = `v1/networks/${network}/tokens/${tokenId}/create-metadata`;
-    const request = new Endpoints.UploadMetadataForTokenRequest(name, description, imageUrl, url);
+    const request = new Endpoints.UploadMetadataForTokenRequest(shouldUseIpfs, name, description, imageUrl, url);
     const response = await this.makeRequest(method, path, request, Endpoints.UploadMetadataForTokenResponse);
     return response.tokenMetadataUrl;
   }
 
-  public createMetadataForTokenGroup = async (network: string, tokenId: number, width: number, height: number, name: string, description: string | null, imageUrl: string, url: string | null): Promise<string[]> => {
+  public createMetadataForTokenGroup = async (network: string, tokenId: number, shouldUseIpfs: boolean, width: number, height: number, name: string, description: string | null, imageUrl: string, url: string | null): Promise<string[]> => {
     const method = RestMethod.POST;
     const path = `v1/networks/${network}/tokens/${tokenId}/create-group-metadata`;
-    const request = new Endpoints.UploadMetadataForTokenGroupRequest(width, height, name, description, imageUrl, url);
+    const request = new Endpoints.UploadMetadataForTokenGroupRequest(shouldUseIpfs, width, height, name, description, imageUrl, url);
     const response = await this.makeRequest(method, path, request, Endpoints.UploadMetadataForTokenGroupResponse);
     return response.tokenMetadataUrls;
   }

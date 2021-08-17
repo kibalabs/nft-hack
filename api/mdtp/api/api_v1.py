@@ -59,12 +59,12 @@ def create_api(manager: MdtpManager) -> KibaRouter():
 
     @router.post('/networks/{network}/tokens/{tokenId}/create-metadata', response_model=CreateMetadataForTokenResponse)
     async def create_metadata_for_token(network: str, tokenId: int, request: CreateMetadataForTokenRequest):
-        tokenMetadataUrl = await manager.create_metadata_for_token(network=network, tokenId=tokenId, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
+        tokenMetadataUrl = await manager.create_metadata_for_token(network=network, tokenId=tokenId, shouldUseIpfs=request.shouldUseIpfs, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
         return CreateMetadataForTokenResponse(tokenMetadataUrl=tokenMetadataUrl)
 
     @router.post('/networks/{network}/tokens/{tokenId}/create-group-metadata', response_model=CreateMetadataForTokenGroupResponse)
     async def create_metadata_for_token_group(network: str, tokenId: int, request: CreateMetadataForTokenGroupRequest):
-        tokenMetadataUrls = await manager.create_metadata_for_token_group(network=network, tokenId=tokenId, width=request.width, height=request.height, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
+        tokenMetadataUrls = await manager.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=request.shouldUseIpfs, width=request.width, height=request.height, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
         return CreateMetadataForTokenGroupResponse(tokenMetadataUrls=tokenMetadataUrls)
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)

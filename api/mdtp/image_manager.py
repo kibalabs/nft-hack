@@ -68,7 +68,7 @@ class ImageManager:
         # NOTE(krishan711): this can be done in parallel
         image = await self._load_image(imageId=imageId)
         targetSize = ImageSize(int(image.size.width / width), int(image.size.height / height))
-        urls = []
+        files = []
         if image.imageFormat not in {ImageFormat.JPG, ImageFormat.PNG, ImageFormat.WEBP}:
             raise Exception(f'Unable to crop image of type {image.imageFormat}')
         contentBuffer = BytesIO(image.content)
@@ -82,10 +82,10 @@ class ImageManager:
                     croppedPilImage.save(fp=content, format=image.imageFormat.replace('image/', ''))
                     croppedImage = ImageData(content=content.getvalue(), size=targetSize, imageFormat=image.imageFormat)
                     await self._save_image_to_file(image=croppedImage, fileName=croppedFilename)
-                    imageId = await self.upload_image_from_file(filePath=croppedFilename, shouldResize=False)
-                    await file_util.remove_file(filePath=croppedFilename)
-                    urls.append(imageId)
-        return urls
+                    # imageId = await self.upload_image_from_file(filePath=croppedFilename, shouldResize=False)
+                    # await file_util.remove_file(filePath=croppedFilename)
+                    files.append(croppedFilename)
+        return files
 
     async def resize_image(self, imageId: str):
         image = await self._load_image(imageId=imageId)
@@ -103,7 +103,7 @@ class ImageManager:
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
                 await file_util.remove_file(filePath=resizedFilename)
 
-    async def _save_image_to_file(self, image: Image, fileName: str) -> None:
+    async def _save_image_to_file(self, image: ImageData, fileName: str) -> None:
         if image.imageFormat == ImageFormat.JPG:
             contentBuffer = BytesIO(image.content)
             with PILImage.open(fp=contentBuffer) as pilImage, open(fileName, 'wb') as imageFile:
