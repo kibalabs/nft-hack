@@ -47,14 +47,11 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     setTokenMetadata(undefined);
-    // setTokenMetadataMap(undefined);
     if (network === null || contract === null || !contract.tokenContentURI) {
       setTokenMetadata(null);
-      // setTokenMetadataMap(null);
       return;
     }
     setTokenMetadata(undefined);
-    // setTokenMetadataMap(undefined);
     // NOTE(krishan711): this only works for the new contracts
     contract.tokenContentURI(Number(props.tokenId)).then((tokenMetadataUrl: string): void => {
       const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : tokenMetadataUrl;
@@ -64,28 +61,6 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId: Number(props.tokenId) }));
       });
     });
-    // const metadataPromises = relevantTokenIds.map(async (tokenId: number): Promise<TokenMetadata | null> => {
-    //   return contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): TokenMetadata => {
-    //     const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : tokenMetadataUrl;
-    //     return requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): TokenMetadata => {
-    //       const tokenMetadataJson = JSON.parse(response.content);
-    //       return TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId: Number(props.tokenId) });
-    //     });
-    //   }).catch((error: unknown): void => {
-    //     if (!(error as Error).message.includes('nonexistent token')) {
-    //       console.error(error);
-    //     }
-    //     return null;
-    //   });
-    // });
-    // const retrievedMetadataMap = await Promise.all(metadataPromises);
-    // const calculatedMetadataMap = retrievedMetadataMap.reduce((accumulator: Map<number, TokenMetadata>, value: TokenMetadata | null): Map<number, TokenMetadata> => {
-    //   if (value) {
-    //     accumulator.set(Number(value.tokenId), value);
-    //   }
-    //   return accumulator;
-    // }, new Map<number, TokenMetadata>());
-    // setTokenMetadataMap(calculatedMetadataMap);
   }, [props.tokenId, network, contract, requester]);
 
   React.useEffect((): void => {
@@ -176,7 +151,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         if (!imageUrl) {
           return { isSuccess: false, message: 'To update multiple tokens you must provide an image.' };
         }
-        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url );
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
       } else {
         const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
         tokenMetadataUrls = [tokenMetadataUrl];
