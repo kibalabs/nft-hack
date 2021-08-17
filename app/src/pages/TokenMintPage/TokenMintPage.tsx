@@ -125,7 +125,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       console.error('Contract does not support mintedCount');
       setMintedCount(null);
     }
-  }, [network, contract, props.tokenId]);
+  }, [network, contract]);
 
   React.useEffect((): void => {
     loadData();
@@ -168,7 +168,6 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       return;
     }
     setOwnedTokenIds(undefined);
-    console.log('relevantTokenIds', relevantTokenIds);
     const chainOwnerIdPromises = relevantTokenIds.map(async (tokenId: number): Promise<string | null> => {
       try {
         return await contract.ownerOf(tokenId);
@@ -181,13 +180,13 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     });
     const retrievedChainOwnerIds = await Promise.all(chainOwnerIdPromises);
     const calculatedOwnedTokenIds = relevantTokenIds.reduce((accumulator: number[], tokenId: number, index: number): number[] => {
-      if (retrievedChainOwnerIds[index] && retrievedChainOwnerIds[index] != NON_OWNER) {
+      if (retrievedChainOwnerIds[index] && retrievedChainOwnerIds[index] !== NON_OWNER) {
         accumulator.push(tokenId);
       }
       return accumulator;
     }, []);
     setOwnedTokenIds(calculatedOwnedTokenIds);
-  }, [network, contract, relevantTokenIds])
+  }, [network, contract, relevantTokenIds]);
 
   React.useEffect((): void => {
     loadOwners();
@@ -230,7 +229,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         apiClient.updateTokenDeferred(network, tokenId);
       });
     }
-  }, [transaction, apiClient, network, props.tokenId, requestHeight, requestWidth]);
+  }, [transaction, apiClient, network, relevantTokenIds]);
 
   React.useEffect((): void => {
     waitForTransaction();
@@ -315,8 +314,8 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
               { isOverOwnershipLimit && (
                 <Text variant='error' alignment={TextAlignment.Center}>{'You have reached the ownership limit so you cannot mint more tokens at this time. If you\'re really keen reach out to the admins on our discord and we\'ll see what we can do 👀.'}</Text>
               )}
-              { hasMintedToken && (
-                <Text variant='error'>{`These tokens have already been minted: ${ownedTokenIds.join(", ")}`}</Text>
+              { ownedTokenIds && hasMintedToken && (
+                <Text variant='error'>{`These tokens have already been minted: ${ownedTokenIds.join(', ')}`}</Text>
               )}
               { transactionError && (
                 <Text variant='error' alignment={TextAlignment.Center}>{String(transactionError.message)}</Text>

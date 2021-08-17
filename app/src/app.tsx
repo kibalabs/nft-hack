@@ -8,9 +8,9 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
-import { Web3Storage } from 'web3.storage';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
+import { Web3Storage } from 'web3.storage';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
@@ -33,7 +33,6 @@ declare global {
 const requester = new Requester(undefined, undefined, false);
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const apiClient = new MdtpClient(requester, window.KRT_API_URL);
-console.log('window.KRT_WEB3STORAGE_API_KEY', window.KRT_WEB3STORAGE_API_KEY);
 const web3StorageClient = new Web3Storage({ token: window.KRT_WEB3STORAGE_API_KEY });
 
 ReactGA.initialize('UA-31771231-11');

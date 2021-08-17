@@ -115,7 +115,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       return accumulator;
     }, new Map<number, string>());
     setChainOwnerIds(calculatedChainOwnerIds);
-  }, [props.tokenId, isUpdatingMultiple, network, contract, requestHeight, requestWidth]);
+  }, [network, contract, relevantTokenIds]);
 
   React.useEffect((): void => {
     loadOwners();
@@ -127,10 +127,10 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     if (shouldUseIpfs) {
       try {
         const cid = await web3StorageClient.put([file], { wrapWithDirectory: false });
-        return { isSuccess: true, message: `ipfs://${cid}`};
+        return { isSuccess: true, message: `ipfs://${cid}` };
       } catch (error: unknown) {
         console.error(error);
-        return { isSuccess: false, message: `Failed to upload file to IPFS. Please try without IPFS whilst we look into what's happening.`};
+        return { isSuccess: false, message: 'Failed to upload file to IPFS. Please try without IPFS whilst we look into what\'s happening.' };
       }
     }
     // @ts-ignore
@@ -142,7 +142,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     try {
       presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
     } catch (error: unknown) {
-      return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}`};
+      return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}` };
     }
     Object.keys(presignedUpload.params).forEach((key: string): void => {
       formData.set(key, presignedUpload.params[key]);
@@ -158,7 +158,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     }
   };
 
-  const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description?: string, url?: string, imageUrl?: string): Promise<UpdateResult> => {
+  const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null): Promise<UpdateResult> => {
     if (!contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
@@ -176,9 +176,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         if (!imageUrl) {
           return { isSuccess: false, message: 'To update multiple tokens you must provide an image.' };
         }
-        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url );
       } else {
-        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl, url);
+        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
         tokenMetadataUrls = [tokenMetadataUrl];
       }
     } catch (error: unknown) {
@@ -214,7 +214,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         apiClient.updateTokenDeferred(network, tokenId);
       });
     }
-  }, [transaction, apiClient, network, props.tokenId, requestHeight, requestWidth]);
+  }, [transaction, apiClient, network, relevantTokenIds]);
 
   React.useEffect((): void => {
     waitForTransaction();
@@ -298,13 +298,13 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
               title={tokenMetadata.name}
               description={tokenMetadata.description}
               url={tokenMetadata.url}
-              imageUrl={isUpdatingMultiple ? undefined : tokenMetadata.image}
+              imageUrl={isUpdatingMultiple ? null : tokenMetadata.image}
               onTokenUpdateFormSubmitted={onTokenUpdateFormSubmitted}
               onImageFilesChosen={onImageFilesChosen}
               isEnabled={isOwnerOfTokens}
             />
             {!isOwnerOfTokens && (
-              <Text variant='error'>{`You don't own these tokens: ${unownedTokenIds.join(", ")}`}</Text>
+              <Text variant='error'>{`You don't own these tokens: ${unownedTokenIds.join(', ')}`}</Text>
             )}
           </React.Fragment>
         )}

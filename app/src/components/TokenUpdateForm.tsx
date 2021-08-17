@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Box, Button, Checkbox, Direction, Form, Image, InputType, MultiLineInput, SingleLineInput, Stack, Text } from '@kibalabs/ui-react';
+import { Box, Button, Checkbox, Direction, Form, InputType, MultiLineInput, SingleLineInput, Stack, Text } from '@kibalabs/ui-react';
 
 import { Dropzone } from './dropzone';
 import { MdtpImage } from './MdtpImage';
@@ -12,19 +12,19 @@ export type UpdateResult = {
 
 interface ITokenUpdateFormProps {
   title: string;
-  description?: string;
-  url?: string;
-  imageUrl?: string;
+  description: string | null;
+  url: string | null;
+  imageUrl: string | null;
   isEnabled: boolean;
-  onTokenUpdateFormSubmitted: (shouldUseIpfs: boolean, title: string, description?: string, url?: string, imageUrl?: string) => Promise<UpdateResult>;
+  onTokenUpdateFormSubmitted: (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null) => Promise<UpdateResult>;
   onImageFilesChosen: (shouldUseIpfs: boolean, files: File[]) => Promise<UpdateResult>;
 }
 
 export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElement => {
   const [title, setTitle] = React.useState<string>(props.title);
-  const [description, setDescription] = React.useState<string | undefined>(props.description);
-  const [url, setUrl] = React.useState<string | undefined>(props.url);
-  const [imageUrl, setImageUrl] = React.useState<string | undefined>(props.imageUrl);
+  const [description, setDescription] = React.useState<string | null>(props.description);
+  const [url, setUrl] = React.useState<string | null>(props.url);
+  const [imageUrl, setImageUrl] = React.useState<string | null>(props.imageUrl);
   const [isUploadingImage, setIsUploadingImage] = React.useState<boolean>(false);
   const [updatingTokenResult, setUpdatingTokenResult] = React.useState<UpdateResult | null>(null);
   const [isUpdatingToken, setIsUpdatingToken] = React.useState<boolean>(false);
@@ -50,7 +50,7 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
 
   const onShouldUseIpfsToggled = (): void => {
     setShouldUseIpfs(!shouldUseIpfs);
-  }
+  };
 
   const inputVariant = (!updatingTokenResult) ? undefined : updatingTokenResult?.isSuccess ? 'success' : (updatingTokenResult?.isSuccess === false ? 'error' : undefined);
 

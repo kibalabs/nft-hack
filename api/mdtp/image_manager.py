@@ -82,8 +82,6 @@ class ImageManager:
                     croppedPilImage.save(fp=content, format=image.imageFormat.replace('image/', ''))
                     croppedImage = ImageData(content=content.getvalue(), size=targetSize, imageFormat=image.imageFormat)
                     await self._save_image_to_file(image=croppedImage, fileName=croppedFilename)
-                    # imageId = await self.upload_image_from_file(filePath=croppedFilename, shouldResize=False)
-                    # await file_util.remove_file(filePath=croppedFilename)
                     files.append(croppedFilename)
         return files
 
