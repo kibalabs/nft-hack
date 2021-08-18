@@ -27,7 +27,7 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby5' : 'rinkeby4',
+  [ChainId.Rinkeby]: 'rinkeby5',
   [ChainId.Mainnet]: 'mainnet',
 };
 
@@ -36,7 +36,7 @@ const networkContractAddressMap: Record<string, string | null> = {
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
   rinkeby3: '0x19559Ac1471e2e4887d63c9363C85BF9f85Fdb67',
   rinkeby4: '0x9B84318C9aC64F564eEc4a703f2dbb742a4D1401',
-  rinkeby5: '0x82ef5081663e94c5aa428c420823B4261F96493C',
+  rinkeby5: '0xb6aEda20226E23cB833eF28a765f3493b0344B0B',
   mainnet: null,
 };
 
