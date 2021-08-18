@@ -2,8 +2,9 @@ import json
 from typing import Optional
 
 from core.web3.eth_client import EthClientInterface
-from mdtp.contract_store import Contract
-from mdtp.contract_store import ContractStore
+
+from mdtp.contract_store import Contract, ContractStore
+
 
 def create_contract_store(rinkebyEthClient: EthClientInterface, mumbaiEthClient: EthClientInterface, accountAddress: Optional[str] = None, privateKey: Optional[str] = None) -> ContractStore:
     with open('./contract1.json') as contractJsonFile:

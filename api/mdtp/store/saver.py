@@ -3,9 +3,10 @@ from typing import Optional
 
 from core.store.saver import Saver
 from core.util import date_util
-from mdtp.model import BaseImage, GridItem, NetworkUpdate
 
-from mdtp.store.schema import BaseImagesTable, GridItemsTable, NetworkUpdatesTable
+from mdtp.model import BaseImage, GridItem, NetworkUpdate
+from mdtp.store.schema import (BaseImagesTable, GridItemsTable,
+                               NetworkUpdatesTable)
 
 _EMPTY_STRING = '_EMPTY_STRING'
 

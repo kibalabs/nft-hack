@@ -1,12 +1,11 @@
 import datetime
-from typing import Dict
-from typing import Optional
+from typing import Dict, Optional
 
 from core.s3_manager import S3PresignedUpload
 from pydantic import BaseModel
 
-from mdtp.model import GridItem, NetworkSummary, TokenMetadata
-from mdtp.model import BaseImage
+from mdtp.model import BaseImage, GridItem, NetworkSummary, TokenMetadata
+
 
 class ApiTokenMetadata(BaseModel):
     tokenId: str

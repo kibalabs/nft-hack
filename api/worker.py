@@ -1,25 +1,25 @@
 import asyncio
-import os
 import logging
+import os
 
 import boto3
 from core.http.basic_authentication import BasicAuthentication
-from core.requester import Requester
-from core.slack_client import SlackClient
+from core.queues.message_queue_processor import MessageQueueProcessor
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.requester import Requester
 from core.s3_manager import S3Manager
-from core.queues.message_queue_processor import MessageQueueProcessor
+from core.slack_client import SlackClient
 from core.web3.eth_client import RestEthClient
 from databases import Database
-from contracts import create_contract_store
 
-from mdtp.store.retriever import MdtpRetriever
-from mdtp.store.saver import MdtpSaver
+from contracts import create_contract_store
+from mdtp.image_manager import ImageManager
 from mdtp.ipfs_manager import IpfsManager
 from mdtp.manager import MdtpManager
 from mdtp.mdtp_message_processor import MdtpMessageProcessor
-from mdtp.image_manager import ImageManager
+from mdtp.store.retriever import MdtpRetriever
+from mdtp.store.saver import MdtpSaver
+
 
 async def main():
     database = Database(f'postgresql://{os.environ["DB_USERNAME"]}:{os.environ["DB_PASSWORD"]}@{os.environ["DB_HOST"]}:{os.environ["DB_PORT"]}/{os.environ["DB_NAME"]}')

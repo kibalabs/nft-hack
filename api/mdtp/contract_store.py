@@ -7,6 +7,7 @@ from core.web3.eth_client import EthClientInterface
 from web3.main import Web3
 from web3.types import TxReceipt
 
+
 class TransactionFailedException(ServerException):
 
     def __init__(self, transactionReceipt: TxReceipt) -> None:

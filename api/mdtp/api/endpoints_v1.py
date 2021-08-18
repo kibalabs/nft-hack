@@ -1,12 +1,10 @@
-from typing import Optional
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
-from mdtp.api.resources_v1 import ApiGridItem, ApiTokenMetadata
-from mdtp.api.resources_v1 import ApiBaseImage
-from mdtp.api.resources_v1 import ApiPresignedUpload
-from mdtp.api.resources_v1 import ApiNetworkSummary
+from mdtp.api.resources_v1 import (ApiBaseImage, ApiGridItem,
+                                   ApiNetworkSummary, ApiPresignedUpload,
+                                   ApiTokenMetadata)
 
 
 class BaseImageUrlRequest(BaseModel):
