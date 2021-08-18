@@ -27,33 +27,24 @@ async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     contractStore = create_contract_store(rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient, accountAddress=accountAddress, privateKey=privateKey)
 
-    network = 'rinkeby4'
+    network = 'rinkeby5'
     contract = contractStore.get_contract(network=network)
     ethClient = contract.ethClient
 
-    tokensPerRow = 100
-    tokenCount = await contractStore.get_total_supply(network='rinkeby')
     nonce = await ethClient.get_transaction_count(address=accountAddress)
     transactionHash = None
     for row in range(0, height):
         for column in range(0, width):
-            tokenId = startTokenId + (row * tokensPerRow) + column
-            if tokenId <= tokenCount:
-                print(f'Transferring token {tokenId} with nonce {nonce} to {receiveAddress}')
-                try:
-                    transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=150000, gasPrice=int(1 * GWEI))
-                except BadRequestException as exception:
-                    print(f'Failed to transfer {tokenId}: {str(exception)}')
-                nonce += 1
-                time.sleep(0.5)
-            else:
-                print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
-                break
-    if transactionHash:
-        print(f'Waiting for last transaction to finish: {transactionHash}')
-        transactionReceipt = await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
-        if not transactionReceipt['status'] == 1:
-            raise Exception(f'Last transaction failed: {transactionReceipt}')
+            tokenId = startTokenId + (row * 100) + column
+            print(f'Transferring token {tokenId} with nonce {nonce} to {receiveAddress}')
+            try:
+                transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=150000, gasPrice=int(1.1 * GWEI))
+            except BadRequestException as exception:
+                print(f'Failed to transfer {tokenId}: {str(exception)}')
+            nonce += 1
+            time.sleep(0.2)
+    print(f'Waiting for last transaction to finish: https://rinkeby.etherscan.io/tx/{transactionHash}')
+    await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
     await requester.close_connections()
 
 

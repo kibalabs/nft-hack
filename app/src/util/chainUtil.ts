@@ -27,7 +27,7 @@ export enum ChainId {
 const defaultChainId = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
-  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby5' : 'rinkeby4',
+  [ChainId.Rinkeby]: 'rinkeby5',
   [ChainId.Mainnet]: 'mainnet',
 };
 
@@ -36,7 +36,7 @@ const networkContractAddressMap: Record<string, string | null> = {
   rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
   rinkeby3: '0x19559Ac1471e2e4887d63c9363C85BF9f85Fdb67',
   rinkeby4: '0x9B84318C9aC64F564eEc4a703f2dbb742a4D1401',
-  rinkeby5: '0x82ef5081663e94c5aa428c420823B4261F96493C',
+  rinkeby5: '0xaE70a9accF2E0c16b380C0aa3060E9fBa6718daf',
   mainnet: null,
 };
 
@@ -127,7 +127,7 @@ export const getProductOpenseaUrl = (network: string): string | null => {
     return 'https://testnets.opensea.io/collection/milliondollartokenpage4';
   }
   if (network === 'rinkeby5') {
-    return 'https://testnets.opensea.io/collection/milliondollartokenpage-poqa7fym3u';
+    return 'https://testnets.opensea.io/collection/milliondollartokenpage-tyvw2ocd5n';
   }
   // if (network === 'mainnet') {
   //   return `https://etherscan.io/address/${account}`;
