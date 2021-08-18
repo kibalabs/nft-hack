@@ -306,8 +306,7 @@ class MdtpManager:
             logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
             tokenIdsToUpdate.update(updatedTokenIds)
         for tokenId in list(tokenIdsToUpdate):
-            # await self.update_token_deferred(network=network, tokenId=tokenId)
-            await self.update_token(network=network, tokenId=tokenId)
+            await self.update_token_deferred(network=network, tokenId=tokenId)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
 
     async def update_all_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
