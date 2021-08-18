@@ -60,6 +60,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
         setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId: Number(props.tokenId) }));
       }).catch((error: unknown): void => {
+        console.error(error);
         setTokenMetadata(null);
       });
     });
