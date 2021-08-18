@@ -43,12 +43,11 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
     runId = str(uuid.uuid4())
     print(f'Starting run: {runId}')
 
+    print(f'Minting token group')
     nonce = await ethClient.get_transaction_count(address=accountAddress)
-    print(f'Minting token group with nonce: {nonce}')
     transactionHash = await contractStore.mint_token_group(network=network, tokenId=startTokenId, width=width, height=height, nonce=nonce, gas=250000*height*width, gasPrice=int(1 * GWEI))
     print(f'Waiting for minting to finish: https://rinkeby.etherscan.io/tx/{transactionHash}')
     await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
-    nonce += 1
     print(f'Finished minting token group')
 
     print(f'Splitting and uploading image...')
@@ -76,11 +75,11 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
         await asyncio.gather(*metadataUploadTasks)
     logging.info(f'Finished uploading metadatas: s3://mdtp-images/uploads/{runId}')
 
-    print(f'Setting token content with nonce {nonce}')
+    print(f'Setting token content')
+    nonce = await ethClient.get_transaction_count(address=accountAddress)
     transactionHash = await contractStore.set_token_group_content_urls(network=network, tokenId=startTokenId, width=width, height=height, tokenContentUris=tokenContentUris, nonce=nonce, gas=200000*width*height, gasPrice=int(1 * GWEI))
     print(f'Waiting for setting content to finish: https://rinkeby.etherscan.io/tx/{transactionHash}')
     await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
-    nonce += 1
     print(f'Finished setting content.')
 
     print(f'Requesting updates')

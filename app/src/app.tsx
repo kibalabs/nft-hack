@@ -45,6 +45,7 @@ const globals: Globals = {
   requester,
   localStorageClient,
   contract: null,
+  web3: null,
   apiClient,
   network: null,
   chainId: ChainId.Rinkeby,
@@ -129,7 +130,7 @@ export const App = hot((): React.ReactElement => {
       <Helmet>
         <link href='https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;600;700;800;900&display=swap' rel='stylesheet' />
       </Helmet>
-      <GlobalsProvider globals={{ ...globals, network, contract }}>
+      <GlobalsProvider globals={{ ...globals, network, contract, web3 }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router>
             <Route default={true} page={HomePage}>

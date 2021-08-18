@@ -22,11 +22,12 @@ export type TokenPageProps = {
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
-  const { contract, requester, apiClient, network } = useGlobals();
+  const { contract, requester, apiClient, network, web3 } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null>(null);
   const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
+  const [ownerName, setOwnerName] = React.useState<string | null>(null);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
@@ -97,6 +98,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     loadBlockGridItems();
   }, [loadBlockGridItems]);
 
+  const loadOwnerName = React.useCallback(async (): Promise<void> => {
+    setOwnerName(null);
+    if (ownerId && web3) {
+      const retrievedOwnerName = await web3.lookupAddress(ownerId);
+      setOwnerName(retrievedOwnerName);
+    }
+  }, [ownerId, web3]);
+
+  React.useEffect((): void => {
+    loadOwnerName();
+  }, [loadOwnerName]);
+
   const onUpdateTokenClicked = (): void => {
     navigator.navigateTo(`/tokens/${props.tokenId}/update`);
   };
@@ -108,7 +121,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const OwnershipInfo = (): React.ReactElement => {
     const isMintable = accounts && (!ownerId || ownerId === NON_OWNER) && contract && contract.mintTokenGroup != null;
     const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === NON_OWNER || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
-    const ownerIdString = ownerId ? truncateMiddle(ownerId, 10) : 'unknown';
+    const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : 'unknown');
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isMintable ? (

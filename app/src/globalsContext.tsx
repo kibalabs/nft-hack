@@ -14,6 +14,7 @@ export interface Globals {
   requester: Requester;
   localStorageClient: LocalStorageClient;
   contract: ethers.Contract | null;
+  web3: ethers.providers.Web3Provider | null;
   apiClient: MdtpClient;
   network: string;
   chainId: ChainId;
