@@ -52,7 +52,7 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
         </LayerContainer.Layer>
       </LayerContainer>
       <Text variant='header2' alignment={TextAlignment.Center}>{'Trade'}</Text>
-      <Text alignment={TextAlignment.Center}>{'Buy pixel blocks as NFTs on the token panel or through our marketplace by selecting the cart symbol. NFT blocks that you own are stored in your Ethereum address and can be re-sold at potentially higher prices in the marketplace.'}</Text>
+      <Text alignment={TextAlignment.Center}>{'Buy pixel blocks as NFTs on the token panel or through our marketplace found in the menu. NFT blocks that you own are stored in your Ethereum address and can be re-sold at potentially higher prices in the marketplace.'}</Text>
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
         <Button variant={'primary'} text='Next' onClicked={onNextClicked} />
       </Stack>
@@ -67,7 +67,7 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
         </LayerContainer.Layer>
       </LayerContainer>
       <Text variant='header2' alignment={TextAlignment.Center}>{'Share'}</Text>
-      <Text alignment={TextAlignment.Center}>{'Share with your friends and followers! As the community grows so will the number of people viewing your content and the value the of your NFTs.'}</Text>
+      <Text alignment={TextAlignment.Center}>{'Share with your friends and followers! As the community grows so will the number of people viewing your content and the value the of your NFTs!'}</Text>
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
         <Button variant={'primary'} text='Next' onClicked={onNextClicked} />
       </Stack>
@@ -77,7 +77,7 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
   const OverlayScreen5 = (): React.ReactElement => (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>
       <Text variant='header2' alignment={TextAlignment.Center}>{'Final'}</Text>
-      <Text alignment={TextAlignment.Center}>{'If you are still unsure about anything click ? to learn more on our about page. Otherwise, interact, trade, share, and be a part of making crypto history!'}</Text>
+      <Text alignment={TextAlignment.Center}>{'If you are still unsure about anything click ? to learn more on our about page. Otherwise, interact, trade, share, and ₿Ξ part of making crypto history!'}</Text>
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
         <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-help' />} onClicked={props.onAboutClicked} />
         <Button variant={'primary'} text='Done' onClicked={props.onCloseClicked} />
@@ -86,7 +86,7 @@ export const WelcomeOverlay = (props: WelcomeOverlayProps): React.ReactElement =
   );
 
   return (
-    <Box variant='overlay' maxWidth='500px'>
+    <Box variant='overlayDialog' maxWidth='500px'>
       { overlayScreenNumber === 1 ? (
         <OverlayScreen1 />
       ) : overlayScreenNumber === 2 ? (

@@ -1,9 +1,9 @@
 import asyncio
 import os
-import json
 import logging
 
 import boto3
+from core.http.basic_authentication import BasicAuthentication
 from core.requester import Requester
 from core.slack_client import SlackClient
 from core.queues.sqs_message_queue import SqsMessageQueue
@@ -16,6 +16,7 @@ from contracts import create_contract_store
 
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
+from mdtp.ipfs_manager import IpfsManager
 from mdtp.manager import MdtpManager
 from mdtp.mdtp_message_processor import MdtpMessageProcessor
 from mdtp.image_manager import ImageManager
@@ -34,8 +35,13 @@ async def main():
     rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     contractStore = create_contract_store(rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
-    imageManager = ImageManager(requester=requester, s3Manager=s3Manager)
-    manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, contractStore=contractStore, workQueue=workQueue, imageManager=imageManager)
+
+    infuraIpfsAuth = BasicAuthentication(username=os.environ['INFURA_IPFS_PROJECT_ID'], password=os.environ['INFURA_IPFS_PROJECT_SECRET'])
+    infuraIpfsRequester = Requester(headers={'authorization': f'Basic {infuraIpfsAuth.to_string()}'})
+    ipfsManager = IpfsManager(requester=infuraIpfsRequester)
+
+    imageManager = ImageManager(requester=requester, s3Manager=s3Manager, ipfsManager=ipfsManager)
+    manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, contractStore=contractStore, workQueue=workQueue, imageManager=imageManager, ipfsManager=ipfsManager)
 
     processor = MdtpMessageProcessor(manager=manager)
     slackClient = SlackClient(webhookUrl=os.environ['SLACK_WEBHOOK_URL'], requester=requester, defaultSender='worker', defaultChannel='mdtp-notifications')

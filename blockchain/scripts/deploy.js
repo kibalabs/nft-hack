@@ -1,9 +1,8 @@
+const args = require("./arguments");
 
 async function main() {
   const contract = await ethers.getContractFactory("MillionDollarTokenPage");
-
-  // Start deployment, returning a promise that resolves to a contract object
-  const deployedContract = await contract.deploy();
+  const deployedContract = await contract.deploy(...args);
   console.log("Contract deployed to address:", deployedContract.address);
 }
 

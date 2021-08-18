@@ -17,19 +17,19 @@ Today the internet is a lot more fun to play with and cryptocurrencies like [Bit
 
 **How does it work?**
 
-Milliondollartokenpage has 10,000 blocks of 10x10 pixels represented by 10,000 NFTs on the Ethereum network. Each new pixel costs $1 and so each new block of 100 pixels costs $100 to buy. Once bought, you the owner can put any image in those pixels, along with a title, and description with links to other websites.
+Milliondollartokenpage has 10,000 blocks of 10x10 pixels represented by 10,000 NFTs on the Ethereum network. Each NFT can either be minted or bought second-hand from someone who's already minted it. Once bought, you the owner can put any image within that block, along with a title, description and url to another website!
 
 ![Pixel Blocks](/assets/pixel-block.gif)
 
-To make use of Ethereum and Web3 technologies you need to have a Web3 enabled plugin like [Metamask](https://metamask.io/) or browser like [Brave](https://brave.com/), which has a native crypto wallet, and have some cryptocurrency in your wallet. You'll need [Ether](https://ethereum.org/en/eth/) in your wallet to pay the [mining fees](https://www.coindesk.com/learn/ethereum-101/ethereum-mining-works) associated with having a transaction be accepted by the network, and at least $100 in [ETH](https://ethereum.org/en/eth/) or [DAI](https://oasis.app/dai) to buy a block.
+To make use of Ethereum and Web3 technologies you need to have a Web3 enabled plugin like [Metamask](https://metamask.io/) or browser like [Brave](https://brave.com/), which has a native crypto wallet, and have some cryptocurrency in your wallet. You'll need [Ether](https://ethereum.org/en/eth/) in your wallet to pay for the [minting fees](https://postergrind.com/how-much-does-it-cost-to-mint-an-nft/) of the NFT collection, plus [mining fees](https://www.coindesk.com/learn/ethereum-101/ethereum-mining-works) of the network.
 
 ![Metamask](/assets/metamask.gif)
 
-Once you own the NFT that represents a block of pixels you can then change the image, title and description by selecting the image and opening the appropriate token page. The website recognises when you own that block and will allow you to update the data stored in that block of pixels.
+Once you own the NFT that represents a pixel block you can then change the image, title, description and url by clicking it and selecting "update token" on the side panel that appears. By connecting your wallet the site will recognises that you own that NFT and allow you to update the content associated with that block.
 
 ![Update Block](/assets/update-block.gif)
 
-And its a simple as that, buy pixels and share your website, work or creations in this digital space with the entire world!
+And its a simple as that, buy blocks as NFTs and share your website, work or creations in this digital space with the entire world!
 
 &nbsp;
 
@@ -37,18 +37,18 @@ And its a simple as that, buy pixels and share your website, work or creations i
 
 Milliondollartokenpage's magic comes in using the Ethereum network to store data and token ownership, as you get the benefit of both (1) life beyond the developers, and (2) the ability to re-sell your pixels easily. Let's expand on these benefits...
 
-The first relates to the fact that when data is written into the Ethereum blockchain its made [immutable](https://academy.binance.com/en/glossary/immutability). So even if a catastrophe topples our servers, as the sole owner of the NFT representing this block of pixels you will still have ownership and it will still point to the same data. So another developer could potentially build another website showing the same NFTs and your pixels would still show up identically as before.
+The first relates to the fact that when data is written into the Ethereum blockchain its made [immutable](https://academy.binance.com/en/glossary/immutability). So even if a catastrophe topples our servers, as the sole owner of the NFT representing this block of pixels you will still have ownership and it will still point to the same data. So another developer could potentially build another website showing the same NFTs and your content would still show up identically as before.
 
-Secondly, as an owner of this NFT, you can use external marketplace like [opensea](https://opensea.io/) to re-sell that block of pixels for whatever price you like. So if you have some pixels that someone else finds particularly desirable, they can bid up prices to buy them right off you, and a 100 pixels you bought for $100 could sell for $1000 or more depending on demand, the sky is the limit!
+Secondly, as an owner of this NFT, you can use external marketplace like [opensea](https://opensea.io/) to re-sell that block of pixels for whatever price you like. So if you have a block that someone else finds particularly desirable, they can bid up prices to buy them right off you, and an NFT you bought for say $100 could sell for $1000 or more depending on demand, the sky is the limit!
 
-We want you to spread the word to all your friends. So to sweeten the deal we're giving 10% of  purchasing fees when someone you recommended buys a block of pixels. This means that if a friend of yours buys 10 blocks for $1000 in total, then $100 of their cost will be reimbursed straight back to your wallet!
+The more people know about the site the more demand will rise and subsequently the price of your NFTs! So make sure to share the site with your friends and followers using our handy share button in the menu!
 
-So come along and join us now by interacting, trading and sharing on milliondollartokenpage.com!
+Come along and join us now by interacting, trading and sharing on milliondollartokenpage.com!
   `;
 
   return (
     <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
-      <Text variant='header1'>{'The Million Dollar Token Page'}</Text>
+      <Text variant='header1'>{'Million Dollar Token Page'}</Text>
       <Markdown source={text} />
     </Stack>
   );

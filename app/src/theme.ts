@@ -1,17 +1,20 @@
-import { RecursivePartial } from '@kibalabs/core';
-import { buildTheme, IIconButtonTheme, ITheme, mergeTheme, mergeThemePartial, ThemeMap } from '@kibalabs/ui-react';
+import { mergePartial, RecursivePartial } from '@kibalabs/core';
+import { buildTheme, IButtonTheme, IIconButtonTheme, ITheme, mergeTheme, mergeThemePartial, ThemeMap } from '@kibalabs/ui-react';
 
 export const defaultTheme = buildTheme();
 export const buildMDTPTheme = (): ITheme => {
   const colors = {
     ...defaultTheme.colors,
+    // brandPrimary: '#F72585',
+    // brandSecondary: '#7209B7',
   };
 
   const textThemes = {
     ...defaultTheme.texts,
     default: mergeTheme(defaultTheme.texts.default, {
-      'font-family': "'Open Sans', sans-serif",
+      'font-family': "'Roboto Slab', sans-serif",
       'font-weight': '400',
+      'overflow-wrap': 'anywhere',
     }),
     light: {
       color: 'rgba(255, 255, 255, 0.95)',
@@ -23,28 +26,33 @@ export const buildMDTPTheme = (): ITheme => {
   };
 
   const overlayBoxTheme = {
-    'background-color': 'rgba(255, 255, 255, 0.75)',
-    padding: '0.5em 1em',
+    'background-color': 'rgba(255, 255, 255, 0.65)',
     'backdrop-filter': 'blur(3px)',
+    'border-radius': '0.75em',
+    margin: '0.5em',
   };
 
   const boxThemes = {
     ...defaultTheme.boxes,
     overlay: overlayBoxTheme,
-    topRightCutoff: {
-      'border-radius': '0 1em 0 0',
+    overlayDialog: mergePartial(overlayBoxTheme, {
+      'background-color': 'rgba(255, 255, 255, 0.85)',
+    }),
+    horizontal: {
+      padding: '0.5em 1em',
+    },
+    vertical: {
+      padding: '1em 0.5em',
     },
     topLeftCutoff: {
       'border-radius': '1em 0 0 0',
-    },
-    bottomRightCutoff: {
-      'border-radius': '0 0 1em 0',
     },
     bottomLeftCutoff: {
       'border-radius': '0 0 0 1em',
     },
     tokenHeader: mergeThemePartial(defaultTheme.boxes.card, {
       'border-radius': '0',
+      margin: '0',
     }),
     homePanel: {
       'background-color': '$colors.background',
@@ -61,6 +69,47 @@ export const buildMDTPTheme = (): ITheme => {
     tokenPageHeaderGrid: {
       background: {
         'border-radius': '0',
+      },
+    },
+  };
+
+  const buttonThemes: RecursivePartial<ThemeMap<IButtonTheme>> = {
+    default: {
+      disabled: {
+        default: {
+          background: {
+            'border-color': '$colors.backgroundDark25',
+          },
+          text: {
+            color: '$colors.backgroundDark25',
+          },
+        },
+      },
+    },
+    overlay: {
+      normal: {
+        default: {
+          background: mergeThemePartial(overlayBoxTheme, {
+            'background-color': 'rgba(255, 255, 255, 0.75)',
+            margin: '0',
+          }),
+        },
+        hover: {
+          background: {
+            'background-color': 'rgba(255, 255, 255, 0.85)',
+          },
+          text: {
+            color: '$colors.text',
+          },
+        },
+        press: {
+          background: {
+            'background-color': 'rgba(255, 255, 255, 0.95)',
+          },
+          text: {
+            color: '$colors.text',
+          },
+        },
       },
     },
   };
@@ -109,6 +158,7 @@ export const buildMDTPTheme = (): ITheme => {
     texts: textThemes,
     boxes: boxThemes,
     images: imageThemes,
+    buttons: buttonThemes,
     iconButtons: iconButtonThemes,
   });
   return theme;

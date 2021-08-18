@@ -10,13 +10,14 @@ class GridItem:
     updatedDate: datetime.datetime
     network: str
     tokenId: int
+    contentUrl: Optional[str]
     title: str
     description: Optional[str]
     imageUrl: str
     resizableImageUrl: Optional[str]
     ownerId: str
     url: Optional[str]
-    blockId: Optional[str]
+    groupId: Optional[str]
 
 @dataclasses.dataclass
 class NetworkSummary:
@@ -71,7 +72,7 @@ class TokenMetadata:
     image: str
     # MDTP extensions
     url: Optional[str]
-    blockId: Optional[str]
+    groupId: Optional[str]
 
 @dataclasses.dataclass
 class NetworkUpdate:

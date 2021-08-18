@@ -18,7 +18,7 @@ export const KeyValue = (props: KeyValueProps): React.ReactElement => {
   const emptyValueText = props.emptyValueText || 'none';
   const emptyValueTextVariant = props.emptyValueTextVariant || 'light';
   return (
-    <Stack direction={Direction.Horizontal} shouldAddGutters={true} isFullWidth={true} shouldWrapItems={true}>
+    <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true}>
       <Text variant={nameTextVariant}>{`${props.name}:`}</Text>
       <Stack.Item growthFactor={1} shrinkFactor={1}>
         { props.value != null ? (

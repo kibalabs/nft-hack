@@ -4,6 +4,7 @@ CREATE TABLE tbl_grid_items (
     updated_date TIMESTAMP NOT NULL,
     network TEXT NOT NULL,
     token_id INTEGER NOT NULL,
+    content_url TEXT, -- NOTE(krishan711): make this NOT NULL when filled
     title TEXT NOT NULL,
     description TEXT,
     image_url TEXT NOT NULL,

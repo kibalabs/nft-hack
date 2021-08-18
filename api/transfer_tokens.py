@@ -1,3 +1,4 @@
+import asyncio
 import os
 import json
 import logging
@@ -26,21 +27,21 @@ async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     contractStore = create_contract_store(rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient, accountAddress=accountAddress, privateKey=privateKey)
 
-    network = 'rinkeby2'
+    network = 'rinkeby4'
     contract = contractStore.get_contract(network=network)
     ethClient = contract.ethClient
 
     tokensPerRow = 100
     tokenCount = await contractStore.get_total_supply(network='rinkeby')
     nonce = await ethClient.get_transaction_count(address=accountAddress)
+    transactionHash = None
     for row in range(0, height):
         for column in range(0, width):
             tokenId = startTokenId + (row * tokensPerRow) + column
             if tokenId <= tokenCount:
                 print(f'Transferring token {tokenId} with nonce {nonce} to {receiveAddress}')
                 try:
-                    transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=100000, gasPrice=1 * GWEI)
-                    print('transactionHash', transactionHash)
+                    transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=150000, gasPrice=int(1 * GWEI))
                 except BadRequestException as exception:
                     print(f'Failed to transfer {tokenId}: {str(exception)}')
                 nonce += 1
@@ -48,6 +49,11 @@ async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
             else:
                 print(f'ERROR: Attempting to set a token that does not exist: {tokenId} (nonce: {nonce})')
                 break
+    if transactionHash:
+        print(f'Waiting for last transaction to finish: {transactionHash}')
+        transactionReceipt = await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
+        if not transactionReceipt['status'] == 1:
+            raise Exception(f'Last transaction failed: {transactionReceipt}')
     await requester.close_connections()
 
 

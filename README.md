@@ -6,16 +6,9 @@ Miro: https://miro.com/app/board/o9J_lS4yNAo=/
 
 Figma: https://www.figma.com/file/bcJ986kLJy9OxW0mTQEDG8/Main?node-id=0%3A1
 
-<!--
-Old contract:
-Eth-Rinkeby contract address: 0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3
-Eth-Rinkeby contract url: https://rinkeby.etherscan.io/address/0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3
-Matic-Mumbai contract address: 0x87084477F7172dfC303A31efd33e9cA6eA8CABCE
-Matic-Mumbai contract url: https://explorer-mumbai.maticvigil.com/address/0x87084477F7172dfC303A31efd33e9cA6eA8CABCE
--->
+Rinkeby contract address: [0x9B84318C9aC64F564eEc4a703f2dbb742a4D1401](https://rinkeby.etherscan.io/address/0x9B84318C9aC64F564eEc4a703f2dbb742a4D1401)
 
-Eth-Rinkeby contract address: 0xeDa9C05612579ff3888C5dCd689566406Df54e01
-Eth-Rinkeby contract url: https://rinkeby.etherscan.io/address/0xeDa9C05612579ff3888C5dCd689566406Df54e01
+New Rinkeby contract address: [0x82ef5081663e94c5aa428c420823B4261F96493C](https://rinkeby.etherscan.io/address/0x82ef5081663e94c5aa428c420823B4261F96493C)
 
 MDTP address: 0xCE11D6fb4f1e006E5a348230449Dc387fde850CC
 

@@ -5,8 +5,29 @@ from typing import Optional
 from core.s3_manager import S3PresignedUpload
 from pydantic import BaseModel
 
-from mdtp.model import GridItem, NetworkSummary
+from mdtp.model import GridItem, NetworkSummary, TokenMetadata
 from mdtp.model import BaseImage
+
+class ApiTokenMetadata(BaseModel):
+    tokenId: str
+    tokenIndex: int
+    name: str
+    description: Optional[str]
+    image: str
+    url: Optional[str]
+    groupId: Optional[str]
+
+    @classmethod
+    def from_model(cls, model: TokenMetadata):
+        return cls(
+            tokenId=model.tokenId,
+            tokenIndex=model.tokenIndex,
+            name=model.name,
+            description=model.description,
+            image=model.image,
+            url=model.url,
+            groupId=model.groupId,
+        )
 
 class ApiGridItem(BaseModel):
     gridItemId: int
@@ -19,7 +40,7 @@ class ApiGridItem(BaseModel):
     resizableImageUrl: Optional[str]
     ownerId: str
     url: Optional[str]
-    blockId: Optional[str]
+    groupId: Optional[str]
 
     @classmethod
     def from_model(cls, model: GridItem, shouldCompact: bool = False):
@@ -34,7 +55,7 @@ class ApiGridItem(BaseModel):
             resizableImageUrl=model.resizableImageUrl,
             ownerId=model.ownerId,
             url=model.url,
-            blockId=model.blockId,
+            groupId=model.groupId,
         )
 
 class ApiNetworkSummary(BaseModel):

@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 0.14.7"
+  required_version = "~> 1.0.0"
 
   backend "s3" {
     # aws s3 mb s3://kiba-infra-nfthack-production

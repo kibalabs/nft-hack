@@ -1,5 +1,7 @@
 import { dateFromString } from '@kibalabs/core';
 
+export type RawObject = Record<string, unknown>;
+
 export class TokenMetadata {
   // eslint-disable-next-line no-useless-constructor
   public constructor(
@@ -9,7 +11,7 @@ export class TokenMetadata {
     readonly description: string | null,
     readonly image: string,
     readonly url: string | null,
-    readonly blockId: string | null,
+    readonly groupId: string | null,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -21,7 +23,7 @@ export class TokenMetadata {
       obj.description ? String(obj.description) : null,
       String(obj.image),
       obj.url ? String(obj.url) : null,
-      obj.blockId ? String(obj.blockId) : null,
+      obj.groupId ? String(obj.groupId) : null,
     );
   }
 }
@@ -39,7 +41,7 @@ export class GridItem {
     readonly resizableImageUrl: string | null,
     readonly ownerId: string,
     readonly url: string | null,
-    readonly blockId: string | null,
+    readonly groupId: string | null,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -55,7 +57,7 @@ export class GridItem {
       obj.resizableImageUrl ? String(obj.resizableImageUrl) : null,
       String(obj.ownerId),
       obj.url ? String(obj.url) : null,
-      obj.blockId ? String(obj.blockId) : null,
+      obj.groupId ? String(obj.groupId) : null,
     );
   }
 }

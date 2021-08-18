@@ -17,8 +17,8 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return BaseImageUrlResponse(baseImage=ApiBaseImage.from_model(model=baseImage))
 
     @router.get('/networks/{network}/grid-items', response_model=ListGridItemsResponse)
-    async def list_grid_items(network: str, shouldCompact: bool = False, updatedSinceDate: Optional[datetime.datetime] = None, blockId: Optional[str] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
-        gridItems = await manager.list_grid_items(network=network, updatedSinceDate=updatedSinceDate, blockId=blockId)
+    async def list_grid_items(network: str, shouldCompact: bool = False, updatedSinceDate: Optional[datetime.datetime] = None, groupId: Optional[str] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
+        gridItems = await manager.list_grid_items(network=network, updatedSinceDate=updatedSinceDate, groupId=groupId)
         return ListGridItemsResponse(gridItems=[ApiGridItem.from_model(model=gridItem, shouldCompact=shouldCompact) for gridItem in gridItems])
 
     @router.get('/networks/{network}/summary', response_model=GetNetworkSummaryResponse)
@@ -57,10 +57,15 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         presignedUpload = await manager.generate_image_upload_for_token(network=network, tokenId=tokenId)
         return GenerateImageUploadForTokenResponse(presignedUpload=ApiPresignedUpload.from_model(model=presignedUpload))
 
-    @router.post('/networks/{network}/tokens/{tokenId}/upload-metadata', response_model=UploadMetadataForTokenResponse)
-    async def upload_metadata_for_token(network: str, tokenId: int, request: UploadMetadataForTokenRequest):
-        url = await manager.upload_metadata_for_token(network=network, tokenId=tokenId, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url, blockId=request.blockId)
-        return UploadMetadataForTokenResponse(url=url)
+    @router.post('/networks/{network}/tokens/{tokenId}/create-metadata', response_model=CreateMetadataForTokenResponse)
+    async def create_metadata_for_token(network: str, tokenId: int, request: CreateMetadataForTokenRequest):
+        tokenMetadataUrl = await manager.create_metadata_for_token(network=network, tokenId=tokenId, shouldUseIpfs=request.shouldUseIpfs, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
+        return CreateMetadataForTokenResponse(tokenMetadataUrl=tokenMetadataUrl)
+
+    @router.post('/networks/{network}/tokens/{tokenId}/create-group-metadata', response_model=CreateMetadataForTokenGroupResponse)
+    async def create_metadata_for_token_group(network: str, tokenId: int, request: CreateMetadataForTokenGroupRequest):
+        tokenMetadataUrls = await manager.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=request.shouldUseIpfs, width=request.width, height=request.height, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
+        return CreateMetadataForTokenGroupResponse(tokenMetadataUrls=tokenMetadataUrls)
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)
     async def update_token_deferred(network: str, tokenId: str, request: UpdateTokenDeferredRequest) -> UpdateTokenDeferredResponse:

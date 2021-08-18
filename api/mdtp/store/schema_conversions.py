@@ -11,13 +11,14 @@ def grid_item_from_row(row: Mapping) -> GridItem:
         updatedDate=row[GridItemsTable.c.updatedDate],
         network=row[GridItemsTable.c.network],
         tokenId=row[GridItemsTable.c.tokenId],
+        contentUrl=row[GridItemsTable.c.contentUrl],
         title=row[GridItemsTable.c.title],
         description=row[GridItemsTable.c.description],
         imageUrl=row[GridItemsTable.c.imageUrl],
         resizableImageUrl=row[GridItemsTable.c.resizableImageUrl],
         ownerId=row[GridItemsTable.c.ownerId],
         url=row[GridItemsTable.c.url],
-        blockId=row[GridItemsTable.c.blockId],
+        groupId=row[GridItemsTable.c.groupId],
     )
 
 def base_image_from_row(row: Mapping) -> BaseImage:

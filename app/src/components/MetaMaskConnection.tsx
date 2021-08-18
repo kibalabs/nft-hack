@@ -16,7 +16,7 @@ export const MetaMaskConnection = (): React.ReactElement => {
   };
 
   return (
-    <Box variant='overlay-topRightCutoff'>
+    <Box variant='overlay-horizontal' isFullWidth={false}>
       { !accounts ? (
         <Button
           variant={'primary'}
