@@ -7,7 +7,6 @@ from mdtp.api.resources_v1 import ApiBaseImage
 from mdtp.api.resources_v1 import ApiGridItem
 from mdtp.api.resources_v1 import ApiNetworkSummary
 from mdtp.api.resources_v1 import ApiPresignedUpload
-from mdtp.api.resources_v1 import ApiTokenMetadata
 
 
 class BaseImageUrlRequest(BaseModel):

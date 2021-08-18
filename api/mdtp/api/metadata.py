@@ -1,11 +1,8 @@
-from typing import Optional
-
 from core.api.kiba_router import KibaRouter
 from pydantic import BaseModel
 
 from mdtp.api.resources_v1 import ApiTokenMetadata
 from mdtp.manager import MdtpManager
-from mdtp.model import TokenMetadata
 
 
 class GetTokenMetadataRequest(BaseModel):

@@ -15,19 +15,19 @@ class MdtpMessageProcessor(MessageProcessor):
         self.manager = manager
 
     async def process_message(self, message: SqsMessage) -> None:
-        if message.command == UpdateTokenMessageContent._COMMAND:
+        if message.command == UpdateTokenMessageContent.COMMAND:
             messageContent = UpdateTokenMessageContent.parse_obj(message.content)
             await self.manager.update_token(network=messageContent.network, tokenId=messageContent.tokenId)
             return
-        if message.command == UpdateTokensMessageContent._COMMAND:
+        if message.command == UpdateTokensMessageContent.COMMAND:
             messageContent = UpdateTokensMessageContent.parse_obj(message.content)
             await self.manager.update_tokens(network=messageContent.network)
             return
-        if message.command == UploadTokenImageMessageContent._COMMAND:
+        if message.command == UploadTokenImageMessageContent.COMMAND:
             messageContent = UploadTokenImageMessageContent.parse_obj(message.content)
             await self.manager.upload_token_image(network=messageContent.network, tokenId=messageContent.tokenId)
             return
-        if message.command == BuildBaseImageMessageContent._COMMAND:
+        if message.command == BuildBaseImageMessageContent.COMMAND:
             messageContent = BuildBaseImageMessageContent.parse_obj(message.content)
             await self.manager.build_base_image(network=messageContent.network)
             return

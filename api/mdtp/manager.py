@@ -12,7 +12,6 @@ from typing import List
 from typing import Optional
 from typing import Sequence
 
-from core.exceptions import KibaException
 from core.exceptions import NotFoundException
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.requester import Requester
@@ -76,8 +75,10 @@ class MdtpManager:
             try:
                 tokenIdValue = int(tokenId)
             except ValueError:
+                # pylint: disable=raise-missing-from
                 raise NotFoundException()
             if tokenIdValue <= 0 or tokenIdValue > 10000:
+                # pylint: disable=raise-missing-from
                 raise NotFoundException()
             return TokenMetadata(
                 tokenId=tokenId,
@@ -130,13 +131,13 @@ class MdtpManager:
             groupId=contentJson.get('groupId'),
         )
 
-    async def get_token_default_grid_item(self, tokenId: str) -> GridItem:
-        metadata = await self.get_token_content(tokenId=tokenId)
+    async def get_token_default_grid_item(self, network: str, tokenId: str) -> GridItem:
+        metadata = await self.get_token_content(network=network, tokenId=tokenId)
         return GridItem(
             gridItemId=tokenId-1,
             createdDate=date_util.datetime_from_now(),
             updatedDate=date_util.datetime_from_now(),
-            network='',
+            network=network,
             tokenId=metadata.tokenId,
             title=metadata.name,
             description=metadata.description,
@@ -207,11 +208,11 @@ class MdtpManager:
             contentBuffer = BytesIO(imageResponse.content)
             with PILImage.open(fp=contentBuffer) as tokenImage:
                 tokenIndex = gridItem.tokenId - 1
-                x = (tokenIndex * tokenWidth) % width
-                y = tokenHeight * math.floor((tokenIndex * tokenWidth) / width)
+                xPosition = (tokenIndex * tokenWidth) % width
+                yPosition = tokenHeight * math.floor((tokenIndex * tokenWidth) / width)
                 image = tokenImage.resize(size=(tokenWidth, tokenHeight))
                 # NOTE(krishan711): this doesnt use transparency as we aren't using the 3rd (mask) param
-                outputImage.paste(image, (x, y))
+                outputImage.paste(image, (xPosition, yPosition))
         outputFilePath = 'output.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
@@ -246,8 +247,8 @@ class MdtpManager:
         return presignedUpload
 
     async def create_metadata_for_token(self, network: str, tokenId: int, shouldUseIpfs: bool, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> str:
-        metadata_urls = await self.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=shouldUseIpfs, width=1, height=1, name=name, description=description, imageUrl=imageUrl, url=url)
-        return metadata_urls[0]
+        metadataUrls = await self.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=shouldUseIpfs, width=1, height=1, name=name, description=description, imageUrl=imageUrl, url=url)
+        return metadataUrls[0]
 
     async def create_metadata_for_token_group(self, network: str, tokenId: int, shouldUseIpfs: bool, width: int, height: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> List[str]:
         groupId = str(uuid.uuid4())
@@ -255,7 +256,7 @@ class MdtpManager:
         outputDirectory = f'./token-group-images-{str(uuid.uuid4())}'
         imageFileNames = await self.imageManager.crop_image(imageId=imageId, outputDirectory=outputDirectory, width=width, height=height)
         if shouldUseIpfs:
-            fileContentMap = {imageFileName: open(os.path.join(outputDirectory, imageFileName), 'rb') for imageFileName in imageFileNames}
+            fileContentMap = {imageFileName: open(os.path.join(outputDirectory, imageFileName), 'rb') for imageFileName in imageFileNames}  # pylint: disable=consider-using-with
             cid = await self.ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
             for openFile in fileContentMap.values():
                 openFile.close()
@@ -284,7 +285,7 @@ class MdtpManager:
                     metadataFile.write(json.dumps(data))
                 metadataFileNames.append(metadataFileName)
         if shouldUseIpfs:
-            fileContentMap = {metadataFileName: open(os.path.join(outputDirectory, metadataFileName), 'r') for metadataFileName in metadataFileNames}
+            fileContentMap = {metadataFileName: open(os.path.join(outputDirectory, metadataFileName), 'r') for metadataFileName in metadataFileNames}  # pylint: disable=consider-using-with
             cid = await self.ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
             for openFile in fileContentMap.values():
                 openFile.close()
@@ -301,10 +302,7 @@ class MdtpManager:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
     async def update_tokens(self, network: str) -> None:
-        try:
-            networkUpdate = await self.retriever.get_network_update_by_network(network=network)
-        except NotFoundException:
-            raise KibaException(message=f'No networkUpdate has been created for network {network}')
+        networkUpdate = await self.retriever.get_network_update_by_network(network=network)
         latestProcessedBlockNumber = networkUpdate.latestBlockNumber
         latestBlockNumber = await self.contractStore.get_latest_block_number(network=network)
         batchSize = 2500
@@ -347,7 +345,7 @@ class MdtpManager:
         logging.info(f'Updating token {network}/{tokenId}')
         try:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
-        except Exception:
+        except Exception: # pylint: disable=broad-except
             ownerId = '0x0000000000000000000000000000000000000000'
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         contentJson = await self._get_json_content(url=contentUrl)
@@ -357,7 +355,7 @@ class MdtpManager:
         url = contentJson.get('url')
         groupId = contentJson.get('groupId') or contentJson.get('blockId')
         if title is None or imageUrl is None:
-            logging.info(f'Getting metadata because title or image is None')
+            logging.info('Getting metadata because title or image is None')
             metadata = await self.get_token_metadata(network=network, tokenId=tokenId)
             title = title or metadata.title
             imageUrl = imageUrl or metadata.image
@@ -382,7 +380,7 @@ class MdtpManager:
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         except NotFoundException:
-            gridItem = await self.get_token_default_grid_item(tokenId=tokenId)
+            gridItem = await self.get_token_default_grid_item(network=network, tokenId=tokenId)
         if gridItem.resizableImageUrl:
             if gridItem.resizableImageUrl.startswith('https://mdtp-api.kibalabs.com/v1/images/'):
                 imageId = gridItem.resizableImageUrl.replace('https://mdtp-api.kibalabs.com/v1/images/', '').replace('/go', '')

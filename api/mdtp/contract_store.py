@@ -29,6 +29,7 @@ class Contract:
     totalSupplyMethodName: str
     setTokenContentUriMethodName: str
     setTokenContentUriFieldName: str
+    # pylint: disable=invalid-name
     setTokenGroupContentUriMethodName: Optional[str]
     transferTokenMethodName: str
     mintTokenMethodName: str
