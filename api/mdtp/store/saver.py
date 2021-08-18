@@ -4,9 +4,12 @@ from typing import Optional
 from core.store.saver import Saver
 from core.util import date_util
 
-from mdtp.model import BaseImage, GridItem, NetworkUpdate
-from mdtp.store.schema import (BaseImagesTable, GridItemsTable,
-                               NetworkUpdatesTable)
+from mdtp.model import BaseImage
+from mdtp.model import GridItem
+from mdtp.model import NetworkUpdate
+from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import GridItemsTable
+from mdtp.store.schema import NetworkUpdatesTable
 
 _EMPTY_STRING = '_EMPTY_STRING'
 

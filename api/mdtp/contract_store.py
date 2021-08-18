@@ -1,8 +1,11 @@
 import asyncio
 import dataclasses
-from typing import Any, List, Optional
+from typing import Any
+from typing import List
+from typing import Optional
 
-from core.exceptions import NotFoundException, ServerException
+from core.exceptions import NotFoundException
+from core.exceptions import ServerException
 from core.web3.eth_client import EthClientInterface
 from web3.main import Web3
 from web3.types import TxReceipt

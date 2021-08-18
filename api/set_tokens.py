@@ -9,7 +9,8 @@ import asyncclick as click
 import boto3
 from core.requester import Requester
 from core.s3_manager import S3Manager
-from core.util import file_util, list_util
+from core.util import file_util
+from core.util import list_util
 from core.web3.eth_client import RestEthClient
 
 from contracts import create_contract_store

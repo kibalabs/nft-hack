@@ -3,10 +3,10 @@ from core.queues.message_queue_processor import MessageProcessor
 from core.queues.model import SqsMessage
 
 from mdtp.manager import MdtpManager
-from mdtp.messages import (BuildBaseImageMessageContent,
-                           UpdateTokenMessageContent,
-                           UpdateTokensMessageContent,
-                           UploadTokenImageMessageContent)
+from mdtp.messages import BuildBaseImageMessageContent
+from mdtp.messages import UpdateTokenMessageContent
+from mdtp.messages import UpdateTokensMessageContent
+from mdtp.messages import UploadTokenImageMessageContent
 
 
 class MdtpMessageProcessor(MessageProcessor):

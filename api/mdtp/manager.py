@@ -6,30 +6,44 @@ import os
 import urllib.parse as urlparse
 import uuid
 from io import BytesIO
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Sequence
 
-from core.exceptions import KibaException, NotFoundException
+from core.exceptions import KibaException
+from core.exceptions import NotFoundException
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.requester import Requester
-from core.s3_manager import S3Manager, S3PresignedUpload
-from core.store.retriever import (DateFieldFilter, Direction, Order,
-                                  StringFieldFilter)
-from core.util import date_util, dict_util, file_util
+from core.s3_manager import S3Manager
+from core.s3_manager import S3PresignedUpload
+from core.store.retriever import DateFieldFilter
+from core.store.retriever import Direction
+from core.store.retriever import Order
+from core.store.retriever import StringFieldFilter
+from core.util import date_util
+from core.util import dict_util
+from core.util import file_util
 from PIL import Image as PILImage
 from web3 import Web3
 
 from mdtp.contract_store import ContractStore
 from mdtp.image_manager import ImageManager
 from mdtp.ipfs_manager import IpfsManager
-from mdtp.messages import (BuildBaseImageMessageContent,
-                           UpdateAllTokensMessageContent,
-                           UpdateTokenMessageContent,
-                           UpdateTokensMessageContent,
-                           UploadTokenImageMessageContent)
-from mdtp.model import BaseImage, GridItem, NetworkSummary, TokenMetadata
+from mdtp.messages import BuildBaseImageMessageContent
+from mdtp.messages import UpdateAllTokensMessageContent
+from mdtp.messages import UpdateTokenMessageContent
+from mdtp.messages import UpdateTokensMessageContent
+from mdtp.messages import UploadTokenImageMessageContent
+from mdtp.model import BaseImage
+from mdtp.model import GridItem
+from mdtp.model import NetworkSummary
+from mdtp.model import TokenMetadata
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
-from mdtp.store.schema import BaseImagesTable, GridItemsTable
+from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import GridItemsTable
 
 _KILOBYTE = 1024
 _MEGABYTE = _KILOBYTE * 1024

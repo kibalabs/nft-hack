@@ -2,16 +2,21 @@ import imghdr
 import os
 import uuid
 from io import BytesIO
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
-from core.exceptions import InternalServerErrorException, KibaException
+from core.exceptions import InternalServerErrorException
+from core.exceptions import KibaException
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.util import file_util
 from PIL import Image as PILImage
 
 from mdtp.ipfs_manager import IpfsManager
-from mdtp.model import ImageData, ImageFormat, ImageSize, ImageVariant
+from mdtp.model import ImageData
+from mdtp.model import ImageFormat
+from mdtp.model import ImageSize
+from mdtp.model import ImageVariant
 
 _BUCKET = 's3://mdtp-images/pablo'
 _BASE_URL = 'https://d2a7i2107hou45.cloudfront.net/pablo'
