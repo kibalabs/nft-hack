@@ -111,8 +111,6 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     // @ts-ignore
     const fileName = file.path.replace(/^\//g, '');
     const formData = new FormData();
-    formData.set('Content-Type', file.type);
-    formData.append('file', file, file.name);
     let presignedUpload: PresignedUpload;
     try {
       presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
@@ -124,6 +122,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     });
     // eslint-disable-next-line no-template-curly-in-string
     formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
+    formData.set('Content-Type', file.type);
+    formData.append('file', file, file.name);
     try {
       await requester.makeFormRequest(presignedUpload.url, formData);
       // eslint-disable-next-line no-template-curly-in-string

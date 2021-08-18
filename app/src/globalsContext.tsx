@@ -3,7 +3,8 @@ import React from 'react';
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { IMultiAnyChildProps } from '@kibalabs/core-react';
 import { ethers } from 'ethers';
-import { Web3Storage } from 'web3.storage';
+// @ts-ignore
+import { Web3Storage } from 'web3.storage/dist/bundle.esm.min.js';
 
 import { MdtpClient } from './client';
 import { ChainId } from './util/chainUtil';

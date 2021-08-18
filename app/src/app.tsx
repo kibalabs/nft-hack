@@ -10,7 +10,7 @@ import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
-import { Web3Storage } from 'web3.storage';
+import { Web3Storage } from 'web3.storage/dist/bundle.esm.min.js';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
