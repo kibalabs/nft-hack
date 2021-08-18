@@ -127,7 +127,7 @@ export const getProductOpenseaUrl = (network: string): string | null => {
     return 'https://testnets.opensea.io/collection/milliondollartokenpage4';
   }
   if (network === 'rinkeby5') {
-    return 'https://testnets.opensea.io/collection/milliondollartokenpage-poqa7fym3u';
+    return 'https://testnets.opensea.io/collection/milliondollartokenpage-tyvw2ocd5n';
   }
   // if (network === 'mainnet') {
   //   return `https://etherscan.io/address/${account}`;

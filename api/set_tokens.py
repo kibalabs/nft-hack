@@ -45,7 +45,7 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
 
     print(f'Minting token group')
     nonce = await ethClient.get_transaction_count(address=accountAddress)
-    transactionHash = await contractStore.mint_token_group(network=network, tokenId=startTokenId, width=width, height=height, nonce=nonce, gas=250000*height*width, gasPrice=int(1 * GWEI))
+    transactionHash = await contractStore.mint_token_group(network=network, tokenId=startTokenId, width=width, height=height, nonce=nonce, gas=250000*height*width, gasPrice=int(1.1 * GWEI))
     print(f'Waiting for minting to finish: https://rinkeby.etherscan.io/tx/{transactionHash}')
     await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
     print(f'Finished minting token group')
@@ -77,7 +77,7 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
 
     print(f'Setting token content')
     nonce = await ethClient.get_transaction_count(address=accountAddress)
-    transactionHash = await contractStore.set_token_group_content_urls(network=network, tokenId=startTokenId, width=width, height=height, tokenContentUris=tokenContentUris, nonce=nonce, gas=200000*width*height, gasPrice=int(1 * GWEI))
+    transactionHash = await contractStore.set_token_group_content_urls(network=network, tokenId=startTokenId, width=width, height=height, tokenContentUris=tokenContentUris, nonce=nonce, gas=200000*width*height, gasPrice=int(1.1 * GWEI))
     print(f'Waiting for setting content to finish: https://rinkeby.etherscan.io/tx/{transactionHash}')
     await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
     print(f'Finished setting content.')

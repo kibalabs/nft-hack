@@ -54,11 +54,13 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     setTokenMetadata(undefined);
     // NOTE(krishan711): this only works for the new contracts
     contract.tokenContentURI(Number(props.tokenId)).then((tokenMetadataUrl: string): void => {
-      const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.io/ipfs/') : tokenMetadataUrl;
+      const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/') : tokenMetadataUrl;
       requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
         const tokenMetadataJson = JSON.parse(response.content);
         // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
         setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId: Number(props.tokenId) }));
+      }).catch((error: unknown): void => {
+        setTokenMetadata(null);
       });
     });
   }, [props.tokenId, network, contract, requester]);

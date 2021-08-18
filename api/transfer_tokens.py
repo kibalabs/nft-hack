@@ -38,7 +38,7 @@ async def run(startTokenId: int, width: int, height: int, receiveAddress: str):
             tokenId = startTokenId + (row * 100) + column
             print(f'Transferring token {tokenId} with nonce {nonce} to {receiveAddress}')
             try:
-                transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=150000, gasPrice=int(1 * GWEI))
+                transactionHash = await contractStore.transfer_token(network=network, tokenId=tokenId, toAddress=receiveAddress, nonce=nonce, gas=150000, gasPrice=int(1.1 * GWEI))
             except BadRequestException as exception:
                 print(f'Failed to transfer {tokenId}: {str(exception)}')
             nonce += 1
