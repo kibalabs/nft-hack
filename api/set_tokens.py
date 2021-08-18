@@ -38,12 +38,15 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
     s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
     s3Manager = S3Manager(s3Client=s3Client)
 
-    network = 'rinkeby4'
+    network = 'rinkeby5'
     contract = contractStore.get_contract(network=network)
     ethClient = contract.ethClient
 
     runId = str(uuid.uuid4())
     print(f'Starting run: {runId}')
+
+    nonce = await ethClient.get_transaction_count(address=accountAddress)
+    await contractStore.mint_token_group(network=network, tokenId=tokenId, nonce=nonce, gas=150000, gasPrice=int(1 * GWEI))
 
     print(f'Splitting and uploading image...')
     outputDirectory = 'output'
@@ -70,7 +73,6 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
         await asyncio.gather(*metadataUploadTasks)
     logging.info(f'Finished uploading metadatas: s3://mdtp-images/uploads/{runId}')
 
-    nonce = await ethClient.get_transaction_count(address=accountAddress)
     allTokenIds = []
     for row in range(0, height):
         for column in range(0, width):
@@ -89,7 +91,7 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
             if currentTokenOwner != accountAddress:
                 raise Exception(f'We are not the owner of token {tokenId}, it is owned by: {currentTokenOwner}')
             allTokenIds.append(tokenId)
-    print(f'Updating token group {tokenId} {width} x {height} with nonce {nonce}')
+    print(f'Updating token group {tokenId} {width}x{height} with nonce {nonce}')
     transactionHash = await contractStore.set_token_group_content_urls(network=network, tokenId=tokenId, width=width, height=height, tokenContentUris=tokenContentUris, nonce=nonce, gas=200000, gasPrice=int(1 * GWEI))
     print(f'Waiting for last transaction to finish: {transactionHash}')
     transactionReceipt = await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)

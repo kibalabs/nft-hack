@@ -22,6 +22,7 @@ class Contract:
     setTokenGroupContentUriMethodName: Optional[str]
     transferTokenMethodName: str
     mintTokenMethodName: str
+    mintTokenGroupMethodName: str
     transferMethodSignature: str
     updateMethodSignature: Optional[str]
 
@@ -104,6 +105,12 @@ class ContractStore:
         contract = self.get_contract(network=network)
         arguments = {'tokenId': tokenId}
         transactionHash = await self._send_transaction(contract=contract, methodName=contract.mintTokenMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
+        return transactionHash
+
+    async def mint_token_group(self, network: str, tokenId: int, width: int, height: int, nonce: int, gas: int, gasPrice: int) -> str:
+        contract = self.get_contract(network=network)
+        arguments = {'tokenId': tokenId, 'width': width, 'height': height}
+        transactionHash = await self._send_transaction(contract=contract, methodName=contract.mintTokenGroupMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)
         return transactionHash
 
     async def get_transaction_receipt(self, network: str, transactionHash: str) -> TxReceipt:
