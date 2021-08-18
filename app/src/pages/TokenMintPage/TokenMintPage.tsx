@@ -256,7 +256,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         <Text variant='header2' alignment={TextAlignment.Center}>{`Mint Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { mintPrice === null || totalMintLimit === null || singleMintLimit === null || ownershipMintLimit === null || userOwnedCount === null || mintedCount === null || balance === null ? (
+        { mintPrice === null || totalMintLimit === null || singleMintLimit === null || mintedCount === null || balance === null ? ( // || ownershipMintLimit === null || userOwnedCount === null
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
         ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || ownershipMintLimit === undefined || userOwnedCount === undefined || mintedCount === undefined || balance === undefined ? (
           <LoadingSpinner />
