@@ -184,7 +184,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     function _mint(uint256 tokenId) internal {
         require(tokenId > 0 && tokenId <= SUPPLY_LIMIT, "MDTP: invalid tokenId");
         super._safeMint(msg.sender, tokenId);
-        // _setTokenContentURI(tokenId, tokenURI(tokenId))
+        _setTokenContentURI(tokenId, tokenURI(tokenId));
     }
 
     function mintedCount() public view returns (uint256) {

@@ -132,12 +132,6 @@ describe("MillionDollarTokenPage contract", async function() {
       expect(contentUri).to.equal(`${DEFAULT_CONTENT_BASE_URI}100.json`);
     });
 
-    it("should have the correct content uri for a minted token", async function() {
-      await mdtp.mint(100);
-      const contentUri = await mdtp.tokenContentURI(100);
-      expect(contentUri).to.equal(`${DEFAULT_CONTENT_BASE_URI}100.json`);
-    });
-
     // it("should reset content URI when a token is transferred", async function () {
     //   await mdtp.mint(100);
     //   const newUri = "https://www.com/tokens/100"
@@ -434,6 +428,12 @@ describe("MillionDollarTokenPage contract", async function() {
       const owner = await mdtp.ownerOf(100);
       expect(owner).to.equal(myWallet.address)
     });
+
+    it("should change the content uri to the metadata uri after minting", async function() {
+      await mdtp.mint(100);
+      const contentUri = await mdtp.tokenContentURI(100);
+      expect(contentUri).to.equal(`${METADATA_BASE_URI}100.json`);
+    });
   });
 
   describe("Minting Group", async function () {
@@ -567,6 +567,14 @@ describe("MillionDollarTokenPage contract", async function() {
       await mdtp.setMintPrice(2);
       mdtp.mintTokenGroup(100, 2, 1, {value: 5});
     });
+
+    it("should change the content uri to the metadata uri after minting", async function() {
+      await mdtp.mintTokenGroup(100, 2, 1);
+      const contentUri1 = await mdtp.tokenContentURI(100);
+      expect(contentUri1).to.equal(`${METADATA_BASE_URI}100.json`);
+      const contentUri2 = await mdtp.tokenContentURI(101);
+      expect(contentUri2).to.equal(`${METADATA_BASE_URI}101.json`);
+    });
   });
 
   describe("Minting Group Admin", async function () {
@@ -677,6 +685,14 @@ describe("MillionDollarTokenPage contract", async function() {
     it("can mint with money above the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       mdtp.mintTokenGroupAdmin(100, 2, 1, {value: 5});
+    });
+
+    it("should change the content uri to the metadata uri after minting", async function() {
+      await mdtp.mintTokenGroupAdmin(100, 2, 1);
+      const contentUri1 = await mdtp.tokenContentURI(100);
+      expect(contentUri1).to.equal(`${METADATA_BASE_URI}100.json`);
+      const contentUri2 = await mdtp.tokenContentURI(101);
+      expect(contentUri2).to.equal(`${METADATA_BASE_URI}101.json`);
     });
   });
 
