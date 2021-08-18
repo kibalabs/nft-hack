@@ -6,7 +6,7 @@ Miro: https://miro.com/app/board/o9J_lS4yNAo=/
 
 Figma: https://www.figma.com/file/bcJ986kLJy9OxW0mTQEDG8/Main?node-id=0%3A1
 
-Rinkeby contract address: [0xD4c2a24f5F5FEb94b13426A408EECb9f382ae8a1](https://rinkeby.etherscan.io/address/0xD4c2a24f5F5FEb94b13426A408EECb9f382ae8a1)
+Rinkeby contract address: [0x35681AaCF5A71341D839AAf4C0450AE63b69705f](https://rinkeby.etherscan.io/address/0x35681AaCF5A71341D839AAf4C0450AE63b69705f)
 
 MDTP address: 0xCE11D6fb4f1e006E5a348230449Dc387fde850CC
 
