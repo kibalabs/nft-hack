@@ -2,10 +2,16 @@ import asyncio
 import dataclasses
 from typing import Any, List, Optional
 
-from core.exceptions import NotFoundException
+from core.exceptions import NotFoundException, ServerException
 from core.web3.eth_client import EthClientInterface
 from web3.main import Web3
 from web3.types import TxReceipt
+
+class TransactionFailedException(ServerException):
+
+    def __init__(self, transactionReceipt: TxReceipt) -> None:
+        super().__init__(message=f'Transaction failed: {transactionReceipt}')
+        self.transactionReceipt = transactionReceipt
 
 @dataclasses.dataclass
 class Contract:
@@ -135,9 +141,11 @@ class ContractStore:
         events = await contract.ethClient.get_log_entries(address=contract.address, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber, topics=[Web3.keccak(text=contract.updateMethodSignature).hex()])
         return [int.from_bytes(bytes(event['topics'][1]), 'big') for event in events]
 
-    async def wait_for_transaction(self, network: str, transactionHash: str, sleepTime: int = 15) -> TxReceipt:
+    async def wait_for_transaction(self, network: str, transactionHash: str, sleepTime: int = 15, raiseOnFailure: bool = True) -> TxReceipt:
         transactionReceipt = None
         while not transactionReceipt:
             await asyncio.sleep(sleepTime)
             transactionReceipt = await self.get_transaction_receipt(network=network, transactionHash=transactionHash)
+        if not transactionReceipt['status'] == 1 and raiseOnFailure:
+            raise TransactionFailedException(transactionReceipt=transactionReceipt)
         return transactionReceipt

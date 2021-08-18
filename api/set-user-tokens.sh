@@ -3,10 +3,10 @@ set -e -o pipefail
 
 python3 set_tokens.py -i ~/Downloads/mdtp/kiba.jpg -n 'Kiba Labs' -t 711 -w 1 -h 1 -d "Bringing you the finest digital products" -u "https://www.kibalabs.com"
 python3 transfer_tokens.py -t 711 -w 1 -h 1 -r '0x18090cDA49B21dEAffC21b4F886aed3eB787d032'
-# python3 set_tokens.py -i ~/Downloads/mdtp/1729.png -n '1729.com' -t 1729 -w 1 -h 1 -d "Learn Skills. Earn Crypto." -u '1729.com'
-# python3 set_tokens.py -i ~/Downloads/mdtp/doutore-logo.png -n 'Doutore' -t 3623 -w 10 -h 2 -u 'doutore.com'
-# python3 transfer_tokens.py -t 3623 -w 10 -h 2 -r '0x13fFCd7A643D2C8b83fAa8F2217819129E2413d4'
-# python3 set_tokens.py -i ~/Downloads/mdtp/CVZA.png -n 'Earn free airdrops for every Cerveza ($CVZA) you hodl!' -t 96 -w 5 -h 4 -d 'Freibier.io performs Airdorps-as-a-Service on Tezos chain, it helps project owners to execute their airdrops seamlessly. Every airdrop automatically distributes a portion of the drop the the holders of Freibier.io tokens: https://www.freibier.io/' -u 'Freibier.io'
+python3 set_tokens.py -i ~/Downloads/mdtp/1729.png -n '1729.com' -t 1729 -w 1 -h 1 -d "Learn Skills. Earn Crypto." -u '1729.com'
+python3 set_tokens.py -i ~/Downloads/mdtp/doutore-logo.png -n 'Doutore' -t 3623 -w 10 -h 2 -u 'doutore.com'
+python3 transfer_tokens.py -t 3623 -w 10 -h 2 -r '0x13fFCd7A643D2C8b83fAa8F2217819129E2413d4'
+python3 set_tokens.py -i ~/Downloads/mdtp/CVZA.png -n 'Earn free airdrops for every Cerveza ($CVZA) you hodl!' -t 96 -w 5 -h 4 -d 'Freibier.io performs Airdorps-as-a-Service on Tezos chain, it helps project owners to execute their airdrops seamlessly. Every airdrop automatically distributes a portion of the drop the the holders of Freibier.io tokens: https://www.freibier.io/' -u 'Freibier.io'
 # python3 transfer_tokens.py -t 96 -w 5 -h 4 -r '0x65f6F29D3eb871254d71A79CC4F74dB3AAF3b86e'
 # python3 set_tokens.py -i ~/Downloads/mdtp/eviday.png -n 'Eviday' -t 1417 -w 6 -h 2 -d 'Eviday is a UCL-backed startup offering a solution to businesses trying to make hybrid working work. We are developing an employee experience platform that enables organisations to understand in real-time how their people, technology and workplaces affect the wellbeing and productivity of their people. Find out more here: https://eviday.ai/' -u 'https://eviday.ai'
 # python3 transfer_tokens.py -t 1417 -w 6 -h 2 -r '0x3eA4b5f220e2049A7D5f49efb12832238048e7ea'

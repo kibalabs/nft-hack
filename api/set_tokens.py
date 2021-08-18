@@ -4,11 +4,9 @@ import json
 import logging
 from typing import Optional
 import uuid
-import time
 
 import asyncclick as click
 import boto3
-from core.exceptions import BadRequestException
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.web3.eth_client import RestEthClient
@@ -46,7 +44,12 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
     print(f'Starting run: {runId}')
 
     nonce = await ethClient.get_transaction_count(address=accountAddress)
-    await contractStore.mint_token_group(network=network, tokenId=tokenId, nonce=nonce, gas=150000, gasPrice=int(1 * GWEI))
+    print(f'Minting token group with nonce: {nonce}')
+    transactionHash = await contractStore.mint_token_group(network=network, tokenId=startTokenId, width=width, height=height, nonce=nonce, gas=250000*height*width, gasPrice=int(1 * GWEI))
+    print(f'Waiting for minting to finish: https://rinkeby.etherscan.io/tx/{transactionHash}')
+    await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
+    nonce += 1
+    print(f'Finished minting token group')
 
     print(f'Splitting and uploading image...')
     outputDirectory = 'output'
@@ -73,32 +76,18 @@ async def run(startTokenId: int, width: int, height: int, imagePath: str, name: 
         await asyncio.gather(*metadataUploadTasks)
     logging.info(f'Finished uploading metadatas: s3://mdtp-images/uploads/{runId}')
 
-    allTokenIds = []
+    print(f'Setting token content with nonce {nonce}')
+    transactionHash = await contractStore.set_token_group_content_urls(network=network, tokenId=startTokenId, width=width, height=height, tokenContentUris=tokenContentUris, nonce=nonce, gas=200000*width*height, gasPrice=int(1 * GWEI))
+    print(f'Waiting for setting content to finish: https://rinkeby.etherscan.io/tx/{transactionHash}')
+    await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
+    nonce += 1
+    print(f'Finished setting content.')
+
+    print(f'Requesting updates')
     for row in range(0, height):
         for column in range(0, width):
-            index = (row * width) + column
             tokenId = startTokenId + (row * 100) + column
-            try:
-                currentTokenOwner = await contractStore.get_token_owner(network=network, tokenId=tokenId)
-            except BadRequestException as exception:
-                if 'nonexistent token' in exception.message:
-                    print(f'Minting token {tokenId}')
-                    await contractStore.mint_token(network=network, tokenId=tokenId, nonce=nonce, gas=150000, gasPrice=int(1 * GWEI))
-                    nonce += 1
-                    currentTokenOwner = accountAddress
-                else:
-                    raise exception
-            if currentTokenOwner != accountAddress:
-                raise Exception(f'We are not the owner of token {tokenId}, it is owned by: {currentTokenOwner}')
-            allTokenIds.append(tokenId)
-    print(f'Updating token group {tokenId} {width}x{height} with nonce {nonce}')
-    transactionHash = await contractStore.set_token_group_content_urls(network=network, tokenId=tokenId, width=width, height=height, tokenContentUris=tokenContentUris, nonce=nonce, gas=200000, gasPrice=int(1 * GWEI))
-    print(f'Waiting for last transaction to finish: {transactionHash}')
-    transactionReceipt = await contractStore.wait_for_transaction(network=network, transactionHash=transactionHash)
-    if not transactionReceipt['status'] == 1:
-        raise Exception(f'Last transaction failed: {transactionReceipt}')
-    for tokenId in allTokenIds:
-        await requester.post(url=f'https://api.mdtp.co/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
+            await requester.post(url=f'https://api.mdtp.co/v1/networks/{network}/tokens/{tokenId}/update-token-deferred', dataDict={})
     await requester.close_connections()
 
 
