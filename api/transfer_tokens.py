@@ -1,7 +1,7 @@
 import asyncio
-import os
 import json
 import logging
+import os
 import time
 
 import asyncclick as click

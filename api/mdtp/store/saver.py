@@ -1,10 +1,15 @@
+import datetime
 from typing import Optional
 
 from core.store.saver import Saver
 from core.util import date_util
 
-from mdtp.model import *
-from mdtp.store.schema import BaseImagesTable, GridItemsTable, NetworkUpdatesTable
+from mdtp.model import BaseImage
+from mdtp.model import GridItem
+from mdtp.model import NetworkUpdate
+from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import GridItemsTable
+from mdtp.store.schema import NetworkUpdatesTable
 
 _EMPTY_STRING = '_EMPTY_STRING'
 
@@ -13,7 +18,7 @@ class MdtpSaver(Saver):
     async def create_grid_item(self, tokenId: int, network: str, contentUrl: Optional[str], title: str, description: Optional[str], imageUrl: str, resizableImageUrl: Optional[str], url: Optional[str], groupId: Optional[str], ownerId: str) -> GridItem:
         createdDate = date_util.datetime_from_now()
         updatedDate = createdDate
-        gridItemId = await self._execute(query=GridItemsTable.insert(), values={
+        gridItemId = await self._execute(query=GridItemsTable.insert(), values={  # pylint: disable=no-value-for-parameter
             GridItemsTable.c.createdDate.key: createdDate,
             GridItemsTable.c.updatedDate.key: updatedDate,
             GridItemsTable.c.network.key: network,
@@ -53,10 +58,10 @@ class MdtpSaver(Saver):
             values[GridItemsTable.c.updatedDate.key] = date_util.datetime_from_now()
         await self.database.execute(query=query, values=values)
 
-    async def create_base_image(self, network: str, url: str, generatedDate: datetime.datetime) -> GridItem:
+    async def create_base_image(self, network: str, url: str, generatedDate: datetime.datetime) -> BaseImage:
         createdDate = date_util.datetime_from_now()
         updatedDate = createdDate
-        baseImageId = await self._execute(query=BaseImagesTable.insert(), values={
+        baseImageId = await self._execute(query=BaseImagesTable.insert(), values={  # pylint: disable=no-value-for-parameter
             BaseImagesTable.c.createdDate.key: createdDate,
             BaseImagesTable.c.updatedDate.key: updatedDate,
             BaseImagesTable.c.network.key: network,
@@ -68,7 +73,7 @@ class MdtpSaver(Saver):
     async def create_network_update(self, network: str, latestBlockNumber: int) -> NetworkUpdate:
         createdDate = date_util.datetime_from_now()
         updatedDate = createdDate
-        networkUpdateId = await self._execute(query=NetworkUpdatesTable.insert(), values={
+        networkUpdateId = await self._execute(query=NetworkUpdatesTable.insert(), values={  # pylint: disable=no-value-for-parameter
             NetworkUpdatesTable.c.createdDate.key: createdDate,
             NetworkUpdatesTable.c.updatedDate.key: updatedDate,
             NetworkUpdatesTable.c.network.key: network,

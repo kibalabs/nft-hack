@@ -1,25 +1,25 @@
-import os
 import logging
+import os
 
 import boto3
+from core.api.health import create_api as create_health_api
+from core.http.basic_authentication import BasicAuthentication
+from core.queues.sqs_message_queue import SqsMessageQueue
+from core.requester import Requester
+from core.s3_manager import S3Manager
+from core.web3.eth_client import RestEthClient
 from databases import Database
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from core.api.health import create_api as create_health_api
-from core.http.basic_authentication import BasicAuthentication
-from core.requester import Requester
-from core.queues.sqs_message_queue import SqsMessageQueue
-from core.web3.eth_client import RestEthClient
-from core.s3_manager import S3Manager
-from contracts import create_contract_store
 
+from contracts import create_contract_store
 from mdtp.api.api_v1 import create_api as create_v1_api
 from mdtp.api.metadata import create_api as create_metadata_api
+from mdtp.image_manager import ImageManager
 from mdtp.ipfs_manager import IpfsManager
+from mdtp.manager import MdtpManager
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
-from mdtp.manager import MdtpManager
-from mdtp.image_manager import ImageManager
 
 logging.basicConfig(level=logging.INFO)
 

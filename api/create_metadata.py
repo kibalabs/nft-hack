@@ -1,13 +1,15 @@
 import json
-import os
 import logging
+import os
 from typing import Optional
 
 import asyncclick as click
+from core.http.basic_authentication import BasicAuthentication
 from core.requester import Requester
 from core.util import file_util
-from core.http.basic_authentication import BasicAuthentication
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 
 from mdtp.ipfs_manager import IpfsManager
 

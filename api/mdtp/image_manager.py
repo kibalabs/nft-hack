@@ -1,18 +1,22 @@
-import os
 import imghdr
-from typing import Optional, List
+import os
 import uuid
 from io import BytesIO
+from typing import List
+from typing import Optional
 
-from core.util import file_util
-from core.exceptions import InternalServerErrorException, KibaException
-from core.s3_manager import S3Manager
-from PIL import Image as PILImage
-from mdtp.ipfs_manager import IpfsManager
-
-from mdtp.model import ImageData, ImageFormat, ImageSize, ImageVariant
+from core.exceptions import InternalServerErrorException
+from core.exceptions import KibaException
 from core.requester import Requester
+from core.s3_manager import S3Manager
+from core.util import file_util
+from PIL import Image as PILImage
 
+from mdtp.ipfs_manager import IpfsManager
+from mdtp.model import ImageData
+from mdtp.model import ImageFormat
+from mdtp.model import ImageSize
+from mdtp.model import ImageVariant
 
 _BUCKET = 's3://mdtp-images/pablo'
 _BASE_URL = 'https://d2a7i2107hou45.cloudfront.net/pablo'
@@ -32,13 +36,15 @@ class ImageManager:
         self.s3Manager = s3Manager
         self.ipfsManager = ipfsManager
 
-    def _get_image_type_from_file(self, fileName: str) -> str:
+    @staticmethod
+    def _get_image_type_from_file(fileName: str) -> str:
         imageType = imghdr.what(fileName)
         if not imageType:
             raise UnknownImageType
         return f'image/{imageType}'
 
-    def _get_image_type(self, content: str) -> str:
+    @staticmethod
+    def _get_image_type(content: str) -> str:
         imageType = imghdr.what(content)
         if not imageType:
             raise UnknownImageType
@@ -110,7 +116,7 @@ class ImageManager:
                 try:
                     pilImage.save(fp=imageFile, format=image.imageFormat.replace('image/', ''), subsampling=0, quality=90, optimize=True)
                 except OSError as exception:
-                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}')
+                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}') from exception
             return
         if image.imageFormat in {ImageFormat.PNG, ImageFormat.WEBP}:
             contentBuffer = BytesIO(image.content)
@@ -118,7 +124,7 @@ class ImageManager:
                 try:
                     pilImage.save(fp=imageFile, format=image.imageFormat.replace('image/', ''), optimize=True)
                 except OSError as exception:
-                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}')
+                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}') from exception
             return
         raise KibaException(message=f'Cannot save image format to file: {image.imageFormat}')
 
