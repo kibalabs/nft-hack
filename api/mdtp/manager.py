@@ -3,6 +3,7 @@ from io import BytesIO
 import json
 import logging
 import math
+import os
 from typing import Any, Dict, List
 from typing import Sequence
 from typing import Optional
@@ -186,7 +187,10 @@ class MdtpManager:
         for gridItem in gridItems:
             logging.info(f'Drawing grid item {gridItem.gridItemId}')
             imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
-            imageResponse = await self.requester.get(imageUrl)
+            if imageUrl.startswith('ipfs://'):
+                imageResponse = await self.ipfsManager.read_file(cid=imageUrl.replace('ipfs://', ''))
+            else:
+                imageResponse = await self.requester.get(url=imageUrl)
             contentBuffer = BytesIO(imageResponse.content)
             with PILImage.open(fp=contentBuffer) as tokenImage:
                 tokenIndex = gridItem.tokenId - 1
@@ -228,39 +232,56 @@ class MdtpManager:
         presignedUpload = await self.s3Manager.generate_presigned_upload(target=f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/a/${{filename}}', timeLimit=60, sizeLimit=_MEGABYTE * 5, accessControl='public-read', cacheControl=_CACHE_CONTROL_TEMPORARY_FILE)
         return presignedUpload
 
-    async def create_metadata_for_token(self, network: str, tokenId: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> str:
-        data = {
-            'name': name,
-            'description': description or None,
-            'image': imageUrl,
-            'url': url,
-            'groupId': None,
-        }
-        dataId = str(uuid.uuid4()).replace('-', '')
-        target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/d/{dataId}.json'
-        await self.s3Manager.write_file(content=json.dumps(data).encode(), targetPath=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE, contentType='application/json')
-        return target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
+    async def create_metadata_for_token(self, network: str, tokenId: int, shouldUseIpfs: bool, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> str:
+        metadata_urls = await self.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=shouldUseIpfs, width=1, height=1, name=name, description=description, imageUrl=imageUrl, url=url)
+        return metadata_urls[0]
 
-    async def create_metadata_for_token_group(self, network: str, tokenId: int, width: int, height: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> List[str]:
-        imageId = await self.imageManager.upload_image_from_url(url=imageUrl)
-        croppedImageIds = await self.imageManager.crop_image(imageId=imageId, width=width, height=height)
-        tokenMetadataUrls = []
+    async def create_metadata_for_token_group(self, network: str, tokenId: int, shouldUseIpfs: bool, width: int, height: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> List[str]:
         groupId = str(uuid.uuid4())
-        # NOTE(krishan711): this can be done in parallel
+        imageId = await self.imageManager.upload_image_from_url(url=imageUrl)
+        outputDirectory = f'./token-group-images-{str(uuid.uuid4())}'
+        imageFileNames = await self.imageManager.crop_image(imageId=imageId, outputDirectory=outputDirectory, width=width, height=height)
+        if shouldUseIpfs:
+            fileContentMap = {imageFileName: open(os.path.join(outputDirectory, imageFileName), 'rb') for imageFileName in imageFileNames}
+            cid = await self.ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
+            for openFile in fileContentMap.values():
+                openFile.close()
+            imageUrls = [f'ipfs://{cid}/{imageFileName}' for imageFileName in imageFileNames]
+        else:
+            target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/gi/{str(uuid.uuid4())}'
+            await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl='public,max-age=31536000')
+            outputUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
+            imageUrls = [os.path.join(outputUrl, imageFileName) for imageFileName in imageFileNames]
+        await file_util.remove_directory(directory=outputDirectory)
+        outputDirectory = f'./token-group-{str(uuid.uuid4())}'
+        await file_util.create_directory(directory=outputDirectory)
+        metadataFileNames = []
         for row in range(0, height):
             for column in range(0, width):
                 index = (row * width) + column
                 data = {
                     'name': name,
                     'description': description or None,
-                    'image': await self.imageManager.get_image_url(imageId=croppedImageIds[index]),
+                    'image': imageUrls[index],
                     'url': url or None,
                     'groupId': groupId,
                 }
-                target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/d/{str(uuid.uuid4())}.json'
-                await self.s3Manager.write_file(content=json.dumps(data).encode(), targetPath=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE, contentType='application/json')
-                tokenMetadataUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
-                tokenMetadataUrls.append(tokenMetadataUrl)
+                metadataFileName = f'{index}.json'
+                with open(os.path.join(outputDirectory, metadataFileName), "w") as metadataFile:
+                    metadataFile.write(json.dumps(data))
+                metadataFileNames.append(metadataFileName)
+        if shouldUseIpfs:
+            fileContentMap = {metadataFileName: open(os.path.join(outputDirectory, metadataFileName), 'r') for metadataFileName in metadataFileNames}
+            cid = await self.ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
+            for openFile in fileContentMap.values():
+                openFile.close()
+            tokenMetadataUrls = [f'ipfs://{cid}/{metadataFileName}' for metadataFileName in metadataFileNames]
+        else:
+            target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/gm/{str(uuid.uuid4())}'
+            await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl='public,max-age=31536000')
+            outputUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
+            tokenMetadataUrls = [os.path.join(outputUrl, metadataFileName) for metadataFileName in metadataFileNames]
+        await file_util.remove_directory(directory=outputDirectory)
         return tokenMetadataUrls
 
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:

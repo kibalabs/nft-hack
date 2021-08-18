@@ -7,7 +7,7 @@ import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { useGlobals } from '../../globalsContext';
-import { getTransactionEtherscanUrl } from '../../util/chainUtil';
+import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
 
 export type TokenMintPageProps = {
   tokenId: string;
@@ -21,7 +21,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const [ownershipMintLimit, setOwnershipMintLimit] = React.useState<number | undefined | null>(undefined);
   const [userOwnedCount, setUserOwnedCount] = React.useState<number | undefined | null>(undefined);
   const [mintedCount, setMintedCount] = React.useState<number | undefined | null>(undefined);
-  const [chainOwnerId, setChainOwnerId] = React.useState<string | null | undefined>(undefined);
+  const [ownedTokenIds, setOwnedTokenIds] = React.useState<number[] | null | undefined>(undefined);
   const [balance, setBalance] = React.useState<BigNumber | undefined | null>(undefined);
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
   const [requestWidth, setRequestWidth] = React.useState<number>(1);
@@ -40,28 +40,36 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const isOverTotalLimit = (totalMintLimit && mintedCount) ? requestCount + mintedCount > totalMintLimit : false;
   const isOverOwnershipLimit = (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
   const isOverBalance = (balance && totalPrice) ? balance < totalPrice : false;
+  const hasMintedToken = ownedTokenIds ? ownedTokenIds.length > 0 : false;
+
+  const relevantTokenIds = React.useMemo((): number[] => {
+    const tokenId = Number(props.tokenId);
+    const tokenIds = [];
+    if (isMintingMultiple) {
+      for (let y = 0; y < requestHeight; y += 1) {
+        for (let x = 0; x < requestWidth; x += 1) {
+          tokenIds.push(tokenId + (y * 100) + x);
+        }
+      }
+    } else {
+      tokenIds.push(tokenId);
+    }
+    return tokenIds;
+  }, [props.tokenId, requestHeight, requestWidth, isMintingMultiple]);
 
   const loadData = React.useCallback(async (): Promise<void> => {
     if (network === null || contract === null) {
-      setChainOwnerId(null);
       setMintPrice(null);
       setTotalMintLimit(null);
       setSingleMintLimit(null);
       setMintedCount(null);
       return;
     }
-    setChainOwnerId(undefined);
     setMintPrice(undefined);
     setTotalMintLimit(undefined);
     setSingleMintLimit(undefined);
     setMintedCount(undefined);
-    contract.ownerOf(Number(props.tokenId)).then((retrievedTokenOwner: string): void => {
-      setChainOwnerId(retrievedTokenOwner);
-    }).catch((error: Error): void => {
-      if (!error.message.includes('nonexistent token')) {
-        setChainOwnerId(null);
-      }
-    });
+
     if (contract.mintPrice) {
       contract.mintPrice().then((retrievedMintPrice: BigNumber): void => {
         setMintPrice(retrievedMintPrice);
@@ -117,7 +125,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       console.error('Contract does not support mintedCount');
       setMintedCount(null);
     }
-  }, [network, contract, props.tokenId]);
+  }, [network, contract]);
 
   React.useEffect((): void => {
     loadData();
@@ -154,6 +162,36 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     loadBalance();
   }, [loadBalance]);
 
+  const loadOwners = React.useCallback(async (): Promise<void> => {
+    if (network === null || contract === null) {
+      setOwnedTokenIds(null);
+      return;
+    }
+    setOwnedTokenIds(undefined);
+    const chainOwnerIdPromises = relevantTokenIds.map(async (tokenId: number): Promise<string | null> => {
+      try {
+        return await contract.ownerOf(tokenId);
+      } catch (error: unknown) {
+        if (!(error as Error).message.includes('nonexistent token')) {
+          console.error(error);
+        }
+        return null;
+      }
+    });
+    const retrievedChainOwnerIds = await Promise.all(chainOwnerIdPromises);
+    const calculatedOwnedTokenIds = relevantTokenIds.reduce((accumulator: number[], tokenId: number, index: number): number[] => {
+      if (retrievedChainOwnerIds[index] && retrievedChainOwnerIds[index] !== NON_OWNER) {
+        accumulator.push(tokenId);
+      }
+      return accumulator;
+    }, []);
+    setOwnedTokenIds(calculatedOwnedTokenIds);
+  }, [network, contract, relevantTokenIds]);
+
+  React.useEffect((): void => {
+    loadOwners();
+  }, [loadOwners]);
+
   const onMintMultipleClicked = (): void => {
     setIsMintingMultiple(true);
   };
@@ -187,13 +225,11 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     if (transaction) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
-      for (let y = 0; y <= requestHeight; y += 1) {
-        for (let x = 0; x <= requestWidth; x += 1) {
-          apiClient.updateTokenDeferred(network, Number(props.tokenId) + (100 * y) + x);
-        }
-      }
+      relevantTokenIds.forEach((tokenId: number): void => {
+        apiClient.updateTokenDeferred(network, tokenId);
+      });
     }
-  }, [transaction, apiClient, network, props.tokenId, requestHeight, requestWidth]);
+  }, [transaction, apiClient, network, relevantTokenIds]);
 
   React.useEffect((): void => {
     waitForTransaction();
@@ -222,10 +258,8 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         <Spacing />
         { mintPrice === null || totalMintLimit === null || singleMintLimit === null || ownershipMintLimit === null || userOwnedCount === null || mintedCount === null || balance === null ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || ownershipMintLimit === undefined || userOwnedCount === null || mintedCount === undefined || balance === undefined ? (
+        ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || ownershipMintLimit === undefined || userOwnedCount === undefined || mintedCount === undefined || balance === undefined ? (
           <LoadingSpinner />
-        ) : chainOwnerId ? (
-          <Text variant='error'>This token has already been bought. Please try to mint another.</Text>
         ) : transactionReceipt ? (
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
@@ -280,6 +314,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
               { isOverOwnershipLimit && (
                 <Text variant='error' alignment={TextAlignment.Center}>{'You have reached the ownership limit so you cannot mint more tokens at this time. If you\'re really keen reach out to the admins on our discord and we\'ll see what we can do 👀.'}</Text>
               )}
+              { ownedTokenIds && hasMintedToken && (
+                <Text variant='error'>{`These tokens have already been minted: ${ownedTokenIds.join(', ')}`}</Text>
+              )}
               { transactionError && (
                 <Text variant='error' alignment={TextAlignment.Center}>{String(transactionError.message)}</Text>
               )}
@@ -290,7 +327,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
                   <Button variant='secondary' text='Mint group' onClicked={onMintMultipleClicked} />
                 )}
                 <Stack.Item growthFactor={1} shrinkFactor={1}>
-                  <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance} />
+                  <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !hasMintedToken} />
                 </Stack.Item>
               </Stack>
             </Stack>

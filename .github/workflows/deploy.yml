@@ -86,7 +86,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NAME: mdtp-app-new
-      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app-new:latest
+      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
     steps:
       - name: executing remote ssh commands
         uses: appleboy/ssh-action@master

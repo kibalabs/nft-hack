@@ -10,6 +10,7 @@ import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
+import { Web3Storage } from 'web3.storage/dist/bundle.esm.min.js';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
@@ -25,12 +26,14 @@ import { ChainId, getContractAddress, getContractJson, getNetwork } from './util
 declare global {
   export interface Window {
     KRT_API_URL?: string;
+    KRT_WEB3STORAGE_API_KEY?: string;
   }
 }
 
 const requester = new Requester(undefined, undefined, false);
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const apiClient = new MdtpClient(requester, window.KRT_API_URL);
+const web3StorageClient = new Web3Storage({ token: window.KRT_WEB3STORAGE_API_KEY });
 
 ReactGA.initialize('UA-31771231-11');
 ReactGA.pageview(window.location.pathname + window.location.search);
@@ -45,6 +48,7 @@ const globals: Globals = {
   apiClient,
   network: null,
   chainId: ChainId.Rinkeby,
+  web3StorageClient,
 };
 
 export const App = hot((): React.ReactElement => {
