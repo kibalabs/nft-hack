@@ -234,7 +234,6 @@ class MdtpManager:
 
     async def create_metadata_for_token(self, network: str, tokenId: int, shouldUseIpfs: bool, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> str:
         metadata_urls = await self.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=shouldUseIpfs, width=1, height=1, name=name, description=description, imageUrl=imageUrl, url=url)
-        print('metadata_urls', metadata_urls)
         return metadata_urls[0]
 
     async def create_metadata_for_token_group(self, network: str, tokenId: int, shouldUseIpfs: bool, width: int, height: int, name: str, description: Optional[str], imageUrl: str, url: Optional[str]) -> List[str]:
