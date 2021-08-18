@@ -143,6 +143,10 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
         if (bytes(_tokenContentURI).length > 0) {
             return _tokenContentURI;
         }
+        // NOTE(krishan711): in the default ERC721 _exists checks the owner is not 0
+        if (super._exists(tokenId)) {
+            return tokenURI(tokenId);
+        }
         return string(abi.encodePacked(defaultContentBaseURI(), Strings.toString(tokenId), ".json"));
     }
 
@@ -156,7 +160,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
         _mintTokenGroup(tokenId, width, height);
     }
 
-    function mint(uint256 tokenId) public payable {
+    function mintToken(uint256 tokenId) public payable {
         require(msg.value >= mintPrice, "MDTP: Insufficient payment");
         require(mintedCount() + 1 <= totalMintLimit, "MDTP: reached current minting limit");
         require(balanceOf(msg.sender) + 1 <= ownershipMintLimit, "MDTP: reached current ownership limit");
@@ -184,7 +188,6 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     function _mint(uint256 tokenId) internal {
         require(tokenId > 0 && tokenId <= SUPPLY_LIMIT, "MDTP: invalid tokenId");
         super._safeMint(msg.sender, tokenId);
-        _setTokenContentURI(tokenId, tokenURI(tokenId));
     }
 
     function mintedCount() public view returns (uint256) {

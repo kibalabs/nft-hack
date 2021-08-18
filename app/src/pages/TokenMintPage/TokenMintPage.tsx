@@ -212,7 +212,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       if (isMintingMultiple) {
         newTransaction = await contractWithSigner.mintTokenGroup(Number(props.tokenId), requestWidth, requestHeight);
       } else {
-        newTransaction = await contractWithSigner.mint(Number(props.tokenId));
+        newTransaction = await contractWithSigner.mintToken(Number(props.tokenId));
       }
     } catch (error: unknown) {
       setTransactionError(error as Error);
