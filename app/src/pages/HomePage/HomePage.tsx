@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, Stack } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
@@ -13,6 +13,7 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { getProductOpenseaUrl } from '../../util/chainUtil';
+import { FomoBar } from '../../components/FomoBar';
 
 const PanelLayer = styled.div`
   width: 95vw;
@@ -122,80 +123,85 @@ export const HomePage = (): React.ReactElement => {
       <Helmet>
         <title>{'Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
-      <LayerContainer>
-        { baseImage === null ? (
-          <LoadingSpinner />
-        ) : (
-          <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
-            <HidingView isHidden={!isPanelShowing}>
-              <GridOffset />
-            </HidingView>
-            <Stack.Item shrinkFactor={1} growthFactor={1}>
-              <TokenGrid
-                minScale={MIN_SCALE}
-                maxScale={MAX_SCALE}
-                baseImage={baseImage}
-                newGridItems={gridItems || []}
-                tokenCount={10000}
-                onTokenIdClicked={onTokenIdClicked}
-                scale={scale}
-                onScaleChanged={setConstrainedScale}
-              />
-            </Stack.Item>
-          </Stack>
-        )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
-          <GridControl
-            zoomLevel={`${Math.floor(100 * (scale / MAX_SCALE))}%`}
-            onZoomInClicked={onZoomInClicked}
-            onZoomOutClicked={onZoomOutClicked}
-          />
-        </LayerContainer.Layer>
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Start}>
-          <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
-            <Button variant='overlay' text='Menu' iconLeft={<KibaIcon iconId={isMenuOpen ? 'ion-close' : 'ion-menu'} />} onClicked={onMenuClicked} />
-            {isMenuOpen && (
-              <React.Fragment>
-                <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
-                <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
-                <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
-                <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
-                <Button variant='overlay' text='Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network) || ''} />
-              </React.Fragment>
+      <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true}>
+        <Stack.Item growthFactor={1} shrinkFactor={1}>
+          <LayerContainer>
+            { baseImage === null ? (
+              <LoadingSpinner />
+            ) : (
+              <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
+                <HidingView isHidden={!isPanelShowing}>
+                  <GridOffset />
+                </HidingView>
+                <Stack.Item shrinkFactor={1} growthFactor={1}>
+                  <TokenGrid
+                    minScale={MIN_SCALE}
+                    maxScale={MAX_SCALE}
+                    baseImage={baseImage}
+                    newGridItems={gridItems || []}
+                    tokenCount={10000}
+                    onTokenIdClicked={onTokenIdClicked}
+                    scale={scale}
+                    onScaleChanged={setConstrainedScale}
+                  />
+                </Stack.Item>
+              </Stack>
             )}
-          </Stack>
-        </LayerContainer.Layer>
-        {isPanelShowing && (
-          <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
-            <PanelLayer>
-              <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
-                <LayerContainer>
-                  <LayerContainer.Layer>
-                    <SubRouterOutlet />
-                  </LayerContainer.Layer>
-                  <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
-                    <Box variant='panelButtonHolder'>
-                      <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
-                    </Box>
-                  </LayerContainer.Layer>
-                </LayerContainer>
-              </Box>
-            </PanelLayer>
-          </LayerContainer.Layer>
-        )}
-        <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
-          <MetaMaskConnection />
-        </LayerContainer.Layer>
-        { isShareDialogOpen ? (
-          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-            <ShareOverlay onCloseClicked={onShareCloseClicked} />
-          </LayerContainer.Layer>
-        ) : !isWelcomeComplete ? (
-          <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-            <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onAboutClicked} />
-          </LayerContainer.Layer>
-        ) : null}
-      </LayerContainer>
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
+              <GridControl
+                zoomLevel={`${Math.floor(100 * (scale / MAX_SCALE))}%`}
+                onZoomInClicked={onZoomInClicked}
+                onZoomOutClicked={onZoomOutClicked}
+              />
+            </LayerContainer.Layer>
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Start}>
+              <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
+                <Button variant='overlay' text='Menu' iconLeft={<KibaIcon iconId={isMenuOpen ? 'ion-close' : 'ion-menu'} />} onClicked={onMenuClicked} />
+                {isMenuOpen && (
+                  <React.Fragment>
+                    <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
+                    <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
+                    <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
+                    <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
+                    <Button variant='overlay' text='Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network) || ''} />
+                  </React.Fragment>
+                )}
+              </Stack>
+            </LayerContainer.Layer>
+            {isPanelShowing && (
+              <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
+                <PanelLayer>
+                  <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
+                    <LayerContainer>
+                      <LayerContainer.Layer>
+                        <SubRouterOutlet />
+                      </LayerContainer.Layer>
+                      <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+                        <Box variant='panelButtonHolder'>
+                          <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
+                        </Box>
+                      </LayerContainer.Layer>
+                    </LayerContainer>
+                  </Box>
+                </PanelLayer>
+              </LayerContainer.Layer>
+            )}
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
+              <MetaMaskConnection />
+            </LayerContainer.Layer>
+            { isShareDialogOpen ? (
+              <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+                <ShareOverlay onCloseClicked={onShareCloseClicked} />
+              </LayerContainer.Layer>
+            ) : !isWelcomeComplete ? (
+              <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+                <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onAboutClicked} />
+              </LayerContainer.Layer>
+            ) : null}
+          </LayerContainer>
+        </Stack.Item>
+        <FomoBar />
+      </Stack>
     </React.Fragment>
   );
 };

@@ -23,6 +23,9 @@ export const buildMDTPTheme = (): ITheme => {
       'text-transform': 'uppercase',
       'font-weight': 'bold',
     },
+    uppercase: {
+      'text-transform': 'uppercase'
+    }
   };
 
   const overlayBoxTheme = {
@@ -40,6 +43,10 @@ export const buildMDTPTheme = (): ITheme => {
     }),
     horizontal: {
       padding: '0.5em 1em',
+    },
+    fomoBar: {
+      'border-radius': '0',
+      'background-color': 'black',
     },
     vertical: {
       padding: '1em 0.5em',
