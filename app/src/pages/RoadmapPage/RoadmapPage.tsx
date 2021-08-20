@@ -5,7 +5,6 @@ import { Alignment, Direction, Markdown, PaddingSize, Stack, Text } from '@kibal
 
 export const RoadmapPage = (): React.ReactElement => {
   const text = `
-  **Release Schedule**
 
   MDTP is a community focused project. We're here for the long-haul and want to grow this digital content space alongside a vibrant community. For this reason we've decided to do things a little differently and not release all NFTs in one go. Instead we plan to release the NFTs in tranches of 1000 NFTs each, all the way up to the full 10,000 NFTs in the collection.
   
@@ -42,7 +41,7 @@ export const RoadmapPage = (): React.ReactElement => {
 
   return (
     <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
-      <Text variant='header1'>{'Million Dollar Token Page'}</Text>
+      <Text variant='header1'>{'MDTP Roadmap'}</Text>
       <Markdown source={text} />
     </Stack>
   );
