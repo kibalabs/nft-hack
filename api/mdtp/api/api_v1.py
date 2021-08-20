@@ -4,9 +4,30 @@ from typing import Optional
 from core.api.kiba_router import KibaRouter
 from fastapi import Response
 
-from mdtp.api.endpoints_v1 import *
-from mdtp.api.resources_v1 import *
+from mdtp.api.endpoints_v1 import BaseImageUrlResponse
+from mdtp.api.endpoints_v1 import BuildBaseImageRequest
+from mdtp.api.endpoints_v1 import BuildBaseImageResponse
+from mdtp.api.endpoints_v1 import CreateMetadataForTokenGroupRequest
+from mdtp.api.endpoints_v1 import CreateMetadataForTokenGroupResponse
+from mdtp.api.endpoints_v1 import CreateMetadataForTokenRequest
+from mdtp.api.endpoints_v1 import CreateMetadataForTokenResponse
+from mdtp.api.endpoints_v1 import GenerateImageUploadForTokenResponse
+from mdtp.api.endpoints_v1 import GetNetworkSummaryResponse
+from mdtp.api.endpoints_v1 import ListGridItemsResponse
+from mdtp.api.endpoints_v1 import RetrieveGridItemRequest
+from mdtp.api.endpoints_v1 import RetrieveGridItemResponse
+from mdtp.api.endpoints_v1 import UpdateAllTokensDeferredRequest
+from mdtp.api.endpoints_v1 import UpdateAllTokensDeferredResponse
+from mdtp.api.endpoints_v1 import UpdateTokenDeferredRequest
+from mdtp.api.endpoints_v1 import UpdateTokenDeferredResponse
+from mdtp.api.endpoints_v1 import UpdateTokensDeferredRequest
+from mdtp.api.endpoints_v1 import UpdateTokensDeferredResponse
+from mdtp.api.resources_v1 import ApiBaseImage
+from mdtp.api.resources_v1 import ApiGridItem
+from mdtp.api.resources_v1 import ApiNetworkSummary
+from mdtp.api.resources_v1 import ApiPresignedUpload
 from mdtp.manager import MdtpManager
+
 
 def create_api(manager: MdtpManager) -> KibaRouter():
     router = KibaRouter()
@@ -48,7 +69,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return UpdateAllTokensDeferredResponse()
 
     @router.get('/networks/{network}/tokens/{tokenId}/go-to-image')
-    async def go_to_token_image(network: str, tokenId: int, w: Optional[int] = None, h: Optional[int] = None) -> Response:
+    async def go_to_token_image(network: str, tokenId: int, w: Optional[int] = None, h: Optional[int] = None) -> Response:  # pylint: disable=invalid-name
         imageUrl = await manager.go_to_token_image(network=network, tokenId=tokenId, width=w, height=h)
         return Response(status_code=302, headers={'location': imageUrl})
 
@@ -59,12 +80,12 @@ def create_api(manager: MdtpManager) -> KibaRouter():
 
     @router.post('/networks/{network}/tokens/{tokenId}/create-metadata', response_model=CreateMetadataForTokenResponse)
     async def create_metadata_for_token(network: str, tokenId: int, request: CreateMetadataForTokenRequest):
-        tokenMetadataUrl = await manager.create_metadata_for_token(network=network, tokenId=tokenId, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
+        tokenMetadataUrl = await manager.create_metadata_for_token(network=network, tokenId=tokenId, shouldUseIpfs=request.shouldUseIpfs, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
         return CreateMetadataForTokenResponse(tokenMetadataUrl=tokenMetadataUrl)
 
     @router.post('/networks/{network}/tokens/{tokenId}/create-group-metadata', response_model=CreateMetadataForTokenGroupResponse)
     async def create_metadata_for_token_group(network: str, tokenId: int, request: CreateMetadataForTokenGroupRequest):
-        tokenMetadataUrls = await manager.create_metadata_for_token_group(network=network, tokenId=tokenId, width=request.width, height=request.height, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
+        tokenMetadataUrls = await manager.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=request.shouldUseIpfs, width=request.width, height=request.height, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
         return CreateMetadataForTokenGroupResponse(tokenMetadataUrls=tokenMetadataUrls)
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)
@@ -73,7 +94,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return UpdateTokenDeferredResponse()
 
     @router.get('/images/{imageId}/go')
-    async def go_to_image(imageId: str, w: Optional[int] = None, h: Optional[int] = None) -> Response:
+    async def go_to_image(imageId: str, w: Optional[int] = None, h: Optional[int] = None) -> Response:  # pylint: disable=invalid-name
         imageUrl = await manager.go_to_image(imageId=imageId, width=w, height=h)
         return Response(status_code=301, headers={'location': imageUrl, 'Cache-Control': 'public, max-age=31536000, immutable'})
 

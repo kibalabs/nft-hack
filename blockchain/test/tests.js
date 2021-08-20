@@ -1,6 +1,13 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
+const METADATA_BASE_URI = 'ipfs://123/';
+const DEFAULT_CONTENT_BASE_URI = 'ipfs://456/';
+const DEFAULT_TOTAL_MINT_LIMIT = 1000;
+const DEFAULT_SINGLE_MINT_LIMIT = 20;
+const DEFAULT_OWNERSHIP_MINT_LIMIT = 35;
+const DEFAULT_MINT_PRICE = 0;
+
 describe("MillionDollarTokenPage contract", async function() {
   let myWallet;
   let otherWallet;
@@ -9,14 +16,13 @@ describe("MillionDollarTokenPage contract", async function() {
   beforeEach(async () => {
     [myWallet, otherWallet] = await ethers.getSigners();
     const contract = await ethers.getContractFactory("MillionDollarTokenPage");
-    mdtp = await contract.deploy();
+    mdtp = await contract.deploy(DEFAULT_TOTAL_MINT_LIMIT, DEFAULT_SINGLE_MINT_LIMIT, DEFAULT_OWNERSHIP_MINT_LIMIT, DEFAULT_MINT_PRICE, METADATA_BASE_URI, DEFAULT_CONTENT_BASE_URI);
   });
 
   describe("Admin", async function() {
     it("should have a default totalMintLimit", async function() {
-      const defaultLimit = 1000;
       const totalMintLimit = await mdtp.totalMintLimit();
-      expect(totalMintLimit).to.equal(defaultLimit);
+      expect(totalMintLimit).to.equal(DEFAULT_TOTAL_MINT_LIMIT);
     });
 
     it("should allow admins to setTotalMintLimit", async function() {
@@ -32,9 +38,8 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("should have a default singleMintLimit", async function() {
-      const defaultLimit = 20;
       const singleMintLimit = await mdtp.singleMintLimit();
-      expect(singleMintLimit).to.equal(defaultLimit);
+      expect(singleMintLimit).to.equal(DEFAULT_SINGLE_MINT_LIMIT);
     });
 
     it("should allow admins to setSingleMintLimit", async function() {
@@ -49,10 +54,26 @@ describe("MillionDollarTokenPage contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
+    it("should have a default ownershipMintLimit", async function() {
+      const ownershipMintLimit = await mdtp.ownershipMintLimit();
+      expect(ownershipMintLimit).to.equal(DEFAULT_OWNERSHIP_MINT_LIMIT);
+    });
+
+    it("should allow admins to setOwnershipMintLimit", async function() {
+      const newLimit = 123;
+      await mdtp.setOwnershipMintLimit(newLimit);
+      const ownershipMintLimit = await mdtp.ownershipMintLimit();
+      expect(ownershipMintLimit).to.equal(newLimit);
+    });
+
+    it("should not allow non-admins to setOwnershipMintLimit", async function() {
+      const transaction = mdtp.connect(otherWallet).setOwnershipMintLimit(100);
+      await expect(transaction).to.be.reverted;
+    });
+
     it("should have a default mintPrice", async function() {
-      const defaultPrice = 0;
       const mintPrice = await mdtp.mintPrice();
-      expect(mintPrice).to.equal(defaultPrice);
+      expect(mintPrice).to.equal(DEFAULT_MINT_PRICE);
     });
 
     it("should allow admins to setMintPrice", async function() {
@@ -66,46 +87,62 @@ describe("MillionDollarTokenPage contract", async function() {
       const transaction = mdtp.connect(otherWallet).setMintPrice(100);
       await expect(transaction).to.be.reverted;
     });
+
+    it("should allow admins to setMetadataBaseURI", async function() {
+      const newUri = 'abc/';
+      await mdtp.setMetadataBaseURI(newUri);
+      const tokenURI = await mdtp.tokenURI(1);
+      expect(tokenURI).to.equal(`${newUri}1.json`);
+    });
+
+    it("should not allow non-admins to setMetadataBaseURI", async function() {
+      const transaction = mdtp.connect(otherWallet).setMetadataBaseURI(100);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("should allow admins to setDefaultContentBaseURI", async function() {
+      const newUri = 'abc/';
+      await mdtp.setDefaultContentBaseURI(newUri);
+      const tokenContentURI = await mdtp.tokenContentURI(1);
+      expect(tokenContentURI).to.equal(`${newUri}1.json`);
+    });
+
+    it("should not allow non-admins to setDefaultContentBaseURI", async function() {
+      const transaction = mdtp.connect(otherWallet).setDefaultContentBaseURI(100);
+      await expect(transaction).to.be.reverted;
+    });
   });
 
   describe("Metadata URIs", async function() {
     it("should have the correct metadata uri for a non-minted token", async function() {
       const metadataUri = await mdtp.tokenURI(100);
-      expect(metadataUri).to.equal("https://api.mdtp.co/token-metadatas/100");
+      expect(metadataUri).to.equal(`${METADATA_BASE_URI}100.json`);
     });
 
     it("should have the correct metadata uri for a minted token", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const metadataUri = await mdtp.tokenURI(100);
-      expect(metadataUri).to.equal("https://api.mdtp.co/token-metadatas/100");
+      expect(metadataUri).to.equal(`${METADATA_BASE_URI}100.json`);
     });
   });
 
   describe("Token Content URIs", async function() {
     it("should have the correct content uri for a non-minted token", async function() {
       const contentUri = await mdtp.tokenContentURI(100);
-      expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
-    });
-
-    it("should have the correct content uri for a minted token", async function() {
-      await mdtp.mint(100);
-      const contentUri = await mdtp.tokenContentURI(100);
-      expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
+      expect(contentUri).to.equal(`${DEFAULT_CONTENT_BASE_URI}100.json`);
     });
 
     // it("should reset content URI when a token is transferred", async function () {
-    //   await mdtp.mint(100);
+    //   await mdtp.mintToken(100);
     //   const newUri = "https://www.com/tokens/100"
     //   await mdtp.setTokenContentURI(100, newUri);
     //   await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
     //   const contentUri = await mdtp.tokenContentURI(100);
-    //   expect(contentUri).to.equal("https://api.mdtp.co/token-default-contents/100");
+    //   expect(contentUri).to.equal(`${DEFAULT_CONTENT_BASE_URI}100.json`);
     // });
-  });
 
-  describe("Set Token Content URIs", async function() {
     it("allows the owner to change the content uri", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const newUri = "https://www.com/tokens/100"
       await mdtp.setTokenContentURI(100, newUri);
     });
@@ -117,7 +154,7 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("should have the correct content uri for a minted token with an overwritten uri", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const newUri = "https://www.com/tokens/100"
       await mdtp.setTokenContentURI(100, newUri);
       const contentUri = await mdtp.tokenContentURI(100);
@@ -125,7 +162,7 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("does not allow a non-owner to change the content uri", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       await mdtp.transferFrom(myWallet.address, otherWallet.address, 100)
       const newUri = "https://www.com/tokens/100";
       const transaction = mdtp.setTokenContentURI(100, newUri);
@@ -133,10 +170,20 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("emits a TokenContentURIChanged event when a token content is changed", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const newUri = "https://www.com/tokens/100"
       const transaction = mdtp.setTokenContentURI(100, newUri);
       await expect(transaction).to.emit(mdtp, 'TokenContentURIChanged').withArgs(100);
+    });
+
+    it("setting setDefaultContentBaseURI should not change existing URIs", async function() {
+      await mdtp.mintToken(100);
+      const newUri = "https://www.com/tokens/100"
+      await mdtp.setTokenContentURI(100, newUri);
+      const newUri2 = 'abc/';
+      await mdtp.setDefaultContentBaseURI(newUri2);
+      const tokenContentURI = await mdtp.tokenContentURI(100);
+      expect(tokenContentURI).to.equal(newUri);
     });
   });
 
@@ -226,8 +273,8 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("should have a totalSupply of 10000 after tokens have been minted", async function() {
-      await mdtp.mint(1);
-      await mdtp.mint(2);
+      await mdtp.mintToken(1);
+      await mdtp.mintToken(2);
       const totalSupply = await mdtp.totalSupply();
       expect(totalSupply).to.equal(10000);
     });
@@ -238,15 +285,15 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("returns the correct value for the balance of a token holder", async function () {
-      await mdtp.mint(100);
-      await mdtp.mint(101);
-      await mdtp.mint(102);
+      await mdtp.mintToken(100);
+      await mdtp.mintToken(101);
+      await mdtp.mintToken(102);
       const balance = await mdtp.balanceOf(myWallet.address);
       expect(balance).to.equal(3);
     });
 
     it("returns the correct value for the balance of a transferred token", async function () {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
       const balance1 = await mdtp.balanceOf(myWallet.address);
       expect(balance1).to.equal(0);
@@ -260,13 +307,13 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("returns the correct value for ownerOf of a minted token", async function () {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const owner = await mdtp.ownerOf(100);
       expect(owner).to.equal(myWallet.address);
     });
 
     it("returns the correct value for ownerOf of a transferred token", async function () {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
       const owner = await mdtp.ownerOf(100);
       expect(owner).to.equal(otherWallet.address);
@@ -283,17 +330,17 @@ describe("MillionDollarTokenPage contract", async function() {
     });
 
     it("returns the correct value for tokenOfOwnerByIndex of a token owner", async function () {
-      await mdtp.mint(100);
-      await mdtp.mint(101);
-      await mdtp.mint(102);
+      await mdtp.mintToken(100);
+      await mdtp.mintToken(101);
+      await mdtp.mintToken(102);
       const tokenId = await mdtp.tokenOfOwnerByIndex(myWallet.address, 1);
       expect(tokenId).to.equal(101);
     });
 
     it("returns the correct value for tokenOfOwnerByIndex after tokens are transferred", async function () {
-      await mdtp.mint(100);
-      await mdtp.mint(101);
-      await mdtp.mint(102);
+      await mdtp.mintToken(100);
+      await mdtp.mintToken(101);
+      await mdtp.mintToken(102);
       const tokenId = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
       expect(tokenId).to.equal(100);
       await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
@@ -309,69 +356,83 @@ describe("MillionDollarTokenPage contract", async function() {
 
   describe("Minting", async function () {
     it("does not allow minting a token with id over 10000", async function() {
-      const transaction = mdtp.mint(10001);
+      const transaction = mdtp.mintToken(10001);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow minting a token with id 0", async function() {
-      const transaction = mdtp.mint(0);
+      const transaction = mdtp.mintToken(0);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow minting a token with negative id", async function() {
-      const transaction = mdtp.mint(-100);
+      const transaction = mdtp.mintToken(-100);
       await expect(transaction).to.be.reverted;
     });
 
     it("does not allow a token to be minted twice", async function() {
-      await mdtp.mint(100);
-      const transaction = mdtp.mint(100);
+      await mdtp.mintToken(100);
+      const transaction = mdtp.mintToken(100);
       await expect(transaction).to.be.reverted;
     });
 
     it("emits a Transfer event when a token is minted", async function() {
-      const transaction = mdtp.mint(100);
+      const transaction = mdtp.mintToken(100);
       await expect(transaction).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
     });
 
     it("updates mintedCount when a token is minted", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const mintedCount = await mdtp.mintedCount();
       expect(mintedCount).to.equal(1);
     });
 
     it("cannot mint over the totalMintLimit", async function() {
       await mdtp.setTotalMintLimit(2);
-      await mdtp.mint(100);
-      await mdtp.mint(101);
-      const transaction = mdtp.mint(102);
+      await mdtp.mintToken(100);
+      await mdtp.mintToken(101);
+      const transaction = mdtp.mintToken(102);
+      expect(transaction).to.be.reverted;
+    });
+
+    it("cannot mint over the ownershipMintLimit", async function() {
+      await mdtp.setOwnershipMintLimit(2);
+      await mdtp.mintToken(100);
+      await mdtp.mintToken(101);
+      const transaction = mdtp.mintToken(102);
       expect(transaction).to.be.reverted;
     });
 
     it("cannot mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      const transaction = mdtp.mint(100, {value: 1});
+      const transaction = mdtp.mintToken(100, {value: 1});
       expect(transaction).to.be.reverted;
     });
 
     it("can mint with money equal to the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      mdtp.mint(100, {value: 2});
+      mdtp.mintToken(100, {value: 2});
     });
 
     it("can mint with money above the mintPrice", async function() {
       await mdtp.setMintPrice(2);
-      mdtp.mint(100, {value: 3});
+      mdtp.mintToken(100, {value: 3});
     });
 
     it("does not allow access to the _mint function", async function() {
-      expect(() => mdtp._mint(100)).to.throw(TypeError);
+      expect(() => mdtp._mintToken(100)).to.throw(TypeError);
     });
 
     it("sets the owner to the caller", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const owner = await mdtp.ownerOf(100);
       expect(owner).to.equal(myWallet.address)
+    });
+
+    it("should change the content uri to the metadata uri after minting", async function() {
+      await mdtp.mintToken(100);
+      const contentUri = await mdtp.tokenContentURI(100);
+      expect(contentUri).to.equal(`${METADATA_BASE_URI}100.json`);
     });
   });
 
@@ -478,6 +539,19 @@ describe("MillionDollarTokenPage contract", async function() {
       expect(transaction).to.be.reverted;
     });
 
+    it("cannot mint over the ownershipMintLimit in separate transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
+      await mdtp.mintTokenGroup(100, 2, 1);
+      const transaction = mdtp.mintTokenGroup(102, 2, 1);
+      expect(transaction).to.be.reverted;
+    });
+
+    it("cannot mint over the ownershipMintLimit in a single transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
+      const transaction = mdtp.mintTokenGroup(100, 4, 1);
+      expect(transaction).to.be.reverted;
+    });
+
     it("cannot mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       const transaction = mdtp.mintTokenGroup(100, 2, 1, {value: 3});
@@ -492,6 +566,14 @@ describe("MillionDollarTokenPage contract", async function() {
     it("can mint with money above the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       mdtp.mintTokenGroup(100, 2, 1, {value: 5});
+    });
+
+    it("should change the content uri to the metadata uri after minting", async function() {
+      await mdtp.mintTokenGroup(100, 2, 1);
+      const contentUri1 = await mdtp.tokenContentURI(100);
+      expect(contentUri1).to.equal(`${METADATA_BASE_URI}100.json`);
+      const contentUri2 = await mdtp.tokenContentURI(101);
+      expect(contentUri2).to.equal(`${METADATA_BASE_URI}101.json`);
     });
   });
 
@@ -604,17 +686,25 @@ describe("MillionDollarTokenPage contract", async function() {
       await mdtp.setMintPrice(2);
       mdtp.mintTokenGroupAdmin(100, 2, 1, {value: 5});
     });
+
+    it("should change the content uri to the metadata uri after minting", async function() {
+      await mdtp.mintTokenGroupAdmin(100, 2, 1);
+      const contentUri1 = await mdtp.tokenContentURI(100);
+      expect(contentUri1).to.equal(`${METADATA_BASE_URI}100.json`);
+      const contentUri2 = await mdtp.tokenContentURI(101);
+      expect(contentUri2).to.equal(`${METADATA_BASE_URI}101.json`);
+    });
   });
 
   describe("Transferring", async function () {
     it("emits a Transfer event when a token is transferred", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const transaction = mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
       await expect(transaction).to.emit(mdtp, 'Transfer').withArgs(myWallet.address, otherWallet.address, 100);
     });
 
     it("does not change mintedCount when a token is transferred", async function() {
-      await mdtp.mint(100);
+      await mdtp.mintToken(100);
       const mintedCount = await mdtp.mintedCount();
       expect(mintedCount).to.equal(1);
       await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);

@@ -14,6 +14,7 @@ export const buildMDTPTheme = (): ITheme => {
     default: mergeTheme(defaultTheme.texts.default, {
       'font-family': "'Roboto Slab', sans-serif",
       'font-weight': '400',
+      'overflow-wrap': 'anywhere',
     }),
     light: {
       color: 'rgba(255, 255, 255, 0.95)',

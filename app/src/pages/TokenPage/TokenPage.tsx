@@ -2,15 +2,16 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, BackgroundView, Box, Button, Direction, Image, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem, TokenMetadata } from '../../client';
 import { ImageGrid } from '../../components/ImageGrid';
 import { KeyValue } from '../../components/KeyValue';
+import { MdtpImage } from '../../components/MdtpImage';
 import { useGlobals } from '../../globalsContext';
-import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl } from '../../util/chainUtil';
+import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
@@ -21,15 +22,16 @@ export type TokenPageProps = {
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
-  const { contract, requester, apiClient, network } = useGlobals();
+  const { contract, requester, apiClient, network, web3 } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null>(null);
   const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null>(null);
   const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
+  const [ownerName, setOwnerName] = React.useState<string | null>(null);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
-  const ownerId = chainOwnerId || gridItem?.ownerId || null;
+  const ownerId = chainOwnerId || gridItem?.ownerId || NON_OWNER;
   const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
 
   const loadToken = React.useCallback(async (): Promise<void> => {
@@ -56,14 +58,17 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       contract.ownerOf(tokenId).then((retrievedTokenOwner: string): void => {
         setChainOwnerId(retrievedTokenOwner);
       }).catch((error: Error): void => {
-        if (!error.message.includes('nonexistent token')) {
+        if (error.message.includes('nonexistent token')) {
+          setChainOwnerId(NON_OWNER);
+        } else {
           console.error(error);
         }
       });
       // NOTE(krishan711): this only works for the new contracts
       if (contract.tokenContentURI) {
         contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
-          requester.makeRequest(RestMethod.GET, tokenMetadataUrl).then((response: KibaResponse): void => {
+          const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/') : tokenMetadataUrl;
+          requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
             const tokenMetadataJson = JSON.parse(response.content);
             // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
             setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId }));
@@ -93,6 +98,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     loadBlockGridItems();
   }, [loadBlockGridItems]);
 
+  const loadOwnerName = React.useCallback(async (): Promise<void> => {
+    setOwnerName(null);
+    if (ownerId && web3) {
+      const retrievedOwnerName = await web3.lookupAddress(ownerId);
+      setOwnerName(retrievedOwnerName);
+    }
+  }, [ownerId, web3]);
+
+  React.useEffect((): void => {
+    loadOwnerName();
+  }, [loadOwnerName]);
+
   const onUpdateTokenClicked = (): void => {
     navigator.navigateTo(`/tokens/${props.tokenId}/update`);
   };
@@ -102,9 +119,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const OwnershipInfo = (): React.ReactElement => {
-    const isMintable = accounts && !ownerId && contract && contract.mintTokenGroup != null;
-    const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
-    const ownerIdString = ownerId ? truncateMiddle(ownerId, 10) : 'unknown';
+    const isMintable = accounts && (!ownerId || ownerId === NON_OWNER) && contract && contract.mintTokenGroup != null;
+    const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === NON_OWNER || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
+    const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : 'unknown');
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isMintable ? (
@@ -114,7 +131,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         ) : (
           <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
         )}
-        { gridItem && (
+        { gridItem && !isMintable && (
           <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
             <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isBuyable || isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
             <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
@@ -142,7 +159,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <ImageGrid gridItem={gridItem} blockGridItems={blockGridItems} />
               ) : (
                 <BackgroundView color='#000000'>
-                  <Image isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
+                  <MdtpImage isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
                 </BackgroundView>
               )}
             </Box>

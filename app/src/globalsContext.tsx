@@ -3,6 +3,8 @@ import React from 'react';
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { IMultiAnyChildProps } from '@kibalabs/core-react';
 import { ethers } from 'ethers';
+// @ts-ignore
+import { Web3Storage } from 'web3.storage/dist/bundle.esm.min.js';
 
 import { MdtpClient } from './client';
 import { ChainId } from './util/chainUtil';
@@ -12,9 +14,11 @@ export interface Globals {
   requester: Requester;
   localStorageClient: LocalStorageClient;
   contract: ethers.Contract | null;
+  web3: ethers.providers.Web3Provider | null;
   apiClient: MdtpClient;
   network: string;
   chainId: ChainId;
+  web3StorageClient: Web3Storage;
 }
 
 export const GlobalsContext = React.createContext<Globals | null>(null);

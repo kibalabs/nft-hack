@@ -1,17 +1,22 @@
-from os import stat
 import imghdr
-from typing import Optional, List
+import os
 import uuid
 from io import BytesIO
+from typing import List
+from typing import Optional
 
-from core.util import file_util
-from core.exceptions import InternalServerErrorException, KibaException, NotFoundException
+from core.exceptions import InternalServerErrorException
+from core.exceptions import KibaException
+from core.requester import Requester
 from core.s3_manager import S3Manager
+from core.util import file_util
 from PIL import Image as PILImage
 
-from mdtp.model import ImageData, ImageFormat, ImageSize, Image, ImageVariant
-from core.requester import Requester
-
+from mdtp.ipfs_manager import IpfsManager
+from mdtp.model import ImageData
+from mdtp.model import ImageFormat
+from mdtp.model import ImageSize
+from mdtp.model import ImageVariant
 
 _BUCKET = 's3://mdtp-images/pablo'
 _BASE_URL = 'https://d2a7i2107hou45.cloudfront.net/pablo'
@@ -26,17 +31,20 @@ class UnknownImageType(InternalServerErrorException):
 
 class ImageManager:
 
-    def __init__(self, requester: Requester, s3Manager: S3Manager):
+    def __init__(self, requester: Requester, s3Manager: S3Manager, ipfsManager: IpfsManager):
         self.requester = requester
         self.s3Manager = s3Manager
+        self.ipfsManager = ipfsManager
 
-    def _get_image_type_from_file(self, fileName: str) -> str:
+    @staticmethod
+    def _get_image_type_from_file(fileName: str) -> str:
         imageType = imghdr.what(fileName)
         if not imageType:
             raise UnknownImageType
         return f'image/{imageType}'
 
-    def _get_image_type(self, content: str) -> str:
+    @staticmethod
+    def _get_image_type(content: str) -> str:
         imageType = imghdr.what(content)
         if not imageType:
             raise UnknownImageType
@@ -44,7 +52,10 @@ class ImageManager:
 
     async def upload_image_from_url(self, url: str) -> str:
         localFilePath = f'./download-{str(uuid.uuid4())}'
-        await self.requester.get(url=url, outputFilePath=localFilePath)
+        if url.startswith('ipfs://'):
+            await self.ipfsManager.read_file(cid=url.replace('ipfs://', ''), outputFilePath=localFilePath)
+        else:
+            await self.requester.get(url=url, outputFilePath=localFilePath)
         imageId = await self.upload_image_from_file(filePath=localFilePath)
         await file_util.remove_file(filePath=localFilePath)
         return imageId
@@ -59,28 +70,28 @@ class ImageManager:
             await self.resize_image(imageId=imageId)
         return imageId
 
-    async def crop_image(self, imageId: str, width: int, height: int) -> List[str]:
+    async def crop_image(self, imageId: str, outputDirectory: str, width: int, height: int) -> List[str]:
+        await file_util.create_directory(directory=outputDirectory)
         # NOTE(krishan711): this can be done in parallel
         image = await self._load_image(imageId=imageId)
         targetSize = ImageSize(int(image.size.width / width), int(image.size.height / height))
-        urls = []
         if image.imageFormat not in {ImageFormat.JPG, ImageFormat.PNG, ImageFormat.WEBP}:
             raise Exception(f'Unable to crop image of type {image.imageFormat}')
         contentBuffer = BytesIO(image.content)
+        fileNames = []
         with PILImage.open(fp=contentBuffer) as pilImage:
             for row in range(0, height):
                 for column in range(0, width):
-                    croppedFilename = f'./crop-{str(uuid.uuid4())}'
+                    index = (row * width) + column
+                    fileName = f'{index}'
                     box = (column * targetSize.width, row * targetSize.height, (column + 1) * targetSize.width, (row + 1) * targetSize.height)
                     croppedPilImage = pilImage.crop(box)
                     content = BytesIO()
                     croppedPilImage.save(fp=content, format=image.imageFormat.replace('image/', ''))
                     croppedImage = ImageData(content=content.getvalue(), size=targetSize, imageFormat=image.imageFormat)
-                    await self._save_image_to_file(image=croppedImage, fileName=croppedFilename)
-                    imageId = await self.upload_image_from_file(filePath=croppedFilename, shouldResize=False)
-                    await file_util.remove_file(filePath=croppedFilename)
-                    urls.append(imageId)
-        return urls
+                    await self._save_image_to_file(image=croppedImage, fileName=os.path.join(outputDirectory, fileName))
+                    fileNames.append(fileName)
+        return fileNames
 
     async def resize_image(self, imageId: str):
         image = await self._load_image(imageId=imageId)
@@ -98,14 +109,14 @@ class ImageManager:
                 await self.s3Manager.upload_file(filePath=resizedFilename, targetPath=f'{_BUCKET}/{imageId}/heights/{targetSize}', accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
                 await file_util.remove_file(filePath=resizedFilename)
 
-    async def _save_image_to_file(self, image: Image, fileName: str) -> None:
+    async def _save_image_to_file(self, image: ImageData, fileName: str) -> None:
         if image.imageFormat == ImageFormat.JPG:
             contentBuffer = BytesIO(image.content)
             with PILImage.open(fp=contentBuffer) as pilImage, open(fileName, 'wb') as imageFile:
                 try:
                     pilImage.save(fp=imageFile, format=image.imageFormat.replace('image/', ''), subsampling=0, quality=90, optimize=True)
                 except OSError as exception:
-                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}')
+                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}') from exception
             return
         if image.imageFormat in {ImageFormat.PNG, ImageFormat.WEBP}:
             contentBuffer = BytesIO(image.content)
@@ -113,7 +124,7 @@ class ImageManager:
                 try:
                     pilImage.save(fp=imageFile, format=image.imageFormat.replace('image/', ''), optimize=True)
                 except OSError as exception:
-                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}')
+                    raise KibaException(message=f'Exception occurred when saving image {image.imageId}: {str(exception)}') from exception
             return
         raise KibaException(message=f'Cannot save image format to file: {image.imageFormat}')
 

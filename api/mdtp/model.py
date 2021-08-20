@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import dataclasses
 
+
 @dataclasses.dataclass
 class GridItem:
     gridItemId: int
@@ -10,6 +11,7 @@ class GridItem:
     updatedDate: datetime.datetime
     network: str
     tokenId: int
+    contentUrl: Optional[str]
     title: str
     description: Optional[str]
     imageUrl: str

@@ -1,15 +1,20 @@
 from typing import Optional
 from typing import Sequence
-from typing import Optional
 
-from core.store.retriever import Retriever
+from core.exceptions import NotFoundException
 from core.store.retriever import FieldFilter
 from core.store.retriever import Order
-from core.exceptions import NotFoundException
+from core.store.retriever import Retriever
 
-from mdtp.model import GridItem, NetworkUpdate
-from mdtp.store.schema import BaseImagesTable, GridItemsTable, NetworkUpdatesTable
-from mdtp.store.schema_conversions import base_image_from_row, grid_item_from_row, network_update_from_row
+from mdtp.model import GridItem
+from mdtp.model import NetworkUpdate
+from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import GridItemsTable
+from mdtp.store.schema import NetworkUpdatesTable
+from mdtp.store.schema_conversions import base_image_from_row
+from mdtp.store.schema_conversions import grid_item_from_row
+from mdtp.store.schema_conversions import network_update_from_row
+
 
 class MdtpRetriever(Retriever):
 

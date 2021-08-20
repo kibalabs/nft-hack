@@ -1,7 +1,12 @@
 from typing import Mapping
 
-from mdtp.model import BaseImage, GridItem, NetworkUpdate
-from mdtp.store.schema import BaseImagesTable, GridItemsTable, NetworkUpdatesTable
+from mdtp.model import BaseImage
+from mdtp.model import GridItem
+from mdtp.model import NetworkUpdate
+from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import GridItemsTable
+from mdtp.store.schema import NetworkUpdatesTable
+
 
 def grid_item_from_row(row: Mapping) -> GridItem:
     # NOTE(krishan711) these should be of the form row.id but https://github.com/encode/databases/issues/101
@@ -11,6 +16,7 @@ def grid_item_from_row(row: Mapping) -> GridItem:
         updatedDate=row[GridItemsTable.c.updatedDate],
         network=row[GridItemsTable.c.network],
         tokenId=row[GridItemsTable.c.tokenId],
+        contentUrl=row[GridItemsTable.c.contentUrl],
         title=row[GridItemsTable.c.title],
         description=row[GridItemsTable.c.description],
         imageUrl=row[GridItemsTable.c.imageUrl],

@@ -10,6 +10,7 @@ import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { hot } from 'react-hot-loader/root';
+import { Web3Storage } from 'web3.storage/dist/bundle.esm.min.js';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
@@ -26,12 +27,14 @@ import { ChainId, getContractAddress, getContractJson, getNetwork } from './util
 declare global {
   export interface Window {
     KRT_API_URL?: string;
+    KRT_WEB3STORAGE_API_KEY?: string;
   }
 }
 
-const requester = new Requester();
+const requester = new Requester(undefined, undefined, false);
 const localStorageClient = new LocalStorageClient(window.localStorage);
 const apiClient = new MdtpClient(requester, window.KRT_API_URL);
+const web3StorageClient = new Web3Storage({ token: window.KRT_WEB3STORAGE_API_KEY });
 
 ReactGA.initialize('UA-31771231-11');
 ReactGA.pageview(window.location.pathname + window.location.search);
@@ -43,9 +46,11 @@ const globals: Globals = {
   requester,
   localStorageClient,
   contract: null,
+  web3: null,
   apiClient,
   network: null,
   chainId: ChainId.Rinkeby,
+  web3StorageClient,
 };
 
 export const App = hot((): React.ReactElement => {
@@ -55,27 +60,6 @@ export const App = hot((): React.ReactElement => {
   const [network, setNetwork] = React.useState<string | null>(null);
   const [contract, setContract] = React.useState<ethers.Contract | null>(null);
   const [web3, setWeb3] = React.useState<ethers.providers.Web3Provider | null>(null);
-
-  const onLinkAccountsClicked = async (): Promise<void> => {
-    if (web3) {
-      web3.provider.enable().then(async (): Promise<void> => {
-        await loadWeb3();
-      });
-    }
-  };
-
-  const onChainChanged = (): void => {
-    window.location.reload();
-  };
-
-  const onAccountsChanged = React.useCallback(async (accountAddresses: string[]): Promise<void> => {
-    // NOTE(krishan711): metamask only deals with one account at the moment but returns an array for future compatibility
-    const linkedAccounts = accountAddresses.map((accountAddress: string): ethers.Signer => web3.getSigner(accountAddress));
-    setAccounts(linkedAccounts);
-    Promise.all(linkedAccounts.map((account: ethers.Signer): Promise<string> => account.getAddress())).then((retrievedAccountIds: string[]): void => {
-      setAccountIds(retrievedAccountIds);
-    });
-  }, [web3]);
 
   const loadWeb3 = async (): Promise<void> => {
     const provider = await detectEthereumProvider();
@@ -91,6 +75,19 @@ export const App = hot((): React.ReactElement => {
     setWeb3(web3Connection);
   };
 
+  const onAccountsChanged = React.useCallback(async (accountAddresses: string[]): Promise<void> => {
+    // NOTE(krishan711): metamask only deals with one account at the moment but returns an array for future compatibility
+    const linkedAccounts = accountAddresses.map((accountAddress: string): ethers.Signer => web3.getSigner(accountAddress));
+    setAccounts(linkedAccounts);
+    Promise.all(linkedAccounts.map((account: ethers.Signer): Promise<string> => account.getAddress())).then((retrievedAccountIds: string[]): void => {
+      setAccountIds(retrievedAccountIds);
+    });
+  }, [web3]);
+
+  const onChainChanged = React.useCallback((): void => {
+    window.location.reload();
+  }, []);
+
   const loadAccounts = React.useCallback(async (): Promise<void> => {
     if (!web3) {
       return;
@@ -99,7 +96,15 @@ export const App = hot((): React.ReactElement => {
     web3.provider.on('chainChanged', onChainChanged);
     onAccountsChanged(await web3.provider.request({ method: 'eth_accounts' }));
     web3.provider.on('accountsChanged', onAccountsChanged);
-  }, [web3, onAccountsChanged]);
+  }, [web3, onChainChanged, onAccountsChanged]);
+
+  const onLinkAccountsClicked = async (): Promise<void> => {
+    if (web3) {
+      web3.provider.request({ method: 'eth_requestAccounts', params: [] }).then(async (): Promise<void> => {
+        await loadWeb3();
+      });
+    }
+  };
 
   useInitialization((): void => {
     loadWeb3();
@@ -126,7 +131,7 @@ export const App = hot((): React.ReactElement => {
       <Helmet>
         <link href='https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;600;700;800;900&display=swap' rel='stylesheet' />
       </Helmet>
-      <GlobalsProvider globals={{ ...globals, network, contract }}>
+      <GlobalsProvider globals={{ ...globals, network, contract, web3 }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router>
             <Route default={true} page={HomePage}>

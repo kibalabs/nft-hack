@@ -26,11 +26,11 @@ python3 set_tokens.py -i ~/Downloads/mdtp/azulo-app.jpg -n 'Azulo-app' -t 4967 -
 python3 transfer_tokens.py -t 4967 -w 5 -h 4 -r '0x60Bd53e0aC10c3F6e16D9768FA9DBE56339DAF9b'
 python3 set_tokens.py -i ~/Downloads/mdtp/mckurz.png -n 'McKurz Capital DEX' -t 5879 -w 5 -h 3 -d "The McKurz Capital DEX is a decentralized ERC-20 exchange where users can exchange assets from within an Ethereum wallet without the hassle and cost of transferring tokens or NFT's to a centralized exchange. You can find the Kovan deployment of the exchange at https://www.mckurz-dex.com/" -u 'https://www.mckurz-dex.com/'
 python3 transfer_tokens.py -t 5879 -w 5 -h 3 -r '0x91744ccD83d4CA77a4e4698374A9D18d0c99db48'
-python3 set_tokens.py -i ~/Downloads/mdtp/rarepress.png -n 'Rarepress' -t 2848 -w 6 -h 4 -d "Rarepress is an NFT Operating System that makes it dead simple to programmatically mint, trade, and interact with NFTs on Ethereum, with nothing but a few lines of JavaScript code." -u 'https://rarepress.org/'
-python3 transfer_tokens.py -t 2848 -w 6 -h 4 -r '0xFb7b2717F7a2a30B42e21CEf03Dd0fC76Ef761E9'
-python3 set_tokens.py -i ~/Downloads/mdtp/logo_poap.png -n 'POAP' -t 3155 -w 5 -h 6 -d "The bookmarks of your life" -u 'http://poap.xyz/'
-python3 transfer_tokens.py -t 3155 -w 5 -h 6 -r '0xf6B6F07862A02C85628B3A9688beae07fEA9C863'
-python3 set_tokens.py -i ~/Downloads/mdtp/avastar-james.png -n 'Avastars' -t 6643 -w 5 -h 5 -d "Generative Art Stored Entirely On The Blockchain.  Second Generation NFT allowing #Trueownership of Digital Art." -u "https://avastars.io/"
-python3 transfer_tokens.py -t 6643 -w 5 -h 5 -r '0xafB5b05AFB592fBA50d094d294b3Cf3F0cBA93a3'
+python3 set_tokens.py -i ~/Downloads/mdtp/rarepress.png -n 'Rarepress' -t 2848 -w 5 -h 3 -d "Rarepress is an NFT Operating System that makes it dead simple to programmatically mint, trade, and interact with NFTs on Ethereum, with nothing but a few lines of JavaScript code." -u 'https://rarepress.org/'
+python3 transfer_tokens.py -t 2848 -w 5 -h 3 -r '0xFb7b2717F7a2a30B42e21CEf03Dd0fC76Ef761E9'
+python3 set_tokens.py -i ~/Downloads/mdtp/logo_poap.png -n 'POAP' -t 3155 -w 4 -h 5 -d "The bookmarks of your life" -u 'http://poap.xyz/'
+python3 transfer_tokens.py -t 3155 -w 4 -h 5 -r '0xf6B6F07862A02C85628B3A9688beae07fEA9C863'
+python3 set_tokens.py -i ~/Downloads/mdtp/avastar-james.png -n 'Avastars' -t 6643 -w 4 -h 4 -d "Generative Art Stored Entirely On The Blockchain.  Second Generation NFT allowing #Trueownership of Digital Art." -u "https://avastars.io/"
+python3 transfer_tokens.py -t 6643 -w 4 -h 4 -r '0xafB5b05AFB592fBA50d094d294b3Cf3F0cBA93a3'
 python3 set_tokens.py -i ~/Downloads/mdtp/alien.jpeg -n "VOID #4815" -t 4815 -w 3 -h 3 -d "Visitor of Imma Degen #4815, aka \"The Party\"" -u "https://twitter.com/VOID4815"
 python3 transfer_tokens.py -t 4815 -w 3 -h 3 -r '0x594612E533db57C2401D0645BEc5920364acCa6C'

@@ -1,12 +1,12 @@
-from typing import Optional
 from typing import List
+from typing import Optional
 
 from pydantic import BaseModel
 
-from mdtp.api.resources_v1 import ApiGridItem, ApiTokenMetadata
 from mdtp.api.resources_v1 import ApiBaseImage
-from mdtp.api.resources_v1 import ApiPresignedUpload
+from mdtp.api.resources_v1 import ApiGridItem
 from mdtp.api.resources_v1 import ApiNetworkSummary
+from mdtp.api.resources_v1 import ApiPresignedUpload
 
 
 class BaseImageUrlRequest(BaseModel):
@@ -64,6 +64,7 @@ class GenerateImageUploadForTokenResponse(BaseModel):
     presignedUpload: ApiPresignedUpload
 
 class CreateMetadataForTokenRequest(BaseModel):
+    shouldUseIpfs: bool = True
     name: str
     description: Optional[str]
     imageUrl: str
@@ -74,6 +75,7 @@ class CreateMetadataForTokenResponse(BaseModel):
     tokenMetadataUrl: str
 
 class CreateMetadataForTokenGroupRequest(BaseModel):
+    shouldUseIpfs: bool = True
     width: int
     height: int
     name: str
