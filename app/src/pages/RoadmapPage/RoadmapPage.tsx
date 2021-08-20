@@ -24,7 +24,7 @@ export const RoadmapPage = (): React.ReactElement => {
 
   **Tranch 2: 2000 - 3000 tokens for ? ETH 🦍**
   
-  For the second tranch and beyond we wish to have community input on how best to release them in order to create the sort of community that you wish to have. As an example you, the community, might decide we should sell the next 1000 only to CryptoPunk or BAYC owners as they believe it will create the most hype. Whatever we decide it will be a community oriented decision.
+  For the second tranch and beyond we wish to have community input on how best to release them in order to create the sort of community that you wish to have. As an example you, the community, might decide we should sell the next 1000 only to CryptoPunk or BAYC owners as you believe it will create the most hype. Whatever we decide it will be a community oriented decision.
   
   ...
   
@@ -32,11 +32,11 @@ export const RoadmapPage = (): React.ReactElement => {
 
   **Final Tranch: 9500 - 10,000 tokens 🏆**
   
-  The middle 500 blocks will be a space that the MDTP team will use creatively to keep the community engaged and as the very final tranch we'll auction them off. By this point we hope that the community is engaged and excited about the release of these final most central blocks. We'll ensure that the auction is conducted in the fairest and most fun way possible!
+  The middle 500 blocks will be a space that the MDTP team will use creatively to keep the community engaged and as the very final tranch we'll auction them off. We hope that you'll be as excited about the release of these final and most central blocks as we are. We'll ensure that the auction is conducted in the fairest and most fun way possible!
   
   &nbsp;
 
-  MDTP is a project focused on the exciting and emerging NFT community. We've built it using blockchain technology so that one day it may grow to live beyond us. We're looking forward to going on this journey with you. Let's make crypto history! ❤️
+  MDTP is a project focused on the exciting and emerging NFT community. We've built it using blockchain technology so that one day it can grow to outlive us. We're looking forward to going on this journey with you. Let's make crypto history! ❤️
   `;
 
   return (
