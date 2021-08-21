@@ -17,6 +17,7 @@ import { MdtpClient } from './client/client';
 import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
+import { RoadmapPage } from './pages/RoadmapPage';
 import { TokenMintPage } from './pages/TokenMintPage';
 import { TokenPage } from './pages/TokenPage';
 import { TokenUpdatePage } from './pages/TokenUpdatePage';
@@ -138,6 +139,7 @@ export const App = hot((): React.ReactElement => {
               <Route path='/tokens/:tokenId/update' page={TokenUpdatePage} />
               <Route path='/tokens/:tokenId/mint' page={TokenMintPage} />
               <Route path='/about' page={AboutPage} />
+              <Route path='/roadmap' page={RoadmapPage} />
             </Route>
           </Router>
         </AccountControlProvider>
