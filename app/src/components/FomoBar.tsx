@@ -61,7 +61,7 @@ export const FomoBar = (): React.ReactElement => {
         </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
           <Stack direction={Direction.Horizontal} isFullHeight={true} isFullWidth={true} contentAlignment={Alignment.Center} childAlignment={Alignment.Center} paddingVertical={PaddingSize.Default} shouldAddGutters={true}>
-            {mintedCount == undefined || mintingLimit == undefined ? (
+            {mintedCount == null || mintingLimit == null ? (
               <Text variant='light-bold-small-uppercase'>{'Loading stats...'}</Text>
             ) : hasMintedAll ? (
               <Text variant='light-bold-small-uppercase'>{'All tokens sold 🤩'}</Text>
