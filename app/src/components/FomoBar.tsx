@@ -28,10 +28,10 @@ export const FomoBar = (): React.ReactElement => {
       });
     }
     apiClient.getNetworkStatus(network).then((networkStatus: NetworkStatus): void => {
-      // if (!contract) {
-      setMintedCount(networkStatus.mintCount);
-      setMintingLimit(networkStatus.mintLimit);
-      // }
+      if (!contract) {
+        setMintedCount(networkStatus.mintCount);
+        setMintingLimit(networkStatus.mintLimit);
+      }
       setRandomAvailableTokenId(networkStatus.randomAvailableTokenId);
     });
   }, [apiClient, network, contract]);
