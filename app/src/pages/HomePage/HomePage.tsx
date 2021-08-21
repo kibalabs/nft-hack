@@ -1,11 +1,12 @@
 import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, Stack } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
+import { FomoBar } from '../../components/FomoBar';
 import { GridControl } from '../../components/GridControl';
 import { MetaMaskConnection } from '../../components/MetaMaskConnection';
 import { ShareOverlay } from '../../components/ShareOverlay';
@@ -13,7 +14,6 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { getProductOpenseaUrl } from '../../util/chainUtil';
-import { FomoBar } from '../../components/FomoBar';
 
 const PanelLayer = styled.div`
   width: 95vw;

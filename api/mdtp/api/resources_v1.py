@@ -79,12 +79,14 @@ class ApiNetworkSummary(BaseModel):
 class ApiNetworkStatus(BaseModel):
     mintCount: int
     mintLimit: int
+    randomAvailableTokenId: Optional[int]
 
     @classmethod
     def from_model(cls, model: NetworkStatus):
         return cls(
             mintCount=model.mintCount,
-            mintLimit=model.totalSales,
+            mintLimit=model.mintLimit,
+            randomAvailableTokenId=model.randomAvailableTokenId,
         )
 
 

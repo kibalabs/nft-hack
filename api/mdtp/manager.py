@@ -223,7 +223,8 @@ class MdtpManager:
         return baseImage
 
     async def get_network_status(self, network: str) -> NetworkStatus:
-        return NetworkStatus(mintLimit=1000, mintCount=123)
+        # contract = self.contractStore.get_contract(network=network)
+        return NetworkStatus(mintLimit=1000, mintCount=123, randomAvailableTokenId=456)
 
     async def get_network_summary(self, network: str) -> NetworkSummary:
         try:

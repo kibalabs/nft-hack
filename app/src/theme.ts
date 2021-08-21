@@ -24,8 +24,8 @@ export const buildMDTPTheme = (): ITheme => {
       'font-weight': 'bold',
     },
     uppercase: {
-      'text-transform': 'uppercase'
-    }
+      'text-transform': 'uppercase',
+    },
   };
 
   const overlayBoxTheme = {

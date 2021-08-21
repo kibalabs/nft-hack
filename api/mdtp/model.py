@@ -31,6 +31,7 @@ class NetworkSummary:
 class NetworkStatus:
     mintCount: int
     mintLimit: int
+    randomAvailableTokenId: Optional[int]
 
 
 @dataclasses.dataclass

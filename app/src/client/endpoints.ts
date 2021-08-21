@@ -104,6 +104,27 @@ export class GetNetworkSummaryResponse extends ResponseData {
   }
 }
 
+export class GetNetworkStatusRequest extends RequestData {
+  public toObject = (): Resources.RawObject => {
+    return {
+    };
+  }
+}
+
+export class GetNetworkStatusResponse extends ResponseData {
+  public constructor(
+    readonly networkStatus: Resources.NetworkStatus,
+  ) {
+    super();
+  }
+
+  public static fromObject = (obj: Resources.RawObject): GetNetworkStatusResponse => {
+    return new GetNetworkStatusResponse(
+      Resources.NetworkStatus.fromObject(obj.networkStatus as Resources.RawObject),
+    );
+  }
+}
+
 export class GenerateImageUploadForTokenRequest extends RequestData {
   public toObject = (): Resources.RawObject => {
     return {
