@@ -37,6 +37,7 @@ from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.model import BaseImage
 from mdtp.model import GridItem
+from mdtp.model import NetworkStatus
 from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata
 from mdtp.store.retriever import MdtpRetriever
@@ -220,6 +221,9 @@ class MdtpManager:
         imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
         baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
         return baseImage
+
+    async def get_network_status(self, network: str) -> NetworkStatus:
+        return NetworkStatus(mintLimit=1000, mintCount=123)
 
     async def get_network_summary(self, network: str) -> NetworkSummary:
         try:

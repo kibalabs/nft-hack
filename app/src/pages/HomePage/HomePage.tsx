@@ -127,7 +127,9 @@ export const HomePage = (): React.ReactElement => {
         <Stack.Item growthFactor={1} shrinkFactor={1}>
           <LayerContainer>
             { baseImage === null ? (
-              <LoadingSpinner />
+              <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+                <LoadingSpinner />
+              </LayerContainer.Layer>
             ) : (
               <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
                 <HidingView isHidden={!isPanelShowing}>

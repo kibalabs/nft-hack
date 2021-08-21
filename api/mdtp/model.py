@@ -26,10 +26,18 @@ class NetworkSummary:
     totalSales: int
     averagePrice: float
 
+
+@dataclasses.dataclass
+class NetworkStatus:
+    mintCount: int
+    mintLimit: int
+
+
 @dataclasses.dataclass
 class ImageSize:
     width: int
     height: int
+
 
 class ImageFormat:
     JPG = "image/jpeg"

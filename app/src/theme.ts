@@ -5,8 +5,8 @@ export const defaultTheme = buildTheme();
 export const buildMDTPTheme = (): ITheme => {
   const colors = {
     ...defaultTheme.colors,
-    // brandPrimary: '#F72585',
-    // brandSecondary: '#7209B7',
+    // brandPrimary: '#B5179E',
+    // brandSecondary: '#4895EF',
   };
 
   const textThemes = {
@@ -47,6 +47,13 @@ export const buildMDTPTheme = (): ITheme => {
     fomoBar: {
       'border-radius': '0',
       'background-color': 'black',
+    },
+    fomoBarFill: {
+      'border-radius': '0',
+      'background-image': 'linear-gradient(to right, #B5179E, #4895EF)',
+    },
+    fomoBarPartial: {
+      'border-radius': '0 0.2em 0.2em 0',
     },
     vertical: {
       padding: '1em 0.5em',

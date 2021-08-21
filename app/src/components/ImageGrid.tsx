@@ -20,7 +20,7 @@ interface IImageGridItemProps {
 const ImageGridItem = styled.div<IImageGridItemProps>`
   background-color: #000000;
   outline-style: solid;
-  outline-width: 1px;
+  outline-width: 0.5px;
   outline-color: ${(props: IImageGridItemProps): string => (props.isMainItem ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 0, 0, 0)')};
   opacity: ${(props: IImageGridItemProps): string => (props.isMainItem ? '1' : '0.25')};
   height: 100%;
