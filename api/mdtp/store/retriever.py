@@ -5,8 +5,8 @@ from core.exceptions import NotFoundException
 from core.store.retriever import FieldFilter
 from core.store.retriever import Order
 from core.store.retriever import Retriever
-from sqlalchemy.sql import select
 from sqlalchemy.sql import func
+from sqlalchemy.sql import select
 
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
@@ -36,9 +36,7 @@ class MdtpRetriever(Retriever):
         query = GridItemsTable.select()
         if fieldFilters:
             query = self._apply_field_filters(query=query, table=GridItemsTable, fieldFilters=fieldFilters)
-        print('query', query)
         query = select([func.count()]).select_from(query.alias('t'))
-        print('query', query)
         value = await self.database.fetch_val(query=query)
         return value
 

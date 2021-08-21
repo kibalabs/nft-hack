@@ -50,6 +50,7 @@ export const FomoBar = (): React.ReactElement => {
 
   const hasMintedAll = mintedCount ? mintedCount >= 10000 : false;
   const hasMintedAllInTranch = mintedCount && mintingLimit ? mintedCount >= mintingLimit : false;
+  const remainingCount = mintedCount && mintingLimit ? mintingLimit - mintedCount : 0;
   const progress = mintedCount && mintingLimit ? mintedCount / mintingLimit : 0;
   const barVariant = hasMintedAll ? '' : '-fomoBarPartial';
   return (
@@ -60,7 +61,7 @@ export const FomoBar = (): React.ReactElement => {
         </LayerContainer.Layer>
         <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
           <Stack direction={Direction.Horizontal} isFullHeight={true} isFullWidth={true} contentAlignment={Alignment.Center} childAlignment={Alignment.Center} paddingVertical={PaddingSize.Default} shouldAddGutters={true}>
-            {mintedCount === undefined || mintingLimit === undefined ? (
+            {mintedCount == undefined || mintingLimit == undefined ? (
               <Text variant='light-bold-small-uppercase'>{'Loading stats...'}</Text>
             ) : hasMintedAll ? (
               <Text variant='light-bold-small-uppercase'>{'All tokens sold 🤩'}</Text>
@@ -68,7 +69,7 @@ export const FomoBar = (): React.ReactElement => {
               <Text variant='light-bold-small-uppercase'>{'All available tokens sold, more coming soon 👀'}</Text>
             ) : (
               <LinkBase onClicked={onMintClicked} isEnabled={randomAvailableTokenId != null}>
-                <Text variant='light-bold-small-uppercase'>{`${mintingLimit - mintedCount} / ${mintingLimit} tokens available. Mint one now 🌟`}</Text>
+                <Text variant='light-bold-small-uppercase'>{`${remainingCount} / ${mintingLimit} tokens available. Mint one now 🌟`}</Text>
               </LinkBase>
             )}
           </Stack>
