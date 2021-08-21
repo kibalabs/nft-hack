@@ -15,19 +15,19 @@ class MdtpMessageProcessor(MessageProcessor):
         self.manager = manager
 
     async def process_message(self, message: SqsMessage) -> None:
-        if message.command == UpdateTokenMessageContent.get_command():  # pylint: disable=protected-access
+        if message.command == UpdateTokenMessageContent.get_command():
             messageContent = UpdateTokenMessageContent.parse_obj(message.content)
             await self.manager.update_token(network=messageContent.network, tokenId=messageContent.tokenId)
             return
-        if message.command == UpdateTokensMessageContent.get_command():  # pylint: disable=protected-access
+        if message.command == UpdateTokensMessageContent.get_command():
             messageContent = UpdateTokensMessageContent.parse_obj(message.content)
             await self.manager.update_tokens(network=messageContent.network)
             return
-        if message.command == UploadTokenImageMessageContent.get_command():  # pylint: disable=protected-access
+        if message.command == UploadTokenImageMessageContent.get_command():
             messageContent = UploadTokenImageMessageContent.parse_obj(message.content)
             await self.manager.upload_token_image(network=messageContent.network, tokenId=messageContent.tokenId)
             return
-        if message.command == BuildBaseImageMessageContent.get_command():  # pylint: disable=protected-access
+        if message.command == BuildBaseImageMessageContent.get_command():
             messageContent = BuildBaseImageMessageContent.parse_obj(message.content)
             await self.manager.build_base_image(network=messageContent.network)
             return
