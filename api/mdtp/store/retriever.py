@@ -5,6 +5,8 @@ from core.exceptions import NotFoundException
 from core.store.retriever import FieldFilter
 from core.store.retriever import Order
 from core.store.retriever import Retriever
+from sqlalchemy.sql import func
+from sqlalchemy.sql import select
 
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
@@ -29,6 +31,14 @@ class MdtpRetriever(Retriever):
         rows = await self.database.fetch_all(query=query)
         gridItems = [grid_item_from_row(row) for row in rows]
         return gridItems
+
+    async def count_grid_items(self, fieldFilters: Optional[Sequence[FieldFilter]] = None) -> int:
+        query = GridItemsTable.select()
+        if fieldFilters:
+            query = self._apply_field_filters(query=query, table=GridItemsTable, fieldFilters=fieldFilters)
+        query = select([func.count()]).select_from(query.alias('t'))
+        value = await self.database.fetch_val(query=query)
+        return value
 
     async def list_base_images(self, fieldFilters: Optional[Sequence[FieldFilter]] = None, orders: Optional[Sequence[Order]] = None, limit: Optional[int] = None) -> Sequence[GridItem]:
         query = BaseImagesTable.select()

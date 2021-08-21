@@ -48,6 +48,14 @@ export class MdtpClient extends ServiceClient {
     return response.networkSummary;
   }
 
+  public getNetworkStatus = async (network: string): Promise<Resources.NetworkStatus> => {
+    const method = RestMethod.GET;
+    const path = `v1/networks/${network}/status`;
+    const request = new Endpoints.GetNetworkStatusRequest();
+    const response = await this.makeRequest(method, path, request, Endpoints.GetNetworkStatusResponse);
+    return response.networkStatus;
+  }
+
   public generateImageUploadForToken = async (network: string, tokenId: number): Promise<Resources.PresignedUpload> => {
     const method = RestMethod.POST;
     const path = `v1/networks/${network}/tokens/${tokenId}/generate-image-upload`;

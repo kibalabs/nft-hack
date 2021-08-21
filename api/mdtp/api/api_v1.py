@@ -12,6 +12,7 @@ from mdtp.api.endpoints_v1 import CreateMetadataForTokenGroupResponse
 from mdtp.api.endpoints_v1 import CreateMetadataForTokenRequest
 from mdtp.api.endpoints_v1 import CreateMetadataForTokenResponse
 from mdtp.api.endpoints_v1 import GenerateImageUploadForTokenResponse
+from mdtp.api.endpoints_v1 import GetNetworkStatusResponse
 from mdtp.api.endpoints_v1 import GetNetworkSummaryResponse
 from mdtp.api.endpoints_v1 import ListGridItemsResponse
 from mdtp.api.endpoints_v1 import RetrieveGridItemRequest
@@ -24,6 +25,7 @@ from mdtp.api.endpoints_v1 import UpdateTokensDeferredRequest
 from mdtp.api.endpoints_v1 import UpdateTokensDeferredResponse
 from mdtp.api.resources_v1 import ApiBaseImage
 from mdtp.api.resources_v1 import ApiGridItem
+from mdtp.api.resources_v1 import ApiNetworkStatus
 from mdtp.api.resources_v1 import ApiNetworkSummary
 from mdtp.api.resources_v1 import ApiPresignedUpload
 from mdtp.manager import MdtpManager
@@ -97,5 +99,10 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     async def go_to_image(imageId: str, w: Optional[int] = None, h: Optional[int] = None) -> Response:  # pylint: disable=invalid-name
         imageUrl = await manager.go_to_image(imageId=imageId, width=w, height=h)
         return Response(status_code=301, headers={'location': imageUrl, 'Cache-Control': 'public, max-age=31536000, immutable'})
+
+    @router.get('/networks/{network}/status')
+    async def get_network_status(network: str) -> GetNetworkStatusResponse:
+        networkStatus = await manager.get_network_status(network=network)
+        return GetNetworkStatusResponse(networkStatus=ApiNetworkStatus.from_model(model=networkStatus))
 
     return router

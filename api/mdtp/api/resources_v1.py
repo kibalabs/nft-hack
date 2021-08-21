@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from mdtp.model import BaseImage
 from mdtp.model import GridItem
+from mdtp.model import NetworkStatus
 from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata
 
@@ -72,6 +73,20 @@ class ApiNetworkSummary(BaseModel):
             marketCapitalization=model.marketCapitalization,
             totalSales=model.totalSales,
             averagePrice=model.averagePrice,
+        )
+
+
+class ApiNetworkStatus(BaseModel):
+    mintCount: int
+    mintLimit: int
+    randomAvailableTokenId: Optional[int]
+
+    @classmethod
+    def from_model(cls, model: NetworkStatus):
+        return cls(
+            mintCount=model.mintCount,
+            mintLimit=model.mintLimit,
+            randomAvailableTokenId=model.randomAvailableTokenId,
         )
 
 

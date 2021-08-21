@@ -20,6 +20,7 @@ from core.s3_manager import S3PresignedUpload
 from core.store.retriever import DateFieldFilter
 from core.store.retriever import Direction
 from core.store.retriever import Order
+from core.store.retriever import RandomOrder
 from core.store.retriever import StringFieldFilter
 from core.util import date_util
 from core.util import dict_util
@@ -27,6 +28,7 @@ from core.util import file_util
 from PIL import Image as PILImage
 from web3 import Web3
 
+from mdtp.chain_util import NON_OWNER_ID
 from mdtp.contract_store import ContractStore
 from mdtp.image_manager import ImageManager
 from mdtp.ipfs_manager import IpfsManager
@@ -37,6 +39,7 @@ from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.model import BaseImage
 from mdtp.model import GridItem
+from mdtp.model import NetworkStatus
 from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata
 from mdtp.store.retriever import MdtpRetriever
@@ -221,6 +224,21 @@ class MdtpManager:
         baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
         return baseImage
 
+    async def get_network_status(self, network: str) -> NetworkStatus:
+        mintLimit = await self.contractStore.get_mint_limit(network=network)
+        filters = [
+            StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network),
+            StringFieldFilter(fieldName=GridItemsTable.c.ownerId.key, ne=NON_OWNER_ID),
+        ]
+        mintCount = await self.retriever.count_grid_items(fieldFilters=filters)
+        filters = [
+            StringFieldFilter(fieldName=GridItemsTable.c.network.key, eq=network),
+            StringFieldFilter(fieldName=GridItemsTable.c.ownerId.key, eq=NON_OWNER_ID),
+        ]
+        randomGridItems = await self.retriever.list_grid_items(fieldFilters=filters, orders=[RandomOrder()], limit=1)
+        randomAvailableTokenId = randomGridItems[0].tokenId if len(randomGridItems) > 0 else None
+        return NetworkStatus(mintLimit=mintLimit, mintCount=mintCount, randomAvailableTokenId=randomAvailableTokenId)
+
     async def get_network_summary(self, network: str) -> NetworkSummary:
         try:
             contract = self.contractStore.get_contract(network=network)
@@ -346,7 +364,7 @@ class MdtpManager:
         try:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception: # pylint: disable=broad-except
-            ownerId = '0x0000000000000000000000000000000000000000'
+            ownerId = NON_OWNER_ID
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         contentJson = await self._get_json_content(url=contentUrl)
         title = contentJson.get('title') or contentJson.get('name') or None

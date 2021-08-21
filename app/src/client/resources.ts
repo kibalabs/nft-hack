@@ -80,6 +80,24 @@ export class NetworkSummary {
   }
 }
 
+export class NetworkStatus {
+  // eslint-disable-next-line no-useless-constructor
+  public constructor(
+    readonly mintCount: number,
+    readonly mintLimit: number,
+    readonly randomAvailableTokenId: number | null,
+    // eslint-disable-next-line no-empty-function
+  ) {}
+
+  public static fromObject = (obj: Record<string, unknown>): NetworkStatus => {
+    return new NetworkStatus(
+      Number(obj.mintCount),
+      Number(obj.mintLimit),
+      obj.randomAvailableTokenId ? Number(obj.randomAvailableTokenId) : null,
+    );
+  }
+}
+
 export class PresignedUpload {
   // eslint-disable-next-line no-useless-constructor
   public constructor(

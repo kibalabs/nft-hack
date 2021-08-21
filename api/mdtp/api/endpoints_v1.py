@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from mdtp.api.resources_v1 import ApiBaseImage
 from mdtp.api.resources_v1 import ApiGridItem
+from mdtp.api.resources_v1 import ApiNetworkStatus
 from mdtp.api.resources_v1 import ApiNetworkSummary
 from mdtp.api.resources_v1 import ApiPresignedUpload
 
@@ -98,3 +99,9 @@ class GoToImageRequest(BaseModel):
 
 class GoToImageResponse(BaseModel):
     pass
+
+class GetNetworkStatusRequest(BaseModel):
+    pass
+
+class GetNetworkStatusResponse(BaseModel):
+    networkStatus: ApiNetworkStatus
