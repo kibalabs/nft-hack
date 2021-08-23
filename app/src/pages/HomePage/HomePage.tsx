@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, HidingView, Image, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, Stack, LinkBase } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, HidingView, IconButton, Image, KibaIcon, LayerContainer, LinkBase, LoadingSpinner, PaddingSize, Stack } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
@@ -175,14 +175,14 @@ export const HomePage = (): React.ReactElement => {
                   </React.Fragment>
                 )}
               </Stack>
-            </LayerContainer.Layer>            
-            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}> 
+            </LayerContainer.Layer>
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
               <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
-              <LinkBase onClicked={onRoadmapClicked} isEnabled={true}>
-                <Box width={'100px'}>
-                  <Image source='/assets/open-beta.svg' alternativeText={'Open Beta'}/>
-                </Box>
-              </LinkBase>
+                <LinkBase onClicked={onRoadmapClicked} isEnabled={true}>
+                  <Box width={'100px'}>
+                    <Image source='/assets/open-beta.svg' alternativeText={'Open Beta'} />
+                  </Box>
+                </LinkBase>
               </Stack>
             </LayerContainer.Layer>
             {isPanelShowing && (
