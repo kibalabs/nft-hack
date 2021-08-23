@@ -42,6 +42,13 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       setChainOwnerId(null);
       return;
     }
+    setGridItem(undefined);
+    setTokenMetadata(undefined);
+    setBlockGridItems(undefined);
+    setChainOwnerId(undefined);
+    if (network === undefined) {
+      return;
+    }
     const tokenId = Number(props.tokenId);
     apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
@@ -83,8 +90,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [loadToken]);
 
   const loadBlockGridItems = React.useCallback(async (): Promise<void> => {
-    setBlockGridItems(null);
-    if (gridItem && gridItem.groupId) {
+    if (network === null || gridItem === null) {
+      setBlockGridItems(null);
+      return;
+    }
+    setBlockGridItems(undefined);
+    if (network === undefined || gridItem === undefined) {
+      return;
+    }
+    if (gridItem.groupId) {
       apiClient.listGridItems(network, true, undefined, gridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
         if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== gridItem.groupId) {
           return;
@@ -120,7 +134,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     navigator.navigateTo(`/tokens/${props.tokenId}/mint`);
   };
 
-  const OwnershipInfo = (): React.ReactElement => {
+  const OwnershipInfo = (): React.ReactElement | null => {
+    if (!network) {
+      return null;
+    }
     const isMintable = accounts && (!ownerId || ownerId === NON_OWNER) && contract && contract.mintTokenGroup != null;
     const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === NON_OWNER || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
     const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : 'unknown');
@@ -153,6 +170,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />
+          </React.Fragment>
+        ) : tokenMetadata === null || gridItem === null ? (
+          <React.Fragment>
+            <Spacing variant={PaddingSize.Wide3} />
+            <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
           </React.Fragment>
         ) : (
           <React.Fragment>

@@ -134,7 +134,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   }, [loadData]);
 
   const loadBalance = React.useCallback(async (): Promise<void> => {
-    if (accounts === null || accounts.length === 0 || accountIds === null || accountIds.length === 0 || contract === null) {
+    if (accounts === null || accountIds === null || contract === null) {
       setBalance(null);
       setUserOwnedCount(null);
       return;
@@ -142,6 +142,11 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     setBalance(undefined);
     setUserOwnedCount(undefined);
     if (contract === undefined || accounts === undefined || accountIds === undefined) {
+      return;
+    }
+    if (accounts.length === 0 || accountIds.length === 0) {
+      setBalance(null);
+      setUserOwnedCount(null);
       return;
     }
     accounts[0].getBalance().then((retrievedBalance: BigNumber): void => {
@@ -230,7 +235,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   };
 
   const waitForTransaction = React.useCallback(async (): Promise<void> => {
-    if (transaction) {
+    if (transaction && network) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
       relevantTokenIds.forEach((tokenId: number): void => {
@@ -264,11 +269,11 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         <Text variant='header2' alignment={TextAlignment.Center}>{`Mint Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { contract === null ? (
-          <Text variant='error'>You can't mint tokens if you aren't connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
+        { contract === null || network === null ? (
+          <Text variant='error'>You can&apos;t mint tokens if you aren&apos;t connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
         ) : mintPrice === null || totalMintLimit === null || singleMintLimit === null || mintedCount === null || balance === null || ownershipMintLimit === null || userOwnedCount === null ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || mintedCount === undefined || balance === undefined || ownershipMintLimit === undefined || userOwnedCount === undefined ? (
+        ) : contract === undefined || network === undefined || mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || mintedCount === undefined || balance === undefined || ownershipMintLimit === undefined || userOwnedCount === undefined ? (
           <LoadingSpinner />
         ) : transactionReceipt ? (
           <React.Fragment>

@@ -22,7 +22,7 @@ import { TokenMintPage } from './pages/TokenMintPage';
 import { TokenPage } from './pages/TokenPage';
 import { TokenUpdatePage } from './pages/TokenUpdatePage';
 import { buildMDTPTheme } from './theme';
-import { ChainId, DEFAULT_CHAIN_ID, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
+import { DEFAULT_CHAIN_ID, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
 
 declare global {
   export interface Window {
@@ -119,9 +119,9 @@ export const App = hot((): React.ReactElement => {
     const newNetwork = chainId === undefined ? undefined : chainId === null ? null : getNetwork(chainId);
     setNetwork(newNetwork);
     if (newNetwork === undefined) {
-      setContract(undefined)
+      setContract(undefined);
     } else if (newNetwork === null) {
-      setContract(null)
+      setContract(null);
     } else {
       const contractAddress = getContractAddress(newNetwork);
       const contractJson = getContractJson(newNetwork);

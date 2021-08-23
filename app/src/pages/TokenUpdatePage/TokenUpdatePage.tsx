@@ -106,6 +106,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   }, [loadOwners]);
 
   const onImageFilesChosen = async (shouldUseIpfs: boolean, files: File[]): Promise<UpdateResult> => {
+    if (!network) {
+      return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
+    }
     // TODO(krishan711): ensure there is only one file
     const file = files[0];
     if (shouldUseIpfs) {
@@ -143,7 +146,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   };
 
   const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null): Promise<UpdateResult> => {
-    if (!contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds) {
+    if (!network || !contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
@@ -191,7 +194,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   };
 
   const waitForTransaction = React.useCallback(async (): Promise<void> => {
-    if (transaction) {
+    if (transaction && network) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
       relevantTokenIds.forEach((tokenId: number): void => {
@@ -237,11 +240,11 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { contract === null ? (
-          <Text variant='error'>You can't update a token if you aren't connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
-        ) : (tokenMetadata === null || chainOwnerIds === null || accountIds === null) ? (
+        { contract === null || network === null ? (
+          <Text variant='error'>You can&apos;t update a token if you aren&apos;t connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
+        ) : tokenMetadata === null || chainOwnerIds === null || accountIds === null ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : (tokenMetadata === undefined || accountIds === undefined) ? (
+        ) : contract === undefined || network === undefined || tokenMetadata === undefined || accountIds === undefined ? (
           <LoadingSpinner />
         ) : transactionReceipt ? (
           <React.Fragment>

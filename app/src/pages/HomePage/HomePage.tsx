@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, ResponsiveContainingView, Direction, HidingView, IconButton, Image, KibaIcon, LayerContainer, LinkBase, LoadingSpinner, PaddingSize, Stack, Text, TextAlignment, Spacing } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, HidingView, IconButton, Image, KibaIcon, LayerContainer, LinkBase, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
@@ -47,9 +47,10 @@ export const HomePage = (): React.ReactElement => {
       setBaseImage(null);
       return;
     }
-    if (!gridItems) {
-      setGridItems(undefined);
-      setBaseImage(undefined);
+    setGridItems(undefined);
+    setBaseImage(undefined);
+    if (network === undefined) {
+      return;
     }
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
@@ -141,9 +142,9 @@ export const HomePage = (): React.ReactElement => {
               <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
                 <LoadingSpinner />
               </LayerContainer.Layer>
-            ) : baseImage === null ? (
+            ) : network === null || baseImage === null ? (
               <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-                <ResponsiveContainingView sizeResponsive={{ base: 3, medium: 6, large: 12}}>
+                <ResponsiveContainingView sizeResponsive={{ base: 3, medium: 6, large: 12 }}>
                   <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} shouldAddGutters={true}>
                     { chainId !== null ? (
                       <React.Fragment>
@@ -166,9 +167,9 @@ export const HomePage = (): React.ReactElement => {
                       </React.Fragment>
                     ) : (
                       <React.Fragment>
-                        <Text variant='header2' alignment={TextAlignment.Center}>Something's not right here 🤦‍♂️</Text>
+                        <Text variant='header2' alignment={TextAlignment.Center}>Something&apos;s not right here 🤦‍♂️</Text>
                         <Spacing />
-                        <Text alignment={TextAlignment.Center}>We’re so embarassed. Something has stopped us from loading the gorgeous page you so wanted to see. The best we can do right now is to ask you to refresh and try again whilst we dry off our tears and figure out what's happened here. Thanks!</Text>
+                        <Text alignment={TextAlignment.Center}>We&apos;re so embarrassed. Something has stopped us from loading the gorgeous page you so wanted to see. The best we can do right now is to ask you to refresh and try again whilst we dry off our tears and figure out what&apos;s happened here. Thanks!</Text>
                       </React.Fragment>
                     )}
                   </Stack>
@@ -210,7 +211,7 @@ export const HomePage = (): React.ReactElement => {
                     <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
                     <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
                     <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
-                    <Button variant='overlay' text='Open Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network) || ''} />
+                    <Button variant='overlay' text='Open Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network || '') || ''} />
                   </React.Fragment>
                 )}
               </Stack>

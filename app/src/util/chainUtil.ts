@@ -50,7 +50,6 @@ const networkContractMap: Record<string, ContractInterface | null> = {
 };
 
 export const getNetwork = (chainId: ChainId): string | null => {
-  console.log('getNetwork', chainId);
   return validChainIdNetworkMap[chainId] || null;
 };
 
