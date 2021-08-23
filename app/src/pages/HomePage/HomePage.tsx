@@ -143,12 +143,12 @@ export const HomePage = (): React.ReactElement => {
                 <LoadingSpinner />
               </LayerContainer.Layer>
             ) : network === null || baseImage === null ? (
-              <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-                <ResponsiveContainingView sizeResponsive={{ base: 3, medium: 6, large: 12 }}>
+              <LayerContainer.Layer isFullHeight={false} alignmentVertical={Alignment.Center}>
+                <ResponsiveContainingView sizeResponsive={{ base: 11, small: 8, medium: 6, large: 6 }}>
                   <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} shouldAddGutters={true}>
                     { chainId !== null ? (
                       <React.Fragment>
-                        <Text variant='header2' alignment={TextAlignment.Center}>Hi Crypto-fan 👋</Text>
+                        <Text variant='header2' alignment={TextAlignment.Center}>Hi crypto fan 👋</Text>
                         <Spacing />
                         <Text alignment={TextAlignment.Center}>Good to have you here!</Text>
                         { chainId === ChainId.Mainnet ? (
