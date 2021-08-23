@@ -16,8 +16,12 @@ resource "aws_s3_bucket" "image_bucket" {
   }
   cors_rule {
     allowed_headers = ["*"]
-    allowed_methods = ["POST"]
-    allowed_origins = ["https://milliondollartokenpage.com", "http://localhost:3000"]
+    allowed_methods = ["GET", "POST"]
+    allowed_origins = [
+      "https://milliondollartokenpage.com",
+      "https://new.milliondollartokenpage.com",
+      "http://localhost:3000",
+    ]
     expose_headers = []
   }
 }

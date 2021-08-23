@@ -38,12 +38,12 @@ resource "aws_cloudfront_distribution" "images" {
   }
 
   default_cache_behavior {
-    allowed_methods = ["GET", "HEAD", "OPTIONS"]
-    cached_methods = ["GET", "HEAD"]
+    allowed_methods = ["HEAD", "DELETE", "POST", "GET", "OPTIONS", "PUT", "PATCH"]
+    cached_methods = ["HEAD", "GET", "OPTIONS"]
     target_origin_id = "api"
     viewer_protocol_policy = "redirect-to-https"
     min_ttl = 0
-    default_ttl = 3600
+    default_ttl = 60
     max_ttl = 86400
     forwarded_values {
       query_string = true
