@@ -99,11 +99,11 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     @router.get('/images/{imageId}/go')
     async def go_to_image(imageId: str, w: Optional[int] = None, h: Optional[int] = None) -> Response:  # pylint: disable=invalid-name
         imageUrl = await manager.go_to_image(imageId=imageId, width=w, height=h)
-        return Response(status_code=301, headers={'location': imageUrl, CacheControlHeader.KEY: CacheControlHeader(should_cache_publically=True, max_age=60 * 60 * 24 * 365).to_value_string()})
+        return Response(status_code=301, headers={'location': imageUrl, CacheControlHeader.KEY: CacheControlHeader(shouldCachePublically=True, maxAge=60 * 60 * 24 * 365).to_value_string()})
 
     @router.get('/networks/{network}/status')
     async def get_network_status(response: Response, network: str) -> GetNetworkStatusResponse:
-        response.headers[CacheControlHeader.KEY] = CacheControlHeader(should_cache_publically=True, max_age=60 * 60 * 24 * 365).to_value_string()
+        response.headers[CacheControlHeader.KEY] = CacheControlHeader(shouldCachePublically=True, maxAge=60 * 60 * 24 * 365).to_value_string()
         networkStatus = await manager.get_network_status(network=network)
         return GetNetworkStatusResponse(networkStatus=ApiNetworkStatus.from_model(model=networkStatus))
 

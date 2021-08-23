@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from typing import Mapping
+from typing import Optional
+from typing import Union
+from typing import cast
+
 
 class Header:
     _ALLOW_MANY = False
@@ -28,9 +33,6 @@ class Header:
         return { param: value }
 
 
-from typing import Mapping, Optional, Union
-from typing import cast
-
 class CacheControlSingleHeader(Header):
     _ALLOW_MANY = True
     KEY = 'cache_control'
@@ -51,7 +53,7 @@ class CacheControlSingleHeader(Header):
         return f'{self.param}={self.value}' if self.value is not None else self.param
 
     @classmethod
-    def from_header_value(cls, stringValue: str) -> CacheControlHeader:
+    def from_value_string(cls, stringValue: str) -> CacheControlSingleHeader:
         parts = cls._string_to_parts(stringValue=stringValue)
         param = cast(str, next(iter(parts.keys())))
         value = parts[param]
@@ -75,43 +77,34 @@ class CacheControlHeader(Header):
         PRIVATE = 'private'
         PUBLIC = 'public'
 
-    should_not_cache: bool = False
-    should_not_store: bool = False
-    should_cache_publically: bool = False
-    should_cache_privately: bool = False
-    max_age: int = None
+    shouldNotCache: bool = False
+    shouldNotStore: bool = False
+    shouldCachePublically: bool = False
+    shouldCachePrivately: bool = False
+    maxAge: int = None
 
-    def __init__(self, should_not_cache: bool = False, should_not_store: bool = False, should_cache_publically: bool = False, should_cache_privately: bool = False, max_age: int = None) -> None:
+    def __init__(self, shouldNotCache: bool = False, shouldNotStore: bool = False, shouldCachePublically: bool = False, shouldCachePrivately: bool = False, maxAge: int = None) -> None:
         super().__init__(key=self.KEY)
-        self.should_not_cache = should_not_cache
-        self.should_not_store = should_not_store
-        self.should_cache_publically = should_cache_publically
-        self.should_cache_privately = should_cache_privately
-        self.max_age = max_age
+        self.shouldNotCache = shouldNotCache
+        self.shouldNotStore = shouldNotStore
+        self.shouldCachePublically = shouldCachePublically
+        self.shouldCachePrivately = shouldCachePrivately
+        self.maxAge = maxAge
 
     def to_value_string(self) -> str:
         valueStringParts = []
-        if self.should_not_cache:
+        if self.shouldNotCache:
             valueStringParts.append(self.Param.NO_CACHE)
-        if self.should_not_store:
+        if self.shouldNotStore:
             valueStringParts.append(self.Param.NO_STORE)
-        if self.should_cache_privately:
+        if self.shouldCachePrivately:
             valueStringParts.append(self.Param.PRIVATE)
-        if self.should_cache_publically:
+        if self.shouldCachePublically:
             valueStringParts.append(self.Param.PUBLIC)
-        if self.max_age:
-            valueStringParts.append(self._VALUE_DELIMITER.join([self.Param.MAX_AGE, str(self.max_age)]))
+        if self.maxAge:
+            valueStringParts.append(self._VALUE_DELIMITER.join([self.Param.MAX_AGE, str(self.maxAge)]))
         return self._MANY_DELIMITER.join(valueStringParts)
 
     @classmethod
-    def from_header_value(cls, stringValue: str) -> CacheControlHeader:
-        parts = cls._string_to_parts(stringValue=stringValue)
-        param = cast(str, next(iter(parts.keys())))
-        value = parts[param]
-        numericValue = None
-        if value is not None:
-            try:
-                numericValue = int(float(value))
-            except ValueError:
-                pass
-        return cls(param=param, value=numericValue or value)
+    def from_value_string(cls, stringValue: str) -> CacheControlHeader:
+        raise NotImplementedError()
