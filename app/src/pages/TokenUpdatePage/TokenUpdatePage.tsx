@@ -47,11 +47,14 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     setTokenMetadata(undefined);
-    if (network === null || contract === null || !contract.tokenContentURI) {
+    if (contract === null) {
       setTokenMetadata(null);
       return;
     }
     setTokenMetadata(undefined);
+    if (contract === undefined) {
+      return;
+    }
     // NOTE(krishan711): this only works for the new contracts
     contract.tokenContentURI(Number(props.tokenId)).then((tokenMetadataUrl: string): void => {
       const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/') : tokenMetadataUrl;
@@ -64,7 +67,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         setTokenMetadata(null);
       });
     });
-  }, [props.tokenId, network, contract, requester]);
+  }, [props.tokenId, contract, requester]);
 
   React.useEffect((): void => {
     loadToken();
@@ -72,11 +75,14 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
 
   const loadOwners = React.useCallback(async (): Promise<void> => {
     setChainOwnerIds(undefined);
-    if (network === null || contract === null) {
+    if (contract === null) {
       setChainOwnerIds(null);
       return;
     }
     setChainOwnerIds(undefined);
+    if (contract === undefined) {
+      return;
+    }
     const chainOwnerIdPromises = relevantTokenIds.map(async (internalTokenId: number): Promise<string | null> => {
       try {
         return await contract.ownerOf(internalTokenId);
@@ -93,13 +99,16 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       return accumulator;
     }, new Map<number, string>());
     setChainOwnerIds(calculatedChainOwnerIds);
-  }, [network, contract, relevantTokenIds]);
+  }, [contract, relevantTokenIds]);
 
   React.useEffect((): void => {
     loadOwners();
   }, [loadOwners]);
 
   const onImageFilesChosen = async (shouldUseIpfs: boolean, files: File[]): Promise<UpdateResult> => {
+    if (!network) {
+      return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
+    }
     // TODO(krishan711): ensure there is only one file
     const file = files[0];
     if (shouldUseIpfs) {
@@ -137,7 +146,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   };
 
   const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null): Promise<UpdateResult> => {
-    if (!contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds) {
+    if (!network || !contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
@@ -185,7 +194,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   };
 
   const waitForTransaction = React.useCallback(async (): Promise<void> => {
-    if (transaction) {
+    if (transaction && network) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
       relevantTokenIds.forEach((tokenId: number): void => {
@@ -231,9 +240,11 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { (tokenMetadata === null || chainOwnerIds === null || accountIds === null) ? (
+        { contract === null || network === null ? (
+          <Text variant='error'>You can&apos;t update a token if you aren&apos;t connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
+        ) : tokenMetadata === null || chainOwnerIds === null || accountIds === null ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : (tokenMetadata === undefined || accountIds === undefined) ? (
+        ) : contract === undefined || network === undefined || tokenMetadata === undefined || accountIds === undefined ? (
           <LoadingSpinner />
         ) : transactionReceipt ? (
           <React.Fragment>

@@ -23,11 +23,11 @@ export type TokenPageProps = {
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
   const { contract, requester, apiClient, network, web3 } = useGlobals();
-  const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
-  const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null>(null);
-  const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null>(null);
-  const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
-  const [ownerName, setOwnerName] = React.useState<string | null>(null);
+  const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
+  const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
+  const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
+  const [chainOwnerId, setChainOwnerId] = React.useState<string | null | undefined>(undefined);
+  const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
@@ -35,11 +35,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
 
   const loadToken = React.useCallback(async (): Promise<void> => {
-    setGridItem(null);
-    setTokenMetadata(null);
-    setBlockGridItems(null);
-    setChainOwnerId(null);
     if (network === null) {
+      setGridItem(null);
+      setTokenMetadata(null);
+      setBlockGridItems(null);
+      setChainOwnerId(null);
+      return;
+    }
+    setGridItem(undefined);
+    setTokenMetadata(undefined);
+    setBlockGridItems(undefined);
+    setChainOwnerId(undefined);
+    if (network === undefined) {
       return;
     }
     const tokenId = Number(props.tokenId);
@@ -83,8 +90,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [loadToken]);
 
   const loadBlockGridItems = React.useCallback(async (): Promise<void> => {
-    setBlockGridItems(null);
-    if (gridItem && gridItem.groupId) {
+    if (network === null || gridItem === null) {
+      setBlockGridItems(null);
+      return;
+    }
+    setBlockGridItems(undefined);
+    if (network === undefined || gridItem === undefined) {
+      return;
+    }
+    if (gridItem.groupId) {
       apiClient.listGridItems(network, true, undefined, gridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
         if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== gridItem.groupId) {
           return;
@@ -99,10 +113,12 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [loadBlockGridItems]);
 
   const loadOwnerName = React.useCallback(async (): Promise<void> => {
-    setOwnerName(null);
+    setOwnerName(undefined);
     if (ownerId && web3) {
       const retrievedOwnerName = await web3.lookupAddress(ownerId);
       setOwnerName(retrievedOwnerName);
+    } else {
+      setOwnerName(null);
     }
   }, [ownerId, web3]);
 
@@ -118,22 +134,23 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     navigator.navigateTo(`/tokens/${props.tokenId}/mint`);
   };
 
-  const OwnershipInfo = (): React.ReactElement => {
-    const isMintable = accounts && (!ownerId || ownerId === NON_OWNER) && contract && contract.mintTokenGroup != null;
-    const isBuyable = network === 'rinkeby' && (!ownerId || ownerId === NON_OWNER || ownerId === '0xCE11D6fb4f1e006E5a348230449Dc387fde850CC');
+  const OwnershipInfo = (): React.ReactElement | null => {
+    if (!network || !contract) {
+      return null;
+    }
+    const isMintable = (!ownerId || ownerId === NON_OWNER) && contract;
     const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : 'unknown');
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
-        { isMintable ? (
+        { isMintable && (
           <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
-        ) : isBuyable ? (
-          <Button variant='primary' target={'https://fec48oyedt9.typeform.com/to/kzsI48jo'} text='Buy Token' />
-        ) : (
+        )}
+        { ownerName && (
           <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
         )}
-        { gridItem && !isMintable && (
+        { gridItem && (
           <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
-            <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isBuyable || isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
+            <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
             <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
           </Stack>
         )}
@@ -147,10 +164,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         <title>{`Token ${props.tokenId} | Million Dollar Token Page`}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        { !tokenMetadata ? (
+        { tokenMetadata === undefined || gridItem === undefined ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />
+          </React.Fragment>
+        ) : tokenMetadata === null || gridItem === null ? (
+          <React.Fragment>
+            <Spacing variant={PaddingSize.Wide3} />
+            <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
           </React.Fragment>
         ) : (
           <React.Fragment>

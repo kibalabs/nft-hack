@@ -24,11 +24,11 @@ export enum ChainId {
   Mumbai = 80001,
 }
 
-const defaultChainId = ChainId.Rinkeby;
+export const DEFAULT_CHAIN_ID = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string> = {
   [ChainId.Rinkeby]: 'rinkeby5',
-  [ChainId.Mainnet]: 'mainnet',
+  // [ChainId.Mainnet]: 'mainnet',
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
@@ -50,11 +50,11 @@ const networkContractMap: Record<string, ContractInterface | null> = {
 };
 
 export const getNetwork = (chainId: ChainId): string | null => {
-  return validChainIdNetworkMap[chainId] || validChainIdNetworkMap[defaultChainId];
+  return validChainIdNetworkMap[chainId] || null;
 };
 
 export const getContractAddress = (network: string): string | null => {
-  return networkContractAddressMap[network];
+  return networkContractAddressMap[network] || null;
 };
 
 export const getContractJson = (network: string): ContractInterface | null => {
