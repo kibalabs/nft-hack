@@ -1,14 +1,13 @@
-import dataclasses
 from __future__ import annotations
 
 
-@dataclasses.dataclass
 class Header:
     _ALLOW_MANY = False
     _VALUE_DELIMITER = '='
     _MANY_DELIMITER = ','
 
-    _key: str
+    def __init__(self, key: str) -> None:
+        self._key = key
 
     @property
     def key(self) -> str:
@@ -34,17 +33,19 @@ from typing import cast
 
 class CacheControlSingleHeader(Header):
     _ALLOW_MANY = True
+    KEY = 'cache_control'
 
-    class Key:
+    class Param:
         NO_CACHE = 'no-cache'
         NO_STORE = 'no-store'
         MAX_AGE = 'max-age'
         PRIVATE = 'private'
         PUBLIC = 'public'
 
-    _key = 'cache_control'
-    param: str
-    value: Union[None, int, str] = None
+    def __init__(self, param: str, value: Union[None, int, str] = None) -> None:
+        super().__init__(key=self.KEY)
+        self.param = param
+        self.value = value
 
     def to_value_string(self) -> str:
         return f'{self.param}={self.value}' if self.value is not None else self.param
@@ -65,33 +66,41 @@ class CacheControlSingleHeader(Header):
 
 class CacheControlHeader(Header):
     _ALLOW_MANY = True
+    KEY = 'cache_control'
 
-    class Key:
+    class Param:
         NO_CACHE = 'no-cache'
         NO_STORE = 'no-store'
         MAX_AGE = 'max-age'
         PRIVATE = 'private'
         PUBLIC = 'public'
 
-    _key = 'cache_control'
     should_not_cache: bool = False
     should_not_store: bool = False
     should_cache_publically: bool = False
     should_cache_privately: bool = False
     max_age: int = None
 
+    def __init__(self, should_not_cache: bool = False, should_not_store: bool = False, should_cache_publically: bool = False, should_cache_privately: bool = False, max_age: int = None) -> None:
+        super().__init__(key=self.KEY)
+        self.should_not_cache = should_not_cache
+        self.should_not_store = should_not_store
+        self.should_cache_publically = should_cache_publically
+        self.should_cache_privately = should_cache_privately
+        self.max_age = max_age
+
     def to_value_string(self) -> str:
         valueStringParts = []
         if self.should_not_cache:
-            valueStringParts.append(self.Key.NO_CACHE)
+            valueStringParts.append(self.Param.NO_CACHE)
         if self.should_not_store:
-            valueStringParts.append(self.Key.NO_STORE)
+            valueStringParts.append(self.Param.NO_STORE)
         if self.should_cache_privately:
-            valueStringParts.append(self.Key.PRIVATE)
+            valueStringParts.append(self.Param.PRIVATE)
         if self.should_cache_publically:
-            valueStringParts.append(self.Key.PUBLIC)
+            valueStringParts.append(self.Param.PUBLIC)
         if self.max_age:
-            valueStringParts.append(self._VALUE_DELIMITER.join(self.Key.MAX_AGE, self.max_age))
+            valueStringParts.append(self._VALUE_DELIMITER.join([self.Param.MAX_AGE, str(self.max_age)]))
         return self._MANY_DELIMITER.join(valueStringParts)
 
     @classmethod

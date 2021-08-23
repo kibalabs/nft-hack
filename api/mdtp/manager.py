@@ -27,6 +27,7 @@ from core.util import dict_util
 from core.util import file_util
 from PIL import Image as PILImage
 from web3 import Web3
+from mdtp.cache_control_header import CacheControlHeader
 
 from mdtp.chain_util import NON_OWNER_ID
 from mdtp.contract_store import ContractStore
@@ -49,8 +50,8 @@ from mdtp.store.schema import GridItemsTable
 
 _KILOBYTE = 1024
 _MEGABYTE = _KILOBYTE * 1024
-_CACHE_CONTROL_TEMPORARY_FILE = 'public,max-age=1'
-_CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
+_CACHE_CONTROL_TEMPORARY_FILE = CacheControlHeader(should_cache_publically=True, max_age=1).to_value_string()
+_CACHE_CONTROL_FINAL_FILE = CacheControlHeader(should_cache_publically=True, max_age=31536000).to_value_string()
 
 class MdtpManager:
 
