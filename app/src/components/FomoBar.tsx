@@ -40,7 +40,7 @@ export const FomoBar = (): React.ReactElement => {
     updateData();
   }, [updateData]);
 
-  useInterval(1000, (): void => {
+  useInterval(60, (): void => {
     updateData();
   });
 

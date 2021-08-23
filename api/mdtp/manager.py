@@ -28,6 +28,7 @@ from core.util import file_util
 from PIL import Image as PILImage
 from web3 import Web3
 
+from mdtp.cache_control_header import CacheControlHeader
 from mdtp.chain_util import NON_OWNER_ID
 from mdtp.contract_store import ContractStore
 from mdtp.image_manager import ImageManager
@@ -49,8 +50,8 @@ from mdtp.store.schema import GridItemsTable
 
 _KILOBYTE = 1024
 _MEGABYTE = _KILOBYTE * 1024
-_CACHE_CONTROL_TEMPORARY_FILE = 'public,max-age=1'
-_CACHE_CONTROL_FINAL_FILE = 'public,max-age=31536000'
+_CACHE_CONTROL_TEMPORARY_FILE = CacheControlHeader(shouldCachePublically=True, maxAge=1).to_value_string()
+_CACHE_CONTROL_FINAL_FILE = CacheControlHeader(shouldCachePublically=True, maxAge=60 * 60 * 24 * 365).to_value_string()
 
 class MdtpManager:
 
@@ -281,7 +282,7 @@ class MdtpManager:
             imageUrls = [f'ipfs://{cid}/{imageFileName}' for imageFileName in imageFileNames]
         else:
             target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/gi/{str(uuid.uuid4())}'
-            await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl='public,max-age=31536000')
+            await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
             outputUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
             imageUrls = [os.path.join(outputUrl, imageFileName) for imageFileName in imageFileNames]
         await file_util.remove_directory(directory=outputDirectory)
@@ -310,7 +311,7 @@ class MdtpManager:
             tokenMetadataUrls = [f'ipfs://{cid}/{metadataFileName}' for metadataFileName in metadataFileNames]
         else:
             target = f's3://mdtp-images/uploads/n/{network}/t/{tokenId}/gm/{str(uuid.uuid4())}'
-            await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl='public,max-age=31536000')
+            await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
             outputUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
             tokenMetadataUrls = [os.path.join(outputUrl, metadataFileName) for metadataFileName in metadataFileNames]
         await file_util.remove_directory(directory=outputDirectory)

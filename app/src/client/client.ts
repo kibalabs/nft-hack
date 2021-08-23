@@ -5,7 +5,7 @@ import * as Resources from './resources';
 
 export class MdtpClient extends ServiceClient {
   public constructor(requester: Requester, baseUrl?: string) {
-    super(requester, baseUrl || 'https://api.milliondollartokenpage.com');
+    super(requester, baseUrl || 'https://d2a7i2107hou45.cloudfront.net');
   }
 
   public getTokenDefaultContent = async (tokenId: number): Promise<Resources.TokenMetadata> => {
