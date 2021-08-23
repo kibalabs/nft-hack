@@ -19,15 +19,15 @@ Today the internet is a lot more fun to play with and cryptocurrencies like [Bit
 
 MDTP has 10,000 blocks on a 1000 x 1000 2D grid represented by 10,000 NFTs on the Ethereum network. Each NFT can either be minted or bought second-hand from someone who's already minted it. Once owned, you can put any image within that block, along with a title, description and url to another website!
 
-![Pixel Blocks](/assets/pixel-block.gif)
+![Blocks](/assets/pixel-block.mp4)
 
-To make use of Ethereum and Web3 technologies you need to have a Web3 enabled plugin like [Metamask](https://metamask.io/) or browser like [Brave](https://brave.com/), which has a native crypto wallet, and have some cryptocurrency in your wallet. You'll need [Ether](https://ethereum.org/en/eth/) in your wallet to pay for the [minting fees](https://postergrind.com/how-much-does-it-cost-to-mint-an-nft/) of the NFT collection and [mining fees](https://www.coindesk.com/learn/ethereum-101/ethereum-mining-works) of the network.
+To mint new blocks and make use of Ethereum and Web3 technologies you need to have a Web3 enabled plugin like [Metamask](https://metamask.io/) or browser like [Brave](https://brave.com/), which has a native crypto wallet, and to have some cryptocurrency in your wallet. You'll need [Ether](https://ethereum.org/en/eth/) in your wallet to pay for the [minting fees](https://postergrind.com/how-much-does-it-cost-to-mint-an-nft/) of the NFT collection and [mining fees](https://www.coindesk.com/learn/ethereum-101/ethereum-mining-works) of the network. Simply select "mint" in the side-panel for a block that's not yet been minted and confirm the transaction.
 
-![Metamask](/assets/metamask.gif)
+![Mint](/assets/minting-block.mp4)
 
-Once you own the NFT that represents a block you can then change the image, title, description and url by clicking it and selecting "update token" on the side panel that appears. By connecting your wallet the site will recognises that you own that NFT and allow you to update the content associated with that block.
+Once you own the NFT that represents a block you can then change the image, title, description and url by clicking it and selecting "update token" on the side-panel. By connecting your wallet the site will recognises that you own that NFT and allow you to update the content associated with that block.
 
-![Update Block](/assets/update-block.gif)
+![Update](/assets/update-block.mp4)
 
 And its a simple as that, buy blocks as NFTs and share your website, work or creations in this digital content space with the entire world!
 
