@@ -13,12 +13,12 @@ import { ChainId } from './util/chainUtil';
 export interface Globals {
   requester: Requester;
   localStorageClient: LocalStorageClient;
-  contract: ethers.Contract | null;
-  web3: ethers.providers.Web3Provider | null;
   apiClient: MdtpClient;
-  network: string;
-  chainId: ChainId;
   web3StorageClient: Web3Storage;
+  network: string | null | undefined;
+  contract: ethers.Contract | null | undefined;
+  web3: ethers.providers.Web3Provider | null | undefined;
+  chainId: ChainId | null | undefined;
 }
 
 export const GlobalsContext = React.createContext<Globals | null>(null);

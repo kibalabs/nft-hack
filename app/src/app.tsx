@@ -5,7 +5,7 @@ import { Route, Router, useInitialization } from '@kibalabs/core-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
 import { KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
-import { ethers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -22,7 +22,7 @@ import { TokenMintPage } from './pages/TokenMintPage';
 import { TokenPage } from './pages/TokenPage';
 import { TokenUpdatePage } from './pages/TokenUpdatePage';
 import { buildMDTPTheme } from './theme';
-import { ChainId, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
+import { ChainId, DEFAULT_CHAIN_ID, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
 
 declare global {
   export interface Window {
@@ -45,21 +45,21 @@ const theme = buildMDTPTheme();
 const globals: Globals = {
   requester,
   localStorageClient,
-  contract: null,
-  web3: null,
   apiClient,
-  network: null,
-  chainId: ChainId.Rinkeby,
   web3StorageClient,
+  contract: undefined,
+  web3: undefined,
+  network: undefined,
+  chainId: undefined,
 };
 
 export const App = hot((): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<ethers.Signer[] | undefined | null>(undefined);
   const [accountIds, setAccountIds] = React.useState<string[] | undefined | null>(undefined);
-  const [chainId, setChainId] = React.useState<number | null>(null);
-  const [network, setNetwork] = React.useState<string | null>(null);
-  const [contract, setContract] = React.useState<ethers.Contract | null>(null);
-  const [web3, setWeb3] = React.useState<ethers.providers.Web3Provider | null>(null);
+  const [chainId, setChainId] = React.useState<number | null | undefined>(undefined);
+  const [network, setNetwork] = React.useState<string | null | undefined>(undefined);
+  const [contract, setContract] = React.useState<ethers.Contract | null | undefined>(undefined);
+  const [web3, setWeb3] = React.useState<ethers.providers.Web3Provider | null | undefined>(undefined);
 
   const loadWeb3 = async (): Promise<void> => {
     const provider = await detectEthereumProvider();
@@ -67,7 +67,7 @@ export const App = hot((): React.ReactElement => {
       setAccounts(null);
       setAccountIds(null);
       setContract(null);
-      setChainId(ChainId.Rinkeby);
+      setChainId(DEFAULT_CHAIN_ID);
       return;
     }
 
@@ -92,7 +92,8 @@ export const App = hot((): React.ReactElement => {
     if (!web3) {
       return;
     }
-    setChainId(await web3.provider.request({ method: 'eth_chainId' }));
+    const newChainId = await web3.provider.request({ method: 'eth_chainId' });
+    setChainId(BigNumber.from(newChainId).toNumber());
     web3.provider.on('chainChanged', onChainChanged);
     onAccountsChanged(await web3.provider.request({ method: 'eth_accounts' }));
     web3.provider.on('accountsChanged', onAccountsChanged);
@@ -115,14 +116,20 @@ export const App = hot((): React.ReactElement => {
   }, [loadAccounts]);
 
   React.useEffect((): void => {
-    const newNetwork = chainId ? getNetwork(chainId) : null;
+    const newNetwork = chainId === undefined ? undefined : chainId === null ? null : getNetwork(chainId);
     setNetwork(newNetwork);
-    const contractAddress = newNetwork ? getContractAddress(newNetwork) : null;
-    const contractJson = newNetwork ? getContractJson(newNetwork) : null;
-    if (web3 && contractAddress) {
-      setContract(new ethers.Contract(contractAddress, contractJson.abi, web3));
+    if (newNetwork === undefined) {
+      setContract(undefined)
+    } else if (newNetwork === null) {
+      setContract(null)
     } else {
-      setContract(null);
+      const contractAddress = getContractAddress(newNetwork);
+      const contractJson = getContractJson(newNetwork);
+      if (web3 && contractAddress) {
+        setContract(new ethers.Contract(contractAddress, contractJson.abi, web3));
+      } else {
+        setContract(null);
+      }
     }
   }, [chainId, web3]);
 
@@ -131,7 +138,7 @@ export const App = hot((): React.ReactElement => {
       <Helmet>
         <link href='https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;600;700;800;900&display=swap' rel='stylesheet' />
       </Helmet>
-      <GlobalsProvider globals={{ ...globals, network, contract, web3 }}>
+      <GlobalsProvider globals={{ ...globals, network, contract, web3, chainId }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router>
             <Route default={true} page={HomePage}>

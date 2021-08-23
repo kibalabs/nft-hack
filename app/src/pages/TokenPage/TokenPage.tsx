@@ -23,11 +23,11 @@ export type TokenPageProps = {
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
   const { contract, requester, apiClient, network, web3 } = useGlobals();
-  const [gridItem, setGridItem] = React.useState<GridItem | null>(null);
-  const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null>(null);
-  const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null>(null);
-  const [chainOwnerId, setChainOwnerId] = React.useState<string | null>(null);
-  const [ownerName, setOwnerName] = React.useState<string | null>(null);
+  const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
+  const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
+  const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
+  const [chainOwnerId, setChainOwnerId] = React.useState<string | null | undefined>(undefined);
+  const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
@@ -35,11 +35,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
 
   const loadToken = React.useCallback(async (): Promise<void> => {
-    setGridItem(null);
-    setTokenMetadata(null);
-    setBlockGridItems(null);
-    setChainOwnerId(null);
     if (network === null) {
+      setGridItem(null);
+      setTokenMetadata(null);
+      setBlockGridItems(null);
+      setChainOwnerId(null);
       return;
     }
     const tokenId = Number(props.tokenId);
@@ -99,10 +99,12 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [loadBlockGridItems]);
 
   const loadOwnerName = React.useCallback(async (): Promise<void> => {
-    setOwnerName(null);
+    setOwnerName(undefined);
     if (ownerId && web3) {
       const retrievedOwnerName = await web3.lookupAddress(ownerId);
       setOwnerName(retrievedOwnerName);
+    } else {
+      setOwnerName(null);
     }
   }, [ownerId, web3]);
 
@@ -147,7 +149,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         <title>{`Token ${props.tokenId} | Million Dollar Token Page`}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        { !tokenMetadata ? (
+        { tokenMetadata === undefined || gridItem === undefined ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />

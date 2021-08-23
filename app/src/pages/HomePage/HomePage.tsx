@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, HidingView, IconButton, Image, KibaIcon, LayerContainer, LinkBase, LoadingSpinner, PaddingSize, Stack } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, ResponsiveContainingView, Direction, HidingView, IconButton, Image, KibaIcon, LayerContainer, LinkBase, LoadingSpinner, PaddingSize, Stack, Text, TextAlignment, Spacing } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
@@ -13,7 +13,7 @@ import { ShareOverlay } from '../../components/ShareOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
-import { getProductOpenseaUrl } from '../../util/chainUtil';
+import { ChainId, getProductOpenseaUrl } from '../../util/chainUtil';
 
 const PanelLayer = styled.div`
   width: 95vw;
@@ -33,9 +33,9 @@ const DEFAULT_SCALE = 1;
 export const HomePage = (): React.ReactElement => {
   const navigator = useNavigator();
   const location = useLocation();
-  const { apiClient, network } = useGlobals();
-  const [gridItems, setGridItems] = React.useState<GridItem[] | null>(null);
-  const [baseImage, setBaseImage] = React.useState<BaseImage | null>(null);
+  const { apiClient, network, chainId } = useGlobals();
+  const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
+  const [baseImage, setBaseImage] = React.useState<BaseImage | null | undefined>(undefined);
   const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
   const [isShareDialogOpen, setIsShareDialogOpen] = React.useState<boolean>(false);
   const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
@@ -43,7 +43,13 @@ export const HomePage = (): React.ReactElement => {
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
+      setGridItems(null);
+      setBaseImage(null);
       return;
+    }
+    if (!gridItems) {
+      setGridItems(undefined);
+      setBaseImage(undefined);
     }
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
@@ -131,9 +137,42 @@ export const HomePage = (): React.ReactElement => {
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true}>
         <Stack.Item growthFactor={1} shrinkFactor={1}>
           <LayerContainer>
-            { baseImage === null ? (
+            { network === undefined || baseImage === undefined ? (
               <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
                 <LoadingSpinner />
+              </LayerContainer.Layer>
+            ) : baseImage === null ? (
+              <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
+                <ResponsiveContainingView sizeResponsive={{ base: 3, medium: 6, large: 12}}>
+                  <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} shouldAddGutters={true}>
+                    { chainId !== null ? (
+                      <React.Fragment>
+                        <Text variant='header2' alignment={TextAlignment.Center}>Hi Crypto-fan 👋</Text>
+                        <Spacing />
+                        <Text alignment={TextAlignment.Center}>Good to have you here!</Text>
+                        { chainId === ChainId.Mainnet ? (
+                          <Text alignment={TextAlignment.Center}>We haven’t launch on mainnet just yet. </Text>
+                        ) : (
+                          <Text alignment={TextAlignment.Center}>You’re on a chain we don’t recognize.</Text>
+                        )}
+                        <Text alignment={TextAlignment.Center}>We’re currently running our open beta on Rinkeby.</Text>
+                        <Text alignment={TextAlignment.Center}>Please switch your wallet to ‘Rinkeby Test Network’. You can choose this at the top of the MetaMask dropdown.</Text>
+                        <Text alignment={TextAlignment.Center}>The good news is whilst we are in beta everything is free! We’ll even give you free tokens to the real project for everyone you refer whilst we are in beta 🙌</Text>
+                        <Spacing />
+                        <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
+                          <Button variant='primary' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
+                          <Button variant='primary' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} onClicked={onRoadmapClicked} />
+                        </Stack>
+                      </React.Fragment>
+                    ) : (
+                      <React.Fragment>
+                        <Text variant='header2' alignment={TextAlignment.Center}>Something's not right here 🤦‍♂️</Text>
+                        <Spacing />
+                        <Text alignment={TextAlignment.Center}>We’re so embarassed. Something has stopped us from loading the gorgeous page you so wanted to see. The best we can do right now is to ask you to refresh and try again whilst we dry off our tears and figure out what's happened here. Thanks!</Text>
+                      </React.Fragment>
+                    )}
+                  </Stack>
+                </ResponsiveContainingView>
               </LayerContainer.Layer>
             ) : (
               <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>

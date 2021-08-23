@@ -236,7 +236,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
         width: '100%',
         height: '100%',
         overflow: 'hidden',
-        backgroundColor: '#111111',
+        backgroundColor: '#000000',
         margin: 'auto',
       }}
     >

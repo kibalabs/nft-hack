@@ -58,7 +58,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   }, [props.tokenId, requestHeight, requestWidth, isMintingMultiple]);
 
   const loadData = React.useCallback(async (): Promise<void> => {
-    if (network === null || contract === null) {
+    if (contract === null) {
       setMintPrice(null);
       setTotalMintLimit(null);
       setSingleMintLimit(null);
@@ -69,7 +69,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     setTotalMintLimit(undefined);
     setSingleMintLimit(undefined);
     setMintedCount(undefined);
-
+    if (contract === undefined) {
+      return;
+    }
     if (contract.mintPrice) {
       contract.mintPrice().then((retrievedMintPrice: BigNumber): void => {
         setMintPrice(retrievedMintPrice);
@@ -125,20 +127,23 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       console.error('Contract does not support mintedCount');
       setMintedCount(null);
     }
-  }, [network, contract]);
+  }, [contract]);
 
   React.useEffect((): void => {
     loadData();
   }, [loadData]);
 
   const loadBalance = React.useCallback(async (): Promise<void> => {
-    if (!accounts || accounts.length === 0 || !accountIds || accountIds.length === 0 || !contract) {
+    if (accounts === null || accounts.length === 0 || accountIds === null || accountIds.length === 0 || contract === null) {
       setBalance(null);
       setUserOwnedCount(null);
       return;
     }
     setBalance(undefined);
     setUserOwnedCount(undefined);
+    if (contract === undefined || accounts === undefined || accountIds === undefined) {
+      return;
+    }
     accounts[0].getBalance().then((retrievedBalance: BigNumber): void => {
       setBalance(retrievedBalance);
     }).catch((error: unknown) => {
@@ -163,11 +168,14 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   }, [loadBalance]);
 
   const loadOwners = React.useCallback(async (): Promise<void> => {
-    if (network === null || contract === null) {
+    if (contract === null) {
       setOwnedTokenIds(null);
       return;
     }
     setOwnedTokenIds(undefined);
+    if (contract === undefined) {
+      return;
+    }
     const chainOwnerIdPromises = relevantTokenIds.map(async (tokenId: number): Promise<string | null> => {
       try {
         return await contract.ownerOf(tokenId);
@@ -186,7 +194,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       return accumulator;
     }, []);
     setOwnedTokenIds(calculatedOwnedTokenIds);
-  }, [network, contract, relevantTokenIds]);
+  }, [contract, relevantTokenIds]);
 
   React.useEffect((): void => {
     loadOwners();
@@ -256,9 +264,11 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         <Text variant='header2' alignment={TextAlignment.Center}>{`Mint Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
         <Spacing />
-        { mintPrice === null || totalMintLimit === null || singleMintLimit === null || mintedCount === null || balance === null ? ( // || ownershipMintLimit === null || userOwnedCount === null
+        { contract === null ? (
+          <Text variant='error'>You can't mint tokens if you aren't connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
+        ) : mintPrice === null || totalMintLimit === null || singleMintLimit === null || mintedCount === null || balance === null || ownershipMintLimit === null || userOwnedCount === null ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || ownershipMintLimit === undefined || userOwnedCount === undefined || mintedCount === undefined || balance === undefined ? (
+        ) : mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || mintedCount === undefined || balance === undefined || ownershipMintLimit === undefined || userOwnedCount === undefined ? (
           <LoadingSpinner />
         ) : transactionReceipt ? (
           <React.Fragment>
