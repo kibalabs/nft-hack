@@ -14,7 +14,7 @@ export const RoadmapPage = (): React.ReactElement => {
 
   We’re still in BETA so minting NFTs is literally free, you just need to connect to the [Rinkeby testnet](https://medium.com/compound-finance/the-beginners-guide-to-using-an-ethereum-test-network-95bbbc85fc1d) in your wallet and get some Rinkeby ETH which you can get for free from a [faucet](https://faucet.rinkeby.io/)! 
   
-  When we move over to mainnet you’ll actually need to pay for those NFTs. However, we'll be giving you 1 NFT free just for joining the BETA, and for every 1 new person you get onto our Discord we’ll let you have 1 extra NFT free up to a maximum of 40 NFTs!
+  When we move over to mainnet you’ll actually need to pay for those NFTs. However, we'll be giving you 1 NFT free just for joining the BETA, and for every 1 new person you get onto our Discord we’ll let you have 1 extra NFT free up to a maximum of 35 NFTs!
   
   We're giving away up to a maximum of 2000 NFTs in BETA so make sure to get in quick and share with your friends and followers now!
 
