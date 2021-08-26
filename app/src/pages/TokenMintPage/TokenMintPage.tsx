@@ -38,7 +38,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const totalPrice = mintPrice ? mintPrice.mul(requestCount) : undefined;
   const isOverSingleLimit = singleMintLimit ? requestCount > singleMintLimit : false;
   const isOverTotalLimit = (totalMintLimit && mintedCount) ? requestCount + mintedCount > totalMintLimit : false;
-  const isOverOwnershipLimit = false; // (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
+  const isOverOwnershipLimit = (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
   const isOverBalance = (balance && totalPrice) ? balance < totalPrice : false;
   const hasMintedToken = ownedTokenIds ? ownedTokenIds.length > 0 : false;
 
