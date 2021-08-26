@@ -8,9 +8,9 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { BigNumber, ethers } from 'ethers';
 import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { hot } from 'react-hot-loader/root';
+import { toast, ToastContainer } from 'react-toastify';
 import { Web3Storage } from 'web3.storage/dist/bundle.esm.min.js';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 import { AccountControlProvider } from './accountsContext';
 import { MdtpClient } from './client/client';
@@ -53,7 +53,7 @@ const globals: Globals = {
   chainId: undefined,
 };
 
-export const App = hot((): React.ReactElement => {
+export const App = (): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<ethers.Signer[] | undefined | null>(undefined);
   const [accountIds, setAccountIds] = React.useState<string[] | undefined | null>(undefined);
   const [chainId, setChainId] = React.useState<number | null | undefined>(undefined);
@@ -103,6 +103,12 @@ export const App = hot((): React.ReactElement => {
     if (web3) {
       web3.provider.request({ method: 'eth_requestAccounts', params: [] }).then(async (): Promise<void> => {
         await loadWeb3();
+      }).catch((error: unknown): void => {
+        if (error.message?.includes('wallet_requestPermissions')) {
+          toast.error('You already have a MetaMask request window open, please find it!');
+        } else {
+          toast.error('Something went wrong connecting to MetaMask. Please try refresh the page / your browser and try again');
+        }
       });
     }
   };
@@ -151,6 +157,7 @@ export const App = hot((): React.ReactElement => {
           </Router>
         </AccountControlProvider>
       </GlobalsProvider>
+      <ToastContainer />
     </KibaApp>
   );
-});
+};

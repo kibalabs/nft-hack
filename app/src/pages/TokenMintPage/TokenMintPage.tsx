@@ -38,7 +38,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const totalPrice = mintPrice ? mintPrice.mul(requestCount) : undefined;
   const isOverSingleLimit = singleMintLimit ? requestCount > singleMintLimit : false;
   const isOverTotalLimit = (totalMintLimit && mintedCount) ? requestCount + mintedCount > totalMintLimit : false;
-  const isOverOwnershipLimit = (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
+  const isOverOwnershipLimit = false; // (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
   const isOverBalance = (balance && totalPrice) ? balance < totalPrice : false;
   const hasMintedToken = ownedTokenIds ? ownedTokenIds.length > 0 : false;
 
@@ -236,11 +236,16 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
 
   const waitForTransaction = React.useCallback(async (): Promise<void> => {
     if (transaction && network) {
-      const receipt = await transaction.wait();
-      setTransactionReceipt(receipt);
-      relevantTokenIds.forEach((tokenId: number): void => {
-        apiClient.updateTokenDeferred(network, tokenId);
-      });
+      try {
+        const receipt = await transaction.wait();
+        setTransactionReceipt(receipt);
+        relevantTokenIds.forEach((tokenId: number): void => {
+          apiClient.updateTokenDeferred(network, tokenId);
+        });
+      } catch (error: unknown) {
+        setTransactionError(new Error(`Transaction failed: ${error.message || 'Unknown error'}`));
+        setTransaction(null);
+      }
     }
   }, [transaction, apiClient, network, relevantTokenIds]);
 
@@ -279,6 +284,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
             <Text>Token minted successfully 🎉</Text>
+            <Spacing />
+            <Text>Now let&apos;s update the content on your tokens</Text>
+            <Button variant='primary' text='Update token 👉' target={`/tokens/${props.tokenId}/update`} />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>
