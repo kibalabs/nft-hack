@@ -243,7 +243,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
           apiClient.updateTokenDeferred(network, tokenId);
         });
       } catch (error: unknown) {
-        setTransactionError(new Error(`Transaction failed: ${error.message || 'Unknown error'}`));
+        setTransactionError(new Error(`Transaction failed: ${(error as Error).message || 'Unknown error'}`));
         setTransaction(null);
       }
     }
