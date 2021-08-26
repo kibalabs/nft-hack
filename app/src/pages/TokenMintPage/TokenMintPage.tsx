@@ -236,11 +236,16 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
 
   const waitForTransaction = React.useCallback(async (): Promise<void> => {
     if (transaction && network) {
-      const receipt = await transaction.wait();
-      setTransactionReceipt(receipt);
-      relevantTokenIds.forEach((tokenId: number): void => {
-        apiClient.updateTokenDeferred(network, tokenId);
-      });
+      try {
+        const receipt = await transaction.wait();
+        setTransactionReceipt(receipt);
+        relevantTokenIds.forEach((tokenId: number): void => {
+          apiClient.updateTokenDeferred(network, tokenId);
+        });
+      } catch (error: unknown) {
+        setTransactionError(new Error(`Transaction failed: ${(error as Error).message || 'Unknown error'}`));
+        setTransaction(null);
+      }
     }
   }, [transaction, apiClient, network, relevantTokenIds]);
 
@@ -279,6 +284,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
             <Text>Token minted successfully 🎉</Text>
+            <Spacing />
+            <Text>Now let&apos;s update the content on your tokens</Text>
+            <Button variant='primary' text='Update token 👉' target={`/tokens/${props.tokenId}/update`} />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>

@@ -74,7 +74,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       // NOTE(krishan711): this only works for the new contracts
       if (contract.tokenContentURI) {
         contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
-          const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/') : tokenMetadataUrl;
+          const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
           requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
             const tokenMetadataJson = JSON.parse(response.content);
             // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
@@ -138,15 +138,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     if (!network || !contract) {
       return null;
     }
-    const isMintable = (!ownerId || ownerId === NON_OWNER) && contract;
+    const isOwned = ownerId && ownerId !== NON_OWNER;
     const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : 'unknown');
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
-        { isMintable && (
-          <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
-        )}
-        { ownerName && (
+        { isOwned ? (
           <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
+        ) : (
+          <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
         )}
         { gridItem && (
           <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>

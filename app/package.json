@@ -24,11 +24,12 @@
     "react-dropzone": "11.3.4",
     "react-ga": "3.3.0",
     "react-helmet": "6.1.0",
+    "react-toastify": "^8.0.0",
     "styled-components": "5.3.0",
     "web3.storage": "^3.2.0"
   },
   "devDependencies": {
-    "@kibalabs/build": "0.7.1",
+    "@kibalabs/build": "0.7.2-next.2",
     "@types/react": "17.0.18",
     "@types/react-dom": "17.0.9",
     "@types/react-helmet": "6.1.2",

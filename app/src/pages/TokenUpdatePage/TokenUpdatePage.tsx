@@ -2,7 +2,7 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { Link } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, IconButton, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
@@ -57,7 +57,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     }
     // NOTE(krishan711): this only works for the new contracts
     contract.tokenContentURI(Number(props.tokenId)).then((tokenMetadataUrl: string): void => {
-      const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/') : tokenMetadataUrl;
+      const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
       requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
         const tokenMetadataJson = JSON.parse(response.content);
         // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
@@ -223,6 +223,18 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     }
   };
 
+  const getShareText = (): string => {
+    return encodeURIComponent(`I've just minted and updated token ${props.tokenId} on @mdtp_app 🤩\nIt's an #NFT that gives me ownership of the space on MDTP and I've just updated it so check it out at https://milliondollartokenpage.com/tokens/${props.tokenId}. They still have tokens available so go grab some now!!`);
+  };
+
+  const getShareLink = (): string => {
+    return encodeURIComponent('https://milliondollartokenpage.com');
+  };
+
+  const getShareSubject = (): string => {
+    return encodeURIComponent('Check out the coolest digital content space in crypto! Own your space as NFTs powered by Ethereum.');
+  };
+
   const unownedTokenIds = chainOwnerIds ? Array.from(chainOwnerIds.entries()).reduce((accumulator: number[], value: [number, string]): number[] => {
     if (value[1] == null || !accountIds || !accountIds.includes(value[1])) {
       accumulator.push(value[0]);
@@ -249,7 +261,16 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         ) : transactionReceipt ? (
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
-            <Text>Update successful</Text>
+            <Text>Token updated successfully 🎉</Text>
+            <Spacing />
+            <Text>Looking good there 😎. It may take a few minutes for the page to update - doing things on secure blockchains takes time but is so worth it.</Text>
+            <Text>Let&apos;s get your friends, lovers, homies, siblings, uncles, local punks and everyone else looking at your latest investment! Share the love:</Text>
+            <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
+              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
+              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
+              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-reddit' />} target={`https://www.reddit.com/submit?url=${getShareLink()}&title=${getShareSubject()}`} />
+              <IconButton variant='primary' icon={<KibaIcon iconId='ion-mail' />} target={`mailto:%20?subject=${getShareSubject()}&body=${getShareText()}`} />
+            </Stack>
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>
