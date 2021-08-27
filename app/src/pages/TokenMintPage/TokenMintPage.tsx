@@ -283,15 +283,17 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         ) : transactionReceipt ? (
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
-            <Text>Token minted successfully 🎉</Text>
+            <Text>🎉 Token minted successfully 🎉</Text>
             <Spacing />
-            <Text>Now let&apos;s update the content on your tokens</Text>
+            <Text>Now let&apos;s update the content on your tokens!</Text>
             <Button variant='primary' text='Update token 👉' target={`/tokens/${props.tokenId}/update`} />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>
             <LoadingSpinner />
             <Text>Your transaction is going through.</Text>
+            <Text>💡 Update button will appear once finished! 💡</Text>
+            <Spacing />
             <Button
               variant='secondary'
               text='View Transaction'

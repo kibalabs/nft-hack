@@ -6,10 +6,17 @@ interface ShareOverlayProps {
   onCloseClicked: () => void;
 }
 
-const TWITTER_SHARE = 'https://twitter.com/intent/tweet?url=https%3A%2F%2Fmilliondollartokenpage.com&text=Check%20out%20the%20coolest%20digital%20content%20space%20in%20crypto%21%20Own%20your%20space%20as%20NFTs%20powered%20by%20Ethereum.';
-const WHATSAPP_SHARE = 'https://api.whatsapp.com/send/?phone&text=Check%20out%20the%20coolest%20digital%20content%20space%20in%20crypto%21%20Own%20your%20space%20as%20NFTs%20powered%20by%20Ethereum.%20https%3A%2F%2Fmilliondollartokenpage.com&';
-const REDDIT_SHARE = 'https://www.reddit.com/submit?url=https%3A//milliondollartokenpage.com&title=Check%20out%20the%20coolest%20digital%20content%20space%20in%20crypto%21%20Own%20your%20space%20as%20NFTs%20powered%20by%20Ethereum.';
-const EMAIL_SHARE = 'mailto:%20?subject=%20&body=Check%20out%20the%20coolest%20digital%20content%20space%20in%20crypto!%20Own%20your%20space%20as%20NFTs%20powered%20by%20Ethereum.%0D%0Ahttps%3A%2F%2Fmilliondollartokenpage.com';
+const getShareText = (): string => {
+  return encodeURIComponent(`Check these guys out milliondollartokenpage.com! 🤩\nIts milliondollarhomepage.com in the crypto-era! You own space on the site using #NFTs! 🤑 \nThey still have NFTs left so hurry and grab some now before they run out! 🚀`);
+};
+
+const getShareLink = (): string => {
+  return encodeURIComponent('https://milliondollartokenpage.com');
+};
+
+const getShareSubject = (): string => {
+  return encodeURIComponent('Check out the coolest digital content space in crypto! Own your space as NFTs powered by Ethereum.');
+};
 
 export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
   return (
@@ -21,12 +28,12 @@ export const ShareOverlay = (props: ShareOverlayProps): React.ReactElement => {
           </LayerContainer.Layer>
         </LayerContainer>
         <Text variant='header2' alignment={TextAlignment.Center}>{'Share'}</Text>
-        <Text alignment={TextAlignment.Center}>{'😊 Make sure to share us with your friends and followers! 😊'}</Text>
+        <Text alignment={TextAlignment.Center}>{'❤️ Share the love with your friends and followers! ❤️'}</Text>
         <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-          <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-logo-twitter' />} target={TWITTER_SHARE} />
-          <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={WHATSAPP_SHARE} />
-          <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-logo-reddit' />} target={REDDIT_SHARE} />
-          <IconButton variant={'primary'} icon={<KibaIcon iconId='ion-mail' />} target={EMAIL_SHARE} />
+          <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
+          <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
+          <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-reddit' />} target={`https://www.reddit.com/submit?url=${getShareLink()}&title=${getShareSubject()}`} />
+          <IconButton variant='primary' icon={<KibaIcon iconId='ion-mail' />} target={`mailto:%20?subject=${getShareSubject()}&body=${getShareText()}`} />
         </Stack>
       </Stack>
     </Box>
