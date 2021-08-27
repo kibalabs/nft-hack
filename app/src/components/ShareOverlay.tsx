@@ -7,7 +7,7 @@ interface ShareOverlayProps {
 }
 
 const getShareText = (): string => {
-  return encodeURIComponent(`Check these guys out milliondollartokenpage.com! 🤩\nIts milliondollarhomepage.com in the crypto-era! You own space on the site using #NFTs! 🤑 \nThey still have NFTs left so hurry and grab some now before they run out! 🚀`);
+  return encodeURIComponent('Check these guys out milliondollartokenpage.com! 🤩\nIts milliondollarhomepage.com in the crypto-era! You own space on the site using #NFTs! 🤑 \nThey still have NFTs left so hurry and grab some now before they run out! 🚀');
 };
 
 const getShareLink = (): string => {
