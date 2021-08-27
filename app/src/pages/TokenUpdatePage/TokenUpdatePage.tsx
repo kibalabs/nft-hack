@@ -224,7 +224,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   };
 
   const getShareText = (): string => {
-    return encodeURIComponent(`I've just minted and updated token ${props.tokenId} on @mdtp_app 🤩\nIt's an #NFT that gives me ownership of the space on MDTP and I've just updated it so check it out at https://milliondollartokenpage.com/tokens/${props.tokenId}. They still have tokens available so go grab some now!!`);
+    return encodeURIComponent(`I've just updated token ${props.tokenId} on MDTP! 🤩\nYou own space on the site using #NFTs! 🤑 \nCheck it out at https://milliondollartokenpage.com/tokens/${props.tokenId} and follow their twitter @mdtp_app. They still have NFTs left so hurry and grab some now before they run out! 🚀`);
   };
 
   const getShareLink = (): string => {
@@ -261,10 +261,12 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         ) : transactionReceipt ? (
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
-            <Text>Token updated successfully 🎉</Text>
+            <Text>🎉 Token updated successfully 🎉</Text>
             <Spacing />
-            <Text>Looking good there 😎. It may take a few minutes for the page to update - doing things on secure blockchains takes time but is so worth it.</Text>
-            <Text>Let&apos;s get your friends, lovers, homies, siblings, uncles, local punks and everyone else looking at your latest investment! Share the love:</Text>
+            <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
+            <Spacing />
+            <Text>❤️ Share the love with your friends and followers! ❤️</Text>
+            <Spacing />
             <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
               <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
               <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
@@ -276,6 +278,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
           <React.Fragment>
             <LoadingSpinner />
             <Text>Your transaction is going through.</Text>
+            <Text>💡 Share buttons will appear once finished! 💡</Text>
+            <Spacing />
             <Button
               variant='secondary'
               text='View Transaction'
