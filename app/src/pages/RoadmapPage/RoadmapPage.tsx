@@ -5,48 +5,51 @@ import { Alignment, Direction, Markdown, PaddingSize, Stack, Text } from '@kibal
 
 export const RoadmapPage = (): React.ReactElement => {
   const text = `
+  MDTP is a community focused project. We're here for the long-haul and want to grow alongside a vibrant community! For this reason we're doing things a little differently and releasing the NFTs in tranches of 1000 NFTs at a time together with your input, all the way up to the collection's full 10,000 NFTs.
 
-  MDTP is a community focused project. We're here for the long-haul and want to grow this digital content space alongside a vibrant community. For this reason we've decided to do things a little differently and not release all NFTs in one go. Instead we plan to release the NFTs in tranches of 1000 NFTs each, all the way up to the full 10,000 NFTs in the collection.
-  
   &nbsp;
 
-  **Open Beta 🛠️**
+  **Open Beta - Until Monday 6th September '21 🛠️**
 
-  We’re still in BETA so minting NFTs is literally free, you just need to connect to the [Rinkeby testnet](https://medium.com/compound-finance/the-beginners-guide-to-using-an-ethereum-test-network-95bbbc85fc1d) in your wallet and get some Rinkeby ETH which you can get for free from a [faucet](https://faucet.rinkeby.io/)! 
-  
-  When we move over to mainnet you’ll actually need to pay for those NFTs. However, we'll be giving you 1 NFT free just for joining the BETA, and for every 1 new person you get onto our Discord we’ll let you have 1 extra NFT free up to a maximum of 35 NFTs!
-  
-  We're giving away up to a maximum of 2000 NFTs in BETA so make sure to get in quick and share with your friends and followers now!
+  We’re still in BETA so minting NFTs is literally free. Just connect to the Rinkeby testnet in your wallet and get some Rinkeby ETH for free from a [faucet](https://faucet.rinkeby.io/)!
+
+  When we launch there'll be a mint-fee for NFTs. However, we're giving away 1 NFT free for joining the BETA, and for every 1 new person you get onto our Discord you'll get 1 extra NFT free up to a maximum of 35 NFTs!
+
+  We're giving away up to 1000 NFTs in BETA so hurry, jump in and share with your friends and followers now!
 
   &nbsp;
 
   **Tranch 0: N tokens for 0 ETH 🐣**
-  
-  If you were a BETA user we're rewarding you with your mainnet tokens for free! We'll contact you directly on Discord when we're on mainnet to orchestrate this.
-  
+
+  If you were a BETA user we're rewarding you with NFTs for free! We'll contact you directly on Discord when we launch to orchestrate this.
+
   &nbsp;
 
-  **Tranch 1: N - 2000 tokens for 0.01 ETH 👥**
-  
-  The first tranch will go up to the first 2000 tokens and have a mint fee of only 0.01 ETH each. Individual accounts will be able to mint at most 40 NFTs in one go to promote a varied community of owners and deter whales from engaging in harmful behaviour towards the project.
-  
+  **Tranch 1: N - 1000 tokens for 0.01 ETH 👥**
+
+  The first 1000 tokens will have a mint fee of only 0.01 ETH each. Individual accounts can hold at most 35 NFTs to promote a varied community and deter whales.
+
   &nbsp;
 
-  **Tranch 2: 2000 - 3000 tokens for ? ETH 🦍**
-  
-  For the second tranch and beyond we wish to have community input on how best to release them in order to create the sort of community that you wish to have. As an example you, the community, might decide we should sell the next 1000 only to CryptoPunk or BAYC owners as you believe it will create the most hype. Whatever we decide it will be a community oriented decision.
-  
+  **Tranch 2: 1000 - 2000 tokens for ? ETH 🦍**
+
+  For the second tranch and beyond we'll get your input on how best to release them. For example you, the community, might decide we should sell the next 1000 only to CryptoPunk or BAYC owners to try and get NFT OGs onboard! Whatever gets decided will be a community oriented decision.
+
   ...
-  
-  &nbsp;
+
+  **50% of tokens sold - New Artwork and Traits**  🎨
+
+  We’ll revamp the NFT artwork with a top artist and introduce traits - all with community involvement!
+
+  ...
 
   **Final Tranch: 9500 - 10,000 tokens 🏆**
-  
-  The middle 500 blocks will be a space that the MDTP team will use creatively to keep the community engaged and as the very final tranch we'll auction them off. We hope that you'll be as excited about the release of these final and most central blocks as we are. We'll ensure that the auction is conducted in the fairest and most fun way possible!
-  
+
+  The middle 500 blocks will have their own unique artwork and traits, and be auctioned off at the very final tranch in the fairest and most fun way possible!
+
   &nbsp;
 
-  MDTP is a project focused on the exciting and emerging NFT community. We've built it using blockchain technology so that one day it can grow to outlive us. We're looking forward to going on this journey with you. Let's make crypto history! ❤️
+  MDTP is a project focused on the exciting and emerging NFT community. We've built it using blockchain technology so that one day it can grow to outlive even us. We're looking forward to going on this journey with you. Let's make crypto history! ❤️
   `;
 
   return (
