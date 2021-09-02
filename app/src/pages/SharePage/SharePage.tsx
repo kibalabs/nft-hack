@@ -4,7 +4,7 @@ import { Alignment, Button, Direction, IconButton, KibaIcon, MultiLineInput, Pad
 
 export const SharePage = (): React.ReactElement => {
   const initialShareText = 'Want to promote your project or avatar? I found this site milliondollartokenpage.com that allows you to own a space in NFT history. Spaces are going fast but you can mint one now! 🚀';
-  const [shareText, setShareText] = React.useState<string | null>(initialShareText);
+  const [shareText, setShareText] = React.useState<string>(initialShareText);
 
   const getShareText = (): string => {
     return encodeURIComponent(shareText);
