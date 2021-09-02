@@ -4,7 +4,7 @@ import { Alignment, Button, Direction, IconButton, KibaIcon, MultiLineInput, Pad
 
 export const SharePage = (): React.ReactElement => {
 
-  const initialShareText = 'Check this site I found milliondollartokenpage.com! 🤩\nIts milliondollarhomepage.com in the crypto-era! You own space on the site using #NFTs! 🤑 \nThey still have NFTs left so hurry and grab some now before they run out! 🚀'
+  const initialShareText = 'Want to promote your project or avatar? I found this site milliondollartokenpage.com that allows you to own a space in NFT history. Spaces are going fast but you can mint one now! 🚀'
   const [shareText, setShareText] = React.useState<string | null>(initialShareText);
 
   const getShareText = (): string => {
@@ -21,7 +21,7 @@ export const SharePage = (): React.ReactElement => {
 
   return (
     <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
-      <Text variant='header1'>{'Share MDTP!'}</Text>
+      <Text variant='header1'>{'Share MDTP'}</Text>
       <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} padding={PaddingSize.Wide}>        
         <Text alignment={TextAlignment.Center}>{'❤️ Share the love with your friends and followers! ❤️'}</Text>
         <MultiLineInput
