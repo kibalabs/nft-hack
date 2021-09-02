@@ -4,7 +4,7 @@ import { Alignment, Button, Direction, IconButton, KibaIcon, MultiLineInput, Pad
 
 export const SharePage = (): React.ReactElement => {
 
-  const initialShareText = 'Check this out milliondollartokenpage.com! 🤩\nIts milliondollarhomepage.com in the crypto-era! You own space on the site using #NFTs! 🤑 \nThey still have NFTs left so hurry and grab some now before they run out! 🚀'
+  const initialShareText = 'Check this site I found milliondollartokenpage.com! 🤩\nIts milliondollarhomepage.com in the crypto-era! You own space on the site using #NFTs! 🤑 \nThey still have NFTs left so hurry and grab some now before they run out! 🚀'
   const [shareText, setShareText] = React.useState<string | null>(initialShareText);
 
   const getShareText = (): string => {
@@ -27,11 +27,11 @@ export const SharePage = (): React.ReactElement => {
         <MultiLineInput
           value={shareText}
           onValueChanged={setShareText}          
-          minRowCount={5}
+          minRowCount={6}
         />
         <Button variant='primary' text='Tweet' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
         <Spacing/>
-        <Text alignment={TextAlignment.Center}>{'Some other options you might like!'}</Text>
+        <Text alignment={TextAlignment.Center}>{'Some other sharing options you might like!'}</Text>
         <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>          
           <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
           <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-reddit' />} target={`https://www.reddit.com/submit?url=${getShareLink()}&title=${getShareText()}`} />
