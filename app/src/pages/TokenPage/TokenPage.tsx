@@ -211,7 +211,13 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               )}
               <Spacing />
               <Spacing />
-              {isOwned ? (
+              {isOwned && tokenMetadata.url ? (
+                <ShareForm
+                  initialShareText={`Ser, check out ${tokenMetadata.name} (${tokenMetadata.url}), just saw it on milliondollartokenpage.com/${tokenMetadata.tokenId}, looks legit! 🚀`}
+                  minRowCount={3}
+                  isAllOptionsEnabled={false}
+                />
+              ) : isOwned && !tokenMetadata.url ? (
                 <ShareForm
                   initialShareText={`Ser, check out ${tokenMetadata.name}, just saw it on milliondollartokenpage.com/${tokenMetadata.tokenId}, looks legit! 🚀`}
                   minRowCount={3}
