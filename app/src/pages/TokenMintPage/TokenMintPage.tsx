@@ -6,6 +6,7 @@ import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } 
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
+import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
 
@@ -287,6 +288,13 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
             <Spacing />
             <Text>Now let&apos;s update the content on your tokens!</Text>
             <Button variant='primary' text='Update token 👉' target={`/tokens/${props.tokenId}/update`} />
+            <Spacing />
+            <Spacing />
+            <ShareForm
+              initialShareText={`Fren, just minted an NFT at milliondollartokenpage.com/${props.tokenId}! The FOMO got me. I aped in. WGMI! 🚀`}
+              minRowCount={3}
+              isAllOptionsEnabled={false}
+            />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>

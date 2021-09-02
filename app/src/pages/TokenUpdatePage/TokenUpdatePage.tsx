@@ -2,12 +2,13 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { Link } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, IconButton, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { PresignedUpload, TokenMetadata } from '../../client';
+import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
@@ -223,18 +224,6 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     }
   };
 
-  const getShareText = (): string => {
-    return encodeURIComponent(`I've just updated token ${props.tokenId} on MDTP! 🤩\nYou own space on the site using #NFTs! 🤑 \nCheck it out at https://milliondollartokenpage.com/tokens/${props.tokenId} and follow their twitter @mdtp_app. They still have NFTs left so hurry and grab some now before they run out! 🚀`);
-  };
-
-  const getShareLink = (): string => {
-    return encodeURIComponent('https://milliondollartokenpage.com');
-  };
-
-  const getShareSubject = (): string => {
-    return encodeURIComponent('Check out the coolest digital content space in crypto! Own your space as NFTs powered by Ethereum.');
-  };
-
   const unownedTokenIds = chainOwnerIds ? Array.from(chainOwnerIds.entries()).reduce((accumulator: number[], value: [number, string]): number[] => {
     if (value[1] == null || !accountIds || !accountIds.includes(value[1])) {
       accumulator.push(value[0]);
@@ -265,20 +254,17 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             <Spacing />
             <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
             <Spacing />
-            <Text>❤️ Share the love with your friends and followers! ❤️</Text>
-            <Spacing />
-            <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
-              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
-              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-reddit' />} target={`https://www.reddit.com/submit?url=${getShareLink()}&title=${getShareSubject()}`} />
-              <IconButton variant='primary' icon={<KibaIcon iconId='ion-mail' />} target={`mailto:%20?subject=${getShareSubject()}&body=${getShareText()}`} />
-            </Stack>
+            <ShareForm
+              initialShareText={`Fren, just updated my NFT on milliondollartokenpage.com/${tokenMetadata.tokenId}, you can show off your JPGs and projects here, IYKYK! 🚀`}
+              minRowCount={3}
+              isAllOptionsEnabled={false}
+            />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>
             <LoadingSpinner />
             <Text>Your transaction is going through.</Text>
-            <Text>💡 Share buttons will appear once finished! 💡</Text>
+            <Text>💡 Share option will appear once finished! 💡</Text>
             <Spacing />
             <Button
               variant='secondary'
