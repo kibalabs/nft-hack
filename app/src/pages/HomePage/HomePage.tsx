@@ -35,7 +35,7 @@ export const HomePage = (): React.ReactElement => {
   const { apiClient, network, chainId } = useGlobals();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null | undefined>(undefined);
-  const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);  
+  const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
   const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
 
