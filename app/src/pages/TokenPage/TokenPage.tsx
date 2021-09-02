@@ -33,6 +33,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const accountIds = useAccountIds();
 
   const ownerId = chainOwnerId || gridItem?.ownerId || NON_OWNER;
+  const isOwned = ownerId && ownerId !== NON_OWNER;
   const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
 
   const loadToken = React.useCallback(async (): Promise<void> => {
@@ -139,20 +140,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     if (!network || !contract) {
       return null;
     }
-    const isOwned = ownerId && ownerId !== NON_OWNER;
     const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : 'unknown');
     return (
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isOwned ? (
-          <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
+          <React.Fragment>
+            <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
+            <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
+              <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
+              <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
+            </Stack>
+          </React.Fragment>
         ) : (
           <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
-        )}
-        { gridItem && (
-          <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
-            <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
-            <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
-          </Stack>
         )}
       </Stack>
     );
@@ -209,14 +209,21 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
                 </React.Fragment>
               )}
-              {/* <Text>----------------------------------------</Text> */}
               <Spacing />
               <Spacing />
+              {isOwned ? (
               <ShareForm 
                 initialShareText={`Ser, check out ${tokenMetadata.name}, just saw it on milliondollartokenpage.com/${tokenMetadata.tokenId}, looks legit! 🚀`} 
-                minRowCount={2}
+                minRowCount={3}
                 isAllOptionsEnabled={false}
               />
+              ) : (
+              <ShareForm 
+                initialShareText={`Fren, you can mint this NFT on milliondollartokenpage.com/${tokenMetadata.tokenId} and show off your JPGs. I'm gonna ape in, LFG! 🚀`} 
+                minRowCount={3}
+                isAllOptionsEnabled={false}
+              />
+              )}
             </Stack>
           </React.Fragment>
         )}

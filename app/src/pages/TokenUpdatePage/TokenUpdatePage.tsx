@@ -11,6 +11,7 @@ import { PresignedUpload, TokenMetadata } from '../../client';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
+import { ShareForm } from '../../components/ShareForm';
 
 
 export type TokenUpdatePageProps = {
@@ -265,14 +266,11 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             <Spacing />
             <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
             <Spacing />
-            <Text>❤️ Share the love with your friends and followers! ❤️</Text>
-            <Spacing />
-            <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
-              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
-              <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-reddit' />} target={`https://www.reddit.com/submit?url=${getShareLink()}&title=${getShareSubject()}`} />
-              <IconButton variant='primary' icon={<KibaIcon iconId='ion-mail' />} target={`mailto:%20?subject=${getShareSubject()}&body=${getShareText()}`} />
-            </Stack>
+            <ShareForm 
+                initialShareText={`Ser, just updated my token on milliondollartokenpage.com/${tokenMetadata.tokenId}, you can show off your JPGs and projects here, IYKYK! 🚀`} 
+                minRowCount={3}
+                isAllOptionsEnabled={false}
+              />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>

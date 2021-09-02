@@ -31,14 +31,14 @@ export const ShareForm = (props: IShareFormProps): React.ReactElement => {
       <Button variant='primary' text='Tweet' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
       <Spacing />
       { props.isAllOptionsEnabled && (
-        <>
+        <React.Fragment>
           <Text alignment={TextAlignment.Center}>{'Some other sharing options you might like!'}</Text>
           <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
             <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
             <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-reddit' />} target={`https://www.reddit.com/submit?url=${getShareLink()}&title=${getShareText()}`} />
             <IconButton variant='primary' icon={<KibaIcon iconId='ion-mail' />} target={`mailto:%20?subject=${getShareLink()}&body=${getShareText()}`} />
           </Stack>
-        </>
+        </React.Fragment>
       )}
     </Stack>
   );
