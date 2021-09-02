@@ -2,7 +2,7 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, LinePager, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
@@ -15,6 +15,7 @@ import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_O
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
+import { ShareForm } from '../../components/ShareForm';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -208,6 +209,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
                 </React.Fragment>
               )}
+              {/* <Text>----------------------------------------</Text> */}
+              <Spacing />
+              <Spacing />
+              <ShareForm 
+                initialShareText={`Ser, check out ${tokenMetadata.name}, just saw it on milliondollartokenpage.com/${tokenMetadata.tokenId}, looks legit! 🚀`} 
+                minRowCount={2}
+                isAllOptionsEnabled={false}
+              />
             </Stack>
           </React.Fragment>
         )}
