@@ -9,7 +9,6 @@ import { BaseImage, GridItem } from '../../client';
 import { FomoBar } from '../../components/FomoBar';
 import { GridControl } from '../../components/GridControl';
 import { MetaMaskConnection } from '../../components/MetaMaskConnection';
-import { ShareOverlay } from '../../components/ShareOverlay';
 import { TokenGrid } from '../../components/TokenGrid';
 import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
