@@ -18,6 +18,7 @@ import { Globals, GlobalsProvider } from './globalsContext';
 import { AboutPage } from './pages/AboutPage';
 import { HomePage } from './pages/HomePage';
 import { RoadmapPage } from './pages/RoadmapPage';
+import { SharePage } from './pages/SharePage';
 import { TokenMintPage } from './pages/TokenMintPage';
 import { TokenPage } from './pages/TokenPage';
 import { TokenUpdatePage } from './pages/TokenUpdatePage';
@@ -153,6 +154,7 @@ export const App = (): React.ReactElement => {
               <Route path='/tokens/:tokenId/mint' page={TokenMintPage} />
               <Route path='/about' page={AboutPage} />
               <Route path='/roadmap' page={RoadmapPage} />
+              <Route path='/share' page={SharePage} />
             </Route>
           </Router>
         </AccountControlProvider>

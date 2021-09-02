@@ -36,8 +36,7 @@ export const HomePage = (): React.ReactElement => {
   const { apiClient, network, chainId } = useGlobals();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null | undefined>(undefined);
-  const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
-  const [isShareDialogOpen, setIsShareDialogOpen] = React.useState<boolean>(false);
+  const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);  
   const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
 
@@ -72,14 +71,6 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo('/');
   };
 
-  const onShareOpenClicked = (): void => {
-    setIsShareDialogOpen(true);
-  };
-
-  const onShareCloseClicked = (): void => {
-    setIsShareDialogOpen(false);
-  };
-
   const onWelcomeCloseClicked = (): void => {
     setIsWelcomeComplete(true);
   };
@@ -92,12 +83,17 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo('/roadmap');
   };
 
+  const onShareClicked = (): void => {
+    navigator.navigateTo('/share');
+  };
+
   const isTokenUpdatePanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/update');
   const isTokenMintPanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/mint');
   const isTokenPanelShowing = !isTokenUpdatePanelShowing && location.pathname.includes('/tokens/');
   const isAboutPanelShowing = location.pathname.includes('/about');
   const isRoadmapPanelShowing = location.pathname.includes('/roadmap');
-  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing;
+  const isSharePanelShowing = location.pathname.includes('/share');
+  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
@@ -208,7 +204,7 @@ export const HomePage = (): React.ReactElement => {
                   <React.Fragment>
                     <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
                     <Button variant='overlay' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} onClicked={onRoadmapClicked} />
-                    <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareOpenClicked} />
+                    <Button variant='overlay' text='Share MDTP' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareClicked} />
                     <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
                     <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
                     <Button variant='overlay' text='Open Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network || '') || ''} />
@@ -246,11 +242,7 @@ export const HomePage = (): React.ReactElement => {
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
             </LayerContainer.Layer>
-            { isShareDialogOpen ? (
-              <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-                <ShareOverlay onCloseClicked={onShareCloseClicked} />
-              </LayerContainer.Layer>
-            ) : !isWelcomeComplete ? (
+            { !isWelcomeComplete ? (
               <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
                 <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onAboutClicked} />
               </LayerContainer.Layer>
