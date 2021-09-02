@@ -2,7 +2,7 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, BackgroundView, Box, Button, Direction, LinePager, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
@@ -10,12 +10,12 @@ import { GridItem, TokenMetadata } from '../../client';
 import { ImageGrid } from '../../components/ImageGrid';
 import { KeyValue } from '../../components/KeyValue';
 import { MdtpImage } from '../../components/MdtpImage';
+import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
-import { ShareForm } from '../../components/ShareForm';
 
 export type TokenPageProps = {
   tokenId: string;
@@ -212,17 +212,17 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Spacing />
               <Spacing />
               {isOwned ? (
-              <ShareForm 
-                initialShareText={`Ser, check out ${tokenMetadata.name}, just saw it on milliondollartokenpage.com/${tokenMetadata.tokenId}, looks legit! 🚀`} 
-                minRowCount={3}
-                isAllOptionsEnabled={false}
-              />
+                <ShareForm
+                  initialShareText={`Ser, check out ${tokenMetadata.name}, just saw it on milliondollartokenpage.com/${tokenMetadata.tokenId}, looks legit! 🚀`}
+                  minRowCount={3}
+                  isAllOptionsEnabled={false}
+                />
               ) : (
-              <ShareForm 
-                initialShareText={`Fren, you can mint this NFT on milliondollartokenpage.com/${tokenMetadata.tokenId} and show off your JPGs. I'm gonna ape in, LFG! 🚀`} 
-                minRowCount={3}
-                isAllOptionsEnabled={false}
-              />
+                <ShareForm
+                  initialShareText={`Fren, you can mint this NFT on milliondollartokenpage.com/${tokenMetadata.tokenId} and show off your JPGs. I'm gonna ape in, LFG! 🚀`}
+                  minRowCount={3}
+                  isAllOptionsEnabled={false}
+                />
               )}
             </Stack>
           </React.Fragment>

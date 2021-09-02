@@ -9,7 +9,6 @@ interface IShareFormProps {
 }
 
 export const ShareForm = (props: IShareFormProps): React.ReactElement => {
-  
   const [shareText, setShareText] = React.useState<string>(props.initialShareText);
 
   const getShareText = (): string => {
@@ -20,9 +19,9 @@ export const ShareForm = (props: IShareFormProps): React.ReactElement => {
     return encodeURIComponent('https://milliondollartokenpage.com');
   };
 
-  return (          
+  return (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} isFullWidth={true}>
-      <Text alignment={TextAlignment.Center}>{'❤️ Share the love with your friends and followers ❤️'}</Text> 
+      <Text alignment={TextAlignment.Center}>{'❤️ Share the love with your friends and followers ❤️'}</Text>
       <MultiLineInput
         value={shareText}
         onValueChanged={setShareText}

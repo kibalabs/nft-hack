@@ -2,16 +2,16 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { Link } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, IconButton, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { PresignedUpload, TokenMetadata } from '../../client';
+import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
-import { ShareForm } from '../../components/ShareForm';
 
 
 export type TokenUpdatePageProps = {
@@ -224,18 +224,6 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     }
   };
 
-  const getShareText = (): string => {
-    return encodeURIComponent(`I've just updated token ${props.tokenId} on MDTP! 🤩\nYou own space on the site using #NFTs! 🤑 \nCheck it out at https://milliondollartokenpage.com/tokens/${props.tokenId} and follow their twitter @mdtp_app. They still have NFTs left so hurry and grab some now before they run out! 🚀`);
-  };
-
-  const getShareLink = (): string => {
-    return encodeURIComponent('https://milliondollartokenpage.com');
-  };
-
-  const getShareSubject = (): string => {
-    return encodeURIComponent('Check out the coolest digital content space in crypto! Own your space as NFTs powered by Ethereum.');
-  };
-
   const unownedTokenIds = chainOwnerIds ? Array.from(chainOwnerIds.entries()).reduce((accumulator: number[], value: [number, string]): number[] => {
     if (value[1] == null || !accountIds || !accountIds.includes(value[1])) {
       accumulator.push(value[0]);
@@ -266,11 +254,11 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             <Spacing />
             <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
             <Spacing />
-            <ShareForm 
-                initialShareText={`Fren, just updated my token on milliondollartokenpage.com/${tokenMetadata.tokenId}, you can show off your JPGs and projects here, IYKYK! 🚀`} 
-                minRowCount={3}
-                isAllOptionsEnabled={false}
-              />
+            <ShareForm
+              initialShareText={`Fren, just updated my token on milliondollartokenpage.com/${tokenMetadata.tokenId}, you can show off your JPGs and projects here, IYKYK! 🚀`}
+              minRowCount={3}
+              isAllOptionsEnabled={false}
+            />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>
