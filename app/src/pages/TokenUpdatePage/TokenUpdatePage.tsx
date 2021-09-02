@@ -267,7 +267,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
             <Spacing />
             <ShareForm 
-                initialShareText={`Ser, just updated my token on milliondollartokenpage.com/${tokenMetadata.tokenId}, you can show off your JPGs and projects here, IYKYK! 🚀`} 
+                initialShareText={`Fren, just updated my token on milliondollartokenpage.com/${tokenMetadata.tokenId}, you can show off your JPGs and projects here, IYKYK! 🚀`} 
                 minRowCount={3}
                 isAllOptionsEnabled={false}
               />
@@ -276,7 +276,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
           <React.Fragment>
             <LoadingSpinner />
             <Text>Your transaction is going through.</Text>
-            <Text>💡 Share buttons will appear once finished! 💡</Text>
+            <Text>💡 Share option will appear once finished! 💡</Text>
             <Spacing />
             <Button
               variant='secondary'
