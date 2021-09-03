@@ -89,12 +89,11 @@ export const HomePage = (): React.ReactElement => {
   const isSharePanelShowing = location.pathname.includes('/share');
   const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing;
 
-  React.useEffect((): void => {    
+  React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
     window.dispatchEvent(new Event('resize'));
 
-    if (!isWelcomeComplete)
-    {
+    if (!isWelcomeComplete) {
       setIsWelcomeComplete(true);
       navigator.navigateTo('/about');
     }

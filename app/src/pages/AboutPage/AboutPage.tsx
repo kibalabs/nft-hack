@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Box, Direction, Markdown, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Direction, Markdown, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 
 
 export const AboutPage = (): React.ReactElement => {
@@ -31,7 +31,7 @@ Update tokens to show off what you've got!
 It's that simple! Join us now to own a piece of crypto history! ❤️
 `;
 
-const learnMoreText = `
+  const learnMoreText = `
 
 **Want to learn more? Then read on... 🤓**
 
@@ -69,7 +69,7 @@ The more people know about the site the more demand will rise and subsequently t
     <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
       <Text variant='header1'>{'Million Dollar Token Page'}</Text>
       <Markdown source={mainText} />
-      <Spacing/>
+      <Spacing />
       <Markdown source={learnMoreText} />
     </Stack>
   );
