@@ -155,7 +155,7 @@ async def run(tokenId: Optional[int], shouldUpload: bool):
             "tokenId": tokenId,
             "tokenIndex": tokenId - 1,
             "name": f'MDTP Token {tokenId}',
-            "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP).\nMDTP is a digital content-sharing space powered by the Ethereum cryptocurrency network and NFT technology. Each pixel block you see can be purchased as a unique NFT, set to display the content you like, and later re-sold.\nSo join us and interact, trade and share, and be a part of making crypto history!",
+            "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). MDTP is a digital content-sharing space powered by Ethereum and NFTs. Each block can be bought as a unique NFT, set to display the content you like, and later re-sold. Show off and share your content, and own a piece of crypto history!",
             "image": imageUrl,
             "url": None,
         }

@@ -82,7 +82,7 @@ async def main(baseImagePath: str, overlayImagePath: str, middleImagePath: str, 
             "tokenId": tokenId,
             "tokenIndex": tokenId - 1,
             "name": f'MDTP Token {tokenId}',
-            "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). It hasn't been claimed yet so click mint now to buy it!",
+            "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). It hasn't been claimed yet so click mint to buy it now!",
             "image": imageUrl,
             "url": None,
         }
