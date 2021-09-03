@@ -49,7 +49,7 @@ export const RoadmapPage = (): React.ReactElement => {
 
   &nbsp;
 
-  MDTP is a project focused on the exciting and emerging NFT community. We've built it using blockchain technology so that one day it can grow to outlive even us. We're looking forward to going on this journey with you. Let's make crypto history! ❤️
+  MDTP is a project focused on the exciting and emerging NFT community. We've built it using blockchain technology so that one day it can grow to outlive even us. We're looking forward to going on this journey with you. Join us and own a piece of crypto history! ❤️
   `;
 
   return (
