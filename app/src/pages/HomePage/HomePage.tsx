@@ -10,7 +10,6 @@ import { FomoBar } from '../../components/FomoBar';
 import { GridControl } from '../../components/GridControl';
 import { MetaMaskConnection } from '../../components/MetaMaskConnection';
 import { TokenGrid } from '../../components/TokenGrid';
-import { WelcomeOverlay } from '../../components/WelcomeOverlay';
 import { useGlobals } from '../../globalsContext';
 import { ChainId, getProductOpenseaUrl } from '../../util/chainUtil';
 
@@ -70,10 +69,6 @@ export const HomePage = (): React.ReactElement => {
     navigator.navigateTo('/');
   };
 
-  const onWelcomeCloseClicked = (): void => {
-    setIsWelcomeComplete(true);
-  };
-
   const onAboutClicked = () => {
     navigator.navigateTo('/about');
   };
@@ -94,10 +89,16 @@ export const HomePage = (): React.ReactElement => {
   const isSharePanelShowing = location.pathname.includes('/share');
   const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing;
 
-  React.useEffect((): void => {
+  React.useEffect((): void => {    
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
     window.dispatchEvent(new Event('resize'));
-  }, [isPanelShowing]);
+
+    if (!isWelcomeComplete)
+    {
+      setIsWelcomeComplete(true);
+      navigator.navigateTo('/about');
+    }
+  }, [isPanelShowing, isWelcomeComplete]);
 
   const constrainScale = React.useCallback((newScale: number): number => {
     return Math.min(Math.max(newScale, MIN_SCALE), MAX_SCALE);
@@ -241,11 +242,6 @@ export const HomePage = (): React.ReactElement => {
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
             </LayerContainer.Layer>
-            { !isWelcomeComplete ? (
-              <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Center} alignmentHorizontal={Alignment.Center}>
-                <WelcomeOverlay onCloseClicked={onWelcomeCloseClicked} onAboutClicked={onAboutClicked} />
-              </LayerContainer.Layer>
-            ) : null}
           </LayerContainer>
         </Stack.Item>
         <FomoBar />
