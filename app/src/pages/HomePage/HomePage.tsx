@@ -97,7 +97,7 @@ export const HomePage = (): React.ReactElement => {
       setIsWelcomeComplete(true);
       navigator.navigateTo('/about');
     }
-  }, [isPanelShowing, isWelcomeComplete]);
+  }, [isPanelShowing, isWelcomeComplete, setIsWelcomeComplete, navigator]);
 
   const constrainScale = React.useCallback((newScale: number): number => {
     return Math.min(Math.max(newScale, MIN_SCALE), MAX_SCALE);
