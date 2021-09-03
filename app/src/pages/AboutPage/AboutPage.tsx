@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Direction, Markdown, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Direction, Markdown, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 
 
 export const AboutPage = (): React.ReactElement => {
@@ -8,7 +8,9 @@ export const AboutPage = (): React.ReactElement => {
 
 **[Milliondollartokenpage.com](http://milliondollartokenpage.com) (MDTP) is [milliondollarhomepage.com](http://milliondollarhomepage.com) in the crypto era.**
 
-Flex and find the latest in NFTs and crypto!
+Flex and find the latest in NFTs and the crypto world!
+
+Show off and share what's hot in the space you own.
 
 &nbsp;
 
@@ -72,6 +74,9 @@ The more people know about the site the more demand will rise and subsequently t
     <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
       <Text variant='header1'>{'Million Dollar Token Page'}</Text>
       <Markdown source={mainText} />
+      <Spacing/>      
+      <Box variant="fomoBar" height="1px" isFullWidth={true}/>
+      <Spacing/>
       <Markdown source={learnMoreText} />
     </Stack>
   );
