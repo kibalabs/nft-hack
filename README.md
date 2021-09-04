@@ -56,8 +56,3 @@ pip install -r requirements.txt
 ./start-api-dev.sh
 ```
 
-
-
-
-### Costs tracking (gas):
-
