@@ -22,10 +22,11 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     uint16 public constant ROW_COUNT = 100;
     uint16 public constant SUPPLY_LIMIT = COLUMN_COUNT * ROW_COUNT;
 
+    bool public canMintCenter = false;
     uint16 public totalMintLimit;
     uint16 public singleMintLimit;
     uint16 public ownershipMintLimit;
-    uint256 public mintPrice; // 50000000000000000 = 0.05 ETH
+    uint256 public mintPrice;
 
     string public _metadataBaseURI;
     string public _defaultContentBaseURI;
@@ -65,6 +66,10 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     }
 
     // Admin
+
+    function setCanMintCenter(bool newCanMintCenter) external onlyOwner {
+        canMintCenter = newCanMintCenter;
+    }
 
     function setTotalMintLimit(uint16 newTotalMintLimit) external onlyOwner {
         totalMintLimit = newTotalMintLimit;
@@ -152,6 +157,24 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
 
     // Minting
 
+    function isInMiddle(uint256 tokenId) internal pure returns (bool) {
+        uint256 x = tokenId / COLUMN_COUNT;
+        uint256 y = tokenId / ROW_COUNT;
+        return x >= 38 && x <= 62 && y >= 40 && y <= 59;
+    }
+
+    function isAnyInMiddle(uint256 tokenId, uint8 width, uint8 height) internal pure returns (bool) {
+        for (uint8 y = 0; y < height; y++) {
+            for (uint8 x = 0; x < width; x++) {
+                uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
+                if (isInMiddle(innerTokenId)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     function mintAdmin(uint256 tokenId) public onlyOwner {
         _mint(tokenId);
     }
@@ -164,6 +187,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
         require(msg.value >= mintPrice, "MDTP: Insufficient payment");
         require(mintedCount() + 1 <= totalMintLimit, "MDTP: reached current minting limit");
         require(balanceOf(msg.sender) + 1 <= ownershipMintLimit, "MDTP: reached current ownership limit");
+        require(canMintCenter || !isInMiddle(tokenId), "MDTP: Minting the middle 500 tokens is not permitted yet");
         _mint(tokenId);
     }
 
@@ -173,6 +197,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
         require(mintedCount() + quantity <= totalMintLimit, "MDTP: reached current minting limit");
         require(balanceOf(msg.sender) + quantity <= ownershipMintLimit, "MDTP: reached current ownership limit");
         require(quantity <= singleMintLimit, "MDTP: requested token count is over singleMintLimit");
+        require(canMintCenter || !isAnyInMiddle(tokenId, width, height), "MDTP: Minting the middle 500 tokens is not permitted yet");
         _mintTokenGroup(tokenId, width, height);
     }
 

@@ -136,6 +136,7 @@ class MdtpManager:
         )
 
     async def get_token_default_grid_item(self, network: str, tokenId: str) -> GridItem:
+        contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         metadata = await self.get_token_content(network=network, tokenId=tokenId)
         return GridItem(
             gridItemId=tokenId-1,
@@ -143,6 +144,7 @@ class MdtpManager:
             updatedDate=date_util.datetime_from_now(),
             network=network,
             tokenId=metadata.tokenId,
+            contentUrl=contentUrl,
             title=metadata.name,
             description=metadata.description,
             imageUrl=metadata.image,
@@ -191,7 +193,10 @@ class MdtpManager:
             latestBaseImage = await self.get_latest_base_image_url(network=network)
         except NotFoundException:
             latestBaseImage = None
-        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate if latestBaseImage else None)
+        if latestBaseImage:
+            gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate if latestBaseImage else None)
+        else:
+            gridItems = [await self.get_token_default_grid_item(network=network, tokenId=tokenIndex + 1) for tokenIndex in range(10000)]
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None
@@ -344,8 +349,9 @@ class MdtpManager:
 
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
-        for tokenIndex in range(tokenCount):
-            await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
+        for tokenIndex in range(1670, tokenCount):
+            # await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
+            await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
     async def upload_token_image_deferred(self, network: str, tokenId: int, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UploadTokenImageMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
@@ -387,7 +393,8 @@ class MdtpManager:
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
         if not resizableImageUrl:
-            await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
+            # await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
+            await self.upload_token_image(network=network, tokenId=tokenId)
         if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
