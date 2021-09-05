@@ -349,7 +349,7 @@ class MdtpManager:
 
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
-        for tokenIndex in range(4038, tokenCount):
+        for tokenIndex in range(tokenCount):
             await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
 
     async def upload_token_image_deferred(self, network: str, tokenId: int, delay: Optional[int] = None) -> None:
