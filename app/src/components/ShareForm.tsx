@@ -21,7 +21,7 @@ export const ShareForm = (props: IShareFormProps): React.ReactElement => {
 
   return (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Wide} isFullWidth={true}>
-      <Text alignment={TextAlignment.Center}>{'❤️ Share the love with your friends and followers ❤️'}</Text>
+      <Text alignment={TextAlignment.Center}>{'❤️ Share with your friends and followers ❤️'}</Text>
       <MultiLineInput
         value={shareText}
         onValueChanged={setShareText}
