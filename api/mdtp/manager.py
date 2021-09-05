@@ -349,7 +349,7 @@ class MdtpManager:
 
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
-        for tokenIndex in range(1670, tokenCount):
+        for tokenIndex in range(4038, tokenCount):
             # await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
             await self.update_token(network=network, tokenId=(tokenIndex + 1))
 

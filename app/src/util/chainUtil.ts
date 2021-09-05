@@ -38,7 +38,7 @@ const networkContractAddressMap: Record<string, string | null> = {
   rinkeby3: '0x19559Ac1471e2e4887d63c9363C85BF9f85Fdb67',
   rinkeby4: '0x9B84318C9aC64F564eEc4a703f2dbb742a4D1401',
   rinkeby5: '0xaE70a9accF2E0c16b380C0aa3060E9fBa6718daf',
-  rinkeby6: '0xAFe1e7999897af473D075F7cFE8c70F58a82670a',
+  rinkeby6: '0x30DB8250798EBb38D77E559b122f8748cBb57808',
   mainnet: null,
 };
 
