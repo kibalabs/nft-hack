@@ -111,6 +111,17 @@ describe("MillionDollarTokenPage contract", async function() {
       const transaction = mdtp.connect(otherWallet).setDefaultContentBaseURI(100);
       await expect(transaction).to.be.reverted;
     });
+
+    it("should allow admins to setCanMintCenter", async function() {
+      await mdtp.setCanMintCenter(true);
+      const canMintCenter = await mdtp.canMintCenter();
+      expect(canMintCenter).to.equal(true);
+    });
+
+    it("should not allow non-admins to setDefaultContentBaseURI", async function() {
+      const transaction = mdtp.connect(otherWallet).setCanMintCenter(true);
+      await expect(transaction).to.be.reverted;
+    });
   });
 
   describe("Metadata URIs", async function() {
@@ -434,6 +445,28 @@ describe("MillionDollarTokenPage contract", async function() {
       const contentUri = await mdtp.tokenContentURI(100);
       expect(contentUri).to.equal(`${METADATA_BASE_URI}100.json`);
     });
+
+    it("does not allow minting center blocks when canMintCenter is false", async function() {
+      const topLeftTransaction = mdtp.mintToken(4038);
+      await expect(topLeftTransaction).to.be.reverted;
+      const topRightTransaction = mdtp.mintToken(4062);
+      await expect(topRightTransaction).to.be.reverted;
+      const bottomLeftTransaction = mdtp.mintToken(5938);
+      await expect(bottomLeftTransaction).to.be.reverted;
+      const bottomRightTransaction = mdtp.mintToken(5962);
+      await expect(bottomRightTransaction).to.be.reverted;
+      const middleTransaction = mdtp.mintToken(5054);
+      await expect(middleTransaction).to.be.reverted;
+    });
+
+    it("does allow minting center blocks when canMintCenter is true", async function() {
+      await mdtp.setCanMintCenter(true);
+      await mdtp.mintToken(4038);
+      await mdtp.mintToken(4062);
+      await mdtp.mintToken(5938);
+      await mdtp.mintToken(5962);
+      await mdtp.mintToken(5054);
+    });
   });
 
   describe("Minting Group", async function () {
@@ -574,6 +607,28 @@ describe("MillionDollarTokenPage contract", async function() {
       expect(contentUri1).to.equal(`${METADATA_BASE_URI}100.json`);
       const contentUri2 = await mdtp.tokenContentURI(101);
       expect(contentUri2).to.equal(`${METADATA_BASE_URI}101.json`);
+    });
+
+    it("does not allow minting center blocks when canMintCenter is false", async function() {
+      const topLeftTransaction = mdtp.mintTokenGroup(4037, 1, 2);
+      await expect(topLeftTransaction).to.be.reverted;
+      const topRightTransaction = mdtp.mintTokenGroup(4062, 1, 2);
+      await expect(topRightTransaction).to.be.reverted;
+      const bottomLeftTransaction = mdtp.mintTokenGroup(5937, 1, 2);
+      await expect(bottomLeftTransaction).to.be.reverted;
+      const bottomRightTransaction = mdtp.mintTokenGroup(5962, 1, 2);
+      await expect(bottomRightTransaction).to.be.reverted;
+      const middleTransaction = mdtp.mintTokenGroup(5054, 1, 2);
+      await expect(middleTransaction).to.be.reverted;
+    });
+
+    it("does allow minting center blocks when canMintCenter is true", async function() {
+      await mdtp.setCanMintCenter(true);
+      await mdtp.mintTokenGroup(4037, 1, 2);
+      await mdtp.mintTokenGroup(4062, 1, 2);
+      await mdtp.mintTokenGroup(5937, 1, 2);
+      await mdtp.mintTokenGroup(5962, 1, 2);
+      await mdtp.mintTokenGroup(5054, 1, 2);
     });
   });
 

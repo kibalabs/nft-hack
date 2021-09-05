@@ -136,6 +136,7 @@ class MdtpManager:
         )
 
     async def get_token_default_grid_item(self, network: str, tokenId: str) -> GridItem:
+        contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         metadata = await self.get_token_content(network=network, tokenId=tokenId)
         return GridItem(
             gridItemId=tokenId-1,
@@ -143,6 +144,7 @@ class MdtpManager:
             updatedDate=date_util.datetime_from_now(),
             network=network,
             tokenId=metadata.tokenId,
+            contentUrl=contentUrl,
             title=metadata.name,
             description=metadata.description,
             imageUrl=metadata.image,
@@ -191,7 +193,10 @@ class MdtpManager:
             latestBaseImage = await self.get_latest_base_image_url(network=network)
         except NotFoundException:
             latestBaseImage = None
-        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate if latestBaseImage else None)
+        if latestBaseImage:
+            gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate if latestBaseImage else None)
+        else:
+            gridItems = [await self.get_token_default_grid_item(network=network, tokenId=tokenIndex + 1) for tokenIndex in range(10000)]
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None

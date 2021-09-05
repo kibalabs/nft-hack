@@ -187,8 +187,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       } else {
         return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
       }
-    } catch (error) {
-      return { isSuccess: false, message: error.message };
+    } catch (error: unknown) {
+      return { isSuccess: false, message: (error as Error).message };
     }
     setTransaction(newTransaction);
     return { isSuccess: false, message: `Transaction in progress. Hash is: ${newTransaction.hash}.` };
