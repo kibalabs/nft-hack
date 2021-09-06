@@ -26,7 +26,7 @@ export enum ChainId {
   Mumbai = 80001,
 }
 
-export const DEFAULT_CHAIN_ID = ChainId.Rinkeby;
+export const DEFAULT_CHAIN_ID = ChainId.Mainnet;
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
   [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby6' : undefined,
