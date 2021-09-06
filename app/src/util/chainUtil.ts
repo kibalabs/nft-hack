@@ -30,7 +30,7 @@ export const DEFAULT_CHAIN_ID = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
   [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby6' : 'rinkeby5',
-  [ChainId.Mainnet]: window.KRT_NEW_CONTRACT ? 'mainnet1' : undefined,
+  [ChainId.Mainnet]: 'mainnet1',
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
