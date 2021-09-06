@@ -20,6 +20,7 @@
     "hardhat": "^2.5.0"
   },
   "dependencies": {
+    "@ethersproject/hardware-wallets": "^5.4.0",
     "@openzeppelin/contracts": "^4.2.0"
   }
 }
