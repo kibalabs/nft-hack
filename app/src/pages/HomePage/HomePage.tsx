@@ -151,9 +151,7 @@ export const HomePage = (): React.ReactElement => {
                         ) : (
                           <Text alignment={TextAlignment.Center}>You’re on a chain we don’t recognize.</Text>
                         )}
-                        <Text alignment={TextAlignment.Center}>We’re currently running our open beta on Rinkeby.</Text>
                         <Text alignment={TextAlignment.Center}>Please switch your wallet to &quot;Ethereum Mainnet&quot;. You can choose this at the top of the MetaMask dropdown.</Text>
-                        <Text alignment={TextAlignment.Center}>The good news is whilst we are in beta everything is free! We’ll even give you free tokens to the real project for everyone you refer whilst we are in beta 🙌</Text>
                         <Spacing />
                         <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
                           <Button variant='primary' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
@@ -211,15 +209,7 @@ export const HomePage = (): React.ReactElement => {
                 )}
               </Stack>
             </LayerContainer.Layer>
-            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
-              {/* <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
-                <LinkBase onClicked={onRoadmapClicked} isEnabled={true}>
-                  <Box width={'100px'}>
-                    <Image source='/assets/open-beta.svg' alternativeText={'Open Beta'} />
-                  </Box>
-                </LinkBase>
-              </Stack> */}
-            </LayerContainer.Layer>
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} />
             {isPanelShowing && (
               <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
                 <PanelLayer>
