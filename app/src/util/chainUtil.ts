@@ -134,7 +134,7 @@ export const getProductOpenseaUrl = (network: string): string | null => {
     return 'https://testnets.opensea.io/collection/milliondollartokenpage-tyvw2ocd5n';
   }
   if (network === 'mainnet1') {
-    return `https://etherscan.io/address/${account}`;
+    return 'https://opensea.io/collection/milliondollartokenpage';
   }
   return null;
 };
