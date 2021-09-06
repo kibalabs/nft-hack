@@ -143,8 +143,8 @@ async def run(tokenId: Optional[int], shouldUpload: bool):
         print(f'Generating image for {tokenId}')
         imagePath = os.path.join(imagesOutputDirectory, f'{tokenId}.png')
         imageUrl = imagePath
-        #   tokenImage = generate_image(tokenId=tokenId)
-        #   tokenImage.save(imagePath)
+        tokenImage = generate_image(tokenId=tokenId)
+        tokenImage.save(imagePath)
         if shouldUpload:
             print(f'Uploading image for {tokenId}')
             with open(imagePath, 'rb') as imageFile:
