@@ -29,7 +29,7 @@ export enum ChainId {
 export const DEFAULT_CHAIN_ID = ChainId.Rinkeby;
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
-  // [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby6' : 'rinkeby5',
+  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby6' : undefined,
   [ChainId.Mainnet]: 'mainnet1',
 };
 
