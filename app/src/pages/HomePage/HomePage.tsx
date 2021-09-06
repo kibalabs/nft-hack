@@ -209,8 +209,7 @@ export const HomePage = (): React.ReactElement => {
                 )}
               </Stack>
             </LayerContainer.Layer>
-            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
-            </LayerContainer.Layer>
+            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} />
             {isPanelShowing && (
               <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
                 <PanelLayer>
