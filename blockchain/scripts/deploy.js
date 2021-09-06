@@ -5,7 +5,6 @@ const args = require("./arguments");
 
 async function main() {
   const provider = ethers.getDefaultProvider('rinkeby');
-  console.log('provider', provider)
   const ledgerSigner = await new LedgerSigner(provider, "hid", "m/44'/60'/0'/0");
   const contractFactory = await ethers.getContractFactory("MillionDollarTokenPage", ledgerSigner);
   const deployedContract = await contractFactory.deploy(...args);
