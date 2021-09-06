@@ -212,13 +212,13 @@ export const HomePage = (): React.ReactElement => {
               </Stack>
             </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End}>
-              <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
+              {/* <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
                 <LinkBase onClicked={onRoadmapClicked} isEnabled={true}>
                   <Box width={'100px'}>
                     <Image source='/assets/open-beta.svg' alternativeText={'Open Beta'} />
                   </Box>
                 </LinkBase>
-              </Stack>
+              </Stack> */}
             </LayerContainer.Layer>
             {isPanelShowing && (
               <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>

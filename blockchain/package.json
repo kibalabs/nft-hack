@@ -6,7 +6,9 @@
   "scripts": {
     "test": "hardhat test",
     "deploy-dev": "hardhat run --network rinkeby scripts/deploy.js",
-    "verify-dev": "hardhat verify --network rinkeby --constructor-args scripts/arguments.js"
+    "verify-dev": "hardhat verify --network rinkeby --constructor-args scripts/arguments.js",
+    "deploy": "hardhat run --network mainnet scripts/deploy.js",
+    "verify": "hardhat verify --network mainnet --constructor-args scripts/arguments.js"
   },
   "author": "",
   "license": "ISC",

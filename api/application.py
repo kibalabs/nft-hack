@@ -33,9 +33,10 @@ s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_k
 s3Manager = S3Manager(s3Client=s3Client)
 
 requester = Requester()
+ethClient = RestEthClient(url=os.environ['ALCHEMY_MAINNET_URL'], requester=requester)
 rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
 mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
-contractStore = create_contract_store(rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
+contractStore = create_contract_store(ethClient=ethClient, rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
 
 infuraIpfsAuth = BasicAuthentication(username=os.environ['INFURA_IPFS_PROJECT_ID'], password=os.environ['INFURA_IPFS_PROJECT_SECRET'])
 infuraIpfsRequester = Requester(headers={'authorization': f'Basic {infuraIpfsAuth.to_string()}'})
