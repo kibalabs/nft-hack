@@ -193,10 +193,7 @@ class MdtpManager:
             latestBaseImage = await self.get_latest_base_image_url(network=network)
         except NotFoundException:
             latestBaseImage = None
-        if latestBaseImage:
-            gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate if latestBaseImage else None)
-        else:
-            gridItems = [await self.get_token_default_grid_item(network=network, tokenId=tokenIndex + 1) for tokenIndex in range(10000)]
+        gridItems = await self.list_grid_items(network=network, updatedSinceDate=latestBaseImage.generatedDate if latestBaseImage else None)
         if len(gridItems) == 0:
             logging.info('Nothing to update')
             return None

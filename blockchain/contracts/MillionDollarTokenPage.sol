@@ -158,7 +158,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
     // Minting
 
     function isInMiddle(uint256 tokenId) internal pure returns (bool) {
-        uint256 x = tokenId / COLUMN_COUNT;
+        uint256 x = tokenId % COLUMN_COUNT;
         uint256 y = tokenId / ROW_COUNT;
         return x >= 38 && x <= 62 && y >= 40 && y <= 59;
     }
