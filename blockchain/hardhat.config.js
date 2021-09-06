@@ -9,6 +9,10 @@ module.exports = {
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {},
+    mainnet: {
+      url: process.env.ALCHEMY_MAINNET_URL,
+      from: '0xF3A535cEdf65cB8C287Cb5CAc67E970E94eb372D',
+    },
     rinkeby: {
       url: process.env.ALCHEMY_URL,
       from: '0xF3A535cEdf65cB8C287Cb5CAc67E970E94eb372D',
