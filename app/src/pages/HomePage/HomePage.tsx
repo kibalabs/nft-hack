@@ -152,7 +152,7 @@ export const HomePage = (): React.ReactElement => {
                           <Text alignment={TextAlignment.Center}>You’re on a chain we don’t recognize.</Text>
                         )}
                         <Text alignment={TextAlignment.Center}>We’re currently running our open beta on Rinkeby.</Text>
-                        <Text alignment={TextAlignment.Center}>Please switch your wallet to "Ethereum Mainnet". You can choose this at the top of the MetaMask dropdown.</Text>
+                        <Text alignment={TextAlignment.Center}>Please switch your wallet to &quot;Ethereum Mainnet&quot;. You can choose this at the top of the MetaMask dropdown.</Text>
                         <Text alignment={TextAlignment.Center}>The good news is whilst we are in beta everything is free! We’ll even give you free tokens to the real project for everyone you refer whilst we are in beta 🙌</Text>
                         <Spacing />
                         <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
