@@ -213,19 +213,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               <Spacing />
               {isOwned && tokenMetadata.url ? (
                 <ShareForm
-                  initialShareText={`Ser, check out ${tokenMetadata.name} (${tokenMetadata.url}), just found on milliondollartokenpage.com/${tokenMetadata.tokenId}, looks legit! 🚀`}
+                  initialShareText={`Ser, check out ${tokenMetadata.name} (${tokenMetadata.url}), just found on milliondollartokenpage.com/${tokenMetadata.tokenId} @mdtp_app, looks legit! 🚀`}
                   minRowCount={3}
                   isAllOptionsEnabled={false}
                 />
               ) : isOwned && !tokenMetadata.url ? (
                 <ShareForm
-                  initialShareText={`Ser, check out ${tokenMetadata.name}, just found on milliondollartokenpage.com/${tokenMetadata.tokenId}, looks legit! 🚀`}
+                  initialShareText={`Ser, check out ${tokenMetadata.name}, just found on milliondollartokenpage.com/${tokenMetadata.tokenId} @mdtp_app, looks legit! 🚀`}
                   minRowCount={3}
                   isAllOptionsEnabled={false}
                 />
               ) : (
                 <ShareForm
-                  initialShareText={`Fren, you can mint this NFT on milliondollartokenpage.com/${tokenMetadata.tokenId} and show off your JPGs. I'm gonna ape in, LFG! 🚀`}
+                  initialShareText={`Fren, you can mint this NFT on milliondollartokenpage.com/${tokenMetadata.tokenId} @mdtp_app and show off your JPGs. I'm gonna ape in, LFG! 🚀`}
                   minRowCount={3}
                   isAllOptionsEnabled={false}
                 />

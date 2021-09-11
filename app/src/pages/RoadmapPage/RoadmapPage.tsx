@@ -9,19 +9,9 @@ export const RoadmapPage = (): React.ReactElement => {
 
   &nbsp;
 
-  **Open Beta - Until Monday 6th September '21 🛠️**
-
-  We’re still in BETA so minting NFTs is literally free. Just connect to the Rinkeby testnet in your wallet and get some Rinkeby ETH for free from a [faucet](https://faucet.rinkeby.io/)!
-
-  When we launch there'll be a mint-fee for NFTs. However, we're giving away 1 NFT free for joining the BETA, and for every 1 new person you get onto our Discord you'll get 1 extra NFT free up to a maximum of 35 NFTs!
-
-  We're giving away up to 1000 NFTs in BETA so hurry, jump in and share with your friends and followers now!
-
-  &nbsp;
-
   **Tranch 0: N tokens for 0 ETH 🐣**
 
-  If you were a BETA user we're rewarding you with NFTs for free! We'll contact you directly on Discord when we launch to orchestrate this.
+  If you were a BETA user before our launch on Monday 6th September '21 we rewarded you with free NFTs! This was all done through our Discord!
 
   &nbsp;
 

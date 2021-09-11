@@ -291,7 +291,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
             <Spacing />
             <Spacing />
             <ShareForm
-              initialShareText={`Fren, just minted an NFT at milliondollartokenpage.com/${props.tokenId}! The FOMO got me. I aped in. WGMI! 🚀`}
+              initialShareText={`Fren, just minted an NFT at milliondollartokenpage.com/${props.tokenId} @mdtp_app! The FOMO got me. I aped in. WGMI! 🚀`}
               minRowCount={3}
               isAllOptionsEnabled={false}
             />
