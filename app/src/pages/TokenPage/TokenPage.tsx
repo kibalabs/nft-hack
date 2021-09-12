@@ -164,11 +164,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
     if (isOwned) {
       if (tokenMetadata.url) {
-        return `Ser, check out ${tokenMetadata.name} (${tokenMetadata.url}), just found on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, looks legit! 🚀`;
+        return `Ser, check out "${tokenMetadata.name}" (${tokenMetadata.url}). I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId}, @mdtp_app looks legit! 🚀`;
       }
-      return `Ser, check out ${tokenMetadata.name}, just found on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, looks legit! 🚀`;
+      return `Ser, check out "${tokenMetadata.name}". I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId}, @mdtp_app looks legit! 🚀`;
     }
-    return `Fren, you can mint this NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app and show off your JPGs. I'm gonna ape in, LFG! 🚀`;
+    return `Frens, you can mint this NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} and show off your JPGs. @mdtp_app I'm gonna ape in, LFG! 🚀`;
   };
 
   return (

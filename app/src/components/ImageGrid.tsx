@@ -67,7 +67,7 @@ export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
                     variant='tokenPageHeaderGrid'
                     fitType={'contain'}
                     source={getGridItemForGridPoint({ x, y })?.imageUrl || '/assets/spacer.svg'}
-                    alternativeText={'token image'}
+                    alternativeText={''}
                     isFullHeight={true}
                     isFullWidth={true}
                   />
