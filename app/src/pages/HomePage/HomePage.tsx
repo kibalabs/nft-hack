@@ -11,7 +11,7 @@ import { GridControl } from '../../components/GridControl';
 import { MetaMaskConnection } from '../../components/MetaMaskConnection';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
-import { ChainId, getProductOpenseaUrl } from '../../util/chainUtil';
+import { getProductOpenseaUrl } from '../../util/chainUtil';
 
 const PanelLayer = styled.div`
   width: 95vw;
