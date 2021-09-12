@@ -253,7 +253,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
             <Spacing />
             <ShareForm
-              initialShareText={`Fren, I just updated my NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app 🔥🔥 You too can show off your JPGs and projects here, IYKYK! 🚀`}
+              initialShareText={`Frens, I just updated my NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app 🔥🔥 You too can show off your JPGs and projects here, IYKYK! 🚀`}
               minRowCount={3}
               shouldShowAllOptions={false}
             />
@@ -274,15 +274,15 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
           <React.Fragment>
             <React.Fragment>
               <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                <Text>Block height:</Text>
-                <Box width='5em'>
-                  <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
-                </Box>
-              </Stack>
-              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
                 <Text>Block width:</Text>
                 <Box width='5em'>
                   <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
+                </Box>
+              </Stack>
+              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                <Text>Block height:</Text>
+                <Box width='5em'>
+                  <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
                 </Box>
               </Stack>
             </React.Fragment>

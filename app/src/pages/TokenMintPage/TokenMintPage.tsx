@@ -279,7 +279,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
               <Spacing variant={PaddingSize.Wide} />
             </Stack.Item>
             <ShareForm
-              initialShareText={`Fren, I just minted an NFT at milliondollartokenpage.com/tokens/${props.tokenId} @mdtp_app 🔥🔥! The FOMO got me. I aped in. WGMI! 🚀`}
+              initialShareText={`Frens, I just minted an NFT at milliondollartokenpage.com/tokens/${props.tokenId} @mdtp_app 🔥🔥! The FOMO got me. I aped in. WGMI! 🚀`}
               minRowCount={3}
               shouldShowAllOptions={false}
               isSecondaryAction={true}
@@ -304,15 +304,15 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
               <Spacing />
               <React.Fragment>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                  <Text>Block height:</Text>
-                  <Box width='5em'>
-                    <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
-                  </Box>
-                </Stack>
-                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
                   <Text>Block width:</Text>
                   <Box width='5em'>
                     <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
+                  </Box>
+                </Stack>
+                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                  <Text>Block height:</Text>
+                  <Box width='5em'>
+                    <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
                   </Box>
                 </Stack>
               </React.Fragment>
