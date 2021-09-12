@@ -43,13 +43,28 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
     setUpdatingImageResult(null);
     setIsUploadingImage(true);
     const result = await props.onImageFilesChosen(shouldUseIpfs, files);
-    setImageUrl(result.isSuccess ? result.message : imageUrl);
     setUpdatingImageResult(result);
     setIsUploadingImage(false);
+    onImageUrlChanged(result.isSuccess ? result.message : imageUrl);
   };
 
   const onShouldUseIpfsToggled = (): void => {
     setShouldUseIpfs(!shouldUseIpfs);
+  };
+
+  const onTitleChanged = (value: string): void => {
+    setUpdatingTokenResult(null);
+    setTitle(value);
+  };
+
+  const onDescriptionChanged = (value: string): void => {
+    setUpdatingTokenResult(null);
+    setDescription(value);
+  };
+
+  const onImageUrlChanged = (value: string | null): void => {
+    setUpdatingTokenResult(null);
+    setImageUrl(value);
   };
 
   const inputVariant = (!updatingTokenResult) ? undefined : updatingTokenResult?.isSuccess ? 'success' : (updatingTokenResult?.isSuccess === false ? 'error' : undefined);
@@ -60,13 +75,13 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
         <SingleLineInput
           inputType={InputType.Text}
           value={title}
-          onValueChanged={setTitle}
+          onValueChanged={onTitleChanged}
           inputWrapperVariant={inputVariant}
-          placeholderText='Name'
+          placeholderText='Title'
         />
         <MultiLineInput
           value={description}
-          onValueChanged={setDescription}
+          onValueChanged={onDescriptionChanged}
           inputWrapperVariant={inputVariant}
           placeholderText='Description'
         />
@@ -87,7 +102,7 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
                 <SingleLineInput
                   inputType={InputType.Url}
                   value={imageUrl}
-                  onValueChanged={setImageUrl}
+                  onValueChanged={onImageUrlChanged}
                   inputWrapperVariant={inputVariant}
                   placeholderText='Image URL'
                 />

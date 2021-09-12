@@ -2,7 +2,7 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { Link } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
@@ -23,7 +23,6 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   const colors = useColors();
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
   const [chainOwnerIds, setChainOwnerIds] = React.useState<Map<number, string> | null | undefined>(undefined);
-  const [isUpdatingMultiple, setIsUpdatingMultiple] = React.useState<boolean>(false);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
   const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
@@ -34,17 +33,13 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   const relevantTokenIds = React.useMemo((): number[] => {
     const tokenId = Number(props.tokenId);
     const tokenIds = [];
-    if (isUpdatingMultiple) {
-      for (let y = 0; y < requestHeight; y += 1) {
-        for (let x = 0; x < requestWidth; x += 1) {
-          tokenIds.push(tokenId + (y * 100) + x);
-        }
+    for (let y = 0; y < requestHeight; y += 1) {
+      for (let x = 0; x < requestWidth; x += 1) {
+        tokenIds.push(tokenId + (y * 100) + x);
       }
-    } else {
-      tokenIds.push(tokenId);
     }
     return tokenIds;
-  }, [props.tokenId, requestHeight, requestWidth, isUpdatingMultiple]);
+  }, [props.tokenId, requestHeight, requestWidth]);
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     setTokenMetadata(undefined);
@@ -157,13 +152,17 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     if (signerIndex === -1) {
       return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
     }
+    if (!title) {
+      return { isSuccess: false, message: 'Please update the title.' };
+    }
+    if (!imageUrl) {
+      return { isSuccess: false, message: 'Please provide an image.' };
+    }
 
+    const isUpdatingMultiple = requestWidth > 1 || requestHeight > 1;
     let tokenMetadataUrls: string[];
     try {
       if (isUpdatingMultiple) {
-        if (!imageUrl) {
-          return { isSuccess: false, message: 'To update multiple tokens you must provide an image.' };
-        }
         tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
       } else {
         const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
@@ -208,10 +207,6 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     waitForTransaction();
   }, [waitForTransaction]);
 
-  const onTabKeySelected = (tabKey: string): void => {
-    setIsUpdatingMultiple(tabKey === 'multiple');
-  };
-
   const onRequestHeightChanged = (value: string): void => {
     if (parseInt(value, 10)) {
       setRequestHeight(parseInt(value, 10));
@@ -231,6 +226,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     return accumulator;
   }, []) : [];
   const isOwnerOfTokens = unownedTokenIds.length === 0;
+
+  const isValidDescription = tokenMetadata?.description && !tokenMetadata.description.startsWith('This NFT gives you full ownership');
+  const isValidName = tokenMetadata?.name && !tokenMetadata.name.startsWith('MDTP Token');
 
   return (
     <React.Fragment>
@@ -255,16 +253,16 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
             <Spacing />
             <ShareForm
-              initialShareText={`Fren, just updated my NFT on milliondollartokenpage.com/${tokenMetadata.tokenId} @mdtp_app, you can show off your JPGs and projects here, IYKYK! 🚀`}
+              initialShareText={`Fren, I just updated my NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app 🔥🔥 You too can show off your JPGs and projects here, IYKYK! 🚀`}
               minRowCount={3}
-              isAllOptionsEnabled={false}
+              shouldShowAllOptions={false}
             />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>
             <LoadingSpinner />
             <Text>Your transaction is going through.</Text>
-            <Text>💡 Share option will appear once finished! 💡</Text>
+            <Text>Get ready to share once it&apos;s finished 🔥🔥</Text>
             <Spacing />
             <Button
               variant='secondary'
@@ -274,31 +272,25 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <TabBar selectedTabKey={isUpdatingMultiple ? 'multiple' : 'single'} onTabKeySelected={onTabKeySelected}>
-              <TabBar.Item tabKey='single' text='Update single' />
-              <TabBar.Item tabKey='multiple' text='Update group' isEnabled={contract && contract.setTokenGroupContentURIs} />
-            </TabBar>
-            { isUpdatingMultiple && (
-              <React.Fragment>
-                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                  <Text>Block height:</Text>
-                  <Box width='5em'>
-                    <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
-                  </Box>
-                </Stack>
-                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                  <Text>Block width:</Text>
-                  <Box width='5em'>
-                    <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
-                  </Box>
-                </Stack>
-              </React.Fragment>
-            )}
+            <React.Fragment>
+              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                <Text>Block height:</Text>
+                <Box width='5em'>
+                  <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
+                </Box>
+              </Stack>
+              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                <Text>Block width:</Text>
+                <Box width='5em'>
+                  <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
+                </Box>
+              </Stack>
+            </React.Fragment>
             <TokenUpdateForm
-              title={tokenMetadata.name}
-              description={tokenMetadata.description}
+              title={isValidName ? tokenMetadata.name : ''}
+              description={isValidDescription ? tokenMetadata.description : ''}
               url={tokenMetadata.url}
-              imageUrl={isUpdatingMultiple ? null : tokenMetadata.image}
+              imageUrl={null}
               onTokenUpdateFormSubmitted={onTokenUpdateFormSubmitted}
               onImageFilesChosen={onImageFilesChosen}
               isEnabled={isOwnerOfTokens}

@@ -26,7 +26,6 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const [balance, setBalance] = React.useState<BigNumber | undefined | null>(undefined);
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
   const [requestWidth, setRequestWidth] = React.useState<number>(1);
-  const [isMintingMultiple, setIsMintingMultiple] = React.useState<boolean>(false);
   const [isSubmittingTransaction, setIsSubmittingTransaction] = React.useState<boolean>(false);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
   const [transactionError, setTransactionError] = React.useState<Error | null>(null);
@@ -35,7 +34,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const accountIds = useAccountIds();
   const colors = useColors();
 
-  const requestCount = isMintingMultiple ? (requestHeight * requestWidth) : 1;
+  const requestCount = requestHeight * requestWidth;
   const totalPrice = mintPrice ? mintPrice.mul(requestCount) : undefined;
   const isOverSingleLimit = singleMintLimit ? requestCount > singleMintLimit : false;
   const isOverTotalLimit = (totalMintLimit && mintedCount) ? requestCount + mintedCount > totalMintLimit : false;
@@ -46,17 +45,13 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const relevantTokenIds = React.useMemo((): number[] => {
     const tokenId = Number(props.tokenId);
     const tokenIds = [];
-    if (isMintingMultiple) {
-      for (let y = 0; y < requestHeight; y += 1) {
-        for (let x = 0; x < requestWidth; x += 1) {
-          tokenIds.push(tokenId + (y * 100) + x);
-        }
+    for (let y = 0; y < requestHeight; y += 1) {
+      for (let x = 0; x < requestWidth; x += 1) {
+        tokenIds.push(tokenId + (y * 100) + x);
       }
-    } else {
-      tokenIds.push(tokenId);
     }
     return tokenIds;
-  }, [props.tokenId, requestHeight, requestWidth, isMintingMultiple]);
+  }, [props.tokenId, requestHeight, requestWidth]);
 
   const loadData = React.useCallback(async (): Promise<void> => {
     if (contract === null) {
@@ -206,14 +201,6 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     loadOwners();
   }, [loadOwners]);
 
-  const onMintMultipleClicked = (): void => {
-    setIsMintingMultiple(true);
-  };
-
-  const onMintSingleClicked = (): void => {
-    setIsMintingMultiple(false);
-  };
-
   const onConfirmClicked = async (): Promise<void> => {
     if (!contract || !accounts) {
       return;
@@ -223,7 +210,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     const contractWithSigner = contract.connect(accounts[0]);
     let newTransaction = null;
     try {
-      if (isMintingMultiple) {
+      if (requestCount > 1) {
         newTransaction = await contractWithSigner.mintTokenGroup(Number(props.tokenId), requestWidth, requestHeight, { value: totalPrice });
       } else {
         newTransaction = await contractWithSigner.mintToken(Number(props.tokenId), { value: totalPrice });
@@ -284,23 +271,25 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         ) : transactionReceipt ? (
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
-            <Text>🎉 Token minted successfully 🎉</Text>
+            <Text alignment={TextAlignment.Center}>🎉 Token minted successfully 🎉</Text>
             <Spacing />
-            <Text>Now let&apos;s update the content on your tokens!</Text>
+            <Text alignment={TextAlignment.Center}>Now let&apos;s update the content on your tokens!</Text>
             <Button variant='primary' text='Update token 👉' target={`/tokens/${props.tokenId}/update`} />
-            <Spacing />
-            <Spacing />
+            <Stack.Item growthFactor={1}>
+              <Spacing variant={PaddingSize.Wide} />
+            </Stack.Item>
             <ShareForm
-              initialShareText={`Fren, just minted an NFT at milliondollartokenpage.com/${props.tokenId} @mdtp_app! The FOMO got me. I aped in. WGMI! 🚀`}
+              initialShareText={`Fren, I just minted an NFT at milliondollartokenpage.com/tokens/${props.tokenId} @mdtp_app 🔥🔥! The FOMO got me. I aped in. WGMI! 🚀`}
               minRowCount={3}
-              isAllOptionsEnabled={false}
+              shouldShowAllOptions={false}
+              isSecondaryAction={true}
             />
           </React.Fragment>
         ) : transaction ? (
           <React.Fragment>
             <LoadingSpinner />
-            <Text>Your transaction is going through.</Text>
-            <Text>💡 Update button will appear once finished! 💡</Text>
+            <Text alignment={TextAlignment.Center}>Your transaction is going through.</Text>
+            <Text alignment={TextAlignment.Center}>In the meantime, why not get your content ready to update your token... 🎨</Text>
             <Spacing />
             <Button
               variant='secondary'
@@ -311,28 +300,30 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         ) : (
           <Form isLoading={isSubmittingTransaction} onFormSubmitted={onConfirmClicked}>
             <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-              <Text variant='note' alignment={TextAlignment.Center}>{'You found an un-minted token, nice one! You\'re about to become a part of crypto history 🚀'}</Text>
-              <Text alignment={TextAlignment.Center}>{`Current token price: Ξ${etherUtils.formatEther(mintPrice)}`}</Text>
-              <Text alignment={TextAlignment.Center}>{`Connected account balance: Ξ${etherUtils.formatEther(balance)}`}</Text>
+              <Text alignment={TextAlignment.Center}>{'You found an un-minted token, nice one! You\'re about to become a part of crypto history 🚀'}</Text>
               <Spacing />
-              { isMintingMultiple && (
-                <React.Fragment>
-                  <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                    <Text>Block height:</Text>
-                    <Box width='5em'>
-                      <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
-                    </Box>
-                  </Stack>
-                  <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                    <Text>Block width:</Text>
-                    <Box width='5em'>
-                      <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
-                    </Box>
-                  </Stack>
-                </React.Fragment>
-              )}
+              <React.Fragment>
+                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                  <Text>Block height:</Text>
+                  <Box width='5em'>
+                    <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
+                  </Box>
+                </Stack>
+                <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+                  <Text>Block width:</Text>
+                  <Box width='5em'>
+                    <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
+                  </Box>
+                </Stack>
+              </React.Fragment>
+              <Stack.Item gutterAfter={PaddingSize.Narrow}>
+                <Text variant='note' alignment={TextAlignment.Center}>{`Current token price: Ξ${etherUtils.formatEther(mintPrice)}`}</Text>
+              </Stack.Item>
+              <Stack.Item gutterAfter={PaddingSize.Narrow}>
+                <Text variant='note' alignment={TextAlignment.Center}>{`Connected account balance: Ξ${Number(etherUtils.formatEther(balance)).toFixed(4)}`}</Text>
+              </Stack.Item>
               <Text alignment={TextAlignment.Center}>{`Minting ${requestCount} token${requestCount > 1 ? 's' : ''} for Ξ${etherUtils.formatEther(totalPrice as BigNumber)}`}</Text>
-              { isMintingMultiple && (
+              { requestCount > 1 && (
                 <Text variant='note' alignment={TextAlignment.Center}>Please note that minting multiple tokens raises the risk that your transaction clashes with someone else trying to buy the same tokens 👀</Text>
               )}
               { isOverSingleLimit && (
@@ -353,16 +344,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
               { transactionError && (
                 <Text variant='error' alignment={TextAlignment.Center}>{String(transactionError.message)}</Text>
               )}
-              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} isFullWidth={true}>
-                { isMintingMultiple ? (
-                  <Button variant='secondary' text='Mint single' onClicked={onMintSingleClicked} />
-                ) : (
-                  <Button variant='secondary' text='Mint group' onClicked={onMintMultipleClicked} />
-                )}
-                <Stack.Item growthFactor={1} shrinkFactor={1}>
-                  <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !hasMintedToken} />
-                </Stack.Item>
-              </Stack>
+              <Stack.Item growthFactor={1} shrinkFactor={1}>
+                <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !hasMintedToken} />
+              </Stack.Item>
             </Stack>
           </Form>
         )}

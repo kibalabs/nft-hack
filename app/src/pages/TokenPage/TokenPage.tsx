@@ -158,6 +158,19 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     );
   };
 
+  const getShareText = (): string => {
+    if (!tokenMetadata) {
+      return '';
+    }
+    if (isOwned) {
+      if (tokenMetadata.url) {
+        return `Ser, check out "${tokenMetadata.name}" (${tokenMetadata.url}). I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId}, @mdtp_app looks legit! 🚀`;
+      }
+      return `Ser, check out "${tokenMetadata.name}". I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId}, @mdtp_app looks legit! 🚀`;
+    }
+    return `Frens, you can mint this NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} and show off your JPGs. @mdtp_app I'm gonna ape in, LFG! 🚀`;
+  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -185,52 +198,42 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 </BackgroundView>
               )}
             </Box>
-            <Stack direction={Direction.Vertical} isFullWidth={true} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
-              <Text variant='header3' alignment={TextAlignment.Center}>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
-              <Text variant='header2' alignment={TextAlignment.Center}>{`${tokenMetadata.name}`}</Text>
-              {tokenMetadata.url && (
-                <Link target={getLinkableUrl(tokenMetadata.url)} text={truncateStart(getUrlDisplayString(tokenMetadata.url), 40)} />
-              )}
-              {tokenMetadata.description && (
-                <Text>{tokenMetadata.description}</Text>
-              )}
-              <Stack.Item gutterBefore={PaddingSize.Default} gutterAfter={PaddingSize.Wide2}>
-                <OwnershipInfo />
-              </Stack.Item>
-              { !contract ? (
-                <Text variant='note'>{'Please connect your wallet to view more options.'}</Text>
-              ) : !accounts || !accountIds || !tokenMetadata ? (
-                <LoadingSpinner />
-              ) : (accounts?.length === 0) || (accountIds?.length === 0) ? (
-                <Text variant='note'>{'Please connect your account to view more options.'}</Text>
-              ) : isOwnedByUser && (
-                <React.Fragment>
-                  <Text>👑 This is one of your tokens 👑</Text>
-                  <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
-                </React.Fragment>
-              )}
-              <Spacing />
-              <Spacing />
-              {isOwned && tokenMetadata.url ? (
+            <Stack.Item growthFactor={1}>
+              <Stack direction={Direction.Vertical} isFullWidth={true} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
+                <Text variant='header6' alignment={TextAlignment.Center}>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
+                <Text variant='header2' alignment={TextAlignment.Center}>{`${tokenMetadata.name}`}</Text>
+                {tokenMetadata.url && (
+                  <Link target={getLinkableUrl(tokenMetadata.url)} text={truncateStart(getUrlDisplayString(tokenMetadata.url), 40)} />
+                )}
+                {tokenMetadata.description && (
+                  <Text>{tokenMetadata.description}</Text>
+                )}
+                <Stack.Item gutterBefore={PaddingSize.Default} gutterAfter={PaddingSize.Wide2}>
+                  <OwnershipInfo />
+                </Stack.Item>
+                { !contract ? (
+                  <Text variant='note'>{'Please connect your wallet to view more options.'}</Text>
+                ) : !accounts || !accountIds || !tokenMetadata ? (
+                  <LoadingSpinner />
+                ) : (accounts?.length === 0) || (accountIds?.length === 0) ? (
+                  <Text variant='note'>{'Please connect your account to view more options.'}</Text>
+                ) : isOwnedByUser && (
+                  <React.Fragment>
+                    <Text>👑 This is one of your tokens 👑</Text>
+                    <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
+                  </React.Fragment>
+                )}
+                <Stack.Item growthFactor={1}>
+                  <Spacing variant={PaddingSize.Wide} />
+                </Stack.Item>
                 <ShareForm
-                  initialShareText={`Ser, check out ${tokenMetadata.name} (${tokenMetadata.url}), just found on milliondollartokenpage.com/${tokenMetadata.tokenId} @mdtp_app, looks legit! 🚀`}
+                  initialShareText={getShareText()}
                   minRowCount={3}
-                  isAllOptionsEnabled={false}
+                  shouldShowAllOptions={false}
+                  isSecondaryAction={!isOwned}
                 />
-              ) : isOwned && !tokenMetadata.url ? (
-                <ShareForm
-                  initialShareText={`Ser, check out ${tokenMetadata.name}, just found on milliondollartokenpage.com/${tokenMetadata.tokenId} @mdtp_app, looks legit! 🚀`}
-                  minRowCount={3}
-                  isAllOptionsEnabled={false}
-                />
-              ) : (
-                <ShareForm
-                  initialShareText={`Fren, you can mint this NFT on milliondollartokenpage.com/${tokenMetadata.tokenId} @mdtp_app and show off your JPGs. I'm gonna ape in, LFG! 🚀`}
-                  minRowCount={3}
-                  isAllOptionsEnabled={false}
-                />
-              )}
-            </Stack>
+              </Stack>
+            </Stack.Item>
           </React.Fragment>
         )}
       </Stack>

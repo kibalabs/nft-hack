@@ -11,7 +11,7 @@ import { GridControl } from '../../components/GridControl';
 import { MetaMaskConnection } from '../../components/MetaMaskConnection';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
-import { ChainId, getProductOpenseaUrl } from '../../util/chainUtil';
+import { getProductOpenseaUrl } from '../../util/chainUtil';
 
 const PanelLayer = styled.div`
   width: 95vw;
@@ -146,12 +146,7 @@ export const HomePage = (): React.ReactElement => {
                         <Text variant='header2' alignment={TextAlignment.Center}>Hi crypto fan 👋</Text>
                         <Spacing />
                         <Text alignment={TextAlignment.Center}>Good to have you here!</Text>
-                        { chainId === ChainId.Mainnet ? (
-                          <Text alignment={TextAlignment.Center}>We haven’t launch on mainnet just yet. </Text>
-                        ) : (
-                          <Text alignment={TextAlignment.Center}>You’re on a chain we don’t recognize.</Text>
-                        )}
-                        <Text alignment={TextAlignment.Center}>Please switch your wallet to &quot;Ethereum Mainnet&quot;. You can choose this at the top of the MetaMask dropdown.</Text>
+                        <Text alignment={TextAlignment.Center}>You’re on a chain we don’t recognize. Please switch your wallet to &quot;Ethereum Mainnet&quot;. You can choose this at the top of the MetaMask dropdown.</Text>
                         <Spacing />
                         <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
                           <Button variant='primary' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />

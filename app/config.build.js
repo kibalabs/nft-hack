@@ -7,12 +7,13 @@ const imageUrl = '/assets/banner.png';
 const url = 'https://milliondollartokenpage.com'
 
 const seoTags = [
-  new InjectSeoPlugin.MetaTag('og:title', title),
   new InjectSeoPlugin.MetaTag('description', description),
-  new InjectSeoPlugin.MetaTag('og:description', description),
+  new InjectSeoPlugin.Tag('meta', {property: 'og:title', content: title}),
+  new InjectSeoPlugin.Tag('meta', {property: 'og:description', content: description}),
+  new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
+  new InjectSeoPlugin.Tag('meta', {property: 'og:url', content: url}),
   new InjectSeoPlugin.MetaTag('twitter:card', 'summary_large_image'),
-  new InjectSeoPlugin.MetaTag('og:image', imageUrl),
-  new InjectSeoPlugin.MetaTag('og:url', url),
+  new InjectSeoPlugin.MetaTag('twitter:site', '@mdtp_app'),
   new InjectSeoPlugin.Tag('link', {rel: 'canonical', href: url}),
   new InjectSeoPlugin.Tag('link', {rel: 'apple-touch-icon', sizes: '180x180', href: '/assets/apple-touch-icon.png'}),
   new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/svg+xml', href: '/assets/favicon.svg'}),

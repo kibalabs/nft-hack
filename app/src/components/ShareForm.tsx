@@ -4,8 +4,9 @@ import { Alignment, Button, Direction, IconButton, KibaIcon, MultiLineInput, Pad
 
 interface IShareFormProps {
   initialShareText: string;
-  minRowCount: number;
-  isAllOptionsEnabled: boolean;
+  minRowCount?: number;
+  shouldShowAllOptions?: boolean;
+  isSecondaryAction?: boolean;
 }
 
 export const ShareForm = (props: IShareFormProps): React.ReactElement => {
@@ -27,9 +28,9 @@ export const ShareForm = (props: IShareFormProps): React.ReactElement => {
         onValueChanged={setShareText}
         minRowCount={props.minRowCount}
       />
-      <Button variant='primary' text='Tweet' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
+      <Button variant={props.isSecondaryAction ? 'secondary' : 'primary'} text='Tweet' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
       <Spacing />
-      { props.isAllOptionsEnabled && (
+      { props.shouldShowAllOptions && (
         <React.Fragment>
           <Text alignment={TextAlignment.Center}>{'Some other sharing options you might like!'}</Text>
           <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
