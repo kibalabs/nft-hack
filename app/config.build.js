@@ -3,8 +3,8 @@ const InjectSeoPlugin = require('@kibalabs/build/scripts/plugins/injectSeoPlugin
 
 const title = 'Million Dollar Token Page';
 const description = 'MillionDollarTokenPage (MDTP) is a digital content-sharing space powered by Ethereum and NFTs. Each block can be bought as a unique NFT, set to display the content you like, and later re-sold. Show off and share your content, and own a piece of crypto history!';
-const imageUrl = '/assets/banner.png';
 const url = 'https://milliondollartokenpage.com'
+const imageUrl = `${url}/assets/banner.png`;
 
 const seoTags = [
   new InjectSeoPlugin.MetaTag('description', description),
