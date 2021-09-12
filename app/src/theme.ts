@@ -16,6 +16,10 @@ export const buildMDTPTheme = (): ITheme => {
       'font-weight': '400',
       'overflow-wrap': 'anywhere',
     }),
+    header6: {
+      'font-size': '1em',
+      color: '$colors.textLight25',
+    },
     light: {
       color: 'rgba(255, 255, 255, 0.95)',
     },
