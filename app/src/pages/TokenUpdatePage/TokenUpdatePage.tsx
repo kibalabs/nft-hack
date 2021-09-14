@@ -145,7 +145,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   };
 
   const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null): Promise<UpdateResult> => {
-    if (!network || !contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds) {
+    if (!network || !contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds || !web3) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
