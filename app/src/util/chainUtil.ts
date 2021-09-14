@@ -30,7 +30,7 @@ export const DEFAULT_CHAIN_ID = ChainId.Mainnet;
 
 export const isBeta = (): boolean => {
   return !!window.KRT_NEW_CONTRACT;
-}
+};
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
   [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby6' : undefined,

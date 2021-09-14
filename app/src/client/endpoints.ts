@@ -220,7 +220,6 @@ export class UploadMetadataForTokenGroupResponse extends ResponseData {
       (obj.tokenMetadataUrls as Resources.RawObject[]).map((entry: Resources.RawObject): string => String(entry)),
     );
   }
-
 }
 export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
   public constructor(
@@ -245,7 +244,7 @@ export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
 }
 
 export class UpdateOffchainContentsForTokenGroupResponse extends ResponseData {
-  public static fromObject = (obj: Resources.RawObject): UpdateOffchainContentsForTokenGroupResponse => {
+  public static fromObject = (): UpdateOffchainContentsForTokenGroupResponse => {
     return new UpdateOffchainContentsForTokenGroupResponse(
     );
   }

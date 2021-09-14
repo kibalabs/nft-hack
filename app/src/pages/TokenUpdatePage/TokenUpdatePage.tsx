@@ -181,10 +181,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     if (!updateOnchain) {
       const blockNumber = await web3.getBlockNumber();
       const signer = accounts[signerIndex];
-      const message = JSON.stringify({network, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls});
-      console.log('message', message);
+      const message = JSON.stringify({ network, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls });
       const signature = await signer.signMessage(message);
-      console.log('signature', signature);
       const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature);
       setOffchainTransaction(request);
       return { isSuccess: false, message: 'Update in progress.' };
