@@ -4,7 +4,6 @@ from typing import Any
 from typing import List
 from typing import Optional
 
-import eth_utils
 from core.exceptions import NotFoundException
 from core.exceptions import ServerException
 from core.web3.eth_client import EthClientInterface

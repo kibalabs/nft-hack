@@ -27,8 +27,10 @@ from core.store.retriever import StringFieldFilter
 from core.util import date_util
 from core.util import dict_util
 from core.util import file_util
+from eth_account.messages import defunct_hash_message
 from PIL import Image as PILImage
 from web3 import Web3
+from web3.auto import w3
 
 from mdtp.cache_control_header import CacheControlHeader
 from mdtp.chain_util import NON_OWNER_ID
@@ -345,19 +347,16 @@ class MdtpManager:
                     ownerId = tokenOwnerId
                 if ownerId and tokenOwnerId != ownerId:
                     raise BadRequestException(message='Tokens have different owners')
-        from eth_account.messages import defunct_hash_message
-        from web3.auto import w3
-        message_hash = defunct_hash_message(text=signedMessage)
-        signer = w3.eth.account.recoverHash(message_hash, signature=signature)
+        messageHash = defunct_hash_message(text=signedMessage)
+        signer = w3.eth.account.recoverHash(message_hash=messageHash, signature=signature)
         if signer != ownerId:
             raise BadRequestException(message='Invalid signature')
-        # TODO(krishan711): save content url
         promises = []
-        for index, tokenId in enumerate(tokenIds):
-            promises.append(self.saver.create_offchain_content(network=network, tokenId=tokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=ownerId, signature=signature, signedMessage=signedMessage))
+        for index, innerTokenId in enumerate(tokenIds):
+            promises.append(self.saver.create_offchain_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=ownerId, signature=signature, signedMessage=signedMessage))
         await asyncio.gather(*promises)
-        for tokenId in tokenIds:
-            await self.update_token(network=network, tokenId=tokenId)
+        for innerTokenId in tokenIds:
+            await self.update_token(network=network, tokenId=innerTokenId)
 
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
