@@ -4,11 +4,14 @@ from typing import Any
 from typing import List
 from typing import Optional
 
+import eth_utils
 from core.exceptions import NotFoundException
 from core.exceptions import ServerException
 from core.web3.eth_client import EthClientInterface
 from web3.main import Web3
 from web3.types import TxReceipt
+
+from mdtp.chain_util import int_to_hex
 
 
 class TransactionFailedException(ServerException):
@@ -152,6 +155,13 @@ class ContractStore:
             return []
         events = await contract.ethClient.get_log_entries(address=contract.address, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber, topics=[Web3.keccak(text=contract.updateMethodSignature).hex()])
         return [int.from_bytes(bytes(event['topics'][1]), 'big') for event in events]
+
+    async def get_latest_update_block_number(self, network: str, tokenId: int) -> List[int]:
+        contract = self.get_contract(network=network)
+        if not contract.updateMethodSignature:
+            return []
+        events = await contract.ethClient.get_log_entries(address=contract.address, topics=[Web3.keccak(text=contract.updateMethodSignature).hex(), int_to_hex(tokenId)])
+        return next((event['blockNumber'] for event in reversed(events)), None)
 
     async def wait_for_transaction(self, network: str, transactionHash: str, sleepTime: int = 15, raiseOnFailure: bool = True) -> TxReceipt:
         transactionReceipt = None

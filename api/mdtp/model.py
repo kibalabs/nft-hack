@@ -103,3 +103,4 @@ class OffchainContent:
     blockNumber: int
     ownerId: str
     signature: str
+    signedMessage: str

@@ -89,13 +89,14 @@ class CreateMetadataForTokenGroupRequest(BaseModel):
 class CreateMetadataForTokenGroupResponse(BaseModel):
     tokenMetadataUrls: List[str]
 
-class UpdateContentOffchainForTokenRequest(BaseModel):
-    contentUrl: str
+class UpdateOffchainContentsForTokenGroupRequest(BaseModel):
+    width: int
+    height: int
     blockNumber: int
+    contentUrls: List[str]
     signature: str
 
-
-class UpdateContentOffchainForTokenResponse(BaseModel):
+class UpdateOffchainContentsForTokenGroupResponse(BaseModel):
     pass
 
 class UpdateTokenDeferredRequest(BaseModel):

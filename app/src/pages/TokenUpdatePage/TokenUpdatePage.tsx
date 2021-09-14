@@ -2,7 +2,7 @@ import React from 'react';
 
 import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { Link } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
@@ -11,7 +11,7 @@ import { PresignedUpload, TokenMetadata } from '../../client';
 import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
-import { getTransactionEtherscanUrl } from '../../util/chainUtil';
+import { getTransactionEtherscanUrl, isBeta } from '../../util/chainUtil';
 
 
 export type TokenUpdatePageProps = {
@@ -19,14 +19,17 @@ export type TokenUpdatePageProps = {
 }
 
 export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement => {
-  const { contract, requester, apiClient, network, web3StorageClient } = useGlobals();
+  const { contract, requester, apiClient, network, web3StorageClient, web3 } = useGlobals();
   const colors = useColors();
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
   const [chainOwnerIds, setChainOwnerIds] = React.useState<Map<number, string> | null | undefined>(undefined);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
+  const [offchainTransaction, setOffchainTransaction] = React.useState<Promise<void> | null>(null);
   const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
+  const [offchainTransactionReceipt, setOffchainTransactionReceipt] = React.useState<boolean | null>(null);
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
   const [requestWidth, setRequestWidth] = React.useState<number>(1);
+  const [updateOnchain, setUpdateOnchain] = React.useState<boolean>(!isBeta());
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
@@ -174,6 +177,19 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       }
       throw error;
     }
+
+    if (!updateOnchain) {
+      const blockNumber = await web3.getBlockNumber();
+      const signer = accounts[signerIndex];
+      const message = JSON.stringify({network, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls});
+      console.log('message', message);
+      const signature = await signer.signMessage(message);
+      console.log('signature', signature);
+      const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature);
+      setOffchainTransaction(request);
+      return { isSuccess: false, message: 'Update in progress.' };
+    }
+
     let newTransaction = null;
     try {
       const contractWithSigner = contract.connect(accounts[signerIndex]);
@@ -200,8 +216,11 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       relevantTokenIds.forEach((tokenId: number): void => {
         apiClient.updateTokenDeferred(network, tokenId);
       });
+    } else if (offchainTransaction) {
+      await offchainTransaction;
+      setOffchainTransactionReceipt(true);
     }
-  }, [transaction, apiClient, network, relevantTokenIds]);
+  }, [transaction, offchainTransaction, apiClient, network, relevantTokenIds]);
 
   React.useEffect((): void => {
     waitForTransaction();
@@ -217,6 +236,10 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     if (parseInt(value, 10)) {
       setRequestWidth(parseInt(value, 10));
     }
+  };
+
+  const onTabKeySelected = (tabKey: string): void => {
+    setUpdateOnchain(tabKey === 'onchain');
   };
 
   const unownedTokenIds = chainOwnerIds ? Array.from(chainOwnerIds.entries()).reduce((accumulator: number[], value: [number, string]): number[] => {
@@ -245,7 +268,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
         ) : contract === undefined || network === undefined || tokenMetadata === undefined || accountIds === undefined ? (
           <LoadingSpinner />
-        ) : transactionReceipt ? (
+        ) : (transactionReceipt || offchainTransactionReceipt) ? (
           <React.Fragment>
             <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
             <Text>🎉 Token updated successfully 🎉</Text>
@@ -270,22 +293,36 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
               target={getTransactionEtherscanUrl(network, transaction.hash) || ''}
             />
           </React.Fragment>
+        ) : offchainTransaction ? (
+          <React.Fragment>
+            <LoadingSpinner />
+            <Text>Your update is going through.</Text>
+            <Text>Get ready to share once it&apos;s finished 🔥🔥</Text>
+          </React.Fragment>
         ) : (
           <React.Fragment>
-            <React.Fragment>
-              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                <Text>Block width:</Text>
-                <Box width='5em'>
-                  <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
-                </Box>
-              </Stack>
-              <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
-                <Text>Block height:</Text>
-                <Box width='5em'>
-                  <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
-                </Box>
-              </Stack>
-            </React.Fragment>
+            { isBeta() && (
+              <TabBar selectedTabKey={updateOnchain ? 'onchain' : 'offchain'} onTabKeySelected={onTabKeySelected}>
+                <TabBar.Item tabKey='offchain' text='Update off-chain' />
+                <TabBar.Item tabKey='onchain' text='Update on-chain' />
+              </TabBar>
+            )}
+            { !updateOnchain && (
+              <Text variant='note'>Off-chain updates are free as they will live on our server. Off-chain updates do not carry the immutability and durability guarantees of on-chain updates.</Text>
+            )}
+            <Spacing />
+            <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+              <Text>Block width:</Text>
+              <Box width='5em'>
+                <SingleLineInput inputType={InputType.Number} value={String(requestWidth)} onValueChanged={onRequestWidthChanged} />
+              </Box>
+            </Stack>
+            <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
+              <Text>Block height:</Text>
+              <Box width='5em'>
+                <SingleLineInput inputType={InputType.Number} value={String(requestHeight)} onValueChanged={onRequestHeightChanged} />
+              </Box>
+            </Stack>
             <TokenUpdateForm
               title={isValidName ? tokenMetadata.name : ''}
               description={isValidDescription ? tokenMetadata.description : ''}

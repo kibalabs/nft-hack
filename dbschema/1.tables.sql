@@ -50,7 +50,8 @@ CREATE TABLE tbl_offchain_contents (
     content_url TEXT NOT NULL,
     block_number INTEGER NOT NULL,
     owner_id TEXT NOT NULL,
-    signature TEXT NOT NULL
+    signature TEXT NOT NULL,
+    signed_message TEXT NOT NULL
 );
 CREATE INDEX tbl_offchain_contents_updated_date ON tbl_offchain_contents (updated_date);
 CREATE INDEX tbl_offchain_contents_network ON tbl_offchain_contents (network);

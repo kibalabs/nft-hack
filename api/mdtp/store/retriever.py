@@ -10,12 +10,14 @@ from sqlalchemy.sql import select
 
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
-from mdtp.store.schema import BaseImagesTable, OffchainContentsTable
+from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
-from mdtp.store.schema_conversions import base_image_from_row, offchain_content_from_row
+from mdtp.store.schema import OffchainContentsTable
+from mdtp.store.schema_conversions import base_image_from_row
 from mdtp.store.schema_conversions import grid_item_from_row
 from mdtp.store.schema_conversions import network_update_from_row
+from mdtp.store.schema_conversions import offchain_content_from_row
 
 
 class MdtpRetriever(Retriever):
@@ -89,5 +91,5 @@ class MdtpRetriever(Retriever):
         if limit:
             query = query.limit(limit)
         rows = await self.database.fetch_all(query=query)
-        gridItems = [offchain_content_from_row(row) for row in rows]
-        return gridItems
+        offchainContents = [offchain_content_from_row(row) for row in rows]
+        return offchainContents

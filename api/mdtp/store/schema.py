@@ -53,4 +53,5 @@ OffchainContentsTable = sqlalchemy.Table(
     sqlalchemy.Column(key='blockNumber', name='block_number', type_=sqlalchemy.Integer, nullable=False),
     sqlalchemy.Column(key='ownerId', name='owner_id', type_=sqlalchemy.Text, nullable=False),
     sqlalchemy.Column(key='signature', name='signature', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='signedMessage', name='signed_message', type_=sqlalchemy.Text, nullable=False),
 )

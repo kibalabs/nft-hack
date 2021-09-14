@@ -4,12 +4,14 @@ from typing import Optional
 from core.store.saver import Saver
 from core.util import date_util
 
-from mdtp.model import BaseImage, OffchainContent
+from mdtp.model import BaseImage
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
-from mdtp.store.schema import BaseImagesTable, OffchainContentsTable
+from mdtp.model import OffchainContent
+from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
+from mdtp.store.schema import OffchainContentsTable
 
 _EMPTY_STRING = '_EMPTY_STRING'
 
@@ -90,10 +92,10 @@ class MdtpSaver(Saver):
             values[NetworkUpdatesTable.c.updatedDate.key] = date_util.datetime_from_now()
         await self.database.execute(query=query, values=values)
 
-    async def create_offchain_content(self, tokenId: int, network: str, contentUrl: str, blockNumber: int, ownerId: str, signature: str) -> OffchainContent:
+    async def create_offchain_content(self, tokenId: int, network: str, contentUrl: str, blockNumber: int, ownerId: str, signature: str, signedMessage: str) -> OffchainContent:
         createdDate = date_util.datetime_from_now()
         updatedDate = createdDate
-        gridItemId = await self._execute(query=OffchainContentsTable.insert(), values={  # pylint: disable=no-value-for-parameter
+        offchainContentId = await self._execute(query=OffchainContentsTable.insert(), values={  # pylint: disable=no-value-for-parameter
             OffchainContentsTable.c.createdDate.key: createdDate,
             OffchainContentsTable.c.updatedDate.key: updatedDate,
             OffchainContentsTable.c.network.key: network,
@@ -102,5 +104,6 @@ class MdtpSaver(Saver):
             OffchainContentsTable.c.blockNumber.key: blockNumber,
             OffchainContentsTable.c.ownerId.key: ownerId,
             OffchainContentsTable.c.signature.key: signature,
+            OffchainContentsTable.c.signedMessage.key: signedMessage,
         })
-        return OffchainContent(gridItemId=gridItemId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, contentUrl=contentUrl, blockNumber=blockNumber, ownerId=ownerId, signature=signature)
+        return OffchainContent(offchainContentId=offchainContentId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, contentUrl=contentUrl, blockNumber=blockNumber, ownerId=ownerId, signature=signature, signedMessage=signedMessage)

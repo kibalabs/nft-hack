@@ -220,6 +220,35 @@ export class UploadMetadataForTokenGroupResponse extends ResponseData {
       (obj.tokenMetadataUrls as Resources.RawObject[]).map((entry: Resources.RawObject): string => String(entry)),
     );
   }
+
+}
+export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
+  public constructor(
+    readonly width: number,
+    readonly height: number,
+    readonly blockNumber: number,
+    readonly contentUrls: string[],
+    readonly signature: string,
+  ) {
+    super();
+  }
+
+  public toObject = (): Resources.RawObject => {
+    return {
+      width: this.width,
+      height: this.height,
+      blockNumber: this.blockNumber,
+      contentUrls: this.contentUrls,
+      signature: this.signature,
+    };
+  }
+}
+
+export class UpdateOffchainContentsForTokenGroupResponse extends ResponseData {
+  public static fromObject = (obj: Resources.RawObject): UpdateOffchainContentsForTokenGroupResponse => {
+    return new UpdateOffchainContentsForTokenGroupResponse(
+    );
+  }
 }
 
 export class UpdateTokenDeferredRequest extends RequestData {
