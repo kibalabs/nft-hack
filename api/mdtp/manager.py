@@ -45,7 +45,7 @@ from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
-from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import BaseImagesTable, OffchainContentsTable
 from mdtp.store.schema import GridItemsTable
 
 _KILOBYTE = 1024
@@ -319,6 +319,14 @@ class MdtpManager:
         await file_util.remove_directory(directory=outputDirectory)
         return tokenMetadataUrls
 
+    async def update_content_offchain_for_token(self, network: str, tokenId: int, contentUrl: str, signature: str, blockNumber: int) -> None:
+        # TODO(krishan711): check that the blockNumber is close to live number
+        currentBlockNumber = await self.contractStore.get_latest_block_number(network=network)
+        if abs(currentBlockNumber - blockNumber)
+        # TODO(krishan711): verify signature
+        # TODO(krishan711): save content url
+        self.update_token(network=network, tokenId=tokenId)
+
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
@@ -369,6 +377,15 @@ class MdtpManager:
         except Exception: # pylint: disable=broad-except
             ownerId = NON_OWNER_ID
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+        # TODO(krishan711): how do we know when the content url was set? probably need to search through events rather than get the content url
+        # we can search logs and give the tokenId as the second param
+        onchainBlockNumber = 123
+        latestOffchainContents = self.retriever.list_offchain_contents(fieldFilters=[
+            StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
+            StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
+        ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
+        if len(latestOffchainContents) > 0 and latestOffchainContents.blockNumber > onchainBlockNumber:
+            contentUrl = latestOffchainContents[0].contentUrl
         contentJson = await self._get_json_content(url=contentUrl)
         title = contentJson.get('title') or contentJson.get('name') or None
         imageUrl = contentJson.get('imageUrl') or contentJson.get('image') or None

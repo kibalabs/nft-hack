@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 from typing import Optional
 
@@ -87,6 +88,15 @@ class CreateMetadataForTokenGroupRequest(BaseModel):
 
 class CreateMetadataForTokenGroupResponse(BaseModel):
     tokenMetadataUrls: List[str]
+
+class UpdateContentOffchainForTokenRequest(BaseModel):
+    contentUrl: str
+    blockNumber: int
+    signature: str
+
+
+class UpdateContentOffchainForTokenResponse(BaseModel):
+    pass
 
 class UpdateTokenDeferredRequest(BaseModel):
     delay: Optional[int]

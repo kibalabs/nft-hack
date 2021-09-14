@@ -91,3 +91,15 @@ class NetworkUpdate:
     updatedDate: datetime.datetime
     network: str
     latestBlockNumber: int
+
+@dataclasses.dataclass
+class OffchainContent:
+    offchainContentId: int
+    createdDate: datetime.datetime
+    updatedDate: datetime.datetime
+    network: str
+    tokenId: int
+    contentUrl: str
+    blockNumber: int
+    ownerId: str
+    signature: str

@@ -1,10 +1,11 @@
 import datetime
+from inspect import signature
 from typing import Optional
 
 from core.api.kiba_router import KibaRouter
 from fastapi import Response
 
-from mdtp.api.endpoints_v1 import BaseImageUrlResponse
+from mdtp.api.endpoints_v1 import BaseImageUrlResponse, UpdateContentOffchainForTokenRequest, UpdateContentOffchainForTokenResponse
 from mdtp.api.endpoints_v1 import BuildBaseImageRequest
 from mdtp.api.endpoints_v1 import BuildBaseImageResponse
 from mdtp.api.endpoints_v1 import CreateMetadataForTokenGroupRequest
@@ -90,6 +91,11 @@ def create_api(manager: MdtpManager) -> KibaRouter():
     async def create_metadata_for_token_group(network: str, tokenId: int, request: CreateMetadataForTokenGroupRequest):
         tokenMetadataUrls = await manager.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=request.shouldUseIpfs, width=request.width, height=request.height, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
         return CreateMetadataForTokenGroupResponse(tokenMetadataUrls=tokenMetadataUrls)
+
+    @router.post('/networks/{network}/tokens/{tokenId}/update-content-offchain', response_model=UpdateContentOffchainForTokenResponse)
+    async def update_content_offchain_for_token(network: str, tokenId: str, request: UpdateContentOffchainForTokenRequest) -> UpdateContentOffchainForTokenResponse:
+        await manager.update_content_offchain_for_token(network=network, tokenId=tokenId, contentUrl=request.contentUrl, blockNumber=request.blockNumber, signature=request.signature)
+        return UpdateContentOffchainForTokenResponse()
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)
     async def update_token_deferred(network: str, tokenId: str, request: UpdateTokenDeferredRequest) -> UpdateTokenDeferredResponse:
