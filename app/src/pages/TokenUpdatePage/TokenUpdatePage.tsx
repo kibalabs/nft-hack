@@ -11,7 +11,7 @@ import { PresignedUpload, TokenMetadata } from '../../client';
 import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
-import { getTransactionEtherscanUrl, isBeta } from '../../util/chainUtil';
+import { getTransactionEtherscanUrl } from '../../util/chainUtil';
 
 
 export type TokenUpdatePageProps = {
@@ -29,7 +29,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   const [offchainTransactionReceipt, setOffchainTransactionReceipt] = React.useState<boolean | null>(null);
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
   const [requestWidth, setRequestWidth] = React.useState<number>(1);
-  const [updateOnchain, setUpdateOnchain] = React.useState<boolean>(!isBeta());
+  const [updateOnchain, setUpdateOnchain] = React.useState<boolean>(false);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
 
@@ -299,12 +299,10 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
           </React.Fragment>
         ) : (
           <React.Fragment>
-            { isBeta() && (
-              <TabBar selectedTabKey={updateOnchain ? 'onchain' : 'offchain'} onTabKeySelected={onTabKeySelected}>
-                <TabBar.Item tabKey='offchain' text='Update off-chain' />
-                <TabBar.Item tabKey='onchain' text='Update on-chain' />
-              </TabBar>
-            )}
+            <TabBar selectedTabKey={updateOnchain ? 'onchain' : 'offchain'} onTabKeySelected={onTabKeySelected}>
+              <TabBar.Item tabKey='offchain' text='Update off-chain' />
+              <TabBar.Item tabKey='onchain' text='Update on-chain' />
+            </TabBar>
             { !updateOnchain && (
               <Text variant='note'>Off-chain updates are free as they will live on our server. Off-chain updates do not carry the immutability and durability guarantees of on-chain updates.</Text>
             )}
