@@ -221,6 +221,34 @@ export class UploadMetadataForTokenGroupResponse extends ResponseData {
     );
   }
 }
+export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
+  public constructor(
+    readonly width: number,
+    readonly height: number,
+    readonly blockNumber: number,
+    readonly contentUrls: string[],
+    readonly signature: string,
+  ) {
+    super();
+  }
+
+  public toObject = (): Resources.RawObject => {
+    return {
+      width: this.width,
+      height: this.height,
+      blockNumber: this.blockNumber,
+      contentUrls: this.contentUrls,
+      signature: this.signature,
+    };
+  }
+}
+
+export class UpdateOffchainContentsForTokenGroupResponse extends ResponseData {
+  public static fromObject = (): UpdateOffchainContentsForTokenGroupResponse => {
+    return new UpdateOffchainContentsForTokenGroupResponse(
+    );
+  }
+}
 
 export class UpdateTokenDeferredRequest extends RequestData {
   public toObject = (): Resources.RawObject => {

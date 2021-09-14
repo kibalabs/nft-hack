@@ -40,3 +40,18 @@ NetworkUpdatesTable = sqlalchemy.Table(
     sqlalchemy.Column(key='network', name='network', type_=sqlalchemy.Text, nullable=False),
     sqlalchemy.Column(key='latestBlockNumber', name='latest_block_number', type_=sqlalchemy.Integer, nullable=False),
 )
+
+OffchainContentsTable = sqlalchemy.Table(
+    'tbl_offchain_contents',
+    metadata,
+    sqlalchemy.Column(key='offchainContentId', name='id', type_=sqlalchemy.Integer, autoincrement=True, primary_key=True, nullable=False),
+    sqlalchemy.Column(key='createdDate', name='created_date', type_=sqlalchemy.DateTime, nullable=False),
+    sqlalchemy.Column(key='updatedDate', name='updated_date', type_=sqlalchemy.DateTime, nullable=False),
+    sqlalchemy.Column(key='network', name='network', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='tokenId', name='token_id', type_=sqlalchemy.Integer, nullable=False),
+    sqlalchemy.Column(key='contentUrl', name='content_url', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='blockNumber', name='block_number', type_=sqlalchemy.Integer, nullable=False),
+    sqlalchemy.Column(key='ownerId', name='owner_id', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='signature', name='signature', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='signedMessage', name='signed_message', type_=sqlalchemy.Text, nullable=False),
+)

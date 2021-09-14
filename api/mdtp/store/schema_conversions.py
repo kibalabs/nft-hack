@@ -3,9 +3,11 @@ from typing import Mapping
 from mdtp.model import BaseImage
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
+from mdtp.model import OffchainContent
 from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
+from mdtp.store.schema import OffchainContentsTable
 
 
 def grid_item_from_row(row: Mapping) -> GridItem:
@@ -43,4 +45,18 @@ def network_update_from_row(row: Mapping) -> NetworkUpdate:
         updatedDate=row[NetworkUpdatesTable.c.updatedDate],
         network=row[NetworkUpdatesTable.c.network],
         latestBlockNumber=row[NetworkUpdatesTable.c.latestBlockNumber],
+    )
+
+def offchain_content_from_row(row: Mapping) -> OffchainContent:
+    return OffchainContent(
+        offchainContentId=row[OffchainContentsTable.c.offchainContentId],
+        createdDate=row[OffchainContentsTable.c.createdDate],
+        updatedDate=row[OffchainContentsTable.c.updatedDate],
+        network=row[OffchainContentsTable.c.network],
+        tokenId=row[OffchainContentsTable.c.tokenId],
+        contentUrl=row[OffchainContentsTable.c.contentUrl],
+        blockNumber=row[OffchainContentsTable.c.blockNumber],
+        ownerId=row[OffchainContentsTable.c.ownerId],
+        signature=row[OffchainContentsTable.c.signature],
+        signedMessage=row[OffchainContentsTable.c.signedMessage],
     )

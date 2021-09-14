@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import json
 import logging
@@ -12,6 +13,7 @@ from typing import List
 from typing import Optional
 from typing import Sequence
 
+from core.exceptions import BadRequestException
 from core.exceptions import NotFoundException
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.requester import Requester
@@ -25,8 +27,10 @@ from core.store.retriever import StringFieldFilter
 from core.util import date_util
 from core.util import dict_util
 from core.util import file_util
+from eth_account.messages import defunct_hash_message
 from PIL import Image as PILImage
 from web3 import Web3
+from web3.auto import w3
 
 from mdtp.cache_control_header import CacheControlHeader
 from mdtp.chain_util import NON_OWNER_ID
@@ -47,6 +51,7 @@ from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
 from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
+from mdtp.store.schema import OffchainContentsTable
 
 _KILOBYTE = 1024
 _MEGABYTE = _KILOBYTE * 1024
@@ -319,6 +324,40 @@ class MdtpManager:
         await file_util.remove_directory(directory=outputDirectory)
         return tokenMetadataUrls
 
+    async def update_offchain_contents_for_token_group(self, network: str, tokenId: int, width: int, height: int, blockNumber: int, contentUrls: List[str], signature: str) -> None:
+        currentBlockNumber = await self.contractStore.get_latest_block_number(network=network)
+        if abs(currentBlockNumber - blockNumber) > 10:
+            raise BadRequestException(message='blockNumber too far from current blockNumber')
+        signedMessage = json.dumps({
+            'network': network,
+            'tokenId': tokenId,
+            'width': width,
+            'height': height,
+            'blockNumber': blockNumber,
+            'tokenMetadataUrls': contentUrls,
+        }, separators=(',', ':'))
+        tokenIds = []
+        ownerId = None
+        for row in range(0, height):
+            for column in range(0, width):
+                innerTokenId = tokenId + (row * 100) + column
+                tokenIds.append(innerTokenId)
+                tokenOwnerId = await self.contractStore.get_token_owner(network=network, tokenId=innerTokenId)
+                if ownerId is None:
+                    ownerId = tokenOwnerId
+                if ownerId and tokenOwnerId != ownerId:
+                    raise BadRequestException(message='Tokens have different owners')
+        messageHash = defunct_hash_message(text=signedMessage)
+        signer = w3.eth.account.recoverHash(message_hash=messageHash, signature=signature)
+        if signer != ownerId:
+            raise BadRequestException(message='Invalid signature')
+        promises = []
+        for index, innerTokenId in enumerate(tokenIds):
+            promises.append(self.saver.create_offchain_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=ownerId, signature=signature, signedMessage=signedMessage))
+        await asyncio.gather(*promises)
+        for innerTokenId in tokenIds:
+            await self.update_token(network=network, tokenId=innerTokenId)
+
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
@@ -369,6 +408,13 @@ class MdtpManager:
         except Exception: # pylint: disable=broad-except
             ownerId = NON_OWNER_ID
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+        onchainBlockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId)
+        latestOffchainContents = await self.retriever.list_offchain_contents(fieldFilters=[
+            StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
+            StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
+        ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
+        if len(latestOffchainContents) > 0 and latestOffchainContents[0].blockNumber > onchainBlockNumber:
+            contentUrl = latestOffchainContents[0].contentUrl
         contentJson = await self._get_json_content(url=contentUrl)
         title = contentJson.get('title') or contentJson.get('name') or None
         imageUrl = contentJson.get('imageUrl') or contentJson.get('image') or None

@@ -19,6 +19,8 @@ from mdtp.api.endpoints_v1 import RetrieveGridItemRequest
 from mdtp.api.endpoints_v1 import RetrieveGridItemResponse
 from mdtp.api.endpoints_v1 import UpdateAllTokensDeferredRequest
 from mdtp.api.endpoints_v1 import UpdateAllTokensDeferredResponse
+from mdtp.api.endpoints_v1 import UpdateOffchainContentsForTokenGroupRequest
+from mdtp.api.endpoints_v1 import UpdateOffchainContentsForTokenGroupResponse
 from mdtp.api.endpoints_v1 import UpdateTokenDeferredRequest
 from mdtp.api.endpoints_v1 import UpdateTokenDeferredResponse
 from mdtp.api.endpoints_v1 import UpdateTokensDeferredRequest
@@ -91,8 +93,13 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         tokenMetadataUrls = await manager.create_metadata_for_token_group(network=network, tokenId=tokenId, shouldUseIpfs=request.shouldUseIpfs, width=request.width, height=request.height, name=request.name, description=request.description, imageUrl=request.imageUrl, url=request.url)
         return CreateMetadataForTokenGroupResponse(tokenMetadataUrls=tokenMetadataUrls)
 
+    @router.post('/networks/{network}/tokens/{tokenId}/update-offchain-contents', response_model=UpdateOffchainContentsForTokenGroupResponse)
+    async def update_offchain_contents_for_token_group(network: str, tokenId: int, request: UpdateOffchainContentsForTokenGroupRequest) -> UpdateOffchainContentsForTokenGroupResponse:
+        await manager.update_offchain_contents_for_token_group(network=network, tokenId=tokenId, width=request.width, height=request.height, contentUrls=request.contentUrls, blockNumber=request.blockNumber, signature=request.signature)
+        return UpdateOffchainContentsForTokenGroupResponse()
+
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)
-    async def update_token_deferred(network: str, tokenId: str, request: UpdateTokenDeferredRequest) -> UpdateTokenDeferredResponse:
+    async def update_token_deferred(network: str, tokenId: int, request: UpdateTokenDeferredRequest) -> UpdateTokenDeferredResponse:
         await manager.update_token_deferred(network=network, tokenId=tokenId, delay=request.delay)
         return UpdateTokenDeferredResponse()
 

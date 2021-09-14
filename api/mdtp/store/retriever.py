@@ -13,9 +13,11 @@ from mdtp.model import NetworkUpdate
 from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
+from mdtp.store.schema import OffchainContentsTable
 from mdtp.store.schema_conversions import base_image_from_row
 from mdtp.store.schema_conversions import grid_item_from_row
 from mdtp.store.schema_conversions import network_update_from_row
+from mdtp.store.schema_conversions import offchain_content_from_row
 
 
 class MdtpRetriever(Retriever):
@@ -79,3 +81,15 @@ class MdtpRetriever(Retriever):
             raise NotFoundException(message=f'NetworkUpdate with network {network} not found')
         networkUpdate = network_update_from_row(row)
         return networkUpdate
+
+    async def list_offchain_contents(self, fieldFilters: Optional[Sequence[FieldFilter]] = None, orders: Optional[Sequence[Order]] = None, limit: Optional[int] = None) -> Sequence[GridItem]:
+        query = OffchainContentsTable.select()
+        if fieldFilters:
+            query = self._apply_field_filters(query=query, table=OffchainContentsTable, fieldFilters=fieldFilters)
+        if orders:
+            query = self._apply_orders(query=query, table=OffchainContentsTable, orders=orders)
+        if limit:
+            query = query.limit(limit)
+        rows = await self.database.fetch_all(query=query)
+        offchainContents = [offchain_content_from_row(row) for row in rows]
+        return offchainContents
