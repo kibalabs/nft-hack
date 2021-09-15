@@ -75,12 +75,12 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [props.tokenId, network, requester, apiClient]);
 
   const loadTokenChainData = React.useCallback(async (): Promise<void> => {
-    if (network === null) {
+    if (network === null || web3 === null) {
       setChainOwnerId(null);
       return;
     }
     setChainOwnerId(undefined);
-    if (network === undefined) {
+    if (network === undefined || web3 === undefined) {
       return;
     }
     const tokenId = Number(props.tokenId);
@@ -99,7 +99,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         const filter = contract.filters.TokenContentURIChanged(tokenId);
         web3.getLogs({ address: filter.address, topics: filter.topics, fromBlock: 0 }).then((logs: Log[]): void => {
           const blockNumber = logs.length > 0 ? logs[logs.length - 1].blockNumber : 0;
-          if (blockNumber > gridItem.blockNumber) {
+          if (!gridItem.blockNumber || blockNumber > gridItem.blockNumber) {
             contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
               const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
               requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
