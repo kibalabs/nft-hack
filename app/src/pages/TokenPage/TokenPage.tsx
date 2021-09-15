@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
+import { KibaException } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
@@ -23,7 +23,7 @@ export type TokenPageProps = {
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
-  const { contract, requester, apiClient, network, web3 } = useGlobals();
+  const { contract, apiClient, network, web3 } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
   const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
@@ -73,19 +73,20 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           console.error(error);
         }
       });
-      // NOTE(krishan711): this only works for the new contracts
-      if (contract.tokenContentURI) {
-        contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
-          const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
-          requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
-            const tokenMetadataJson = JSON.parse(response.content);
-            // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
-            setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId }));
-          });
-        });
-      }
+      // TODO(krishan711): re-enable this once race condition is fixed
+      // // NOTE(krishan711): this only works for the new contracts
+      // if (contract.tokenContentURI) {
+      //   contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
+      //     const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
+      //     requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
+      //       const tokenMetadataJson = JSON.parse(response.content);
+      //       // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
+      //       setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId }));
+      //     });
+      //   });
+      // }
     }
-  }, [props.tokenId, network, contract, apiClient, requester]);
+  }, [props.tokenId, network, contract, apiClient]);
 
   React.useEffect((): void => {
     loadToken();
