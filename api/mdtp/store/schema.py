@@ -18,6 +18,9 @@ GridItemsTable = sqlalchemy.Table(
     sqlalchemy.Column(key='url', name='url', type_=sqlalchemy.Text, nullable=True),
     sqlalchemy.Column(key='groupId', name='block_id', type_=sqlalchemy.Text, nullable=True),
     sqlalchemy.Column(key='ownerId', name='owner_id', type_=sqlalchemy.Text, nullable=True),
+    # TODO(krishan711): make these not nullable when all are filled
+    sqlalchemy.Column(key='blockNumber', name='block_number', type_=sqlalchemy.Integer, nullable=True),
+    sqlalchemy.Column(key='source', name='source', type_=sqlalchemy.Text, nullable=True),
 )
 
 BaseImagesTable = sqlalchemy.Table(

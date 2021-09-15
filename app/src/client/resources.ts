@@ -42,6 +42,8 @@ export class GridItem {
     readonly ownerId: string,
     readonly url: string | null,
     readonly groupId: string | null,
+    readonly blockNumber: number | null,
+    readonly source: string | null,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -58,6 +60,8 @@ export class GridItem {
       String(obj.ownerId),
       obj.url ? String(obj.url) : null,
       obj.groupId ? String(obj.groupId) : null,
+      obj.blockNumber ? Number(obj.blockNumber) : null,
+      obj.source ? String(obj.source) : null,
     );
   }
 }

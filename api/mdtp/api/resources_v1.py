@@ -45,6 +45,8 @@ class ApiGridItem(BaseModel):
     ownerId: str
     url: Optional[str]
     groupId: Optional[str]
+    blockNumber: Optional[int]
+    source: Optional[str]
 
     @classmethod
     def from_model(cls, model: GridItem, shouldCompact: bool = False):
@@ -60,6 +62,8 @@ class ApiGridItem(BaseModel):
             ownerId=model.ownerId,
             url=model.url,
             groupId=model.groupId,
+            blockNumber=model.blockNumber,
+            source=model.source,
         )
 
 class ApiNetworkSummary(BaseModel):

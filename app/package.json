@@ -12,6 +12,7 @@
     "type-check": "type-check"
   },
   "dependencies": {
+    "@ethersproject/abstract-provider": "^5.4.1",
     "@kibalabs/core": "^0.5.5",
     "@kibalabs/core-react": "^0.6.2",
     "@kibalabs/everyview-tracker": "^0.2.5",

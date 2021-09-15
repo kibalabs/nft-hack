@@ -17,7 +17,7 @@ _EMPTY_STRING = '_EMPTY_STRING'
 
 class MdtpSaver(Saver):
 
-    async def create_grid_item(self, tokenId: int, network: str, contentUrl: Optional[str], title: str, description: Optional[str], imageUrl: str, resizableImageUrl: Optional[str], url: Optional[str], groupId: Optional[str], ownerId: str) -> GridItem:
+    async def create_grid_item(self, tokenId: int, network: str, contentUrl: Optional[str], title: str, description: Optional[str], imageUrl: str, resizableImageUrl: Optional[str], url: Optional[str], groupId: Optional[str], ownerId: str, blockNumber: int, source: str) -> GridItem:
         createdDate = date_util.datetime_from_now()
         updatedDate = createdDate
         gridItemId = await self._execute(query=GridItemsTable.insert(), values={  # pylint: disable=no-value-for-parameter
@@ -33,15 +33,17 @@ class MdtpSaver(Saver):
             GridItemsTable.c.ownerId.key: ownerId,
             GridItemsTable.c.url.key: url,
             GridItemsTable.c.groupId.key: groupId,
+            GridItemsTable.c.blockNumber.key: blockNumber,
+            GridItemsTable.c.source.key: source,
         })
-        return GridItem(gridItemId=gridItemId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
+        return GridItem(gridItemId=gridItemId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
 
     # NOTE(krishan711): some fields is optional so _EMPTY_STRING allows it to be passed in as None. Maybe there is a nicer way to do this.
-    async def update_grid_item(self, gridItemId: int, contentUrl: Optional[str] = _EMPTY_STRING, title: Optional[str] = None, description: Optional[str] = _EMPTY_STRING, imageUrl: Optional[str] = None, resizableImageUrl: Optional[str] = _EMPTY_STRING, url: Optional[str] = _EMPTY_STRING, groupId: Optional[str] = _EMPTY_STRING, ownerId: Optional[str] = None) -> None:
+    async def update_grid_item(self, gridItemId: int, contentUrl: Optional[str] = _EMPTY_STRING, title: Optional[str] = None, description: Optional[str] = _EMPTY_STRING, imageUrl: Optional[str] = None, resizableImageUrl: Optional[str] = _EMPTY_STRING, url: Optional[str] = _EMPTY_STRING, groupId: Optional[str] = _EMPTY_STRING, ownerId: Optional[str] = None, blockNumber: Optional[int] = None, source: Optional[str] = None) -> None:
         query = GridItemsTable.update(GridItemsTable.c.gridItemId == gridItemId)
         values = {}
         if contentUrl != _EMPTY_STRING:
-            values[GridItemsTable.c.contentUrl.key] = description
+            values[GridItemsTable.c.contentUrl.key] = contentUrl
         if title is not None:
             values[GridItemsTable.c.title.key] = title
         if description != _EMPTY_STRING:
@@ -56,6 +58,10 @@ class MdtpSaver(Saver):
             values[GridItemsTable.c.groupId.key] = groupId
         if ownerId is not None:
             values[GridItemsTable.c.ownerId.key] = ownerId
+        if blockNumber is not None:
+            values[GridItemsTable.c.blockNumber.key] = blockNumber
+        if source is not None:
+            values[GridItemsTable.c.source.key] = source
         if len(values) > 0:
             values[GridItemsTable.c.updatedDate.key] = date_util.datetime_from_now()
         await self.database.execute(query=query, values=values)
