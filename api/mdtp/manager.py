@@ -413,7 +413,7 @@ class MdtpManager:
             StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
             StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
         ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
-        if len(latestOffchainContents) > 0 and latestOffchainContents[0].blockNumber > onchainBlockNumber:
+        if len(latestOffchainContents) > 0 and (not onchainBlockNumber or latestOffchainContents[0].blockNumber > onchainBlockNumber):
             contentUrl = latestOffchainContents[0].contentUrl
         contentJson = await self._get_json_content(url=contentUrl)
         title = contentJson.get('title') or contentJson.get('name') or None
