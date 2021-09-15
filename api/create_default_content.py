@@ -89,12 +89,12 @@ async def main(baseImagePath: str, overlayImagePath: str, middleImagePath: str, 
         with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
             metadataFile.write(json.dumps(metadata))
     if shouldUpload:
-        print(f'Uploading metadata')
+        print(f'Uploading contents')
         fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
         cid = await ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
         for openFile in fileContentMap.values():
             openFile.close()
-        print(f'Uploaded metadata to ipfs://{cid}')
+        print(f'Uploaded contents to ipfs://{cid}')
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

@@ -18,9 +18,10 @@ GRID_COUNT = 20
 GRID_SIZE = IMAGE_SIZE / GRID_COUNT
 COLOR_GRID = (255, 255, 255, int(0.2 * 255))
 COLOR_CUBE = (255, 255, 255, int(0.6 * 255))
-grey = (100,100,100)
-white = (255,255,255)
-font = ImageFont.truetype("./fonts/RobotoSlab-Black.ttf", 96)
+GREY = (100, 100, 100)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+FONT = ImageFont.truetype("./fonts/RobotoSlab-Black.ttf", 96)
 
 def draw_gradient(image: Image, start_color: str, end_color: str) -> Image:
     base = Image.new('RGB', (IMAGE_SIZE, IMAGE_SIZE), start_color)
@@ -80,7 +81,7 @@ def generate_image(tokenId: int) -> Image:
 
     # Draw Box at Token Number
     imageDraw = ImageDraw.Draw(image)
-    imageDraw.rectangle((xCoord * 10, yCoord * 10, xCoord * 10 + 10, yCoord * 10 + 10), fill=white)
+    imageDraw.rectangle((xCoord * 10, yCoord * 10, xCoord * 10 + 10, yCoord * 10 + 10), fill=WHITE)
     image = draw_cube(image=image, x=xCoord, y=yCoord)
 
     # Draw Text
@@ -91,35 +92,35 @@ def generate_image(tokenId: int) -> Image:
     padding = 110
     title = "MDTP"
     subtitle = f'#{tokenId}'
-    titleSize = imageDraw.textsize(text=title, font=font)
-    subtitleSize = imageDraw.textsize(text=subtitle, font=font)
+    titleSize = imageDraw.textsize(text=title, font=FONT)
+    subtitleSize = imageDraw.textsize(text=subtitle, font=FONT)
     imageDraw = ImageDraw.Draw(image)
     # if inTopLeftQuadrant or inBottomRightQuadrant:
-      # imageDraw.multiline_text((550,50), "MILLION\nDOLLAR\nTOKEN\nPAGE", font=font, fill=white, spacing=-10)
-      # imageDraw.multiline_text((80,700), f'TOKEN\n{tokenId}', font=font, fill=white, align='center')
+      # imageDraw.multiline_text((550,50), "MILLION\nDOLLAR\nTOKEN\nPAGE", font=FONT, fill=WHITE, spacing=-10)
+      # imageDraw.multiline_text((80,700), f'TOKEN\n{tokenId}', font=FONT, fill=WHITE, align='center')
     # else:
-      # imageDraw.multiline_text((80,50), "MILLION\nDOLLAR\nTOKEN\nPAGE", font=font, fill=white, spacing=-10)
-      # imageDraw.multiline_text((640,700), f'TOKEN\n{tokenId}', font=font, fill=white, align='center')
+      # imageDraw.multiline_text((80,50), "MILLION\nDOLLAR\nTOKEN\nPAGE", font=FONT, fill=WHITE, spacing=-10)
+      # imageDraw.multiline_text((640,700), f'TOKEN\n{tokenId}', font=FONT, fill=WHITE, align='center')
     xLeft = padding
     xRight = IMAGE_SIZE - padding
     yTop = -30 + padding
     yBottom = IMAGE_SIZE - padding
     if inTopLeftQuadrant:
       # draw in bottom right
-      imageDraw.multiline_text((xRight - titleSize[0], yBottom - subtitleSize[1] - titleSize[1]), text=title, font=font, fill=white)
-      imageDraw.multiline_text((xRight - subtitleSize[0], yBottom - subtitleSize[1]), text=subtitle, font=font, fill=white)
+      imageDraw.text((xRight - titleSize[0], yBottom - subtitleSize[1] - titleSize[1]), text=title, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
+      imageDraw.text((xRight - subtitleSize[0], yBottom - subtitleSize[1]), text=subtitle, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
     elif inTopRightQuadrant:
       # draw in bottom left
-      imageDraw.multiline_text((xLeft, yBottom - subtitleSize[1] - titleSize[1]), text=title, font=font, fill=white)
-      imageDraw.multiline_text((xLeft, yBottom - subtitleSize[1]), text=subtitle, font=font, fill=white)
+      imageDraw.text((xLeft, yBottom - subtitleSize[1] - titleSize[1]), text=title, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
+      imageDraw.text((xLeft, yBottom - subtitleSize[1]), text=subtitle, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
     elif inBottomLeftQuadrant:
       # draw in top right
-      imageDraw.multiline_text((xRight - titleSize[0], yTop), text=title, font=font, fill=white)
-      imageDraw.multiline_text((xRight - subtitleSize[0], yTop + titleSize[1]), text=subtitle, font=font, fill=white)
+      imageDraw.text((xRight - titleSize[0], yTop), text=title, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
+      imageDraw.text((xRight - subtitleSize[0], yTop + titleSize[1]), text=subtitle, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
     elif inBottomRightQuadrant:
       # draw in top left
-      imageDraw.multiline_text((xLeft, yTop), text=title, font=font, fill=white)
-      imageDraw.multiline_text((xLeft, yTop + titleSize[1]), text=subtitle, font=font, fill=white)
+      imageDraw.text((xLeft, yTop), text=title, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
+      imageDraw.text((xLeft, yTop + titleSize[1]), text=subtitle, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
 
     return image
 
@@ -139,28 +140,28 @@ async def run(tokenId: Optional[int], shouldUpload: bool):
     metadataOutputDirectory = f'output/metadatas'
     await file_util.create_directory(directory=metadataOutputDirectory)
 
-    for tokenId in tokenIds:
-        print(f'Generating image for {tokenId}')
-        imagePath = os.path.join(imagesOutputDirectory, f'{tokenId}.png')
-        imageUrl = imagePath
-        tokenImage = generate_image(tokenId=tokenId)
-        tokenImage.save(imagePath)
-        if shouldUpload:
-            print(f'Uploading image for {tokenId}')
-            with open(imagePath, 'rb') as imageFile:
-                cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
-            imageUrl = f'ipfs://{cid}'
-        print(f'Generating metadata for {tokenId}')
-        metadata = {
-            "tokenId": tokenId,
-            "tokenIndex": tokenId - 1,
-            "name": f'MDTP Token {tokenId}',
-            "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). MDTP is a digital content-sharing space powered by Ethereum and NFTs. Each block can be bought as a unique NFT, set to display the content you like, and later re-sold. Show off and share your content, and own a piece of crypto history!",
-            "image": imageUrl,
-            "url": None,
-        }
-        with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
-            metadataFile.write(json.dumps(metadata))
+    # for tokenId in tokenIds:
+    #     print(f'Generating image for {tokenId}')
+    #     imagePath = os.path.join(imagesOutputDirectory, f'{tokenId}.png')
+    #     imageUrl = imagePath
+    #     tokenImage = generate_image(tokenId=tokenId)
+    #     tokenImage.save(imagePath)
+    #     if shouldUpload:
+    #         print(f'Uploading image for {tokenId}')
+    #         with open(imagePath, 'rb') as imageFile:
+    #             cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+    #         imageUrl = f'ipfs://{cid}'
+    #     print(f'Generating metadata for {tokenId}')
+    #     metadata = {
+    #         "tokenId": tokenId,
+    #         "tokenIndex": tokenId - 1,
+    #         "name": f'MDTP Token {tokenId}',
+    #         "description": f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). MDTP is a digital content-sharing space powered by Ethereum and NFTs. Each block can be bought as a unique NFT, set to display the content you like, and later re-sold. Show off and share your content, and own a piece of crypto history!",
+    #         "image": imageUrl,
+    #         "url": None,
+    #     }
+    #     with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
+    #         metadataFile.write(json.dumps(metadata))
     if shouldUpload:
         print(f'Uploading metadata')
         fileContentMap = {f'{tokenId}.json': open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), 'r') for tokenId in tokenIds}
