@@ -26,6 +26,8 @@ def grid_item_from_row(row: Mapping) -> GridItem:
         ownerId=row[GridItemsTable.c.ownerId],
         url=row[GridItemsTable.c.url],
         groupId=row[GridItemsTable.c.groupId],
+        blockNumber=row[GridItemsTable.c.blockNumber],
+        source=row[GridItemsTable.c.source],
     )
 
 def base_image_from_row(row: Mapping) -> BaseImage:

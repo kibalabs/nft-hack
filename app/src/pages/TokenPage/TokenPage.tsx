@@ -1,9 +1,11 @@
 import React from 'react';
 
-import { KibaException } from '@kibalabs/core';
+import { Log } from '@ethersproject/abstract-provider';
+import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
+
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem, TokenMetadata } from '../../client';
@@ -17,13 +19,14 @@ import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
 
+
 export type TokenPageProps = {
   tokenId: string;
 }
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
-  const { contract, apiClient, network, web3 } = useGlobals();
+  const { contract, apiClient, requester, network, web3 } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
   const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
@@ -41,13 +44,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       setGridItem(null);
       setTokenMetadata(null);
       setBlockGridItems(null);
-      setChainOwnerId(null);
       return;
     }
     setGridItem(undefined);
     setTokenMetadata(undefined);
     setBlockGridItems(undefined);
-    setChainOwnerId(undefined);
     if (network === undefined) {
       return;
     }
@@ -55,6 +56,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
       setGridItem(retrievedGridItem);
       setTokenMetadata(gridItemToTokenMetadata(retrievedGridItem));
+      if (retrievedGridItem.groupId) {
+        apiClient.listGridItems(network, true, undefined, retrievedGridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
+          if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== retrievedGridItem.groupId) {
+            return;
+          }
+          setBlockGridItems(retrievedBlockGridItems);
+        });
+      }
     }).catch((error: KibaException): void => {
       if (error.statusCode === 404) {
         // TODO(krishan711): Get the token metadata from the contract
@@ -63,6 +72,18 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         });
       }
     });
+  }, [props.tokenId, network, apiClient]);
+
+  const loadTokenChainData = React.useCallback(async (): Promise<void> => {
+    if (network === null || web3 === null) {
+      setChainOwnerId(null);
+      return;
+    }
+    setChainOwnerId(undefined);
+    if (network === undefined || web3 === undefined) {
+      return;
+    }
+    const tokenId = Number(props.tokenId);
     if (contract) {
       contract.ownerOf(tokenId).then((retrievedTokenOwner: string): void => {
         setChainOwnerId(retrievedTokenOwner);
@@ -73,47 +94,33 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
           console.error(error);
         }
       });
-      // TODO(krishan711): re-enable this once race condition is fixed
-      // // NOTE(krishan711): this only works for the new contracts
-      // if (contract.tokenContentURI) {
-      //   contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
-      //     const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
-      //     requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
-      //       const tokenMetadataJson = JSON.parse(response.content);
-      //       // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
-      //       setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId }));
-      //     });
-      //   });
-      // }
+      // NOTE(krishan711): this only works for the new contracts
+      if (contract.tokenContentURI && gridItem) {
+        const filter = contract.filters.TokenContentURIChanged(tokenId);
+        web3.getLogs({ address: filter.address, topics: filter.topics, fromBlock: 0 }).then((logs: Log[]): void => {
+          const blockNumber = logs.length > 0 ? logs[logs.length - 1].blockNumber : 0;
+          if (!gridItem.blockNumber || blockNumber > gridItem.blockNumber) {
+            contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
+              const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
+              requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
+                const tokenMetadataJson = JSON.parse(response.content);
+                // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
+                setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId }));
+              });
+            });
+          }
+        });
+      }
     }
-  }, [props.tokenId, network, contract, apiClient]);
+  }, [props.tokenId, network, contract, requester, web3, gridItem]);
 
   React.useEffect((): void => {
     loadToken();
   }, [loadToken]);
 
-  const loadBlockGridItems = React.useCallback(async (): Promise<void> => {
-    if (network === null || gridItem === null) {
-      setBlockGridItems(null);
-      return;
-    }
-    setBlockGridItems(undefined);
-    if (network === undefined || gridItem === undefined) {
-      return;
-    }
-    if (gridItem.groupId) {
-      apiClient.listGridItems(network, true, undefined, gridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
-        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== gridItem.groupId) {
-          return;
-        }
-        setBlockGridItems(retrievedBlockGridItems);
-      });
-    }
-  }, [gridItem, network, apiClient]);
-
   React.useEffect((): void => {
-    loadBlockGridItems();
-  }, [loadBlockGridItems]);
+    loadTokenChainData();
+  }, [loadTokenChainData]);
 
   const loadOwnerName = React.useCallback(async (): Promise<void> => {
     setOwnerName(undefined);

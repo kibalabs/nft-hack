@@ -222,7 +222,7 @@ class MdtpManager:
                 xPosition = (tokenIndex * tokenWidth) % width
                 yPosition = tokenHeight * math.floor((tokenIndex * tokenWidth) / width)
                 image = tokenImage.resize(size=(tokenWidth, tokenHeight))
-                # NOTE(krishan711): this doesnt use transparency as we aren't using the 3rd (mask) param
+                # NOTE(krishan711): this doesn't use transparency as we aren't using the 3rd (mask) param
                 outputImage.paste(image, (xPosition, yPosition))
         outputFilePath = 'output.png'
         outputImage.save(outputFilePath)
@@ -408,13 +408,16 @@ class MdtpManager:
         except Exception: # pylint: disable=broad-except
             ownerId = NON_OWNER_ID
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-        onchainBlockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId)
+        blockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId) or 0
+        source = 'onchain'
         latestOffchainContents = await self.retriever.list_offchain_contents(fieldFilters=[
             StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
             StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
         ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
-        if len(latestOffchainContents) > 0 and (not onchainBlockNumber or latestOffchainContents[0].blockNumber > onchainBlockNumber):
+        if len(latestOffchainContents) > 0 and (latestOffchainContents[0].blockNumber > blockNumber):
             contentUrl = latestOffchainContents[0].contentUrl
+            source = 'offchain'
+            blockNumber = latestOffchainContents[0].blockNumber
         contentJson = await self._get_json_content(url=contentUrl)
         title = contentJson.get('title') or contentJson.get('name') or None
         imageUrl = contentJson.get('imageUrl') or contentJson.get('image') or None
@@ -430,7 +433,7 @@ class MdtpManager:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
-            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, groupId=groupId, ownerId=ownerId)
+            gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
@@ -438,7 +441,7 @@ class MdtpManager:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
         if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
-            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId)
+            await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)
