@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
+import { KibaException } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
@@ -23,7 +23,7 @@ export type TokenPageProps = {
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
-  const { contract, requester, apiClient, network, web3 } = useGlobals();
+  const { contract, apiClient, network, web3 } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
   const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
@@ -86,7 +86,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       //   });
       // }
     }
-  }, [props.tokenId, network, contract, apiClient, requester]);
+  }, [props.tokenId, network, contract, apiClient]);
 
   React.useEffect((): void => {
     loadToken();
