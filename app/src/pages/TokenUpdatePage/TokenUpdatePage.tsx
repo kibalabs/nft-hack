@@ -305,8 +305,10 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
                 <TabBar.Item tabKey='onchain' text='Update on-chain' />
               </TabBar>
             )}
-            { !updateOnchain && (
-              <Text variant='note'>Off-chain updates are free as they will live on our server. Off-chain updates do not carry the immutability and durability guarantees of on-chain updates.</Text>
+            { !updateOnchain ? (
+              <Text variant='note'>Off-chain updates are free as they live on our server. These do not have the same immutability and durability guarantees as on-chain.</Text>              
+            ) : (
+              <Text variant='note'>On-chain updates cost gas to write into the Ethereum blockchain. When paired with IPFS these are as immutable and durable as Ethereum itself.</Text>
             )}
             <Spacing />
             <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
