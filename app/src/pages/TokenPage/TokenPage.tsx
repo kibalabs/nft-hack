@@ -72,7 +72,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         });
       }
     });
-  }, [props.tokenId, network, requester, apiClient]);
+  }, [props.tokenId, network, apiClient]);
 
   const loadTokenChainData = React.useCallback(async (): Promise<void> => {
     if (network === null || web3 === null) {
@@ -112,7 +112,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         });
       }
     }
-  }, [props.tokenId, network, contract, requester, apiClient, web3, gridItem]);
+  }, [props.tokenId, network, contract, requester, web3, gridItem]);
 
   React.useEffect((): void => {
     loadToken();
