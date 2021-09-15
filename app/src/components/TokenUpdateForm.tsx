@@ -122,7 +122,7 @@ export const TokenUpdateForm = (props: ITokenUpdateFormProps): React.ReactElemen
           </React.Fragment>
         )}
         <Checkbox isChecked={shouldUseIpfs} text={'Upload to IPFS'} onToggled={onShouldUseIpfsToggled} />
-        <Text variant='note'>IPFS storage works best with files below 3MB</Text>
+        {shouldUseIpfs && (<Text variant='note'>IPFS storage works best with files below 3MB</Text>)}
         <Button variant='primary' text='Update' buttonType='submit' isEnabled={props.isEnabled} />
       </Stack>
     </Form>
