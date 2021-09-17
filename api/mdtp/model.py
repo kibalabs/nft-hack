@@ -19,8 +19,9 @@ class GridItem:
     ownerId: str
     url: Optional[str]
     groupId: Optional[str]
-    blockNumber: Optional[int]
-    source: Optional[str]
+    blockNumber: int
+    source: str
+
 
 @dataclasses.dataclass
 class NetworkSummary:

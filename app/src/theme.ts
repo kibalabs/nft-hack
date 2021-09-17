@@ -5,8 +5,19 @@ export const defaultTheme = buildTheme();
 export const buildMDTPTheme = (): ITheme => {
   const colors = {
     ...defaultTheme.colors,
+    pastel1: '#4CC9F0',
+    pastel2: '#4895EF',
+    pastel3: '#4361EE',
+    pastel4: '#3F37C9',
+    pastel5: '#3A0CA3',
+    pastel6: '#480CA8',
+    pastel7: '#560BAD',
+    pastel8: '#7209B7',
+    pastel9: '#B5179E',
+    pastel10: '#F72585',
     // brandPrimary: '#B5179E',
     // brandSecondary: '#4895EF',
+    lightText: 'rgba(255, 255, 255, 0.95)',
   };
 
   const textThemes = {
@@ -21,7 +32,7 @@ export const buildMDTPTheme = (): ITheme => {
       color: '$colors.textLight25',
     },
     light: {
-      color: 'rgba(255, 255, 255, 0.95)',
+      color: '$colors.lightText',
     },
     preheading: {
       'text-transform': 'uppercase',
@@ -29,6 +40,14 @@ export const buildMDTPTheme = (): ITheme => {
     },
     uppercase: {
       'text-transform': 'uppercase',
+    },
+    singleLine: {
+      'white-space': 'nowrap',
+      overflow: 'hidden',
+      'text-overflow': 'ellipsis',
+    },
+    extraSmall: {
+      'font-size': '0.65em',
     },
   };
 
@@ -79,6 +98,10 @@ export const buildMDTPTheme = (): ITheme => {
     },
     panelButtonHolder: {
       margin: '0.5em 1em',
+    },
+    badge: {
+      'border-radius': '0.25em',
+      padding: '0.2em',
     },
   };
 
@@ -166,6 +189,12 @@ export const buildMDTPTheme = (): ITheme => {
     },
   };
 
+  const iconThemes: RecursivePartial<ThemeMap<IIconButtonTheme>> = {
+    small: {
+      size: '0.85rem',
+    },
+  };
+
   const theme = buildTheme({
     colors,
     fonts: {
@@ -177,6 +206,7 @@ export const buildMDTPTheme = (): ITheme => {
     boxes: boxThemes,
     images: imageThemes,
     buttons: buttonThemes,
+    icons: iconThemes,
     iconButtons: iconButtonThemes,
   });
   return theme;

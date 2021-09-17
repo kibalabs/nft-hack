@@ -38,6 +38,7 @@ class ApiGridItem(BaseModel):
     updatedDate: datetime.datetime
     network: str
     tokenId: int
+    contentUrl: str
     title: str
     description: Optional[str]
     imageUrl: str
@@ -45,8 +46,8 @@ class ApiGridItem(BaseModel):
     ownerId: str
     url: Optional[str]
     groupId: Optional[str]
-    blockNumber: Optional[int]
-    source: Optional[str]
+    blockNumber: int
+    source: str
 
     @classmethod
     def from_model(cls, model: GridItem, shouldCompact: bool = False):
@@ -55,6 +56,7 @@ class ApiGridItem(BaseModel):
             updatedDate=model.updatedDate,
             network=model.network,
             tokenId=model.tokenId,
+            contentUrl=model.contentUrl,
             title=model.title,
             description=model.description if not shouldCompact else None,
             imageUrl=model.imageUrl,
