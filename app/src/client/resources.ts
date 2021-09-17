@@ -35,6 +35,7 @@ export class GridItem {
     readonly updatedDate: Date,
     readonly tokenId: number,
     readonly network: string,
+    readonly contentUrl: string,
     readonly title: string,
     readonly description: string | null,
     readonly imageUrl: string,
@@ -42,8 +43,8 @@ export class GridItem {
     readonly ownerId: string,
     readonly url: string | null,
     readonly groupId: string | null,
-    readonly blockNumber: number | null,
-    readonly source: string | null,
+    readonly blockNumber: number,
+    readonly source: string,
     // eslint-disable-next-line no-empty-function
   ) {}
 
@@ -53,6 +54,7 @@ export class GridItem {
       dateFromString(obj.updatedDate as string),
       Number(obj.tokenId),
       String(obj.network),
+      String(obj.contentUrl),
       String(obj.title),
       obj.description ? String(obj.description) : null,
       String(obj.imageUrl),
@@ -60,8 +62,8 @@ export class GridItem {
       String(obj.ownerId),
       obj.url ? String(obj.url) : null,
       obj.groupId ? String(obj.groupId) : null,
-      obj.blockNumber ? Number(obj.blockNumber) : null,
-      obj.source ? String(obj.source) : null,
+      Number(obj.blockNumber),
+      String(obj.source),
     );
   }
 }
