@@ -4,7 +4,7 @@ import { IMultiAnyChildProps } from '@kibalabs/core-react';
 
 
 export const TokenSelectionContext = React.createContext<number[]>([]);
-export const SetTokenSelectionContext = React.createContext<(tokenSelection: number[]) => void>(() => {});
+export const SetTokenSelectionContext = React.createContext<(tokenSelection: number[]) => void>(() => null);
 
 interface TokenSelectionProviderProps extends IMultiAnyChildProps {
   tokenSelection: number[];

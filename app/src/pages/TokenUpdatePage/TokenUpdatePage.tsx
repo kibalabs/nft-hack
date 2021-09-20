@@ -11,8 +11,8 @@ import { PresignedUpload, TokenMetadata } from '../../client';
 import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
-import { getTransactionEtherscanUrl } from '../../util/chainUtil';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
+import { getTransactionEtherscanUrl } from '../../util/chainUtil';
 
 
 export type TokenUpdatePageProps = {
@@ -226,9 +226,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     waitForTransaction();
   }, [waitForTransaction]);
 
-React.useEffect((): void => {
-  setTokenSelection(relevantTokenIds);
-}, [relevantTokenIds]);
+  React.useEffect((): void => {
+    setTokenSelection(relevantTokenIds);
+  }, [setTokenSelection, relevantTokenIds]);
 
   const onRequestHeightChanged = (value: string): void => {
     if (parseInt(value, 10)) {

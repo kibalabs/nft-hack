@@ -6,17 +6,16 @@ import { useColors } from '@kibalabs/ui-react';
 
 import { BaseImage, GridItem } from '../client';
 import { useGlobals } from '../globalsContext';
+import { useTokenSelection } from '../tokenSelectionContext';
 import { isMobile } from '../util/browserUtil';
 import { arePointRangesEqual, arePointsEqual, diffPoints, floorPoint, ORIGIN_POINT, Point, PointRange, scalePoint, sumPoints } from '../util/pointUtil';
 import { useMousePositionRef } from '../util/useMousePositionRef';
 import { usePan } from '../util/usePan';
 import { useScale } from '../util/useScale';
-import { useTokenSelection } from '../tokenSelectionContext';
 
 const tokenWidth = 10;
 const tokenHeight = 10;
 const canvasWidth = 1000;
-const heightWidth = 1000;
 
 interface TokenGridProps {
   newGridItems: GridItem[];
@@ -258,7 +257,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
         context.clearRect(x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
       });
     }
-  }, [focussedTokenIds]);
+  }, [props.maxScale, colors, canvasHeight, focussedTokenIds]);
 
   return (
     <div

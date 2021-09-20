@@ -8,8 +8,8 @@ import { Helmet } from 'react-helmet';
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
-import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
+import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
 
 export type TokenMintPageProps = {
   tokenId: string;
@@ -245,7 +245,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
 
   React.useEffect((): void => {
     setTokenSelection(relevantTokenIds);
-  }, [relevantTokenIds]);
+  }, [setTokenSelection, relevantTokenIds]);
 
   const onRequestHeightChanged = (value: string): void => {
     if (parseInt(value, 10)) {

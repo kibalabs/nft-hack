@@ -15,11 +15,11 @@ import { KeyValue } from '../../components/KeyValue';
 import { MdtpImage } from '../../components/MdtpImage';
 import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
+import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
-import { useSetTokenSelection } from '../../tokenSelectionContext';
 
 
 export type TokenPageProps = {
@@ -150,11 +150,11 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   React.useEffect((): void => {
     if (blockGridItems) {
-      setTokenSelection(blockGridItems.map((gridItem: GridItem): number => gridItem.tokenId));
+      setTokenSelection(blockGridItems.map((blockGridItem: GridItem): number => blockGridItem.tokenId));
     } else {
       setTokenSelection([Number(props.tokenId)]);
     }
-  }, [props.tokenId, blockGridItems]);
+  }, [props.tokenId, setTokenSelection, blockGridItems]);
 
   const onUpdateTokenClicked = (): void => {
     navigator.navigateTo(`/tokens/${props.tokenId}/update`);

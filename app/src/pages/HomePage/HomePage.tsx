@@ -131,7 +131,7 @@ export const HomePage = (): React.ReactElement => {
     if (!isPanelShowing && focussedTokenIds.length > 0) {
       setFocussedTokenIds([]);
     }
-  });
+  }, [isPanelShowing, focussedTokenIds]);
 
   return (
     <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
