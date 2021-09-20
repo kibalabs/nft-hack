@@ -19,6 +19,7 @@ import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_O
 import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
+import { useSetTokenSelection } from '../../tokenSelectionContext';
 
 
 export type TokenPageProps = {
@@ -27,6 +28,7 @@ export type TokenPageProps = {
 
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
+  const setTokenSelection = useSetTokenSelection();
   const { contract, apiClient, requester, network, web3 } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
   const [chainGridItem, setChainGridItem] = React.useState<GridItem | null | undefined>(undefined);
@@ -146,6 +148,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     loadOwnerName();
   }, [loadOwnerName]);
 
+  React.useEffect((): void => {
+    if (blockGridItems) {
+      setTokenSelection(blockGridItems.map((gridItem: GridItem): number => gridItem.tokenId));
+    } else {
+      setTokenSelection([Number(props.tokenId)]);
+    }
+  }, [props.tokenId, blockGridItems]);
+
   const onUpdateTokenClicked = (): void => {
     navigator.navigateTo(`/tokens/${props.tokenId}/update`);
   };
@@ -224,10 +234,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Center}>
                   <Text variant='header6' alignment={TextAlignment.Center}>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
                   {isOnChain && (
-                    <Badge iconId='feather-check' hoverText='The link to this content is stored on the ethereum blockchain. It will live there forever 🚀' />
+                    <Badge iconId='feather-check' hoverText='The link to this content is stored on the ethereum blockchain. It will live there forever ♾' />
                   )}
                   {isIPFS && (
-                    <Badge iconId='ion-planet-outline' hoverText='This content is stored on the IPFS network. It will live there forever 🚀' />
+                    <Badge iconId='ion-planet-outline' hoverText='This content is stored on the IPFS network. It will live there forever ♾' />
                   )}
                 </Stack>
                 <Text variant='header2' alignment={TextAlignment.Center}>{`${tokenMetadata.name}`}</Text>

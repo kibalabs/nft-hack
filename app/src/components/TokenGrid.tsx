@@ -2,6 +2,7 @@ import React from 'react';
 
 import { deepCompare } from '@kibalabs/core';
 import { useDebouncedCallback, usePreviousValue, useSize } from '@kibalabs/core-react';
+import { useColors } from '@kibalabs/ui-react';
 
 import { BaseImage, GridItem } from '../client';
 import { useGlobals } from '../globalsContext';
@@ -10,10 +11,12 @@ import { arePointRangesEqual, arePointsEqual, diffPoints, floorPoint, ORIGIN_POI
 import { useMousePositionRef } from '../util/useMousePositionRef';
 import { usePan } from '../util/usePan';
 import { useScale } from '../util/useScale';
+import { useTokenSelection } from '../tokenSelectionContext';
 
 const tokenWidth = 10;
 const tokenHeight = 10;
 const canvasWidth = 1000;
+const heightWidth = 1000;
 
 interface TokenGridProps {
   newGridItems: GridItem[];
@@ -28,9 +31,12 @@ interface TokenGridProps {
 
 export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement => {
   const { apiClient, network } = useGlobals();
+  const colors = useColors();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const overlayCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const canvasWrapperRef = React.useRef<HTMLDivElement | null>(null);
+  const focussedTokenIds = useTokenSelection();
 
   const windowSize = useSize(containerRef.current);
   const panOffset = usePan(canvasWrapperRef);
@@ -73,7 +79,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       return;
     }
 
-    const tokenId = tokenIndex + 1;
     let image = tokenImages.current.get(tokenIndex);
     if (!image) {
       const x = (tokenIndex * tokenWidth) % canvasWidth;
@@ -87,6 +92,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       image = newImage;
     }
 
+    const tokenId = tokenIndex + 1;
     // @ts-ignore TODO(krishan711): make baseUrl visible in ServiceClient
     image.setAttribute('src', `${apiClient.baseUrl}/v1/networks/${network}/tokens/${tokenId}/go-to-image?w=${Math.ceil(tokenWidth * imageScale * window.devicePixelRatio)}&h=${Math.ceil(tokenHeight * imageScale * window.devicePixelRatio)}`);
     tokenScales.current.set(tokenIndex, imageScale);
@@ -229,6 +235,31 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     setIsMoving(false);
   };
 
+  React.useEffect((): void => {
+    const context = overlayCanvasRef.current?.getContext('2d');
+    if (!context) {
+      return;
+    }
+    context.clearRect(0, 0, canvasWidth * props.maxScale, canvasHeight * props.maxScale);
+    if (focussedTokenIds.length > 0) {
+      context.fillStyle = colors.gridOverlay;
+      context.fillRect(0, 0, canvasWidth * props.maxScale, canvasHeight * props.maxScale);
+      context.fillStyle = colors.pastel1;
+      focussedTokenIds.forEach((tokenId: number): void => {
+        const tokenIndex = tokenId - 1;
+        const x = (tokenIndex * tokenWidth) % canvasWidth;
+        const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
+        context.fillRect((x - 2) * props.maxScale, (y - 2) * props.maxScale, (tokenWidth + 4) * props.maxScale, (tokenHeight + 4) * props.maxScale);
+      });
+      focussedTokenIds.forEach((tokenId: number): void => {
+        const tokenIndex = tokenId - 1;
+        const x = (tokenIndex * tokenWidth) % canvasWidth;
+        const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
+        context.clearRect(x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
+      });
+    }
+  }, [focussedTokenIds]);
+
   return (
     <div
       ref={containerRef}
@@ -261,6 +292,12 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
           onMouseUp={onCanvasMouseUp}
           onMouseMove={onCanvasMouseMove}
           style={{ cursor: isMoving ? 'move' : 'pointer' }}
+        />
+        <canvas
+          ref={overlayCanvasRef}
+          width={`${canvasWidth * props.maxScale}px`}
+          height={`${canvasHeight * props.maxScale}px`}
+          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
         />
       </div>
     </div>

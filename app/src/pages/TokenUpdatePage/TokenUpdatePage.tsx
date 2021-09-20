@@ -12,6 +12,7 @@ import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
+import { useSetTokenSelection } from '../../tokenSelectionContext';
 
 
 export type TokenUpdatePageProps = {
@@ -21,6 +22,7 @@ export type TokenUpdatePageProps = {
 export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement => {
   const { contract, requester, apiClient, network, web3StorageClient, web3 } = useGlobals();
   const colors = useColors();
+  const setTokenSelection = useSetTokenSelection();
   const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
   const [chainOwnerIds, setChainOwnerIds] = React.useState<Map<number, string> | null | undefined>(undefined);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
@@ -223,6 +225,10 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   React.useEffect((): void => {
     waitForTransaction();
   }, [waitForTransaction]);
+
+React.useEffect((): void => {
+  setTokenSelection(relevantTokenIds);
+}, [relevantTokenIds]);
 
   const onRequestHeightChanged = (value: string): void => {
     if (parseInt(value, 10)) {

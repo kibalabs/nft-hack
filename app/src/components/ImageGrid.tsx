@@ -22,7 +22,7 @@ const ImageGridItem = styled.div<IImageGridItemProps>`
   outline-style: solid;
   outline-width: 0.5px;
   outline-color: ${(props: IImageGridItemProps): string => (props.isMainItem ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 0, 0, 0)')};
-  opacity: ${(props: IImageGridItemProps): string => (props.isMainItem ? '1' : '0.25')};
+  opacity: ${(props: IImageGridItemProps): string => (props.isMainItem ? '1' : '0.5')};
   height: 100%;
 `;
 

@@ -9,6 +9,7 @@ import { useAccountIds, useAccounts } from '../../accountsContext';
 import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
 import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
+import { useSetTokenSelection } from '../../tokenSelectionContext';
 
 export type TokenMintPageProps = {
   tokenId: string;
@@ -16,6 +17,7 @@ export type TokenMintPageProps = {
 
 export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => {
   const { contract, apiClient, network } = useGlobals();
+  const setTokenSelection = useSetTokenSelection();
   const [mintPrice, setMintPrice] = React.useState<BigNumber | undefined | null>(undefined);
   const [totalMintLimit, setTotalMintLimit] = React.useState<number | undefined | null>(undefined);
   const [singleMintLimit, setSingleMintLimit] = React.useState<number | undefined | null>(undefined);
@@ -240,6 +242,10 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   React.useEffect((): void => {
     waitForTransaction();
   }, [waitForTransaction]);
+
+  React.useEffect((): void => {
+    setTokenSelection(relevantTokenIds);
+  }, [relevantTokenIds]);
 
   const onRequestHeightChanged = (value: string): void => {
     if (parseInt(value, 10)) {

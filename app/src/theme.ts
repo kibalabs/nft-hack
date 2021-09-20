@@ -15,6 +15,7 @@ export const buildMDTPTheme = (): ITheme => {
     pastel8: '#7209B7',
     pastel9: '#B5179E',
     pastel10: '#F72585',
+    gridOverlay: 'rgba(0, 0, 0, 0.75)',
     // brandPrimary: '#B5179E',
     // brandSecondary: '#4895EF',
     lightText: 'rgba(255, 255, 255, 0.95)',
