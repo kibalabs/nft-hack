@@ -11,6 +11,7 @@ import { GridControl } from '../../components/GridControl';
 import { MetaMaskConnection } from '../../components/MetaMaskConnection';
 import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
+import { TokenSelectionProvider } from '../../tokenSelectionContext';
 import { getProductOpenseaUrl } from '../../util/chainUtil';
 
 const PanelLayer = styled.div`
@@ -37,6 +38,7 @@ export const HomePage = (): React.ReactElement => {
   const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
   const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
+  const [focussedTokenIds, setFocussedTokenIds] = React.useState<number[]>([]);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -125,8 +127,14 @@ export const HomePage = (): React.ReactElement => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  React.useEffect((): void => {
+    if (!isPanelShowing && focussedTokenIds.length > 0) {
+      setFocussedTokenIds([]);
+    }
+  }, [isPanelShowing, focussedTokenIds]);
+
   return (
-    <React.Fragment>
+    <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
       <Helmet>
         <title>{'Million Dollar Token Page - Own a piece of crypto history!'}</title>
       </Helmet>
@@ -230,6 +238,6 @@ export const HomePage = (): React.ReactElement => {
         </Stack.Item>
         <FomoBar />
       </Stack>
-    </React.Fragment>
+    </TokenSelectionProvider>
   );
 };
