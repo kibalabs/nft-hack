@@ -8,20 +8,20 @@ export const SharePage = (): React.ReactElement => {
   const initialShareText = 'Frens, just found this site milliondollartokenpage.com @mdtp_app where you show off your JPGs and own the space as an NFT. Probably nothing fren but gonna Ape in. WGMI! 🚀';
 
   const referralText = `
-  🤑 Referral Program - Make money referring friends! 🤑
+  **Make money referring friends!** 🤑
 
   ✅ Reward: 20% of mint-fee to referee + referrer on up to 30 NFTs
 
-  1️⃣ Friend follows Twitter + joins Discord discord.gg/bUeQjW4KSN
+  1️⃣ Friend follows Twitter + joins Discord.
 
-  2️⃣ Friend mints NFT on MDTP and updates content
+  2️⃣ Friend mints NFT on MDTP and sets content.
   
-  3️⃣ Inform admins on Discord with proof
+  3️⃣ Inform admins on Discord with proof.
   `;
 
   return (
     <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
-      <Text variant='header1'>{'Share MDTP'}</Text>
+      <Text variant='header1'>{'Refer a Friend'}</Text>
       <Markdown source={referralText} />
       <Spacing />
       <ShareForm initialShareText={initialShareText} minRowCount={4} shouldShowAllOptions={true} />
