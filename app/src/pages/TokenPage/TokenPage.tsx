@@ -1,14 +1,11 @@
 import React from 'react';
 
-import { Log } from '@ethersproject/abstract-provider';
-import { KibaResponse, RestMethod } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
-
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { GridItem, TokenMetadata } from '../../client';
+import { GridItem } from '../../client';
 import { Badge } from '../../components/Badge';
 import { ImageGrid } from '../../components/ImageGrid';
 import { KeyValue } from '../../components/KeyValue';
@@ -17,9 +14,10 @@ import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
-import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
+import { useTokenData } from '../../util/useTokenMetadata';
+import { useOwnerId } from '../../util/useOwnerId';
 
 
 export type TokenPageProps = {
@@ -29,110 +27,45 @@ export type TokenPageProps = {
 export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
   const setTokenSelection = useSetTokenSelection();
-  const { contract, apiClient, requester, network, web3 } = useGlobals();
-  const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
-  const [chainGridItem, setChainGridItem] = React.useState<GridItem | null | undefined>(undefined);
+  const { contract, apiClient, network, web3 } = useGlobals();
+  const tokenData = useTokenData(Number(props.tokenId));
+  const tokenMetadata = tokenData.tokenMetadata;
+  const gridItem = tokenData.gridItem;
+  const chainOwnerId = useOwnerId(Number(props.tokenId));
   const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
-  const [chainOwnerId, setChainOwnerId] = React.useState<string | null | undefined>(undefined);
   const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
+  console.log('TokenPage');
 
   const ownerId = chainOwnerId || gridItem?.ownerId || NON_OWNER;
   const isOwned = ownerId && ownerId !== NON_OWNER;
   const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
 
-  const tokenMetadata = React.useMemo((): TokenMetadata | undefined | null => {
-    if (gridItem && chainGridItem) {
-      if (gridItem.blockNumber >= chainGridItem.blockNumber) {
-        return gridItemToTokenMetadata(gridItem);
-      }
-      return gridItemToTokenMetadata(chainGridItem);
-    }
-    if (!gridItem && chainGridItem) {
-      return gridItemToTokenMetadata(chainGridItem);
-    }
-    if (!chainGridItem && gridItem) {
-      return gridItemToTokenMetadata(gridItem);
-    }
-    if (gridItem === null) {
-      return null;
-    }
-    return undefined;
-  }, [gridItem, chainGridItem]);
-
   const loadToken = React.useCallback(async (): Promise<void> => {
-    if (network === null) {
-      setGridItem(null);
+    if (network === null || gridItem === null) {
       setBlockGridItems(null);
       return;
     }
-    setGridItem(undefined);
     setBlockGridItems(undefined);
-    if (network === undefined) {
+    if (network === undefined || gridItem === undefined) {
       return;
     }
-    const tokenId = Number(props.tokenId);
-    apiClient.retrieveGridItem(network, tokenId).then((retrievedGridItem: GridItem): void => {
-      setGridItem(retrievedGridItem);
-      if (retrievedGridItem.groupId) {
-        apiClient.listGridItems(network, true, undefined, retrievedGridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
-          if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== retrievedGridItem.groupId) {
-            return;
-          }
-          setBlockGridItems(retrievedBlockGridItems);
-        });
-      }
-    });
-  }, [props.tokenId, network, apiClient]);
-
-  const loadTokenChainData = React.useCallback(async (): Promise<void> => {
-    if (network === null || web3 === null || contract === null) {
-      setChainOwnerId(null);
-      setChainGridItem(null);
-      return;
+    if (gridItem.groupId) {
+      apiClient.listGridItems(network, true, undefined, gridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
+        if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== gridItem.groupId) {
+          return;
+        }
+        setBlockGridItems(retrievedBlockGridItems);
+      });
+    } else {
+      setBlockGridItems([]);
     }
-    setChainOwnerId(undefined);
-    setChainGridItem(undefined);
-    if (network === undefined || web3 === undefined || contract === undefined) {
-      return;
-    }
-    const tokenId = Number(props.tokenId);
-    contract.ownerOf(tokenId).then((retrievedTokenOwner: string): void => {
-      setChainOwnerId(retrievedTokenOwner);
-    }).catch((error: Error): void => {
-      if (error.message.includes('nonexistent token')) {
-        setChainOwnerId(NON_OWNER);
-      } else {
-        console.error(error);
-      }
-    });
-    if (contract) {
-      // NOTE(krishan711): this only works for the new contracts
-      if (contract.tokenContentURI) {
-        contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
-          const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
-          requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
-            const filter = contract.filters.TokenContentURIChanged(tokenId);
-            web3.getLogs({ address: filter.address, topics: filter.topics, fromBlock: 0 }).then((logs: Log[]): void => {
-              const blockNumber = logs.length > 0 ? logs[logs.length - 1].blockNumber : 0;
-              const tokenContentJson = JSON.parse(response.content);
-              // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
-              setChainGridItem(new GridItem(-1, new Date(), tokenId, network, tokenMetadataUrl, tokenContentJson.name, tokenContentJson.description, tokenContentJson.image, null, '', tokenContentJson.url, tokenContentJson.groupId, blockNumber, 'onchain'));
-            });
-          });
-        });
-      }
-    }
-  }, [props.tokenId, network, contract, requester, web3]);
+  }, [gridItem, apiClient]);
 
   React.useEffect((): void => {
     loadToken();
   }, [loadToken]);
-
-  React.useEffect((): void => {
-    loadTokenChainData();
-  }, [loadTokenChainData]);
 
   const loadOwnerName = React.useCallback(async (): Promise<void> => {
     setOwnerName(undefined);
