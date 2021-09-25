@@ -20,9 +20,9 @@ interface IImageGridItemProps {
 const ImageGridItem = styled.div<IImageGridItemProps>`
   background-color: #000000;
   outline-style: solid;
-  outline-width: 0.5px;
+  outline-width: 1px;
   outline-color: ${(props: IImageGridItemProps): string => (props.isMainItem ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 0, 0, 0)')};
-  opacity: ${(props: IImageGridItemProps): string => (props.isMainItem ? '1' : '0.5')};
+  opacity: ${(props: IImageGridItemProps): string => (props.isMainItem ? '1' : '0.75')};
   height: 100%;
 `;
 
@@ -55,11 +55,9 @@ export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
 
   return (
     <Stack direction={Direction.Vertical} isFullHeight={true} isFullWidth={true}>
-      <Stack.Item growthFactor={1} shrinkFactor={1} />
       {Array.from(Array(height)).map((_, y: number): React.ReactElement => (
         <Stack.Item key={y} baseSize={`calc(100% / ${height})`} growthFactor={1} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
           <Stack direction={Direction.Horizontal} isFullWidth={true} contentAlignment={Alignment.Center}>
-            <Stack.Item growthFactor={1} shrinkFactor={1} />
             {Array.from(Array(width)).map((__, x: number): React.ReactElement => (
               <Stack.Item key={x} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
                 <ImageGridItem isMainItem={arePointsEqual(adjustGridPoint({ x, y }), mainPoint)}>
@@ -74,11 +72,9 @@ export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
                 </ImageGridItem>
               </Stack.Item>
             ))}
-            <Stack.Item growthFactor={1} shrinkFactor={1} />
           </Stack>
         </Stack.Item>
       ))}
-      <Stack.Item growthFactor={1} shrinkFactor={1} />
     </Stack>
   );
 };
