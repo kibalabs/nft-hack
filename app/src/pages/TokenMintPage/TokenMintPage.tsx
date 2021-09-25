@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Link } from '@kibalabs/core-react';
+import { Link, useDeepCompareCallback } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 import { Helmet } from 'react-helmet';
@@ -10,6 +10,7 @@ import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
+import { getTokenIds } from '../../util/gridItemUtil';
 
 export type TokenMintPageProps = {
   tokenId: string;
@@ -43,17 +44,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const isOverOwnershipLimit = (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
   const isOverBalance = (balance && totalPrice) ? balance.sub(totalPrice).isNegative() : false;
   const hasMintedToken = ownedTokenIds ? ownedTokenIds.length > 0 : false;
-
-  const relevantTokenIds = React.useMemo((): number[] => {
-    const tokenId = Number(props.tokenId);
-    const tokenIds = [];
-    for (let y = 0; y < requestHeight; y += 1) {
-      for (let x = 0; x < requestWidth; x += 1) {
-        tokenIds.push(tokenId + (y * 100) + x);
-      }
-    }
-    return tokenIds;
-  }, [props.tokenId, requestHeight, requestWidth]);
+  const tokenIds = getTokenIds(Number(props.tokenId), requestWidth, requestHeight);
 
   const loadData = React.useCallback(async (): Promise<void> => {
     if (contract === null) {
@@ -170,7 +161,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     loadBalance();
   }, [loadBalance]);
 
-  const loadOwners = React.useCallback(async (): Promise<void> => {
+  const loadOwners = useDeepCompareCallback(async (): Promise<void> => {
     if (contract === null) {
       setOwnedTokenIds(null);
       return;
@@ -179,7 +170,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     if (contract === undefined) {
       return;
     }
-    const chainOwnerIdPromises = relevantTokenIds.map(async (tokenId: number): Promise<string | null> => {
+    const chainOwnerIdPromises = tokenIds.map(async (tokenId: number): Promise<string | null> => {
       try {
         return await contract.ownerOf(tokenId);
       } catch (error: unknown) {
@@ -190,14 +181,14 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       }
     });
     const retrievedChainOwnerIds = await Promise.all(chainOwnerIdPromises);
-    const calculatedOwnedTokenIds = relevantTokenIds.reduce((accumulator: number[], tokenId: number, index: number): number[] => {
+    const calculatedOwnedTokenIds = tokenIds.reduce((accumulator: number[], tokenId: number, index: number): number[] => {
       if (retrievedChainOwnerIds[index] && retrievedChainOwnerIds[index] !== NON_OWNER) {
         accumulator.push(tokenId);
       }
       return accumulator;
     }, []);
     setOwnedTokenIds(calculatedOwnedTokenIds);
-  }, [contract, relevantTokenIds]);
+  }, [contract, tokenIds]);
 
   React.useEffect((): void => {
     loadOwners();
@@ -224,12 +215,12 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     setIsSubmittingTransaction(false);
   };
 
-  const waitForTransaction = React.useCallback(async (): Promise<void> => {
+  const waitForTransaction = useDeepCompareCallback(async (): Promise<void> => {
     if (transaction && network) {
       try {
         const receipt = await transaction.wait();
         setTransactionReceipt(receipt);
-        relevantTokenIds.forEach((tokenId: number): void => {
+        tokenIds.forEach((tokenId: number): void => {
           apiClient.updateTokenDeferred(network, tokenId);
         });
       } catch (error: unknown) {
@@ -237,15 +228,15 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
         setTransaction(null);
       }
     }
-  }, [transaction, apiClient, network, relevantTokenIds]);
+  }, [transaction, apiClient, network, tokenIds]);
 
   React.useEffect((): void => {
     waitForTransaction();
   }, [waitForTransaction]);
 
   React.useEffect((): void => {
-    setTokenSelection(relevantTokenIds);
-  }, [setTokenSelection, relevantTokenIds]);
+    setTokenSelection(tokenIds);
+  }, [setTokenSelection, tokenIds]);
 
   const onRequestHeightChanged = (value: string): void => {
     if (parseInt(value, 10)) {

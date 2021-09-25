@@ -1,18 +1,21 @@
 import React from 'react';
 
-import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
+import { KibaException } from '@kibalabs/core';
 import { Link } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { PresignedUpload, TokenMetadata } from '../../client';
+import { PresignedUpload } from '../../client';
 import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
+import { getTokenIds } from '../../util/gridItemUtil';
+import { useOwnerIds } from '../../util/useOwnerIds';
+import { useTokenData } from '../../util/useTokenMetadata';
 
 
 export type TokenUpdatePageProps = {
@@ -23,88 +26,20 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   const { contract, requester, apiClient, network, web3StorageClient, web3 } = useGlobals();
   const colors = useColors();
   const setTokenSelection = useSetTokenSelection();
-  const [tokenMetadata, setTokenMetadata] = React.useState<TokenMetadata | null | undefined>(undefined);
-  const [chainOwnerIds, setChainOwnerIds] = React.useState<Map<number, string> | null | undefined>(undefined);
+  const tokenData = useTokenData(Number(props.tokenId));
+  const tokenMetadata = tokenData.tokenMetadata;
+  const [requestHeight, setRequestHeight] = React.useState<number>(1);
+  const [requestWidth, setRequestWidth] = React.useState<number>(1);
+  const tokenIds = getTokenIds(Number(props.tokenId), requestWidth, requestHeight);
+  const ownerIds = useOwnerIds(tokenIds);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
   const [offchainTransaction, setOffchainTransaction] = React.useState<Promise<void> | null>(null);
   const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
   const [offchainTransactionReceipt, setOffchainTransactionReceipt] = React.useState<boolean | null>(null);
-  const [requestHeight, setRequestHeight] = React.useState<number>(1);
-  const [requestWidth, setRequestWidth] = React.useState<number>(1);
   const [updateOnchain, setUpdateOnchain] = React.useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
-
-  const relevantTokenIds = React.useMemo((): number[] => {
-    const tokenId = Number(props.tokenId);
-    const tokenIds = [];
-    for (let y = 0; y < requestHeight; y += 1) {
-      for (let x = 0; x < requestWidth; x += 1) {
-        tokenIds.push(tokenId + (y * 100) + x);
-      }
-    }
-    return tokenIds;
-  }, [props.tokenId, requestHeight, requestWidth]);
-
-  const loadToken = React.useCallback(async (): Promise<void> => {
-    setTokenMetadata(undefined);
-    if (contract === null) {
-      setTokenMetadata(null);
-      return;
-    }
-    setTokenMetadata(undefined);
-    if (contract === undefined) {
-      return;
-    }
-    // NOTE(krishan711): this only works for the new contracts
-    contract.tokenContentURI(Number(props.tokenId)).then((tokenMetadataUrl: string): void => {
-      const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
-      requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
-        const tokenMetadataJson = JSON.parse(response.content);
-        // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
-        setTokenMetadata(TokenMetadata.fromObject({ ...tokenMetadataJson, tokenId: Number(props.tokenId) }));
-      }).catch((error: unknown): void => {
-        console.error(error);
-        setTokenMetadata(null);
-      });
-    });
-  }, [props.tokenId, contract, requester]);
-
-  React.useEffect((): void => {
-    loadToken();
-  }, [loadToken]);
-
-  const loadOwners = React.useCallback(async (): Promise<void> => {
-    setChainOwnerIds(undefined);
-    if (contract === null) {
-      setChainOwnerIds(null);
-      return;
-    }
-    setChainOwnerIds(undefined);
-    if (contract === undefined) {
-      return;
-    }
-    const chainOwnerIdPromises = relevantTokenIds.map(async (internalTokenId: number): Promise<string | null> => {
-      try {
-        return await contract.ownerOf(internalTokenId);
-      } catch (error: unknown) {
-        if (!(error as Error).message.includes('nonexistent token')) {
-          console.error(error);
-        }
-        return null;
-      }
-    });
-    const retrievedChainOwnerIds = await Promise.all(chainOwnerIdPromises);
-    const calculatedChainOwnerIds = relevantTokenIds.reduce((accumulator: Map<number, string>, internalTokenId: number, index: number): Map<number, string> => {
-      accumulator.set(internalTokenId, retrievedChainOwnerIds[index] as string);
-      return accumulator;
-    }, new Map<number, string>());
-    setChainOwnerIds(calculatedChainOwnerIds);
-  }, [contract, relevantTokenIds]);
-
-  React.useEffect((): void => {
-    loadOwners();
-  }, [loadOwners]);
 
   const onImageFilesChosen = async (shouldUseIpfs: boolean, files: File[]): Promise<UpdateResult> => {
     if (!network) {
@@ -147,12 +82,12 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   };
 
   const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null): Promise<UpdateResult> => {
-    if (!network || !contract || !tokenMetadata || !chainOwnerIds || !accounts || !accountIds || !web3) {
+    if (!network || !contract || !tokenMetadata || !ownerIds || !accounts || !accountIds || !web3) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
     const tokenId = Number(props.tokenId);
-    const chainOwnerId = chainOwnerIds.get(tokenId);
+    const chainOwnerId = ownerIds.get(tokenId);
     const signerIndex = accountIds.indexOf(chainOwnerId || '0x0000000000000000000000000000000000000000');
     if (signerIndex === -1) {
       return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
@@ -184,7 +119,12 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       const blockNumber = await web3.getBlockNumber();
       const signer = accounts[signerIndex];
       const message = JSON.stringify({ network, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls });
-      const signature = await signer.signMessage(message);
+      let signature;
+      try {
+        signature = await signer.signMessage(message);
+      } catch (error: unknown) {
+        return { isSuccess: false, message: (error as Error).message };
+      }
       const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature);
       setOffchainTransaction(request);
       return { isSuccess: false, message: 'Update in progress.' };
@@ -213,22 +153,27 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     if (transaction && network) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
-      relevantTokenIds.forEach((tokenId: number): void => {
+      tokenIds.forEach((tokenId: number): void => {
         apiClient.updateTokenDeferred(network, tokenId);
       });
     } else if (offchainTransaction) {
-      await offchainTransaction;
-      setOffchainTransactionReceipt(true);
+      try {
+        await offchainTransaction;
+        setOffchainTransactionReceipt(true);
+      } catch (error: unknown) {
+        setErrorMessage((error as Error).message);
+        setOffchainTransactionReceipt(false);
+      }
     }
-  }, [transaction, offchainTransaction, apiClient, network, relevantTokenIds]);
+  }, [transaction, offchainTransaction, apiClient, network, tokenIds]);
 
   React.useEffect((): void => {
     waitForTransaction();
   }, [waitForTransaction]);
 
   React.useEffect((): void => {
-    setTokenSelection(relevantTokenIds);
-  }, [setTokenSelection, relevantTokenIds]);
+    setTokenSelection(tokenIds);
+  }, [setTokenSelection, tokenIds]);
 
   const onRequestHeightChanged = (value: string): void => {
     if (parseInt(value, 10)) {
@@ -246,8 +191,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     setUpdateOnchain(tabKey === 'onchain');
   };
 
-  const unownedTokenIds = chainOwnerIds ? Array.from(chainOwnerIds.entries()).reduce((accumulator: number[], value: [number, string]): number[] => {
-    if (value[1] == null || !accountIds || !accountIds.includes(value[1])) {
+  const unownedTokenIds = ownerIds ? Array.from(ownerIds.entries()).reduce((accumulator: number[], value: [number, string | null]): number[] => {
+    if (!value[1] || !accountIds || !accountIds.includes(value[1])) {
       accumulator.push(value[0]);
     }
     return accumulator;
@@ -268,7 +213,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
         <Spacing />
         { contract === null || network === null ? (
           <Text variant='error'>You can&apos;t update a token if you aren&apos;t connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
-        ) : tokenMetadata === null || chainOwnerIds === null || accountIds === null ? (
+        ) : tokenMetadata === null || ownerIds === null || accountIds === null ? (
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
         ) : contract === undefined || network === undefined || tokenMetadata === undefined || accountIds === undefined ? (
           <LoadingSpinner />
@@ -338,6 +283,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
             />
             {!isOwnerOfTokens && (
               <Text variant='error'>{`You don't own these tokens: ${unownedTokenIds.join(', ')}`}</Text>
+            )}
+            {errorMessage && (
+              <Text variant='error'>{errorMessage}</Text>
             )}
           </React.Fragment>
         )}
