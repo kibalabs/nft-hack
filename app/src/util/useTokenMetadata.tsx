@@ -1,9 +1,11 @@
-import { KibaResponse, RestMethod } from "@kibalabs/core";
-import React from "react";
+import React from 'react';
 
-import { GridItem, TokenMetadata } from "../client";
-import { useGlobals } from "../globalsContext";
-import { gridItemToTokenMetadata } from "./gridItemUtil";
+import { Log } from '@ethersproject/abstract-provider';
+import { KibaResponse, RestMethod } from '@kibalabs/core';
+
+import { GridItem, TokenMetadata } from '../client';
+import { useGlobals } from '../globalsContext';
+import { gridItemToTokenMetadata } from './gridItemUtil';
 
 interface TokenData {
   tokenMetadata: TokenMetadata | null | undefined;
@@ -86,5 +88,5 @@ export const useTokenData = (tokenId: number): TokenData => {
     return undefined;
   }, [gridItem, chainGridItem]);
 
-  return { tokenMetadata, gridItem, chainGridItem }
-}
+  return { tokenMetadata, gridItem, chainGridItem };
+};

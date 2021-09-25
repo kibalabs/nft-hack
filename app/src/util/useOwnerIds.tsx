@@ -1,14 +1,14 @@
-import { useDeepCompareEffect } from "@kibalabs/core-react";
-import React from "react";
+import React from 'react';
 
-import { useGlobals } from "../globalsContext";
+import { useDeepCompareCallback } from '@kibalabs/core-react';
 
-export const useOwnerIds = (tokenIds: number[]): Map<number, string> | undefined | null => {
+import { useGlobals } from '../globalsContext';
+
+export const useOwnerIds = (tokenIds: number[]): Map<number, string | null> | undefined | null => {
   const { contract } = useGlobals();
-  const [chainOwnerIds, setChainOwnerIds] = React.useState<Map<number, string> | null | undefined>(undefined);
+  const [chainOwnerIds, setChainOwnerIds] = React.useState<Map<number, string | null> | undefined | null>(undefined);
 
-  useDeepCompareEffect((): void => {
-    console.log('useOwnerIds changed', contract, tokenIds);
+  const loadOwners = useDeepCompareCallback((): void => {
     setChainOwnerIds(undefined);
     if (contract === null) {
       setChainOwnerIds(null);
@@ -28,14 +28,18 @@ export const useOwnerIds = (tokenIds: number[]): Map<number, string> | undefined
         return null;
       }
     });
-    Promise.all(chainOwnerIdPromises).then((retrievedChainOwnerIds: string[]): void => {
-      const calculatedChainOwnerIds = tokenIds.reduce((accumulator: Map<number, string>, internalTokenId: number, index: number): Map<number, string> => {
-        accumulator.set(internalTokenId, retrievedChainOwnerIds[index] as string);
+    Promise.all(chainOwnerIdPromises).then((retrievedChainOwnerIds: (string | null)[]): void => {
+      const calculatedChainOwnerIds = tokenIds.reduce((accumulator: Map<number, string | null>, internalTokenId: number, index: number): Map<number, string | null> => {
+        accumulator.set(internalTokenId, retrievedChainOwnerIds[index]);
         return accumulator;
       }, new Map<number, string>());
       setChainOwnerIds(calculatedChainOwnerIds);
     });
   }, [contract, tokenIds]);
 
+  React.useEffect((): void => {
+    loadOwners();
+  }, [loadOwners]);
+
   return chainOwnerIds;
-}
+};

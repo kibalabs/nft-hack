@@ -15,3 +15,13 @@ export const getPointFromGridItem = (gridItem: GridItem): Point => {
 export const getTokenIdFromPoint = (point: Point): number => {
   return point.y * 100 + point.x + 1;
 };
+
+export const getTokenIds = (tokenId: number, width: number, height: number): number[] => {
+  const tokenIds = [];
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      tokenIds.push(tokenId + (y * 100) + x);
+    }
+  }
+  return tokenIds;
+};

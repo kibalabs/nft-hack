@@ -1,4 +1,4 @@
-import { useOwnerIds } from "./useOwnerIds";
+import { useOwnerIds } from './useOwnerIds';
 
 
 export const useOwnerId = (tokenId: number): string | undefined | null => {
@@ -10,4 +10,4 @@ export const useOwnerId = (tokenId: number): string | undefined | null => {
     return null;
   }
   return ownerIds.get(tokenId);
-}
+};

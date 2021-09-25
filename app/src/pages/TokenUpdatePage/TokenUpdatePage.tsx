@@ -1,22 +1,21 @@
 import React from 'react';
 
-import { KibaException, KibaResponse, RestMethod } from '@kibalabs/core';
+import { KibaException } from '@kibalabs/core';
 import { Link } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { GridItem, PresignedUpload, TokenMetadata } from '../../client';
+import { PresignedUpload } from '../../client';
 import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getTransactionEtherscanUrl } from '../../util/chainUtil';
-import { gridItemToTokenMetadata } from '../../util/gridItemUtil';
-import { useTokenData } from '../../util/useTokenMetadata';
+import { getTokenIds } from '../../util/gridItemUtil';
 import { useOwnerIds } from '../../util/useOwnerIds';
-import { useRelevantTokenIds } from '../../util/useRelevantTokenIds';
+import { useTokenData } from '../../util/useTokenMetadata';
 
 
 export type TokenUpdatePageProps = {
@@ -31,7 +30,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   const tokenMetadata = tokenData.tokenMetadata;
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
   const [requestWidth, setRequestWidth] = React.useState<number>(1);
-  const tokenIds = useRelevantTokenIds(Number(props.tokenId), requestWidth, requestHeight);
+  const tokenIds = getTokenIds(Number(props.tokenId), requestWidth, requestHeight);
   const ownerIds = useOwnerIds(tokenIds);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
   const [offchainTransaction, setOffchainTransaction] = React.useState<Promise<void> | null>(null);
@@ -192,8 +191,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     setUpdateOnchain(tabKey === 'onchain');
   };
 
-  const unownedTokenIds = ownerIds ? Array.from(ownerIds.entries()).reduce((accumulator: number[], value: [number, string]): number[] => {
-    if (value[1] == null || !accountIds || !accountIds.includes(value[1])) {
+  const unownedTokenIds = ownerIds ? Array.from(ownerIds.entries()).reduce((accumulator: number[], value: [number, string | null]): number[] => {
+    if (!value[1] || !accountIds || !accountIds.includes(value[1])) {
       accumulator.push(value[0]);
     }
     return accumulator;

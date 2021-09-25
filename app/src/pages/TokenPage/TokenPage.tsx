@@ -16,8 +16,8 @@ import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
-import { useTokenData } from '../../util/useTokenMetadata';
 import { useOwnerId } from '../../util/useOwnerId';
+import { useTokenData } from '../../util/useTokenMetadata';
 
 
 export type TokenPageProps = {
@@ -28,15 +28,14 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
   const setTokenSelection = useSetTokenSelection();
   const { contract, apiClient, network, web3 } = useGlobals();
+  const chainOwnerId = useOwnerId(Number(props.tokenId));
   const tokenData = useTokenData(Number(props.tokenId));
   const tokenMetadata = tokenData.tokenMetadata;
   const gridItem = tokenData.gridItem;
-  const chainOwnerId = useOwnerId(Number(props.tokenId));
   const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
-  console.log('TokenPage');
 
   const ownerId = chainOwnerId || gridItem?.ownerId || NON_OWNER;
   const isOwned = ownerId && ownerId !== NON_OWNER;
@@ -61,7 +60,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     } else {
       setBlockGridItems([]);
     }
-  }, [gridItem, apiClient]);
+  }, [network, gridItem, apiClient]);
 
   React.useEffect((): void => {
     loadToken();
