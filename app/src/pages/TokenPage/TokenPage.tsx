@@ -58,7 +58,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         setBlockGridItems(retrievedBlockGridItems);
       });
     } else {
-      setBlockGridItems([]);
+      setBlockGridItems([gridItem]);
     }
   }, [network, gridItem, apiClient]);
 
