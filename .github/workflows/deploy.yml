@@ -19,182 +19,185 @@ jobs:
         run: docker build --tag $DOCKER_IMAGE .
       - name: Push to container registry
         run: docker push $DOCKER_IMAGE
-  deploy-api:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./api
-    env:
-      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-api:latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Login to GitHub container registry
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-      - name: Build docker image
-        run: docker build --tag $DOCKER_IMAGE .
-      - name: Push to container registry
-        run: docker push $DOCKER_IMAGE
-  deploy-proxy:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./proxy
-    env:
-      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-proxy:latest
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
-      - name: Login to GitHub container registry
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-      - name: Build docker image
-        run: docker build --tag $DOCKER_IMAGE .
-      - name: Push to container registry
-        run: docker push $DOCKER_IMAGE
-  run-app:
-    needs: deploy-app
-    runs-on: ubuntu-latest
-    env:
-      NAME: mdtp-app
-      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
-    steps:
-      - name: executing remote ssh commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.MDTPBOX_URL }}
-          username: ${{ secrets.MDTPBOX_USER }}
-          key: ${{ secrets.MDTPBOX_SSH_KEY }}
-          envs: DOCKER_IMAGE,NAME
-          script_stop: true
-          script: |
-            url="milliondollartokenpage.com"
-            varsFile=~/.${NAME}.vars
-            docker pull ${DOCKER_IMAGE}
-            docker stop ${NAME} && docker rm ${NAME} || true
-            docker run \
-              --name ${NAME} \
-              --detach \
-              --publish-all \
-              --restart on-failure \
-              --env NAME=${NAME} \
-              --env VIRTUAL_HOST=${url} \
-              --env LETSENCRYPT_HOST=${url} \
-              --env-file ${varsFile} \
-              ${DOCKER_IMAGE}
-  run-app-new:
-    needs: deploy-app
-    runs-on: ubuntu-latest
-    env:
-      NAME: mdtp-app-new
-      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
-    steps:
-      - name: executing remote ssh commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.MDTPBOX_URL }}
-          username: ${{ secrets.MDTPBOX_USER }}
-          key: ${{ secrets.MDTPBOX_SSH_KEY }}
-          envs: DOCKER_IMAGE,NAME
-          script_stop: true
-          script: |
-            url="new.milliondollartokenpage.com"
-            varsFile=~/.${NAME}.vars
-            docker pull ${DOCKER_IMAGE}
-            docker stop ${NAME} && docker rm ${NAME} || true
-            docker run \
-              --name ${NAME} \
-              --detach \
-              --publish-all \
-              --restart on-failure \
-              --env NAME=${NAME} \
-              --env VIRTUAL_HOST=${url} \
-              --env LETSENCRYPT_HOST=${url} \
-              --env-file ${varsFile} \
-              ${DOCKER_IMAGE}
-  run-worker:
-    needs: deploy-api
-    runs-on: ubuntu-latest
-    env:
-      NAME: mdtp-worker
-      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-api:latest
-    steps:
-      - name: executing remote ssh commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.MDTPBOX_URL }}
-          username: ${{ secrets.MDTPBOX_USER }}
-          key: ${{ secrets.MDTPBOX_SSH_KEY }}
-          envs: DOCKER_IMAGE,NAME
-          script_stop: true
-          script: |
-            varsFile=~/.${NAME}.vars
-            docker pull ${DOCKER_IMAGE}
-            docker stop ${NAME} && docker rm ${NAME} || true
-            docker run \
-              --name ${NAME} \
-              --detach \
-              --publish-all \
-              --restart on-failure \
-              --env NAME=${NAME} \
-              --env-file ${varsFile} \
-              ${DOCKER_IMAGE} './start-worker.sh'
-  run-api:
-    needs: deploy-api
-    runs-on: ubuntu-latest
-    env:
-      NAME: mdtp-api
-      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-api:latest
-    steps:
-      - name: executing remote ssh commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.MDTPBOX_URL }}
-          username: ${{ secrets.MDTPBOX_USER }}
-          key: ${{ secrets.MDTPBOX_SSH_KEY }}
-          envs: DOCKER_IMAGE,NAME
-          script_stop: true
-          script: |
-            url="api.mdtp.co,api.milliondollartokenpage.com"
-            varsFile=~/.${NAME}.vars
-            docker pull ${DOCKER_IMAGE}
-            docker stop ${NAME} && docker rm ${NAME} || true
-            docker run \
-              --name ${NAME} \
-              --detach \
-              --publish-all \
-              --restart on-failure \
-              --env NAME=${NAME} \
-              --env VIRTUAL_HOST=${url} \
-              --env LETSENCRYPT_HOST=${url} \
-              --env-file ${varsFile} \
-              ${DOCKER_IMAGE} './start-api.sh'
-  run-proxy:
-    needs: deploy-proxy
-    runs-on: ubuntu-latest
-    env:
-      NAME: mdtp-proxy
-      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-proxy:latest
-    steps:
-      - name: executing remote ssh commands
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.MDTPBOX_URL }}
-          username: ${{ secrets.MDTPBOX_USER }}
-          key: ${{ secrets.MDTPBOX_SSH_KEY }}
-          envs: DOCKER_IMAGE,NAME
-          script_stop: true
-          script: |
-            url="app.mdtp.co,mdtp.app"
-            varsFile=~/.${NAME}.vars
-            docker pull ${DOCKER_IMAGE}
-            docker stop ${NAME} && docker rm ${NAME} || true
-            docker run \
-              --name ${NAME} \
-              --detach \
-              --publish-all \
-              --restart on-failure \
-              --env NAME=${NAME} \
-              --env VIRTUAL_HOST=${url} \
-              --env LETSENCRYPT_HOST=${url} \
-              --env-file ${varsFile} \
-              ${DOCKER_IMAGE}
+      - name: Push to skynet
+        run: |
+          docker cp $(docker create --rm $DOCKER_IMAGE):/usr/share/nginx/html ./dist
+  # deploy-api:
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: ./api
+  #   env:
+  #     DOCKER_IMAGE: ghcr.io/${{ github.repository }}-api:latest
+  #   steps:
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v2
+  #     - name: Login to GitHub container registry
+  #       run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+  #     - name: Build docker image
+  #       run: docker build --tag $DOCKER_IMAGE .
+  #     - name: Push to container registry
+  #       run: docker push $DOCKER_IMAGE
+  # deploy-proxy:
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: ./proxy
+  #   env:
+  #     DOCKER_IMAGE: ghcr.io/${{ github.repository }}-proxy:latest
+  #   steps:
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v2
+  #     - name: Login to GitHub container registry
+  #       run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+  #     - name: Build docker image
+  #       run: docker build --tag $DOCKER_IMAGE .
+  #     - name: Push to container registry
+  #       run: docker push $DOCKER_IMAGE
+  # run-app:
+  #   needs: deploy-app
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     NAME: mdtp-app
+  #     DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
+  #   steps:
+  #     - name: executing remote ssh commands
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.MDTPBOX_URL }}
+  #         username: ${{ secrets.MDTPBOX_USER }}
+  #         key: ${{ secrets.MDTPBOX_SSH_KEY }}
+  #         envs: DOCKER_IMAGE,NAME
+  #         script_stop: true
+  #         script: |
+  #           url="milliondollartokenpage.com"
+  #           varsFile=~/.${NAME}.vars
+  #           docker pull ${DOCKER_IMAGE}
+  #           docker stop ${NAME} && docker rm ${NAME} || true
+  #           docker run \
+  #             --name ${NAME} \
+  #             --detach \
+  #             --publish-all \
+  #             --restart on-failure \
+  #             --env NAME=${NAME} \
+  #             --env VIRTUAL_HOST=${url} \
+  #             --env LETSENCRYPT_HOST=${url} \
+  #             --env-file ${varsFile} \
+  #             ${DOCKER_IMAGE}
+  # run-app-new:
+  #   needs: deploy-app
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     NAME: mdtp-app-new
+  #     DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
+  #   steps:
+  #     - name: executing remote ssh commands
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.MDTPBOX_URL }}
+  #         username: ${{ secrets.MDTPBOX_USER }}
+  #         key: ${{ secrets.MDTPBOX_SSH_KEY }}
+  #         envs: DOCKER_IMAGE,NAME
+  #         script_stop: true
+  #         script: |
+  #           url="new.milliondollartokenpage.com"
+  #           varsFile=~/.${NAME}.vars
+  #           docker pull ${DOCKER_IMAGE}
+  #           docker stop ${NAME} && docker rm ${NAME} || true
+  #           docker run \
+  #             --name ${NAME} \
+  #             --detach \
+  #             --publish-all \
+  #             --restart on-failure \
+  #             --env NAME=${NAME} \
+  #             --env VIRTUAL_HOST=${url} \
+  #             --env LETSENCRYPT_HOST=${url} \
+  #             --env-file ${varsFile} \
+  #             ${DOCKER_IMAGE}
+  # run-worker:
+  #   needs: deploy-api
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     NAME: mdtp-worker
+  #     DOCKER_IMAGE: ghcr.io/${{ github.repository }}-api:latest
+  #   steps:
+  #     - name: executing remote ssh commands
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.MDTPBOX_URL }}
+  #         username: ${{ secrets.MDTPBOX_USER }}
+  #         key: ${{ secrets.MDTPBOX_SSH_KEY }}
+  #         envs: DOCKER_IMAGE,NAME
+  #         script_stop: true
+  #         script: |
+  #           varsFile=~/.${NAME}.vars
+  #           docker pull ${DOCKER_IMAGE}
+  #           docker stop ${NAME} && docker rm ${NAME} || true
+  #           docker run \
+  #             --name ${NAME} \
+  #             --detach \
+  #             --publish-all \
+  #             --restart on-failure \
+  #             --env NAME=${NAME} \
+  #             --env-file ${varsFile} \
+  #             ${DOCKER_IMAGE} './start-worker.sh'
+  # run-api:
+  #   needs: deploy-api
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     NAME: mdtp-api
+  #     DOCKER_IMAGE: ghcr.io/${{ github.repository }}-api:latest
+  #   steps:
+  #     - name: executing remote ssh commands
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.MDTPBOX_URL }}
+  #         username: ${{ secrets.MDTPBOX_USER }}
+  #         key: ${{ secrets.MDTPBOX_SSH_KEY }}
+  #         envs: DOCKER_IMAGE,NAME
+  #         script_stop: true
+  #         script: |
+  #           url="api.mdtp.co,api.milliondollartokenpage.com"
+  #           varsFile=~/.${NAME}.vars
+  #           docker pull ${DOCKER_IMAGE}
+  #           docker stop ${NAME} && docker rm ${NAME} || true
+  #           docker run \
+  #             --name ${NAME} \
+  #             --detach \
+  #             --publish-all \
+  #             --restart on-failure \
+  #             --env NAME=${NAME} \
+  #             --env VIRTUAL_HOST=${url} \
+  #             --env LETSENCRYPT_HOST=${url} \
+  #             --env-file ${varsFile} \
+  #             ${DOCKER_IMAGE} './start-api.sh'
+  # run-proxy:
+  #   needs: deploy-proxy
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     NAME: mdtp-proxy
+  #     DOCKER_IMAGE: ghcr.io/${{ github.repository }}-proxy:latest
+  #   steps:
+  #     - name: executing remote ssh commands
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.MDTPBOX_URL }}
+  #         username: ${{ secrets.MDTPBOX_USER }}
+  #         key: ${{ secrets.MDTPBOX_SSH_KEY }}
+  #         envs: DOCKER_IMAGE,NAME
+  #         script_stop: true
+  #         script: |
+  #           url="app.mdtp.co,mdtp.app"
+  #           varsFile=~/.${NAME}.vars
+  #           docker pull ${DOCKER_IMAGE}
+  #           docker stop ${NAME} && docker rm ${NAME} || true
+  #           docker run \
+  #             --name ${NAME} \
+  #             --detach \
+  #             --publish-all \
+  #             --restart on-failure \
+  #             --env NAME=${NAME} \
+  #             --env VIRTUAL_HOST=${url} \
+  #             --env LETSENCRYPT_HOST=${url} \
+  #             --env-file ${varsFile} \
+  #             ${DOCKER_IMAGE}
