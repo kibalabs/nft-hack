@@ -18,11 +18,18 @@ jobs:
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
       - name: Build docker image
         run: docker build --tag $DOCKER_IMAGE .
-      - name: Push to container registry
-        run: docker push $DOCKER_IMAGE
-      - name: Push to skynet
+      # - name: Push to container registry
+      #   run: docker push $DOCKER_IMAGE
+      - name: Extract dist folder
         run: |
           docker cp $(docker create --rm $DOCKER_IMAGE):/usr/share/nginx/html ./dist
+          ls
+      - name: Deploy to Skynet
+        uses: SkynetLabs/deploy-to-skynet-action@v2.0.1
+        with:
+          upload-dir: ./dist
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          registry-seed: ${{ secrets.SKYNET_REGISTRY_SEED || '' }}
   # deploy-api:
   #   runs-on: ubuntu-latest
   #   defaults:
