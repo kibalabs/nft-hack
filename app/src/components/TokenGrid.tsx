@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { deepCompare } from '@kibalabs/core';
-import { useDebouncedCallback, usePreviousValue, useSize } from '@kibalabs/core-react';
+import { ISize, useDebouncedCallback, usePreviousValue, useSize } from '@kibalabs/core-react';
 import { useColors } from '@kibalabs/ui-react';
 
 import { BaseImage, GridItem } from '../client';
@@ -38,25 +38,32 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const focussedTokenIds = useTokenSelection();
 
   const windowSize = useSize(containerRef.current);
+  const windowSizeRef = React.useRef<ISize>(windowSize);
   const panOffset = usePan(canvasWrapperRef);
   const lastPanOffset = usePreviousValue(panOffset);
   const [scale, pinchCenterRef] = useScale(canvasWrapperRef, 0.1, props.scale, props.onScaleChanged);
+  const scaleRef = React.useRef<number>(scale);
   const lastScale = usePreviousValue(scale);
+  const lastScaleRef = React.useRef<number>(lastScale);
   const mousePositionRef = useMousePositionRef(canvasWrapperRef);
   const [adjustedOffset, setAdjustedOffset] = React.useState<Point>(panOffset);
   const adjustedOffsetRef = React.useRef<Point>(adjustedOffset);
-  // NOTE(krishan711): this is only here so updateAdjustedOffset doesn't need adjustedOffset as a dependency. There must be a better way
-  adjustedOffsetRef.current = adjustedOffset;
   const tokenScales = React.useRef<Map<number, number>>(new Map<number, number>());
   const tokenImages = React.useRef<Map<number, HTMLImageElement>>(new Map<number, HTMLImageElement>());
   const lastRangeRef = React.useRef<PointRange>({ topLeft: ORIGIN_POINT, bottomRight: ORIGIN_POINT });
   const lastMouseMoveTimeRef = React.useRef<Date | null>(null);
   const lastMouseMovePointRef = React.useRef<Point | null>(null);
-  const [setRedrawCallback, clearRedrawCallback] = useDebouncedCallback(150);
+  const [setRedrawCallback, clearRedrawCallback] = useDebouncedCallback(250);
   const [isMoving, setIsMoving] = React.useState<boolean>(false);
 
   const isRunningOnMobile = isMobile();
   const canvasHeight = tokenHeight * Math.ceil((props.tokenCount * tokenWidth) / canvasWidth);
+
+  // NOTE(krishan711): these are here so updateAdjustedOffset doesn't need adjustedOffset and scale as a dependency.
+  adjustedOffsetRef.current = adjustedOffset;
+  scaleRef.current = scale;
+  lastScaleRef.current = lastScale;
+  windowSizeRef.current = windowSize;
 
   const truncateScale = React.useCallback((newScale: number): number => {
     if (newScale < (props.maxScale / 2.0) - 0.5) {
@@ -95,7 +102,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     // @ts-ignore TODO(krishan711): make baseUrl visible in ServiceClient
     image.setAttribute('src', `${apiClient.baseUrl}/v1/networks/${network}/tokens/${tokenId}/go-to-image?w=${Math.ceil(tokenWidth * imageScale * window.devicePixelRatio)}&h=${Math.ceil(tokenHeight * imageScale * window.devicePixelRatio)}`);
     tokenScales.current.set(tokenIndex, imageScale);
-  }, [apiClient, network, props.maxScale]);
+  }, [props.maxScale, apiClient, network, canvasRef]);
 
   React.useEffect((): void => {
     props.newGridItems.forEach((gridItem: GridItem): void => {
@@ -105,14 +112,43 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     });
   }, [props.newGridItems, props.baseImage, drawTokenImageOnCanvas]);
 
+  const redrawVisibleArea = React.useCallback((): void => {
+    console.log('redrawVisibleArea');
+    const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
+    const topLeft = floorPoint(scaledOffset);
+    const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSize.width / tokenWidth / scaleRef.current, y: windowSize.height / tokenHeight / scaleRef.current }));
+    const range: PointRange = { topLeft, bottomRight };
+    const truncatedScale = truncateScale(scaleRef.current);
+    if (truncatedScale === truncateScale(lastScaleRef.current) && arePointRangesEqual(range, lastRangeRef.current)) {
+      console.log('would have skipped because scaleRef and arePointRangesEqual');
+    }
+    if (arePointRangesEqual(range, lastRangeRef.current)) {
+      console.log('skipping because arePointRangesEqual');
+      return;
+    }
+    lastRangeRef.current = range;
+    for (let y = Math.max(0, topLeft.y); y <= bottomRight.y; y += 1) {
+      for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
+        const tokenIndex = x + (y * (canvasWidth / tokenWidth));
+        if (tokenIndex < props.tokenCount) {
+          setTimeout((): void => {
+            drawTokenImageOnCanvas(tokenIndex, truncatedScale);
+          });
+        }
+      }
+    }
+  }, [props.tokenCount, adjustedOffsetRef, scaleRef, lastScaleRef, truncateScale, windowSize, drawTokenImageOnCanvas]);
+
   // NOTE(krishan711): due to the "center by default" logic this would probably be better
   // modelled as "offset from center" instead of directly the offset
   const updateAdjustedOffset = React.useCallback((offset: Point | null, sizeChanged = false): void => {
-    if (!windowSize || windowSize.width === 0 || windowSize.height === 0 || canvasHeight === 0) {
+    console.log('updateAdjustedOffset --------------');
+    if (!windowSizeRef.current || windowSizeRef.current.width === 0 || windowSizeRef.current.height === 0 || canvasHeight === 0) {
       return;
     }
-    const scaledWindowWidth = windowSize.width / scale;
-    const scaledWindowHeight = windowSize.height / scale;
+    console.log('updateAdjustedOffset inside');
+    const scaledWindowWidth = windowSizeRef.current.width / scaleRef.current;
+    const scaledWindowHeight = windowSizeRef.current.height / scaleRef.current;
     const widthDiff = canvasWidth - scaledWindowWidth;
     const heightDiff = canvasHeight - scaledWindowHeight;
     const minX = widthDiff >= 0 ? -tokenWidth : widthDiff / 2.0;
@@ -124,17 +160,23 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       x: Math.max(minX, Math.min(maxX, newPoint.x)),
       y: Math.max(minY, Math.min(maxY, newPoint.y)),
     };
+    console.log('updateAdjustedOffset constrainedPoint', constrainedPoint.x, constrainedPoint.y);
     if (sizeChanged && (constrainedPoint.x === minX || constrainedPoint.x === 0) && (constrainedPoint.y === minY || constrainedPoint.y === 0)) {
       constrainedPoint = {
         x: minX + ((maxX - minX) / 2.0),
         y: minY + ((maxY - minY) / 2.0),
       };
     }
-    const truncatedScale = truncateScale(scale);
+    console.log('updateAdjustedOffset constrainedPoint2', constrainedPoint.x, constrainedPoint.y);
+    const truncatedScale = truncateScale(scaleRef.current);
+    console.log('updateAdjustedOffset truncatedScale', truncatedScale);
 
     setAdjustedOffset(constrainedPoint);
     const hasMoved = !arePointsEqual(adjustedOffsetRef.current, constrainedPoint);
-    const hasScaled = truncatedScale === truncateScale(lastScale);
+    console.log('updateAdjustedOffset hasMoved', hasMoved);
+    const hasScaled = truncatedScale === truncateScale(lastScaleRef.current);
+    console.log('updateAdjustedOffset hasScaled', hasScaled);
+    console.log('updateAdjustedOffset diffPoints', diffPoints(adjustedOffsetRef.current, constrainedPoint));
     if (truncatedScale < props.maxScale / 2.0) {
       return;
     }
@@ -147,29 +189,16 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     }
 
     clearRedrawCallback();
-    setRedrawCallback((): void => {
-      const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
-      const topLeft = floorPoint(scaledOffset);
-      const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSize.width / tokenWidth / scale, y: windowSize.height / tokenHeight / scale }));
-      const range: PointRange = { topLeft, bottomRight };
-      if (truncatedScale !== truncateScale(lastScale) || !arePointRangesEqual(range, lastRangeRef.current)) {
-        lastRangeRef.current = range;
-        for (let y = Math.max(0, topLeft.y); y <= bottomRight.y; y += 1) {
-          for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
-            const tokenIndex = x + (y * (canvasWidth / tokenWidth));
-            if (tokenIndex < props.tokenCount) {
-              setTimeout((): void => {
-                drawTokenImageOnCanvas(tokenIndex, truncatedScale);
-              });
-            }
-          }
-        }
-      }
-    });
-  }, [props.tokenCount, props.maxScale, truncateScale, scale, canvasHeight, lastScale, windowSize, isRunningOnMobile, setRedrawCallback, clearRedrawCallback, drawTokenImageOnCanvas]);
+    setRedrawCallback(redrawVisibleArea);
+  }, [props.maxScale, truncateScale, scaleRef, lastScaleRef, canvasHeight, windowSizeRef, isRunningOnMobile, setRedrawCallback, clearRedrawCallback, redrawVisibleArea]);
+
+  React.useLayoutEffect((): void => {
+    updateAdjustedOffset(null, true);
+  }, [updateAdjustedOffset]);
 
   React.useEffect((): void => {
     if (scale !== lastScale) {
+      console.log('Dealing with scale...');
       if (pinchCenterRef.current) {
         const lastCenter = scalePoint(pinchCenterRef.current, 1.0 / lastScale);
         const newCenter = scalePoint(pinchCenterRef.current, 1.0 / scale);
@@ -188,13 +217,10 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   React.useEffect((): void => {
     const delta = diffPoints(panOffset, lastPanOffset);
     if (delta.x !== 0 || delta.y !== 0) {
-      updateAdjustedOffset(scalePoint(delta, 1.0 / scale));
+      console.log('Dealing with move...');
+      updateAdjustedOffset(scalePoint(delta, 1.0 / scaleRef.current));
     }
-  }, [panOffset, lastPanOffset, scale, updateAdjustedOffset]);
-
-  React.useLayoutEffect((): void => {
-    updateAdjustedOffset(null, true);
-  }, [updateAdjustedOffset]);
+  }, [panOffset, lastPanOffset, scaleRef, updateAdjustedOffset]);
 
   const getEventElementPosition = (event: React.MouseEvent<HTMLElement>): Point => {
     const eventPoint = { x: event.clientX, y: event.clientY };
@@ -234,7 +260,8 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     setIsMoving(false);
   };
 
-  React.useEffect((): void => {
+  const drawHighlight = React.useCallback((): void => {
+    console.log('drawHighlight');
     const context = overlayCanvasRef.current?.getContext('2d');
     if (!context) {
       return;
@@ -257,7 +284,11 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
         context.clearRect(x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
       });
     }
-  }, [props.maxScale, colors, canvasHeight, focussedTokenIds]);
+  }, [props.maxScale, colors.gridOverlay, colors.pastel1, canvasHeight, focussedTokenIds]);
+
+  React.useEffect((): void => {
+    drawHighlight();
+  }, [drawHighlight]);
 
   return (
     <div
