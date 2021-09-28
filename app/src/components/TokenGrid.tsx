@@ -165,7 +165,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       bottomRight: {
         x: tokenMaxX - windowWidth,
         y: tokenMaxY - windowHeight,
-      }
+      },
     };
     setFocusOffsetRange(newOffsetRange);
   }, [props.maxScale, windowHeight, windowWidth, focussedTokenIds]);
@@ -173,7 +173,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const redrawVisibleArea = React.useCallback((): void => {
     const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
     const topLeft = floorPoint(scaledOffset);
-    const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowWidth / tokenWidth / scaleRef.current, y: windowHeight / tokenHeight / scaleRef.current }));
+    const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSizeRef.current.width / tokenWidth / scaleRef.current, y: windowSizeRef.current.height / tokenHeight / scaleRef.current }));
     const range: PointRange = { topLeft, bottomRight };
     const truncatedScale = truncateScale(scaleRef.current);
     if (truncatedScale === truncateScale(lastScaleRef.current) && arePointRangesEqual(range, lastRangeRef.current)) {
@@ -195,14 +195,11 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   }, [props.tokenCount, adjustedOffsetRef, scaleRef, lastScaleRef, windowSizeRef, truncateScale, drawTokenImageOnCanvas]);
 
   const updateAdjustedOffset = React.useCallback((offset: Point | null): void => {
-    // if (!windowSizeRef.current || windowWidth === 0 || windowHeight === 0 || canvasHeight === 0) {
-    //   return;
-    // }
-    if (windowWidth === 0 || windowHeight === 0 || canvasHeight === 0) {
+    if (!windowSizeRef.current || windowSizeRef.current.width === 0 || windowSizeRef.current.height === 0 || canvasHeight === 0) {
       return;
     }
-    const scaledWindowWidth = windowWidth / scaleRef.current;
-    const scaledWindowHeight = windowHeight / scaleRef.current;
+    const scaledWindowWidth = windowSizeRef.current.width / scaleRef.current;
+    const scaledWindowHeight = windowSizeRef.current.height / scaleRef.current;
     const widthDiff = canvasWidth - scaledWindowWidth;
     const heightDiff = canvasHeight - scaledWindowHeight;
     const minX = widthDiff >= 0 ? -tokenWidth : widthDiff / 2.0;
@@ -249,7 +246,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
 
     clearRedrawCallback();
     setRedrawCallback(redrawVisibleArea);
-  }, [props.maxScale, truncateScale, windowWidth, windowHeight, hasCentered, centerOffset, focusOffsetRange, lastFocusOffsetRangeRef, scaleRef, lastScaleRef, canvasHeight, windowSizeRef, isRunningOnMobile, setRedrawCallback, clearRedrawCallback, redrawVisibleArea]);
+  }, [props.maxScale, truncateScale, hasCentered, centerOffset, focusOffsetRange, lastFocusOffsetRangeRef, scaleRef, lastScaleRef, canvasHeight, windowSizeRef, isRunningOnMobile, setRedrawCallback, clearRedrawCallback, redrawVisibleArea]);
 
   React.useEffect((): void => {
     updateAdjustedOffset(null);
