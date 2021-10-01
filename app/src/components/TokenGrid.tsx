@@ -135,11 +135,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   }, [props.tokenCount, windowHeight, windowWidth]);
 
   useDeepCompareEffect((): void => {
-    console.log('setFocusOffsetRange');
-    // if (windowWidth === 0 || windowHeight === 0) {
-    //   return;
-    // }
-    console.log('setFocusOffsetRange 2');
     if (focussedTokenIds.length === 0) {
       setFocusOffsetRange(null);
       return;
@@ -157,37 +152,20 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       tokenMaxX = Math.max(tokenMaxX, x + tokenWidth);
       tokenMaxY = Math.max(tokenMaxY, y + tokenHeight);
     });
-    // NOTE(krishan711): the bottomRight is actually relative to the right had side of the canvas rather than left.
-    // This is so that the focusOffset is forced to update when the windowSize changes because usually this code will
-    // run before the side panel is shown, meaning the window size will change after the below code has run once.
     const newOffsetRange = {
-      topLeft: {
-        x: tokenMinX,
-        y: tokenMinY,
-      },
-      bottomRight: {
-        x: tokenMaxX,
-        y: tokenMaxY,
-        // x: tokenMaxX - windowWidth,
-        // y: tokenMaxY - windowHeight,
-      },
+      topLeft: { x: tokenMinX, y: tokenMinY },
+      bottomRight: { x: tokenMaxX, y: tokenMaxY },
     };
     setFocusOffsetRange(newOffsetRange);
-  // }, [props.maxScale, windowHeight, windowWidth, focussedTokenIds]);
   }, [focussedTokenIds]);
 
   const redrawVisibleArea = React.useCallback((): void => {
-    console.log('redrawVisibleArea');
     const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
     const topLeft = floorPoint(scaledOffset);
     const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSizeRef.current.width / tokenWidth / scaleRef.current, y: windowSizeRef.current.height / tokenHeight / scaleRef.current }));
     const range: PointRange = { topLeft, bottomRight };
     const truncatedScale = truncateScale(scaleRef.current);
-    if (truncatedScale === truncateScale(lastScaleRef.current) && arePointRangesEqual(range, lastRangeRef.current)) {
-      console.log('would have skipped because scaleRef and arePointRangesEqual');
-    }
     if (arePointRangesEqual(range, lastRangeRef.current)) {
-      console.log('skipping because arePointRangesEqual');
       return;
     }
     lastRangeRef.current = range;
@@ -201,73 +179,52 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
         }
       }
     }
-  }, [props.tokenCount, adjustedOffsetRef, scaleRef, lastScaleRef, windowSizeRef, truncateScale, drawTokenImageOnCanvas]);
+  }, [props.tokenCount, adjustedOffsetRef, scaleRef, windowSizeRef, truncateScale, drawTokenImageOnCanvas]);
 
   const updateAdjustedOffset = React.useCallback((offset: Point | null): void => {
-    console.log('updateAdjustedOffset --------------');
-    if (!windowSize || windowSize.width === 0 || windowSize.height === 0 || canvasHeight === 0) {
+    if (windowWidth === 0 || windowHeight === 0 || canvasHeight === 0) {
       return;
     }
-    console.log('updateAdjustedOffset inside');
-    const scaledWindowWidth = windowSize.width / scaleRef.current;
-    const scaledWindowHeight = windowSize.height / scaleRef.current;
+    const scaledWindowWidth = windowWidth / scaleRef.current;
+    const scaledWindowHeight = windowHeight / scaleRef.current;
     const widthDiff = canvasWidth - scaledWindowWidth;
     const heightDiff = canvasHeight - scaledWindowHeight;
     const minX = widthDiff >= 0 ? -tokenWidth : widthDiff / 2.0;
     const minY = heightDiff >= 0 ? -tokenHeight : heightDiff / 2.0;
     const maxX = minX + (widthDiff >= 0 ? widthDiff + 2 * tokenWidth : 0);
     const maxY = minY + (heightDiff >= 0 ? heightDiff + 2 * tokenHeight : 0);
-    console.log('min', minX, minY);
-    console.log('max', maxX, maxY);
     let newOffset = sumPoints(adjustedOffsetRef.current, offset || ORIGIN_POINT);
-    console.log('screenSize', scaledWindowWidth, scaledWindowHeight);
-    const hasWindowSizeChanged = !lastWindowSizeRef.current || (windowWidth != lastWindowSizeRef.current.width || windowHeight != lastWindowSizeRef.current.height);
-    console.log('hasWindowSizeChanged', hasWindowSizeChanged);
-    console.log('lastFocusOffsetRangeRef.current', lastFocusOffsetRangeRef.current);
-    console.log('focusOffsetRange', focusOffsetRange);
-    const focusOffsetHasChanged = focusOffsetRange && (!lastFocusOffsetRangeRef.current || !arePointRangesEqual(lastFocusOffsetRangeRef.current, focusOffsetRange));
-    console.log('focusOffsetHasChanged', focusOffsetHasChanged);
-    console.log('scaleRef.current', scaleRef.current);
-    console.log('newOffset', newOffset);
     if (!hasCentered && centerOffset && ((newOffset.x === minX || newOffset.x === 0) && (newOffset.y === minY || newOffset.y === 0))) {
-      console.log('centering');
       newOffset = centerOffset;
       setHasCentered(true);
     }
-    console.log('newOffset', newOffset);
+    const hasWindowSizeChanged = !lastWindowSizeRef.current || (windowWidth !== lastWindowSizeRef.current.width || windowHeight !== lastWindowSizeRef.current.height);
+    const focusOffsetHasChanged = focusOffsetRange && (!lastFocusOffsetRangeRef.current || !arePointRangesEqual(lastFocusOffsetRangeRef.current, focusOffsetRange));
     if (focusOffsetHasChanged || (focusOffsetRange && hasWindowSizeChanged)) {
-      console.log('focussing');
       if (focusOffsetRange.topLeft.x < newOffset.x) {
-        console.log('hello 1');
         newOffset.x = focusOffsetRange.topLeft.x - tokenWidth;
       } else if (focusOffsetRange.bottomRight.x > newOffset.x + scaledWindowWidth) {
-        console.log('hello 2');
         newOffset.x = focusOffsetRange.bottomRight.x + tokenWidth - scaledWindowWidth;
       }
       if (focusOffsetRange.topLeft.y < newOffset.y) {
-        console.log('hello 3');
         newOffset.y = focusOffsetRange.topLeft.y - tokenHeight;
       } else if (focusOffsetRange.bottomRight.y > newOffset.y + scaledWindowHeight) {
-        console.log('hello 4');
         newOffset.y = focusOffsetRange.bottomRight.y + tokenHeight - scaledWindowHeight;
       }
       lastFocusOffsetRangeRef.current = focusOffsetRange;
     }
     lastWindowSizeRef.current = windowSizeRef.current;
-    console.log('newOffset', newOffset);
     const constrainedOffset = {
       x: Math.max(minX, Math.min(maxX, newOffset.x)),
       y: Math.max(minY, Math.min(maxY, newOffset.y)),
     };
-    console.log('constrainedOffset', constrainedOffset);
-    const truncatedScale = truncateScale(scaleRef.current);
-
     setAdjustedOffset(constrainedOffset);
-    const hasMoved = !arePointsEqual(adjustedOffsetRef.current, constrainedOffset);
-    const hasScaled = truncatedScale !== truncateScale(lastScaleRef.current);
+    const truncatedScale = truncateScale(scaleRef.current);
     if (truncatedScale < props.maxScale / 2.0) {
       return;
     }
+    const hasMoved = !arePointsEqual(adjustedOffsetRef.current, constrainedOffset);
+    const hasScaled = truncatedScale !== truncateScale(lastScaleRef.current);
     if (!hasScaled && !hasMoved) {
       return;
     }
@@ -275,19 +232,16 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     if (isRunningOnMobile) {
       return;
     }
-
     clearRedrawCallback();
     setRedrawCallback(redrawVisibleArea);
   }, [props.maxScale, truncateScale, hasCentered, centerOffset, focusOffsetRange, lastFocusOffsetRangeRef, scaleRef, lastScaleRef, canvasHeight, windowHeight, windowWidth, windowSizeRef, lastWindowSizeRef, isRunningOnMobile, setRedrawCallback, clearRedrawCallback, redrawVisibleArea]);
 
   React.useEffect((): void => {
-    console.log('updateAdjustedOffset changed');
     updateAdjustedOffset(null);
   }, [updateAdjustedOffset]);
 
   React.useEffect((): void => {
     if (scale !== lastScale) {
-      console.log('Dealing with scale...');
       if (pinchCenterRef.current) {
         const lastCenter = scalePoint(pinchCenterRef.current, 1.0 / lastScale);
         const newCenter = scalePoint(pinchCenterRef.current, 1.0 / scale);
@@ -306,7 +260,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   React.useEffect((): void => {
     const delta = diffPoints(panOffset, lastPanOffset);
     if (delta.x !== 0 || delta.y !== 0) {
-      console.log('Dealing with move...');
       updateAdjustedOffset(scalePoint(delta, 1.0 / scaleRef.current));
     }
   }, [panOffset, lastPanOffset, scaleRef, updateAdjustedOffset]);
@@ -350,7 +303,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   };
 
   const drawHighlight = React.useCallback((): void => {
-    console.log('drawHighlight');
     const context = overlayCanvasRef.current?.getContext('2d');
     if (!context) {
       return;
