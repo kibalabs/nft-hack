@@ -133,7 +133,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       y: (y + (y + tokenHeight) - windowHeight) / 2.0,
     };
     setCenterOffset(newOffset);
-  }, [props.tokenCount, windowHeight, windowWidth]);
+  }, [props.tokenCount, windowHeight, windowWidth, hasCentered]);
 
   useDeepCompareEffect((): void => {
     if (focussedTokenIds.length === 0) {
