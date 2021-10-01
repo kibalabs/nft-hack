@@ -58,7 +58,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const lastRangeRef = React.useRef<PointRange>({ topLeft: ORIGIN_POINT, bottomRight: ORIGIN_POINT });
   const lastMouseMoveTimeRef = React.useRef<Date | null>(null);
   const lastMouseMovePointRef = React.useRef<Point | null>(null);
-  const [setRedrawCallback, clearRedrawCallback] = useDebouncedCallback(250);
+  const [setRedrawCallback, clearRedrawCallback] = useDebouncedCallback(150);
   const [isMoving, setIsMoving] = React.useState<boolean>(false);
 
   const isRunningOnMobile = isMobile();
