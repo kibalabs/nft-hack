@@ -20,6 +20,7 @@ const seoTags = [
   new InjectSeoPlugin.Tag('link', {rel: 'alternate icon', href: '/assets/favicon.ico'}),
   new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/png', sizes: '16x16', href: '/assets/favicon-16x16.png'}),
   new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/png', sizes: '32x32', href: '/assets/favicon-32x32.png'}),
+  new InjectSeoPlugin.MetaTag('ahrefs-site-verification', 'a3023b147a43620661343c066e99f489fb5c806d21df477f183a30c2428ab64b'),
 ];
 
 module.exports = (config) => {
