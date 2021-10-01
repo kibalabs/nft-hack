@@ -48,6 +48,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const lastPanOffset = usePreviousValue(panOffset);
   const [scale, pinchCenterRef] = useScale(canvasWrapperRef, 0.1, props.scale, props.onScaleChanged);
   const scaleRef = React.useRef<number>(scale);
+  const adjustedScaleRef = React.useRef<number>(scale);
   const lastScale = usePreviousValue(scale);
   const lastScaleRef = React.useRef<number>(lastScale);
   const mousePositionRef = useMousePositionRef(canvasWrapperRef);
@@ -69,8 +70,8 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   scaleRef.current = scale;
   lastScaleRef.current = lastScale;
   windowSizeRef.current = windowSize;
-  const windowHeight = windowSize ? windowSize.height : 0;
-  const windowWidth = windowSize ? windowSize.width : 0;
+  const windowHeight = windowSize?.height || 0;
+  const windowWidth = windowSize?.width || 0;
 
   const truncateScale = React.useCallback((newScale: number): number => {
     if (newScale < (props.maxScale / 2.0) - 0.5) {
@@ -120,7 +121,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   }, [props.newGridItems, props.baseImage, drawTokenImageOnCanvas]);
 
   React.useLayoutEffect((): void => {
-    if (windowWidth === 0 || windowHeight === 0) {
+    if (windowWidth === 0 || windowHeight === 0 || hasCentered) {
       return;
     }
     const centerTokenId = (props.tokenCount / 2) - ((canvasWidth / tokenWidth) / 2);
@@ -166,11 +167,11 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
     const topLeft = floorPoint(scaledOffset);
     const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSizeRef.current.width / tokenWidth / scaleRef.current, y: windowSizeRef.current.height / tokenHeight / scaleRef.current }));
-    const range: PointRange = { topLeft, bottomRight };
-    const truncatedScale = truncateScale(scaleRef.current);
+    const range = { topLeft, bottomRight };
     if (arePointRangesEqual(range, lastRangeRef.current)) {
       return;
     }
+    const truncatedScale = truncateScale(scaleRef.current);
     lastRangeRef.current = range;
     for (let y = Math.max(0, topLeft.y); y <= bottomRight.y; y += 1) {
       for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
@@ -196,7 +197,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     const minY = heightDiff >= 0 ? -tokenHeight : heightDiff / 2.0;
     const maxX = minX + (widthDiff >= 0 ? widthDiff + 2 * tokenWidth : 0);
     const maxY = minY + (heightDiff >= 0 ? heightDiff + 2 * tokenHeight : 0);
-    let newOffset = sumPoints(adjustedOffsetRef.current, offset || ORIGIN_POINT);
+    let newOffset = sumPoints(adjustedOffsetRef.current, offset || { x: 0, y: 0 });
     if (!hasCentered && centerOffset && ((newOffset.x === minX || newOffset.x === 0) && (newOffset.y === minY || newOffset.y === 0))) {
       newOffset = centerOffset;
       setHasCentered(true);
@@ -217,9 +218,10 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       lastFocusOffsetRangeRef.current = focusOffsetRange;
     }
     lastWindowSizeRef.current = windowSizeRef.current;
+    adjustedScaleRef.current = scaleRef.current;
     const constrainedOffset = {
-      x: Math.max(minX, Math.min(maxX, newOffset.x)),
-      y: Math.max(minY, Math.min(maxY, newOffset.y)),
+      x: Math.floor(Math.max(minX, Math.min(maxX, newOffset.x))),
+      y: Math.floor(Math.max(minY, Math.min(maxY, newOffset.y))),
     };
     setAdjustedOffset(constrainedOffset);
     const truncatedScale = truncateScale(scaleRef.current);
@@ -350,7 +352,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
         style={{
           width: `${canvasWidth * props.maxScale}px`,
           height: `${canvasHeight * props.maxScale}px`,
-          transform: `translate(${-adjustedOffset.x * scale}px, ${-adjustedOffset.y * scale}px) scale(${scale / props.maxScale})`,
+          transform: `translate(${-adjustedOffset.x * adjustedScaleRef.current}px, ${-adjustedOffset.y * adjustedScaleRef.current}px) scale(${adjustedScaleRef.current / props.maxScale})`,
           transformOrigin: 'left top',
           overflow: 'hidden',
           backgroundImage: `url(${props.baseImage.url}?w=${Math.ceil(canvasWidth * window.devicePixelRatio)}&h=${Math.ceil(canvasHeight * window.devicePixelRatio)})`,
