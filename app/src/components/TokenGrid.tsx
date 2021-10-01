@@ -38,8 +38,8 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const focussedTokenIds = useTokenSelection();
 
   const windowSize = useSize(containerRef.current);
-  const windowSizeRef = React.useRef<ISize>(windowSize);
-  const lastWindowSizeRef = React.useRef<ISize>(windowSize);
+  const windowSizeRef = React.useRef<ISize | null>(windowSize);
+  const lastWindowSizeRef = React.useRef<ISize | null>(windowSize);
   const [hasCentered, setHasCentered] = React.useState<boolean>(false);
   const [centerOffset, setCenterOffset] = React.useState<Point | null>(null);
   const [focusOffsetRange, setFocusOffsetRange] = React.useState<PointRange | null>(null);
@@ -160,6 +160,9 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   }, [focussedTokenIds]);
 
   const redrawVisibleArea = React.useCallback((): void => {
+    if (!windowSizeRef.current) {
+      return;
+    }
     const scaledOffset = { x: adjustedOffsetRef.current.x / tokenWidth, y: adjustedOffsetRef.current.y / tokenHeight };
     const topLeft = floorPoint(scaledOffset);
     const bottomRight = floorPoint(sumPoints(scaledOffset, { x: windowSizeRef.current.width / tokenWidth / scaleRef.current, y: windowSizeRef.current.height / tokenHeight / scaleRef.current }));
