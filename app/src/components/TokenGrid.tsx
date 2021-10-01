@@ -203,7 +203,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     }
     const hasWindowSizeChanged = !lastWindowSizeRef.current || (windowWidth !== lastWindowSizeRef.current.width || windowHeight !== lastWindowSizeRef.current.height);
     const focusOffsetHasChanged = focusOffsetRange && (!lastFocusOffsetRangeRef.current || !arePointRangesEqual(lastFocusOffsetRangeRef.current, focusOffsetRange));
-    if (focusOffsetHasChanged || (focusOffsetRange && hasWindowSizeChanged)) {
+    if (hasCentered && (focusOffsetHasChanged || (focusOffsetRange && hasWindowSizeChanged))) {
       if (focusOffsetRange.topLeft.x < newOffset.x) {
         newOffset.x = focusOffsetRange.topLeft.x - tokenWidth;
       } else if (focusOffsetRange.bottomRight.x > newOffset.x + scaledWindowWidth) {
