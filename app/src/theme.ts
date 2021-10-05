@@ -1,4 +1,4 @@
-import { mergePartial, RecursivePartial } from '@kibalabs/core';
+import { RecursivePartial } from '@kibalabs/core';
 import { buildTheme, IButtonTheme, IIconButtonTheme, ITheme, mergeTheme, mergeThemePartial, ThemeMap } from '@kibalabs/ui-react';
 
 export const defaultTheme = buildTheme();
@@ -53,18 +53,36 @@ export const buildMDTPTheme = (): ITheme => {
   };
 
   const overlayBoxTheme = {
-    'background-color': 'rgba(255, 255, 255, 0.65)',
+    'background-color': 'rgba(255, 255, 255, 0.85)',
     'backdrop-filter': 'blur(3px)',
     'border-radius': '0.75em',
+    'box-shadow': '0px 4px 4px -2px rgb(0 0 0 / 15%)',
     margin: '0.5em',
   };
 
   const boxThemes = {
     ...defaultTheme.boxes,
+    card: {
+      padding: `${defaultTheme.dimensions.padding}`,
+      'box-shadow': '0px 4px 4px -2px rgb(0 0 0 / 15%)',
+    },
+    error: {
+      'border-width': '1px',
+      'border-color': '$colors.error',
+    },
+    success: {
+      'border-width': '1px',
+      'border-color': '$colors.success',
+    },
     overlay: overlayBoxTheme,
-    overlayDialog: mergePartial(overlayBoxTheme, {
-      'background-color': 'rgba(255, 255, 255, 0.85)',
-    }),
+    overlayError: {
+      'border-width': '2px',
+      'border-color': '$colors.error',
+    },
+    overlaySuccess: {
+      'border-width': '2px',
+      'border-color': '$colors.success',
+    },
     horizontal: {
       padding: '0.5em 1em',
     },
@@ -124,6 +142,19 @@ export const buildMDTPTheme = (): ITheme => {
           },
           text: {
             color: '$colors.backgroundDark25',
+          },
+        },
+      },
+    },
+    error: {
+      normal: {
+        default: {
+          background: {
+            'border-color': '$colors.error',
+            'border-width': '1px',
+          },
+          text: {
+            color: '$colors.error',
           },
         },
       },
@@ -196,6 +227,18 @@ export const buildMDTPTheme = (): ITheme => {
     },
   };
 
+  const listItemThemes = {
+    unpadded: {
+      normal: {
+        default: {
+          background: {
+            padding: '0',
+          },
+        },
+      },
+    },
+  };
+
   const theme = buildTheme({
     colors,
     fonts: {
@@ -209,6 +252,7 @@ export const buildMDTPTheme = (): ITheme => {
     buttons: buttonThemes,
     icons: iconThemes,
     iconButtons: iconButtonThemes,
+    listItems: listItemThemes,
   });
   return theme;
 };

@@ -9,8 +9,8 @@ import { getPointFromGridItem, getTokenIdFromPoint } from '../util/gridItemUtil'
 import { arePointsEqual, Point, sumPoints } from '../util/pointUtil';
 
 interface ImageGridProps {
-  gridItem: GridItem;
-  blockGridItems: GridItem[] | null;
+  gridItem?: GridItem;
+  blockGridItems: GridItem[];
 }
 
 interface IImageGridItemProps {
@@ -27,19 +27,16 @@ const ImageGridItem = styled.div<IImageGridItemProps>`
 `;
 
 export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
-  const mainPoint = getPointFromGridItem(props.gridItem);
-  const blockPoints = props.blockGridItems ? props.blockGridItems.map((gridItem: GridItem): Point => getPointFromGridItem(gridItem)) : [];
-
-  // NOTE(krishan711): this assumes the mainPoint is included in blockPoints
-  const minX = blockPoints.reduce((current: number, value: Point): number => Math.min(value.x, current), mainPoint.x);
-  const maxX = blockPoints.reduce((current: number, value: Point): number => Math.max(value.x, current), mainPoint.x);
-  const minY = blockPoints.reduce((current: number, value: Point): number => Math.min(value.y, current), mainPoint.y);
-  const maxY = blockPoints.reduce((current: number, value: Point): number => Math.max(value.y, current), mainPoint.y);
+  const mainPoint = props.gridItem ? getPointFromGridItem(props.gridItem) : null;
+  const blockPoints = props.blockGridItems.map((gridItem: GridItem): Point => getPointFromGridItem(gridItem));
+  const minX = Math.min(...blockPoints.map((value: Point): number => value.x));
+  const maxX = Math.max(...blockPoints.map((value: Point): number => value.x));
+  const minY = Math.min(...blockPoints.map((value: Point): number => value.y));
+  const maxY = Math.max(...blockPoints.map((value: Point): number => value.y));
   const width = maxX - minX + 1;
   const height = maxY - minY + 1;
 
-  const allGridItems = [props.gridItem, ...(props.blockGridItems || [])];
-  const tokenIdToGridItemMap = allGridItems.reduce((output: Map<number, GridItem>, value: GridItem): Map<number, GridItem> => {
+  const tokenIdToGridItemMap = props.blockGridItems.reduce((output: Map<number, GridItem>, value: GridItem): Map<number, GridItem> => {
     output.set(value.tokenId, value);
     return output;
   }, new Map<number, GridItem>());
@@ -60,7 +57,7 @@ export const ImageGrid = (props: ImageGridProps): React.ReactElement => {
           <Stack direction={Direction.Horizontal} isFullWidth={true} contentAlignment={Alignment.Center}>
             {Array.from(Array(width)).map((__, x: number): React.ReactElement => (
               <Stack.Item key={x} shrinkFactor={1} shouldShrinkBelowContentSize={true}>
-                <ImageGridItem isMainItem={arePointsEqual(adjustGridPoint({ x, y }), mainPoint)}>
+                <ImageGridItem isMainItem={mainPoint === null || arePointsEqual(adjustGridPoint({ x, y }), mainPoint)}>
                   <MdtpImage
                     variant='tokenPageHeaderGrid'
                     fitType={'contain'}

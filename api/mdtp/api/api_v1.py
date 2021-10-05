@@ -43,8 +43,8 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         return BaseImageUrlResponse(baseImage=ApiBaseImage.from_model(model=baseImage))
 
     @router.get('/networks/{network}/grid-items', response_model=ListGridItemsResponse)
-    async def list_grid_items(network: str, shouldCompact: bool = False, updatedSinceDate: Optional[datetime.datetime] = None, groupId: Optional[str] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
-        gridItems = await manager.list_grid_items(network=network, updatedSinceDate=updatedSinceDate, groupId=groupId)
+    async def list_grid_items(network: str, shouldCompact: bool = False, ownerId: Optional[str] = None, updatedSinceDate: Optional[datetime.datetime] = None, groupId: Optional[str] = None) -> ListGridItemsResponse: # request: ListGridItemsRequest
+        gridItems = await manager.list_grid_items(network=network, ownerId=ownerId, updatedSinceDate=updatedSinceDate, groupId=groupId)
         return ListGridItemsResponse(gridItems=[ApiGridItem.from_model(model=gridItem, shouldCompact=shouldCompact) for gridItem in gridItems])
 
     @router.get('/networks/{network}/summary', response_model=GetNetworkSummaryResponse)

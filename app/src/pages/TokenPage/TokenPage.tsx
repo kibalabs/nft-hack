@@ -13,7 +13,7 @@ import { MdtpImage } from '../../components/MdtpImage';
 import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
-import { getAccountEtherscanUrl, getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
+import { getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
 import { truncateMiddle, truncateStart } from '../../util/stringUtil';
 import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
 import { useOwnerId } from '../../util/useOwnerId';
@@ -51,7 +51,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       return;
     }
     if (gridItem.groupId) {
-      apiClient.listGridItems(network, true, undefined, gridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
+      apiClient.listGridItems(network, true, undefined, undefined, gridItem.groupId).then((retrievedBlockGridItems: GridItem[]): void => {
         if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== gridItem.groupId) {
           return;
         }
@@ -105,7 +105,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isOwned ? (
           <React.Fragment>
-            <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](${getAccountEtherscanUrl(network, String(ownerId))})`} />
+            <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](/lords/${String(ownerId)})`} />
             <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
               <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
               <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
@@ -124,9 +124,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     }
     if (isOwned) {
       if (tokenMetadata.url) {
-        return `Ser, check out "${tokenMetadata.name}" (${tokenMetadata.url}), looks legit! I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
+        return `Frens, check out "${tokenMetadata.name}" (${tokenMetadata.url}), looks legit! I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
       }
-      return `Ser, check out "${tokenMetadata.name}", looks legit! I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
+      return `Frens, check out "${tokenMetadata.name}", looks legit! I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
     }
     return `Frens, you can mint this NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} and show off your JPGs. @mdtp_app I'm gonna ape in, LFG! 🚀`;
   };
@@ -200,7 +200,6 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                 <ShareForm
                   initialShareText={getShareText()}
                   minRowCount={3}
-                  shouldShowAllOptions={false}
                   isSecondaryAction={!isOwned}
                 />
               </Stack>

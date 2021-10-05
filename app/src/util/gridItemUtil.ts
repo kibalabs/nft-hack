@@ -25,3 +25,9 @@ export const getTokenIds = (tokenId: number, width: number, height: number): num
   }
   return tokenIds;
 };
+
+export const isUpdated = (gridItem: GridItem): boolean => {
+  const isValidName = gridItem.title && !gridItem.title.startsWith('MDTP Token');
+  const isValidDescription = gridItem.description && !gridItem.description.startsWith('This NFT gives you full ownership');
+  return Boolean(isValidName) || Boolean(isValidDescription);
+};

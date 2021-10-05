@@ -278,7 +278,6 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
             <ShareForm
               initialShareText={`Frens, I just minted an NFT at milliondollartokenpage.com/tokens/${props.tokenId} @mdtp_app 🔥🔥! The FOMO got me. I aped in. WGMI! 🚀`}
               minRowCount={3}
-              shouldShowAllOptions={false}
               isSecondaryAction={true}
             />
           </React.Fragment>

@@ -26,6 +26,13 @@ const seoTags = [
 module.exports = (config) => {
   config.seoTags = seoTags;
   config.title = title;
+  config.webpackConfigModifier = (webpackConfig) => {
+    webpackConfig.devServer = {
+      historyApiFallback: {
+        disableDotRule: true,
+      },
+    };
+    return webpackConfig;
+  }
   return config;
 };
-0.007533000

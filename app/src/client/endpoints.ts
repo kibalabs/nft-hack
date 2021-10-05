@@ -26,6 +26,7 @@ export class GetLatestBaseImageResponse extends ResponseData {
 export class ListGridItemsRequest extends RequestData {
   public constructor(
     readonly shouldCompact: boolean,
+    readonly ownerId?: string,
     readonly updatedSinceDate?: Date,
     readonly groupId?: string,
   ) {
@@ -35,6 +36,7 @@ export class ListGridItemsRequest extends RequestData {
   public toObject = (): Resources.RawObject => {
     return {
       shouldCompact: this.shouldCompact,
+      ownerId: this.ownerId,
       updatedSinceDate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
       groupId: this.groupId,
     };

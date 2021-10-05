@@ -15,7 +15,7 @@ export const SharePage = (): React.ReactElement => {
   1️⃣ Friend follows Twitter + joins Discord.
 
   2️⃣ Friend mints NFT on MDTP and sets content.
-  
+
   3️⃣ Inform admins on Discord with proof.
   `;
 
@@ -24,7 +24,7 @@ export const SharePage = (): React.ReactElement => {
       <Text variant='header1'>{'Refer a Friend'}</Text>
       <Markdown source={referralText} />
       <Spacing />
-      <ShareForm initialShareText={initialShareText} minRowCount={4} shouldShowAllOptions={true} />
+      <ShareForm initialShareText={initialShareText} minRowCount={4} />
     </Stack>
   );
 };

@@ -53,7 +53,7 @@ export const HomePage = (): React.ReactElement => {
     }
     apiClient.getLatestBaseImage(network).then((retrievedBaseImage: BaseImage): void => {
       setBaseImage(retrievedBaseImage);
-      apiClient.listGridItems(network, true, retrievedBaseImage.generatedDate).then((retrievedGridItems: GridItem[]): void => {
+      apiClient.listGridItems(network, true, undefined, retrievedBaseImage.generatedDate).then((retrievedGridItems: GridItem[]): void => {
         setGridItems(retrievedGridItems);
       });
     });
@@ -89,7 +89,8 @@ export const HomePage = (): React.ReactElement => {
   const isAboutPanelShowing = location.pathname.includes('/about');
   const isRoadmapPanelShowing = location.pathname.includes('/roadmap');
   const isSharePanelShowing = location.pathname.includes('/share');
-  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing;
+  const isLordPanelShowing = location.pathname.includes('/lords/');
+  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing || isLordPanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
