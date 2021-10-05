@@ -162,7 +162,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
               )}
             </Box>
             <Stack.Item growthFactor={1}>
-              <Stack direction={Direction.Vertical} isFullWidth={true} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2}>
+              <Stack direction={Direction.Vertical} isFullWidth={true} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingTop={PaddingSize.Wide2} paddingBottom={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2}>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Center}>
                   <Text variant='header6' alignment={TextAlignment.Center}>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
                   {isOnChain && (

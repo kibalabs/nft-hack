@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Direction, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Button, Direction, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds } from '../../accountsContext';
@@ -117,10 +117,10 @@ export const LordPage = (props: LordPageProps): React.ReactElement => {
                   <OwnedGridItemView gridItems={gridItemGroup.gridItems} startTokenId={gridItemGroup.startTokenId} isOwner={isOwnerUser} />
                 </List.Item>
               ))}
-              {/* <List.Item itemKey='add-button'>
-                <Button variant='primary' isFullWidth={true} text='Mint another token' />
-              </List.Item> */}
             </List>
+            {isOwnerUser && (
+              <Button variant='primary' isFullWidth={true} text='Mint another token' />
+            )}
           </React.Fragment>
         )}
       </Stack>

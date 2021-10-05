@@ -19,6 +19,8 @@ export const ShareForm = (props: IShareFormProps): React.ReactElement => {
     return encodeURIComponent('https://milliondollartokenpage.com');
   };
 
+  const buttonVariant = props.isSecondaryAction ? 'secondary' : 'primary';
+
   return (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} isFullWidth={true}>
       <Text alignment={TextAlignment.Center}>{'❤️ Share with your friends and followers ❤️'}</Text>
@@ -28,11 +30,11 @@ export const ShareForm = (props: IShareFormProps): React.ReactElement => {
         minRowCount={props.minRowCount}
       />
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true}>
-        <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
-        <IconButton variant='primary' icon={<KibaIcon iconId='ion-logo-facebook' />} target={`https://www.facebook.com/sharer/sharer.php?u=${getShareLink()}`} />
-        <IconButton variant='primary' icon={<KibaIcon iconId='ion-mail' />} target={`mailto:%20?subject=${getShareLink()}&body=${getShareText()}`} />
+        <IconButton variant={buttonVariant} icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
+        <IconButton variant={buttonVariant} icon={<KibaIcon iconId='ion-logo-facebook' />} target={`https://www.facebook.com/sharer/sharer.php?u=${getShareLink()}`} />
+        <IconButton variant={buttonVariant} icon={<KibaIcon iconId='ion-mail' />} target={`mailto:%20?subject=${getShareLink()}&body=${getShareText()}`} />
         <Stack.Item growthFactor={1} shrinkFactor={1}>
-          <Button variant={props.isSecondaryAction ? 'secondary' : 'primary'} text='Tweet' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
+          <Button variant={buttonVariant} text='Tweet' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
         </Stack.Item>
       </Stack>
     </Stack>

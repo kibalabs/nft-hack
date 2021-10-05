@@ -203,7 +203,7 @@ export const buildMDTPTheme = (): ITheme => {
         },
       },
     },
-    secondary: {
+    tertiary: {
       normal: {
         default: {
           background: {

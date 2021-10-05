@@ -224,7 +224,7 @@ export const HomePage = (): React.ReactElement => {
                       </LayerContainer.Layer>
                       <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
                         <Box variant='panelButtonHolder'>
-                          <IconButton variant={'secondary'} icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
+                          <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
                         </Box>
                       </LayerContainer.Layer>
                     </LayerContainer>
