@@ -89,8 +89,8 @@ export const HomePage = (): React.ReactElement => {
   const isAboutPanelShowing = location.pathname.includes('/about');
   const isRoadmapPanelShowing = location.pathname.includes('/roadmap');
   const isSharePanelShowing = location.pathname.includes('/share');
-  const isLordPanelShowing = location.pathname.includes('/lords/');
-  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing || isLordPanelShowing;
+  const isOwnerPanelShowing = location.pathname.includes('/owners/');
+  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing || isOwnerPanelShowing;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself

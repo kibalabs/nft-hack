@@ -105,7 +105,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
       <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
         { isOwned ? (
           <React.Fragment>
-            <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](/lords/${String(ownerId)})`} />
+            <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](/owners/${String(ownerId)})`} />
             <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
               <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
               <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Button, Direction, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds } from '../../accountsContext';
@@ -9,6 +9,7 @@ import { GridItem } from '../../client';
 import { OwnedGridItemView } from '../../components/OwnedGridItemView';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
+import { getAccountEtherscanUrl } from '../../util/chainUtil';
 import { truncateMiddle } from '../../util/stringUtil';
 
 interface GridItemGroup {
@@ -17,17 +18,17 @@ interface GridItemGroup {
   gridItems: GridItem[];
 }
 
-export type LordPageProps = {
-  lordOwnerId: string;
+export type OwnerPageProps = {
+  ownerId: string;
 }
 
-export const LordPage = (props: LordPageProps): React.ReactElement => {
+export const OwnerPage = (props: OwnerPageProps): React.ReactElement => {
   const navigator = useNavigator();
   const { apiClient, network, web3 } = useGlobals();
   const setTokenSelection = useSetTokenSelection();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [gridItemGroups, setGridItemGroups] = React.useState<GridItemGroup[] | null | undefined>(undefined);
-  const [lordName, setLordName] = React.useState<string | null | undefined>(undefined);
+  const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
   const accountIds = useAccountIds();
 
   const loadTokens = React.useCallback(async (): Promise<void> => {
@@ -39,7 +40,7 @@ export const LordPage = (props: LordPageProps): React.ReactElement => {
     if (network === undefined) {
       return;
     }
-    apiClient.listGridItems(network, true, props.lordOwnerId).then((retrievedGridItems: GridItem[]): void => {
+    apiClient.listGridItems(network, true, props.ownerId).then((retrievedGridItems: GridItem[]): void => {
       setGridItems(retrievedGridItems);
       const groupedGridItems = retrievedGridItems.reduce((accumulator: GridItemGroup[], gridItem: GridItem): GridItemGroup[] => {
         if (!gridItem.groupId) {
@@ -55,32 +56,35 @@ export const LordPage = (props: LordPageProps): React.ReactElement => {
         }
         return accumulator;
       }, []);
-      setGridItemGroups(groupedGridItems);
+      const sortedGridItemGroups = groupedGridItems.sort((gridItemGroup1: GridItemGroup, gridItemGroup2: GridItemGroup): number => {
+        return gridItemGroup1.startTokenId - gridItemGroup2.startTokenId;
+      });
+      setGridItemGroups(sortedGridItemGroups);
       const allTokenIds = retrievedGridItems.map((gridItem: GridItem): number => gridItem.tokenId);
       setTokenSelection(allTokenIds);
     });
-  }, [props.lordOwnerId, network, apiClient, setTokenSelection]);
+  }, [props.ownerId, network, apiClient, setTokenSelection]);
 
   React.useEffect((): void => {
     loadTokens();
   }, [loadTokens]);
 
-  const loadLordName = React.useCallback(async (): Promise<void> => {
-    setLordName(undefined);
+  const loadOwnerName = React.useCallback(async (): Promise<void> => {
+    setOwnerName(undefined);
     if (web3) {
-      const retrievedOwnerName = await web3.lookupAddress(props.lordOwnerId);
-      setLordName(retrievedOwnerName);
+      const retrievedOwnerName = await web3.lookupAddress(props.ownerId);
+      setOwnerName(retrievedOwnerName);
     } else {
-      setLordName(null);
+      setOwnerName(null);
     }
-  }, [props.lordOwnerId, web3]);
+  }, [props.ownerId, web3]);
 
   React.useEffect((): void => {
-    loadLordName();
-  }, [loadLordName]);
+    loadOwnerName();
+  }, [loadOwnerName]);
 
-  const isOwnerUser = Boolean(accountIds && accountIds.indexOf(props.lordOwnerId) !== -1);
-  const ownerIdString = lordName || truncateMiddle(props.lordOwnerId, 10);
+  const isOwnerUser = Boolean(accountIds && accountIds.indexOf(props.ownerId) !== -1);
+  const ownerIdString = ownerName || truncateMiddle(props.ownerId, 10);
 
   const onTokenIdClicked = (startTokenId: string): void => {
     navigator.navigateTo(`/tokens/${startTokenId}`);
@@ -89,15 +93,15 @@ export const LordPage = (props: LordPageProps): React.ReactElement => {
   return (
     <React.Fragment>
       <Helmet>
-        <title>{`Lord ${props.lordOwnerId} | Million Dollar Token Page`}</title>
+        <title>{`${props.ownerId}'s Tokens' | Million Dollar Token Page`}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
-        { gridItems === undefined || gridItemGroups === undefined ? (
+        { network === undefined || gridItems === undefined || gridItemGroups === undefined ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />
           </React.Fragment>
-        ) : gridItems === null || gridItemGroups === null ? (
+        ) : network === null || gridItems === null || gridItemGroups === null ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
@@ -110,6 +114,7 @@ export const LordPage = (props: LordPageProps): React.ReactElement => {
             ) : (
               <Text alignment={TextAlignment.Center}>{`Lord of ${gridItems.length} tokens`}</Text>
             )}
+            <Button variant='invisibleNote' text={'View on etherscan'} iconRight={<KibaIcon variant='small' iconId='ion-open-outline' />} target={getAccountEtherscanUrl(network, props.ownerId) || ''} />
             <Spacing />
             <List isFullWidth={true} onItemClicked={onTokenIdClicked}>
               {gridItemGroups.map((gridItemGroup: GridItemGroup): React.ReactElement => (
