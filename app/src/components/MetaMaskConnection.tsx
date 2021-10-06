@@ -47,7 +47,7 @@ export const MetaMaskConnection = (): React.ReactElement => {
 
   const onClicked = (): void => {
     if (accountIds && accountIds.length > 0) {
-      navigator.navigateTo(`/lords/${accountIds[0]}`);
+      navigator.navigateTo(`/owners/${accountIds[0]}`);
     }
   };
 
@@ -78,8 +78,7 @@ export const MetaMaskConnection = (): React.ReactElement => {
             <Box height='15px' width='15px'>
               <Image source='/assets/connected.svg' alternativeText={'Connected indicator'} />
             </Box>
-            <Text variant='note'>{`${accounts.length} connected ${accounts.length > 1 ? 'accounts' : 'account'}`}</Text>
-            {/* <Text variant='note'>{`(${network})`}</Text> */}
+            <Text variant='note'>View connected account</Text>
             {hasNonUpdatedGridItems && (
               <Text variant='note-error'>Update tokens now</Text>
             )}

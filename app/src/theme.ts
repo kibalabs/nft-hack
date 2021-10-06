@@ -159,6 +159,30 @@ export const buildMDTPTheme = (): ITheme => {
         },
       },
     },
+    invisibleNote: {
+      normal: {
+        default: {
+          background: {
+            'background-color': 'transparent',
+            'border-width': '0',
+            padding: '0',
+          },
+          text: mergeTheme(defaultTheme.texts.default, defaultTheme.texts.note, {
+            'text-decoration': 'underline',
+          }),
+        },
+        hover: {
+          default: {
+            background: {
+              'background-color': 'transparent',
+            },
+            text: {
+
+            },
+          },
+        },
+      },
+    },
     overlay: {
       normal: {
         default: {
