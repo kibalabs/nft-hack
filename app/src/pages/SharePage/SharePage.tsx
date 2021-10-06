@@ -7,16 +7,16 @@ import { ShareForm } from '../../components/ShareForm';
 export const SharePage = (): React.ReactElement => {
   const initialShareText = 'Frens, just found this site milliondollartokenpage.com @mdtp_app where you show off your JPGs and own the space as an NFT. Probably nothing fren but gonna Ape in. WGMI! 🚀';
 
-  const referralText = `
-  **Make money referring friends!** 🤑
+  const referralText = `  
+**Get FREE NFTs referring friends!** 🤑
 
-  ✅ Reward: 20% of mint-fee to referee + referrer on up to 30 NFTs
+✅ Reward: 1 FREE airdropped NFT for every 4 NFTs a friend mints
 
-  1️⃣ Friend follows Twitter + joins Discord.
+1️⃣ Friend follows Twitter + joins Discord.
 
-  2️⃣ Friend mints NFT on MDTP and sets content.
+2️⃣ Friend mints 4 NFT on MDTP and sets content.
 
-  3️⃣ Inform admins on Discord with proof.
+3️⃣ Inform admins on Discord with proof.
   `;
 
   return (
