@@ -14,7 +14,7 @@ export const SharePage = (): React.ReactElement => {
 
 1️⃣ Friend follows Twitter + joins Discord.
 
-2️⃣ Friend mints 4 NFT on MDTP and sets content.
+2️⃣ Friend mints 4 NFTs on MDTP and sets content.
 
 3️⃣ Inform admins on Discord with proof.
   `;
