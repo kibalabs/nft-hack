@@ -32,7 +32,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const tokenData = useTokenData(Number(props.tokenId));
   const tokenMetadata = tokenData.tokenMetadata;
   const gridItem = tokenData.gridItem;
-  const [blockGridItems, setBlockGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
+  const [groupGridItems, setGroupGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
@@ -40,13 +40,15 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const ownerId = chainOwnerId || gridItem?.ownerId || NON_OWNER;
   const isOwned = ownerId && ownerId !== NON_OWNER;
   const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
+  const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : null);
+  const isPartOfGroup = groupGridItems && groupGridItems.length > 1;
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     if (network === null || gridItem === null) {
-      setBlockGridItems(null);
+      setGroupGridItems(null);
       return;
     }
-    setBlockGridItems(undefined);
+    setGroupGridItems(undefined);
     if (network === undefined || gridItem === undefined) {
       return;
     }
@@ -55,10 +57,10 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         if (retrievedBlockGridItems.length === 0 || retrievedBlockGridItems[0].groupId !== gridItem.groupId) {
           return;
         }
-        setBlockGridItems(retrievedBlockGridItems);
+        setGroupGridItems(retrievedBlockGridItems);
       });
     } else {
-      setBlockGridItems([gridItem]);
+      setGroupGridItems([gridItem]);
     }
   }, [network, gridItem, apiClient]);
 
@@ -81,41 +83,29 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   }, [loadOwnerName]);
 
   React.useEffect((): void => {
-    if (blockGridItems) {
-      setTokenSelection(blockGridItems.map((blockGridItem: GridItem): number => blockGridItem.tokenId));
+    if (groupGridItems) {
+      setTokenSelection(groupGridItems.map((blockGridItem: GridItem): number => blockGridItem.tokenId));
     } else {
       setTokenSelection([Number(props.tokenId)]);
     }
-  }, [props.tokenId, setTokenSelection, blockGridItems]);
+  }, [props.tokenId, setTokenSelection, groupGridItems]);
 
   const onUpdateTokenClicked = (): void => {
     navigator.navigateTo(`/tokens/${props.tokenId}/update`);
   };
 
-  const onMintClicked = (): void => {
-    navigator.navigateTo(`/tokens/${props.tokenId}/mint`);
+  const onUpdateGroupClicked = (): void => {
+    if (!groupGridItems) {
+      onUpdateTokenClicked();
+      return;
+    }
+    const groupTokenIds = groupGridItems.map((listGridItem: GridItem): number => listGridItem.tokenId);
+    const groupTokenId = Math.min(...groupTokenIds);
+    navigator.navigateTo(`/tokens/${groupTokenId}/update`);
   };
 
-  const OwnershipInfo = (): React.ReactElement | null => {
-    if (!network || !contract) {
-      return null;
-    }
-    const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : 'unknown');
-    return (
-      <Stack direction={Direction.Vertical} isFullWidth={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} shouldAddGutters={true}>
-        { isOwned ? (
-          <React.Fragment>
-            <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](/owners/${String(ownerId)})`} />
-            <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
-              <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
-              <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
-            </Stack>
-          </React.Fragment>
-        ) : (
-          <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
-        )}
-      </Stack>
-    );
+  const onMintClicked = (): void => {
+    navigator.navigateTo(`/tokens/${props.tokenId}/mint`);
   };
 
   const getShareText = (): string => {
@@ -153,8 +143,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
         ) : (
           <React.Fragment>
             <Box maxHeight='400px' variant='tokenHeader'>
-              { (gridItem && blockGridItems) ? (
-                <ImageGrid gridItem={gridItem} blockGridItems={blockGridItems} />
+              { (gridItem && groupGridItems) ? (
+                <ImageGrid gridItem={gridItem} blockGridItems={groupGridItems} />
               ) : (
                 <BackgroundView color='#000000'>
                   <MdtpImage isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
@@ -180,18 +170,31 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                   <Text>{tokenMetadata.description}</Text>
                 )}
                 <Stack.Item gutterBefore={PaddingSize.Default} gutterAfter={PaddingSize.Wide2}>
-                  <OwnershipInfo />
+                  { network && isOwned ? (
+                    <React.Fragment>
+                      <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](/owners/${String(ownerId)})`} />
+                      <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
+                        <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
+                        <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
+                      </Stack>
+                    </React.Fragment>
+                  ) : (
+                    <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
+                  )}
                 </Stack.Item>
-                { !contract ? (
-                  <Text variant='note'>{'Please connect your wallet to view more options.'}</Text>
-                ) : !accounts || !accountIds || !tokenMetadata ? (
+                { !accounts || !accountIds || !tokenMetadata ? (
                   <LoadingSpinner />
-                ) : (accounts?.length === 0) || (accountIds?.length === 0) ? (
+                ) : (!contract || accounts?.length === 0) || (accountIds?.length === 0) ? (
                   <Text variant='note'>{'Please connect your account to view more options.'}</Text>
                 ) : isOwnedByUser && (
                   <React.Fragment>
                     <Text>👑 This is one of your tokens 👑</Text>
-                    <Button variant='primary' text='Update token' onClicked={onUpdateTokenClicked} />
+                    <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
+                      <Button variant={isPartOfGroup ? 'secondary' : 'primary'} text='Update token' onClicked={onUpdateTokenClicked} />
+                      {isPartOfGroup && (
+                        <Button variant={'primary'} text='Update group' onClicked={onUpdateGroupClicked} />
+                      )}
+                    </Stack>
                   </React.Fragment>
                 )}
                 <Stack.Item growthFactor={1}>
