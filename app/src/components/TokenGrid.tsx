@@ -273,8 +273,13 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     const eventPoint = { x: event.clientX, y: event.clientY };
     const elementRect = event.currentTarget.getBoundingClientRect();
     const adjustedElementRect = { x: -elementRect.x, y: -elementRect.y };
-    const offsetRect = { x: -event.currentTarget.offsetLeft, y: -event.currentTarget.offsetTop };
-    return sumPoints(sumPoints(eventPoint, offsetRect), adjustedElementRect);
+    // TODO(krishan711): im not totally sure which of these (if any are correct).
+    // The offset (without client) is different on safari (where its from the window) and chrome (where from parent).
+    // This code seems to only work when always (0,0)
+    // const offsetRect = { x: -event.currentTarget.offsetLeft, y: -event.currentTarget.offsetTop };
+    const offsetClientRect = { x: -event.currentTarget.clientLeft, y: -event.currentTarget.clientTop };
+    const position = sumPoints(sumPoints(eventPoint, offsetClientRect), adjustedElementRect);
+    return position;
   };
 
   const onCanvasMouseDown = (event: React.MouseEvent<HTMLElement>): void => {
