@@ -2,6 +2,7 @@ import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import canvasSize from 'canvas-size';
 import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
@@ -26,7 +27,7 @@ const GridOffset = styled.div`
 `;
 
 const MIN_SCALE = 0.5;
-const MAX_SCALE = 10;
+const MAX_SCALE = 5;
 const DEFAULT_SCALE = 1;
 
 export const HomePage = (): React.ReactElement => {
@@ -39,6 +40,18 @@ export const HomePage = (): React.ReactElement => {
   const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
   const [focussedTokenIds, setFocussedTokenIds] = React.useState<number[]>([]);
+  const [maxScale, setMaxScale] = React.useState<number | undefined>(undefined);
+
+  React.useEffect((): void => {
+    canvasSize.maxArea({
+      max: 1000 * MAX_SCALE,
+      usePromise: true,
+      step: 100,
+    }).then((result: { width: number, height: number }): void => {
+      const canvasMaxScale = Math.floor(Math.sqrt((result.width as unknown as number * result.height as unknown as number) / (1000 * 1000)) * 10) / 10;
+      setMaxScale(canvasMaxScale);
+    });
+  }, []);
 
   const loadGridItems = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -178,16 +191,18 @@ export const HomePage = (): React.ReactElement => {
                   <GridOffset />
                 </HidingView>
                 <Stack.Item shrinkFactor={1} growthFactor={1}>
-                  <TokenGrid
-                    minScale={MIN_SCALE}
-                    maxScale={MAX_SCALE}
-                    baseImage={baseImage}
-                    newGridItems={gridItems || []}
-                    tokenCount={10000}
-                    onTokenIdClicked={onTokenIdClicked}
-                    scale={scale}
-                    onScaleChanged={setConstrainedScale}
-                  />
+                  {maxScale && (
+                    <TokenGrid
+                      minScale={MIN_SCALE}
+                      maxScale={maxScale}
+                      baseImage={baseImage}
+                      newGridItems={gridItems || []}
+                      tokenCount={10000}
+                      onTokenIdClicked={onTokenIdClicked}
+                      scale={scale}
+                      onScaleChanged={setConstrainedScale}
+                    />
+                  )}
                 </Stack.Item>
               </Stack>
             )}
