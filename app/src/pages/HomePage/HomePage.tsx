@@ -47,7 +47,7 @@ export const HomePage = (): React.ReactElement => {
       max: 1000 * MAX_SCALE,
       usePromise: true,
       step: 100,
-    }).then((result: unknown): void => {
+    }).then((result: Size): void => {
       const canvasMaxScale = Math.floor(Math.sqrt((result.width as unknown as number * result.height as unknown as number) / (1000 * 1000)) * 10) / 10;
       setMaxScale(canvasMaxScale);
     });
