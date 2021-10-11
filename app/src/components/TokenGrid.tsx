@@ -33,7 +33,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
   const colors = useColors();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
-  const overlayCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const canvasWrapperRef = React.useRef<HTMLDivElement | null>(null);
   const focussedTokenIds = useTokenSelection();
 
@@ -225,7 +224,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     };
     setAdjustedOffset(constrainedOffset);
     const truncatedScale = truncateScale(scaleRef.current);
-    if (truncatedScale < props.maxScale / 2.0) {
+    if (truncatedScale < props.maxScale / 2.0 || truncatedScale < 3) {
       return;
     }
     const hasMoved = !arePointsEqual(adjustedOffsetRef.current, constrainedOffset);
@@ -312,35 +311,6 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
     setIsMoving(false);
   };
 
-  const drawHighlight = React.useCallback((): void => {
-    const context = overlayCanvasRef.current?.getContext('2d');
-    if (!context) {
-      return;
-    }
-    context.clearRect(0, 0, canvasWidth * props.maxScale, canvasHeight * props.maxScale);
-    if (focussedTokenIds.length > 0) {
-      context.fillStyle = colors.gridOverlay;
-      context.fillRect(0, 0, canvasWidth * props.maxScale, canvasHeight * props.maxScale);
-      context.fillStyle = colors.pastel1;
-      focussedTokenIds.forEach((tokenId: number): void => {
-        const tokenIndex = tokenId - 1;
-        const x = (tokenIndex * tokenWidth) % canvasWidth;
-        const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
-        context.fillRect((x - 2) * props.maxScale, (y - 2) * props.maxScale, (tokenWidth + 4) * props.maxScale, (tokenHeight + 4) * props.maxScale);
-      });
-      focussedTokenIds.forEach((tokenId: number): void => {
-        const tokenIndex = tokenId - 1;
-        const x = (tokenIndex * tokenWidth) % canvasWidth;
-        const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
-        context.clearRect(x * props.maxScale, y * props.maxScale, tokenWidth * props.maxScale, tokenHeight * props.maxScale);
-      });
-    }
-  }, [props.maxScale, colors.gridOverlay, colors.pastel1, canvasHeight, focussedTokenIds]);
-
-  React.useEffect((): void => {
-    drawHighlight();
-  }, [drawHighlight]);
-
   return (
     <div
       ref={containerRef}
@@ -374,12 +344,37 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
           onMouseMove={onCanvasMouseMove}
           style={{ cursor: isMoving ? 'move' : 'pointer' }}
         />
-        <canvas
-          ref={overlayCanvasRef}
-          width={`${canvasWidth * props.maxScale}px`}
-          height={`${canvasHeight * props.maxScale}px`}
-          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
-        />
+        {focussedTokenIds.length > 0 && (
+          <svg
+            width={`${canvasWidth * props.maxScale}px`}
+            height={`${canvasHeight * props.maxScale}px`}
+            style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+          >
+            <defs>
+              <mask id='hole'>
+                {/* for a mask make everything to keep white and everything else black */}
+                <rect width='100%' height='100%' fill='white' />
+                {focussedTokenIds.map((tokenId: number): React.ReactElement => {
+                  const tokenIndex = tokenId - 1;
+                  const x = (tokenIndex * tokenWidth) % canvasWidth;
+                  const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
+                  return (
+                    <rect key={tokenIndex} x={x * props.maxScale} y={y * props.maxScale} width={tokenHeight * props.maxScale} height={tokenHeight * props.maxScale} fill='black' />
+                  );
+                })}
+              </mask>
+            </defs>
+            <rect width='100%' height='100%' fill={colors.gridOverlay} mask='url(#hole)' />
+            {focussedTokenIds.map((tokenId: number): React.ReactElement => {
+              const tokenIndex = tokenId - 1;
+              const x = (tokenIndex * tokenWidth) % canvasWidth;
+              const y = tokenHeight * Math.floor((tokenIndex * tokenWidth) / canvasWidth);
+              return (
+                <rect key={tokenIndex} x={(x - 2) * props.maxScale} y={(y - 2) * props.maxScale} width={(tokenWidth + 4) * props.maxScale} height={(tokenHeight + 4) * props.maxScale} fill={colors.pastel1} mask='url(#hole)' />
+              );
+            })}
+          </svg>
+        )}
       </div>
     </div>
   );
