@@ -8,9 +8,9 @@ import { NetworkStatus } from '../client';
 import { useGlobals } from '../globalsContext';
 import { isMobile } from '../util/browserUtil';
 
-const BATCH1_DATE = new Date(2021, 8, 5, 16, 0);
+const BATCH1_DATE = new Date(Date.UTC(2021, 8, 5, 16, 0));
 const BATCH1_LIMIT = 1000;
-const BATCH2_DATE = new Date(2021, 9, 18, 13, 0);
+const BATCH2_DATE = new Date(Date.UTC(2021, 9, 18, 13, 0));
 const BATCH2_LIMIT = 2000;
 
 export const FomoBar = (): React.ReactElement => {
