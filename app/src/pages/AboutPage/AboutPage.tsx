@@ -6,11 +6,11 @@ import { Alignment, Direction, Markdown, PaddingSize, Spacing, Stack, Text } fro
 export const AboutPage = (): React.ReactElement => {
   const mainText = `
 
-**[Milliondollartokenpage.com](http://milliondollartokenpage.com) (MDTP) is [milliondollarhomepage.com](http://milliondollarhomepage.com) in the crypto era.**
+**MDTP is the Homepage of the Metaverse! 🔮**
 
-Show off and share your NFTs on space that you own as an NFT! 😎
+Show off your NFTs on space that you own as an NFT! 😎
 
-Flex and find what's hot in NFTs and the crypto world! 🔥
+Its [milliondollarhomepage.com](http://milliondollarhomepage.com/) with crypto rocket-fuel! 🚀
 
 &nbsp;
 
