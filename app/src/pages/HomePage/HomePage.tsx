@@ -150,7 +150,7 @@ export const HomePage = (): React.ReactElement => {
   return (
     <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
       <Helmet>
-        <title>{'Million Dollar Token Page - Own a piece of crypto history!'}</title>
+        <title>{'Million Dollar Token Page - The Homepage of the Metaverse!'}</title>
       </Helmet>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true}>
         <Stack.Item growthFactor={1} shrinkFactor={1}>
