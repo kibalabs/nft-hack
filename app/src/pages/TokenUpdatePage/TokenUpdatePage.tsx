@@ -125,7 +125,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       } catch (error: unknown) {
         return { isSuccess: false, message: (error as Error).message };
       }
-      const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature);
+      const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, false);
       setOffchainTransaction(request);
       return { isSuccess: false, message: 'Update in progress.' };
     }

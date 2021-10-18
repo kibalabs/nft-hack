@@ -1,9 +1,9 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Image, LinkBase, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Direction, Image, LinkBase, Stack, Text } from '@kibalabs/ui-react';
 
-import { useAccountIds, useAccounts, useOnLinkAccountsClicked } from '../accountsContext';
+import { useAccountIds, useOnLinkAccountsClicked } from '../accountsContext';
 import { GridItem } from '../client';
 import { useGlobals } from '../globalsContext';
 import { isUpdated } from '../util/gridItemUtil';
@@ -12,7 +12,6 @@ import { isUpdated } from '../util/gridItemUtil';
 export const MetaMaskConnection = (): React.ReactElement => {
   const navigator = useNavigator();
   const { network, apiClient } = useGlobals();
-  const accounts = useAccounts();
   const accountIds = useAccountIds();
   const onLinkAccountsClicked = useOnLinkAccountsClicked();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
@@ -41,12 +40,12 @@ export const MetaMaskConnection = (): React.ReactElement => {
     loadTokens();
   }, [loadTokens]);
 
-  const onConnectClicked = async (): Promise<void> => {
-    await onLinkAccountsClicked();
-  };
-
-  const onClicked = (): void => {
-    if (accountIds && accountIds.length > 0) {
+  const onClicked = async (): Promise<void> => {
+    if (!accountIds) {
+      window.open('https://metamask.io');
+    } else if (accountIds.length === 0) {
+      await onLinkAccountsClicked();
+    } else {
       navigator.navigateTo(`/owners/${accountIds[0]}`);
     }
   };
@@ -56,18 +55,10 @@ export const MetaMaskConnection = (): React.ReactElement => {
   return (
     <LinkBase onClicked={onClicked}>
       <Box variant={`overlay-horizontal${boxVariantSuffix}`} isFullWidth={false}>
-        { !accounts ? (
-          <Button
-            variant='primary'
-            text='Install Metamask'
-            target='https://metamask.io'
-          />
-        ) : accounts.length === 0 ? (
-          <Button
-            variant={'primary'}
-            text='Connect accounts'
-            onClicked={onConnectClicked}
-          />
+        { !accountIds ? (
+          <Text variant='note-bold'>Install metamask</Text>
+        ) : accountIds.length === 0 ? (
+          <Text variant='note-bold'>Connect accounts</Text>
         ) : (
           <Stack
             direction={Direction.Horizontal}
@@ -78,9 +69,10 @@ export const MetaMaskConnection = (): React.ReactElement => {
             <Box height='15px' width='15px'>
               <Image source='/assets/connected.svg' alternativeText={'Connected indicator'} />
             </Box>
-            <Text variant='note'>View connected account</Text>
-            {hasNonUpdatedGridItems && (
-              <Text variant='note-error'>Update tokens now</Text>
+            {hasNonUpdatedGridItems ? (
+              <Text variant='note-error'>Update your tokens</Text>
+            ) : (
+              <Text variant='note'>Your connected account</Text>
             )}
           </Stack>
         )}
