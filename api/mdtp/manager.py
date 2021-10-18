@@ -339,10 +339,10 @@ class MdtpManager:
             'blockNumber': blockNumber,
             'tokenMetadataUrls': contentUrls,
         }, separators=(',', ':'))
-        tokenIds = []
         messageHash = defunct_hash_message(text=signedMessage)
         signer = w3.eth.account.recoverHash(message_hash=messageHash, signature=signature)
         isPending = False
+        tokenIds = []
         for row in range(0, height):
             for column in range(0, width):
                 innerTokenId = tokenId + (row * 100) + column
@@ -355,7 +355,6 @@ class MdtpManager:
                         isPending = True
                     else:
                         raise exception
-                print('tokenOwnerId', tokenOwnerId)
                 if tokenOwnerId != signer and not (shouldAllowPendingChange and tokenOwnerId == NON_OWNER_ID):
                     raise BadRequestException(message='Owners do not match')
         promises = []
