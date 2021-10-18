@@ -1,10 +1,10 @@
 from typing import Mapping
 
-from mdtp.model import BaseImage
+from mdtp.model import BaseImage, OffchainPendingContent
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
 from mdtp.model import OffchainContent
-from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import BaseImagesTable, OffchainPendingContentsTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
 from mdtp.store.schema import OffchainContentsTable
@@ -61,4 +61,19 @@ def offchain_content_from_row(row: Mapping) -> OffchainContent:
         ownerId=row[OffchainContentsTable.c.ownerId],
         signature=row[OffchainContentsTable.c.signature],
         signedMessage=row[OffchainContentsTable.c.signedMessage],
+    )
+
+def offchain_pending_content_from_row(row: Mapping) -> OffchainPendingContent:
+    return OffchainPendingContent(
+        offchainPendingContentId=row[OffchainPendingContentsTable.c.offchainPendingContentId],
+        createdDate=row[OffchainPendingContentsTable.c.createdDate],
+        updatedDate=row[OffchainPendingContentsTable.c.updatedDate],
+        appliedDate=row[OffchainPendingContentsTable.c.appliedDate],
+        network=row[OffchainPendingContentsTable.c.network],
+        tokenId=row[OffchainPendingContentsTable.c.tokenId],
+        contentUrl=row[OffchainPendingContentsTable.c.contentUrl],
+        blockNumber=row[OffchainPendingContentsTable.c.blockNumber],
+        ownerId=row[OffchainPendingContentsTable.c.ownerId],
+        signature=row[OffchainPendingContentsTable.c.signature],
+        signedMessage=row[OffchainPendingContentsTable.c.signedMessage],
     )

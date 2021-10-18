@@ -38,7 +38,7 @@ class ApiGridItem(BaseModel):
     updatedDate: datetime.datetime
     network: str
     tokenId: int
-    contentUrl: str
+    contentUrl: Optional[str]
     title: str
     description: Optional[str]
     imageUrl: str

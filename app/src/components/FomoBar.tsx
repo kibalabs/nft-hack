@@ -112,7 +112,7 @@ export const FomoBar = (): React.ReactElement => {
                 <Text variant='light-bold-small-uppercase'>{'All available tokens sold, more coming soon 👀'}</Text>
               </LinkBase>
             ) : (
-              <LinkBase onClicked={onMintClicked} isEnabled={randomAvailableTokenId != null}>
+              <LinkBase onClicked={onMintClicked}>
                 <Text variant='light-bold-small-uppercase'>{`${remainingCount} / ${mintingLimit} tokens available. Mint one now 🌟`}</Text>
               </LinkBase>
             )}

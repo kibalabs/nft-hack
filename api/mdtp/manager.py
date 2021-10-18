@@ -49,7 +49,7 @@ from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
-from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import BaseImagesTable, OffchainPendingContentsTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import OffchainContentsTable
 
@@ -326,7 +326,7 @@ class MdtpManager:
         await file_util.remove_directory(directory=outputDirectory)
         return tokenMetadataUrls
 
-    async def update_offchain_contents_for_token_group(self, network: str, tokenId: int, width: int, height: int, blockNumber: int, contentUrls: List[str], signature: str) -> None:
+    async def update_offchain_contents_for_token_group(self, network: str, tokenId: int, width: int, height: int, blockNumber: int, contentUrls: List[str], signature: str, shouldAllowPendingChange: bool) -> None:
         currentBlockNumber = await self.contractStore.get_latest_block_number(network=network)
         if abs(currentBlockNumber - blockNumber) > 10:
             raise BadRequestException(message='blockNumber too far from current blockNumber')
@@ -339,26 +339,36 @@ class MdtpManager:
             'tokenMetadataUrls': contentUrls,
         }, separators=(',', ':'))
         tokenIds = []
-        ownerId = None
+        messageHash = defunct_hash_message(text=signedMessage)
+        signer = w3.eth.account.recoverHash(message_hash=messageHash, signature=signature)
+        isPending = False
         for row in range(0, height):
             for column in range(0, width):
                 innerTokenId = tokenId + (row * 100) + column
                 tokenIds.append(innerTokenId)
-                tokenOwnerId = await self.contractStore.get_token_owner(network=network, tokenId=innerTokenId)
-                if ownerId is None:
-                    ownerId = tokenOwnerId
-                if ownerId and tokenOwnerId != ownerId:
-                    raise BadRequestException(message='Tokens have different owners')
-        messageHash = defunct_hash_message(text=signedMessage)
-        signer = w3.eth.account.recoverHash(message_hash=messageHash, signature=signature)
-        if signer != ownerId:
-            raise BadRequestException(message='Invalid signature')
+                try:
+                    tokenOwnerId = await self.contractStore.get_token_owner(network=network, tokenId=innerTokenId)
+                except BadRequestException as exception:
+                    if 'owner query for nonexistent token' in exception.message:
+                        tokenOwnerId = NON_OWNER_ID
+                        isPending = True
+                    else:
+                        raise exception
+                print('tokenOwnerId', tokenOwnerId)
+                if tokenOwnerId != signer and not (shouldAllowPendingChange and tokenOwnerId == NON_OWNER_ID):
+                    raise BadRequestException(message='Owners do not match')
         promises = []
         for index, innerTokenId in enumerate(tokenIds):
-            promises.append(self.saver.create_offchain_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=ownerId, signature=signature, signedMessage=signedMessage))
+            if isPending:
+                promises.append(self.saver.create_offchain_pending_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=signer, signature=signature, signedMessage=signedMessage))
+            else:
+                promises.append(self.saver.create_offchain_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=signer, signature=signature, signedMessage=signedMessage))
         await asyncio.gather(*promises)
         for innerTokenId in tokenIds:
-            await self.update_token(network=network, tokenId=innerTokenId)
+            if isPending:
+                await self.update_token_deferred(network=network, tokenId=innerTokenId, delay=60)
+            else:
+                await self.update_token(network=network, tokenId=innerTokenId)
 
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
@@ -411,6 +421,16 @@ class MdtpManager:
             ownerId = NON_OWNER_ID
         contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
         blockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId) or 0
+        # Resolve pending contents for the current owner only
+        offchainPendingContents = await self.retriever.list_offchain_pending_contents(fieldFilters=[
+            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.network.key, eq=network),
+            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.tokenId.key, eq=tokenId),
+            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.ownerId.key, eq=ownerId),
+            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.appliedDate.key, eq=None),
+        ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.ASCENDING)])
+        for offchainPendingContent in offchainPendingContents:
+            await self.saver.create_offchain_content(network=offchainPendingContent.network, tokenId=offchainPendingContent.tokenId, contentUrl=offchainPendingContent.contentUrl, blockNumber=offchainPendingContent.blockNumber, ownerId=offchainPendingContent.ownerId, signature=offchainPendingContent.signature, signedMessage=offchainPendingContent.signedMessage)
+            await self.saver.update_offchain_pending_content(offchainPendingContentId=offchainPendingContent.offchainPendingContentId, appliedDate=date_util.datetime_from_now())
         source = 'onchain'
         latestOffchainContents = await self.retriever.list_offchain_contents(fieldFilters=[
             StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
