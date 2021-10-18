@@ -49,9 +49,10 @@ from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata
 from mdtp.store.retriever import MdtpRetriever
 from mdtp.store.saver import MdtpSaver
-from mdtp.store.schema import BaseImagesTable, OffchainPendingContentsTable
+from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import OffchainContentsTable
+from mdtp.store.schema import OffchainPendingContentsTable
 
 _KILOBYTE = 1024
 _MEGABYTE = _KILOBYTE * 1024

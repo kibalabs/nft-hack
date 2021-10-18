@@ -8,10 +8,11 @@ from mdtp.model import BaseImage
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
 from mdtp.model import OffchainContent
-from mdtp.store.schema import BaseImagesTable, OffchainPendingContentsTable
+from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
 from mdtp.store.schema import OffchainContentsTable
+from mdtp.store.schema import OffchainPendingContentsTable
 
 _EMPTY_STRING = '_EMPTY_STRING'
 
