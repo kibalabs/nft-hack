@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Image, LinkBase, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Direction, Image, LinkBase, Stack, Text } from '@kibalabs/ui-react';
 
 import { useAccountIds, useAccounts, useOnLinkAccountsClicked } from '../accountsContext';
 import { GridItem } from '../client';
@@ -12,7 +12,6 @@ import { isUpdated } from '../util/gridItemUtil';
 export const MetaMaskConnection = (): React.ReactElement => {
   const navigator = useNavigator();
   const { network, apiClient } = useGlobals();
-  const accounts = useAccounts();
   const accountIds = useAccountIds();
   const onLinkAccountsClicked = useOnLinkAccountsClicked();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
@@ -42,9 +41,9 @@ export const MetaMaskConnection = (): React.ReactElement => {
   }, [loadTokens]);
 
   const onClicked = async (): Promise<void> => {
-    if (!accounts) {
+    if (!accountIds) {
       window.open('https://metamask.io');
-    } else if (accounts.length === 0) {
+    } else if (accountIds.length === 0) {
       await onLinkAccountsClicked();
     } else {
       navigator.navigateTo(`/owners/${accountIds[0]}`);
@@ -56,9 +55,9 @@ export const MetaMaskConnection = (): React.ReactElement => {
   return (
     <LinkBase onClicked={onClicked}>
       <Box variant={`overlay-horizontal${boxVariantSuffix}`} isFullWidth={false}>
-        { !accounts ? (
+        { !accountIds ? (
           <Text variant='note-bold'>Install metamask</Text>
-        ) : accounts.length === 0 ? (
+        ) : accountIds.length === 0 ? (
           <Text variant='note-bold'>Connect accounts</Text>
         ) : (
           <Stack

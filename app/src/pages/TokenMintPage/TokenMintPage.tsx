@@ -1,19 +1,18 @@
 import React from 'react';
 
+import { KibaException } from '@kibalabs/core';
 import { Link, useDeepCompareCallback } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { ShareForm } from '../../components/ShareForm';
+import { PresignedUpload } from '../../client';
+import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
 import { getTokenIds } from '../../util/gridItemUtil';
-import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
-import { PresignedUpload } from '../../client';
-import { KibaException } from '@kibalabs/core';
 
 export type TokenMintPageProps = {
   tokenId: string;
@@ -337,9 +336,11 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     try {
       await request;
       setUpdateReceipt(true);
+      return { isSuccess: true, message: '' };
     } catch (error: unknown) {
       setUpdateError(error as Error);
       setUpdateReceipt(false);
+      return { isSuccess: false, message: (error as Error).message };
     }
   };
 
@@ -430,10 +431,10 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
             ) : null}
             <Spacing />
             {updateReceipt ? (
-              <Text variant='success' alignment={TextAlignment.Center}>We've got your content. It will be set once the mint transaction is confirmed.</Text>
+              <Text variant='success' alignment={TextAlignment.Center}>We&apos;ve got your content. It will be set once the mint transaction is confirmed.</Text>
             ) : (
               <React.Fragment>
-                <Text alignment={TextAlignment.Center}>Let's get your content up... 🎨</Text>
+                <Text alignment={TextAlignment.Center}>Let&apos;s get your content up... 🎨</Text>
                 <TokenUpdateForm
                   title={''}
                   description={''}
