@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Direction, Image, LinkBase, Stack, Text } from '@kibalabs/ui-react';
 
-import { useAccountIds, useAccounts, useOnLinkAccountsClicked } from '../accountsContext';
+import { useAccountIds, useOnLinkAccountsClicked } from '../accountsContext';
 import { GridItem } from '../client';
 import { useGlobals } from '../globalsContext';
 import { isUpdated } from '../util/gridItemUtil';
