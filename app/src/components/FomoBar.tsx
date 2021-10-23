@@ -113,7 +113,7 @@ export const FomoBar = (): React.ReactElement => {
               </LinkBase>
             ) : (
               <LinkBase onClicked={onMintClicked}>
-                <Text variant='light-bold-small-uppercase'>{`${remainingCount} / ${mintingLimit} tokens available. Mint one today for only 0.01ETH 🌟`}</Text>
+                <Text variant='light-bold-small-uppercase'>{`${remainingCount} / ${mintingLimit} tokens left. Mint one today for only 0.01ETH 🌟`}</Text>
               </LinkBase>
             )}
           </Stack>
