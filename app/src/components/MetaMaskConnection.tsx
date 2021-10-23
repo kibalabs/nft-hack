@@ -56,9 +56,9 @@ export const MetaMaskConnection = (): React.ReactElement => {
     <LinkBase onClicked={onClicked}>
       <Box variant={`overlay-horizontal${boxVariantSuffix}`} isFullWidth={false}>
         { !accountIds ? (
-          <Text variant='note-bold'>Install metamask</Text>
+          <Text variant='bold'>Install metamask to get started</Text>
         ) : accountIds.length === 0 ? (
-          <Text variant='note-bold'>Connect accounts</Text>
+          <Text variant='bold'>Connect accounts to get started</Text>
         ) : (
           <Stack
             direction={Direction.Horizontal}
