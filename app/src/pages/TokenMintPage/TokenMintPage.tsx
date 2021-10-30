@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
-import { Link, useDeepCompareCallback } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { useDeepCompareCallback } from '@kibalabs/core-react';
+import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 import { Helmet } from 'react-helmet';
 

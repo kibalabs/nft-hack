@@ -14,10 +14,10 @@
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.4.1",
     "@kibalabs/core": "^0.5.5",
-    "@kibalabs/core-react": "0.6.3-next.0",
+    "@kibalabs/core-react": "0.6.3-next.4",
     "@kibalabs/everyview-tracker": "^0.2.5",
     "@kibalabs/everyview-tracker-react": "^0.2.5",
-    "@kibalabs/ui-react": "^0.9.4",
+    "@kibalabs/ui-react": "^0.9.5-next.3",
     "@metamask/detect-provider": "1.2.0",
     "canvas-size": "1.2.5",
     "ethers": "5.4.7",
