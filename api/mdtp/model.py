@@ -107,3 +107,17 @@ class OffchainContent:
     ownerId: str
     signature: str
     signedMessage: str
+
+@dataclasses.dataclass
+class OffchainPendingContent:
+    offchainPendingContentId: int
+    createdDate: datetime.datetime
+    updatedDate: datetime.datetime
+    appliedDate: Optional[datetime.datetime]
+    network: str
+    tokenId: int
+    contentUrl: str
+    blockNumber: int
+    ownerId: str
+    signature: str
+    signedMessage: str

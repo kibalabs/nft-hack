@@ -77,6 +77,13 @@ export const FomoBar = (): React.ReactElement => {
     return `${days} days, ${hours} hours, ${minutes} mins, ${seconds} secs`;
   }, [isRunningOnMobile]);
 
+  const getMintingString = React.useCallback((): string => {
+    if (isRunningOnMobile) {
+      return `${remainingCount} / ${mintingLimit} tokens left. Mint now for only 0.01Ξ 🌟`;
+    }
+    return `${remainingCount} / ${mintingLimit} tokens left. Mint one now for only 0.01Ξ 🌟`;
+  }, [isRunningOnMobile, remainingCount, mintingLimit]);
+
   useInterval(1, () => {
     if (!mintedCount || hasMintedAll || !hasMintedAllInTranch) {
       setCountdownTime(null);
@@ -112,8 +119,8 @@ export const FomoBar = (): React.ReactElement => {
                 <Text variant='light-bold-small-uppercase'>{'All available tokens sold, more coming soon 👀'}</Text>
               </LinkBase>
             ) : (
-              <LinkBase onClicked={onMintClicked} isEnabled={randomAvailableTokenId != null}>
-                <Text variant='light-bold-small-uppercase'>{`${remainingCount} / ${mintingLimit} tokens available. Mint one now 🌟`}</Text>
+              <LinkBase onClicked={onMintClicked}>
+                <Text variant='light-bold-small-uppercase'>{getMintingString()}</Text>
               </LinkBase>
             )}
           </Stack>

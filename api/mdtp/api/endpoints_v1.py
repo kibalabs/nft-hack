@@ -94,6 +94,7 @@ class UpdateOffchainContentsForTokenGroupRequest(BaseModel):
     blockNumber: int
     contentUrls: List[str]
     signature: str
+    shouldAllowPendingChange: bool = False
 
 class UpdateOffchainContentsForTokenGroupResponse(BaseModel):
     pass

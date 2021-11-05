@@ -1,12 +1,14 @@
 import React from 'react';
 
-import { Link, useDeepCompareCallback } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { KibaException } from '@kibalabs/core';
+import { useDeepCompareCallback } from '@kibalabs/core-react';
+import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
-import { ShareForm } from '../../components/ShareForm';
+import { PresignedUpload } from '../../client';
+import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
@@ -17,7 +19,7 @@ export type TokenMintPageProps = {
 }
 
 export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => {
-  const { contract, apiClient, network } = useGlobals();
+  const { contract, apiClient, network, requester, web3StorageClient, web3 } = useGlobals();
   const setTokenSelection = useSetTokenSelection();
   const [mintPrice, setMintPrice] = React.useState<BigNumber | undefined | null>(undefined);
   const [totalMintLimit, setTotalMintLimit] = React.useState<number | undefined | null>(undefined);
@@ -33,6 +35,8 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
   const [transactionError, setTransactionError] = React.useState<Error | null>(null);
   const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
+  const [updateError, setUpdateError] = React.useState<Error | null>(null);
+  const [updateReceipt, setUpdateReceipt] = React.useState<boolean | null>(null);
   const accounts = useAccounts();
   const accountIds = useAccountIds();
   const colors = useColors();
@@ -43,8 +47,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const isOverTotalLimit = (totalMintLimit && mintedCount) ? requestCount + mintedCount > totalMintLimit : false;
   const isOverOwnershipLimit = (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
   const isOverBalance = (balance && totalPrice) ? balance.sub(totalPrice).isNegative() : false;
-  const hasMintedToken = ownedTokenIds ? ownedTokenIds.length > 0 : false;
+  const isAnyTokenMinted = ownedTokenIds ? ownedTokenIds.length > 0 : false;
   const tokenIds = getTokenIds(Number(props.tokenId), requestWidth, requestHeight);
+  const hasMinted = transaction != null || transactionReceipt != null;
 
   const loadData = React.useCallback(async (): Promise<void> => {
     if (contract === null) {
@@ -250,6 +255,95 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     }
   };
 
+  const onImageFilesChosen = async (shouldUseIpfs: boolean, files: File[]): Promise<UpdateResult> => {
+    if (!network) {
+      return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
+    }
+    // TODO(krishan711): ensure there is only one file
+    const file = files[0];
+    if (shouldUseIpfs) {
+      try {
+        const cid = await web3StorageClient.put([file], { wrapWithDirectory: false });
+        return { isSuccess: true, message: `ipfs://${cid}` };
+      } catch (error: unknown) {
+        console.error(error);
+        return { isSuccess: false, message: 'Failed to upload file to IPFS. Please try without IPFS whilst we look into what\'s happening.' };
+      }
+    }
+    // @ts-ignore
+    const fileName = file.path.replace(/^\//g, '');
+    const formData = new FormData();
+    let presignedUpload: PresignedUpload;
+    try {
+      presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
+    } catch (error: unknown) {
+      return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}` };
+    }
+    Object.keys(presignedUpload.params).forEach((key: string): void => {
+      formData.set(key, presignedUpload.params[key]);
+    });
+    // eslint-disable-next-line no-template-curly-in-string
+    formData.set('key', presignedUpload.params.key.replace('${filename}', fileName));
+    formData.set('Content-Type', file.type);
+    formData.append('file', file, file.name);
+    try {
+      await requester.makeFormRequest(presignedUpload.url, formData);
+      // eslint-disable-next-line no-template-curly-in-string
+      return { isSuccess: true, message: `${presignedUpload.url}${presignedUpload.params.key.replace('${filename}', fileName)}` };
+    } catch (error: unknown) {
+      return { isSuccess: false, message: (error as Error).message };
+    }
+  };
+
+  const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null): Promise<UpdateResult> => {
+    if (!network || !contract || !accounts || !accountIds || !web3) {
+      return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
+    }
+    if (!title) {
+      return { isSuccess: false, message: 'Please update the title.' };
+    }
+    if (!imageUrl) {
+      return { isSuccess: false, message: 'Please provide an image.' };
+    }
+
+    const tokenId = Number(props.tokenId);
+    const isUpdatingMultiple = requestWidth > 1 || requestHeight > 1;
+    let tokenMetadataUrls: string[];
+    try {
+      if (isUpdatingMultiple) {
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
+      } else {
+        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl, url);
+        tokenMetadataUrls = [tokenMetadataUrl];
+      }
+    } catch (error: unknown) {
+      if (error instanceof KibaException && error.statusCode === 500) {
+        return { isSuccess: false, message: 'Failed to upload your metadata. Please refresh and try again.' };
+      }
+      throw error;
+    }
+
+    const blockNumber = await web3.getBlockNumber();
+    const signer = accounts[0];
+    const message = JSON.stringify({ network, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls });
+    let signature;
+    try {
+      signature = await signer.signMessage(message);
+    } catch (error: unknown) {
+      return { isSuccess: false, message: (error as Error).message };
+    }
+    const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, true);
+    try {
+      await request;
+      setUpdateReceipt(true);
+      return { isSuccess: true, message: '' };
+    } catch (error: unknown) {
+      setUpdateError(error as Error);
+      setUpdateReceipt(false);
+      return { isSuccess: false, message: (error as Error).message };
+    }
+  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -265,38 +359,10 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
           <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
         ) : contract === undefined || network === undefined || mintPrice === undefined || totalMintLimit === undefined || singleMintLimit === undefined || mintedCount === undefined || balance === undefined || ownershipMintLimit === undefined || userOwnedCount === undefined ? (
           <LoadingSpinner />
-        ) : transactionReceipt ? (
-          <React.Fragment>
-            <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
-            <Text alignment={TextAlignment.Center}>🎉 Token minted successfully 🎉</Text>
-            <Spacing />
-            <Text alignment={TextAlignment.Center}>Now let&apos;s update the content on your tokens!</Text>
-            <Button variant='primary' text='Update token 👉' target={`/tokens/${props.tokenId}/update`} />
-            <Stack.Item growthFactor={1}>
-              <Spacing variant={PaddingSize.Wide} />
-            </Stack.Item>
-            <ShareForm
-              initialShareText={`Frens, I just minted an NFT at milliondollartokenpage.com/tokens/${props.tokenId} @mdtp_app 🔥🔥! The FOMO got me. I aped in. WGMI! 🚀`}
-              minRowCount={3}
-              isSecondaryAction={true}
-            />
-          </React.Fragment>
-        ) : transaction ? (
-          <React.Fragment>
-            <LoadingSpinner />
-            <Text alignment={TextAlignment.Center}>Your transaction is going through.</Text>
-            <Text alignment={TextAlignment.Center}>In the meantime, why not get your content ready to update your token... 🎨</Text>
-            <Spacing />
-            <Button
-              variant='secondary'
-              text='View Transaction'
-              target={getTransactionEtherscanUrl(network, transaction.hash) || ''}
-            />
-          </React.Fragment>
-        ) : (
+        ) : !hasMinted ? (
           <Form isLoading={isSubmittingTransaction} onFormSubmitted={onConfirmClicked}>
             <Stack direction={Direction.Vertical} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide}>
-              <Text alignment={TextAlignment.Center}>{'You found an un-minted token, nice one! You\'re about to become a part of crypto history 🚀'}</Text>
+              <Text alignment={TextAlignment.Center}>{'You found an un-minted token, nice! You\'re about to become part of crypto history 🚀'}</Text>
               <Spacing />
               <React.Fragment>
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true} shouldWrapItems={true} childAlignment={Alignment.Center}>
@@ -334,17 +400,56 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
               { isOverOwnershipLimit && (
                 <Text variant='error' alignment={TextAlignment.Center}>{'You have reached the ownership limit so you cannot mint more tokens at this time. If you\'re really keen reach out to the admins on our discord and we\'ll see what we can do 👀.'}</Text>
               )}
-              { ownedTokenIds && hasMintedToken && (
+              { ownedTokenIds && isAnyTokenMinted && (
                 <Text variant='error'>{`These tokens have already been minted: ${ownedTokenIds.join(', ')}`}</Text>
               )}
               { transactionError && (
                 <Text variant='error' alignment={TextAlignment.Center}>{String(transactionError.message)}</Text>
               )}
               <Stack.Item growthFactor={1} shrinkFactor={1}>
-                <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !hasMintedToken} />
+                <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !isAnyTokenMinted} />
               </Stack.Item>
             </Stack>
           </Form>
+        ) : (
+          <React.Fragment>
+            {transactionReceipt ? (
+              <React.Fragment>
+                <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
+                <Text alignment={TextAlignment.Center}>🎉 Token minted successfully 🎉</Text>
+              </React.Fragment>
+            ) : transaction ? (
+              <React.Fragment>
+                <LoadingSpinner />
+                <Text alignment={TextAlignment.Center}>Your transaction is going through.</Text>
+                <Button
+                  variant='invisibleNote'
+                  text='View on etherscan'
+                  target={getTransactionEtherscanUrl(network, transaction.hash) || ''}
+                />
+              </React.Fragment>
+            ) : null}
+            <Spacing />
+            {updateReceipt ? (
+              <Text variant='success' alignment={TextAlignment.Center}>We&apos;ve got your content. It will be set once the mint transaction is confirmed.</Text>
+            ) : (
+              <React.Fragment>
+                <Text alignment={TextAlignment.Center}>Let&apos;s get your content up... 🎨</Text>
+                <TokenUpdateForm
+                  title={''}
+                  description={''}
+                  url={null}
+                  imageUrl={null}
+                  onTokenUpdateFormSubmitted={onTokenUpdateFormSubmitted}
+                  onImageFilesChosen={onImageFilesChosen}
+                  isEnabled={true}
+                />
+                { updateError && (
+                  <Text variant='error' alignment={TextAlignment.Center}>{String(updateError.message)}</Text>
+                )}
+              </React.Fragment>
+            )}
+          </React.Fragment>
         )}
       </Stack>
     </React.Fragment>
