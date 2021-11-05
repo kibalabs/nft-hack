@@ -1,5 +1,6 @@
+import { Point } from '@kibalabs/core-react';
+
 import { GridItem, TokenMetadata } from '../client';
-import { Point } from './pointUtil';
 
 export const gridItemToTokenMetadata = (gridItem: GridItem): TokenMetadata => {
   return new TokenMetadata(String(gridItem.tokenId), gridItem.tokenId - 1, gridItem.title, gridItem.description, gridItem.resizableImageUrl || gridItem.imageUrl, gridItem.url, gridItem.groupId);
