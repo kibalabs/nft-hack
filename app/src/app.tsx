@@ -113,6 +113,14 @@ export const App = (): React.ReactElement => {
 
   useInitialization((): void => {
     loadWeb3();
+    const analyticsScript = document.createElement("script");
+    analyticsScript.text = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-31771231-11');
+    `;
+    document.body.appendChild(analyticsScript);
   });
 
   React.useEffect((): void => {
@@ -158,14 +166,6 @@ export const App = (): React.ReactElement => {
         </AccountControlProvider>
       </GlobalsProvider>
       <ToastContainer />
-      <script
-        dangerouslySetInnerHTML={{ __html: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', 'UA-31771231-11');
-        ` }}
-      />
     </KibaApp>
   );
 };
