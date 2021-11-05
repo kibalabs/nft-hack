@@ -113,7 +113,7 @@ export const App = (): React.ReactElement => {
 
   useInitialization((): void => {
     loadWeb3();
-    const analyticsScript = document.createElement("script");
+    const analyticsScript = document.createElement('script');
     analyticsScript.text = `
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
