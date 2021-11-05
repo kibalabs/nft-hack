@@ -1,9 +1,8 @@
 import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
-import { Alignment, Box, Button, Direction, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
-import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { PresignedUpload } from '../../client';
@@ -15,7 +14,6 @@ import { getTransactionEtherscanUrl } from '../../util/chainUtil';
 import { getTokenIds } from '../../util/gridItemUtil';
 import { useOwnerIds } from '../../util/useOwnerIds';
 import { useTokenData } from '../../util/useTokenMetadata';
-
 
 export type TokenUpdatePageProps = {
   tokenId: string;
@@ -203,9 +201,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
 
   return (
     <React.Fragment>
-      <Helmet>
+      <Head headId='token-update'>
         <title>{`Update Token ${props.tokenId} | Million Dollar Token Page`}</title>
-      </Helmet>
+      </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
         <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
