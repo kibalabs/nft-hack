@@ -1,12 +1,12 @@
 import React from 'react';
 
+import { arePointsEqual, Point, sumPoints } from '@kibalabs/core-react';
 import { Alignment, Direction, Stack } from '@kibalabs/ui-react';
 import styled from 'styled-components';
 
 import { GridItem } from '../client';
 import { MdtpImage } from '../components/MdtpImage';
 import { getPointFromGridItem, getTokenIdFromPoint } from '../util/gridItemUtil';
-import { arePointsEqual, Point, sumPoints } from '@kibalabs/core-react';
 
 interface ImageGridProps {
   gridItem?: GridItem;
