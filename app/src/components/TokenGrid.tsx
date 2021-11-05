@@ -172,7 +172,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
         const tokenIndex = x + (y * (canvasWidth / tokenWidth));
         if (tokenIndex < props.tokenCount) {
-          setTimeout((): void => {
+          requestAnimationFrame((): void => {
             drawTokenImageOnCanvas(tokenIndex, truncatedScale);
           });
         }

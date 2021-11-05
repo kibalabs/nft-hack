@@ -1,8 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
-import { Helmet } from 'react-helmet';
+import { Alignment, Button, Direction, Head, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccountIds } from '../../accountsContext';
 import { GridItem } from '../../client';
@@ -92,9 +91,9 @@ export const OwnerPage = (props: OwnerPageProps): React.ReactElement => {
 
   return (
     <React.Fragment>
-      <Helmet>
+      <Head headId='owner'>
         <title>{`${props.ownerId}'s Tokens' | Million Dollar Token Page`}</title>
-      </Helmet>
+      </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
         { network === undefined || gridItems === undefined || gridItemGroups === undefined ? (
           <React.Fragment>

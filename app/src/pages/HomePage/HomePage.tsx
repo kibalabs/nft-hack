@@ -1,9 +1,8 @@
 import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Head, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import canvasSize from 'canvas-size';
-import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
@@ -149,9 +148,9 @@ export const HomePage = (): React.ReactElement => {
 
   return (
     <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
-      <Helmet>
+      <Head headId='home'>
         <title>{'Million Dollar Token Page - The Homepage of the Metaverse!'}</title>
-      </Helmet>
+      </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true}>
         <Stack.Item growthFactor={1} shrinkFactor={1}>
           <LayerContainer>

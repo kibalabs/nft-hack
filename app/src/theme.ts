@@ -267,7 +267,7 @@ export const buildMDTPTheme = (): ITheme => {
     colors,
     fonts: {
       main: {
-        url: 'https://fonts.googleapis.com/css?family=Open+Sans:300,400,500,600,700,800,900&display=swap',
+        url: 'https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;600;700;800;900&display=swap',
       },
     },
     texts: textThemes,
