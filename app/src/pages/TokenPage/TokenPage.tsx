@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { getLinkableUrl, getUrlDisplayString, truncateMiddle, truncateStart } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import { Helmet } from 'react-helmet';
@@ -14,8 +15,6 @@ import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
-import { truncateMiddle, truncateStart } from '../../util/stringUtil';
-import { getLinkableUrl, getUrlDisplayString } from '../../util/urlUtil';
 import { useOwnerId } from '../../util/useOwnerId';
 import { useTokenData } from '../../util/useTokenMetadata';
 
