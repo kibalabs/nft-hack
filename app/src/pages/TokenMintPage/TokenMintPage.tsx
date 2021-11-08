@@ -2,9 +2,8 @@ import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
 import { useDeepCompareCallback } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
-import { Helmet } from 'react-helmet';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { PresignedUpload } from '../../client';
@@ -346,9 +345,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
 
   return (
     <React.Fragment>
-      <Helmet>
+      <Head headId='token-mint'>
         <title>{`Mint Token ${props.tokenId} | Million Dollar Token Page`}</title>
-      </Helmet>
+      </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
         <Text variant='header2' alignment={TextAlignment.Center}>{`Mint Token ${props.tokenId}`}</Text>
         <Link text='Go to token' target={`/tokens/${props.tokenId}`} />

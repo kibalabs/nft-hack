@@ -2,8 +2,7 @@ import React from 'react';
 
 import { getLinkableUrl, getUrlDisplayString, truncateMiddle, truncateStart } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, BackgroundView, Box, Button, Direction, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
-import { Helmet } from 'react-helmet';
+import { Alignment, BackgroundView, Box, Button, Direction, Head, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem } from '../../client';
@@ -17,7 +16,6 @@ import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
 import { useOwnerId } from '../../util/useOwnerId';
 import { useTokenData } from '../../util/useTokenMetadata';
-
 
 export type TokenPageProps = {
   tokenId: string;
@@ -125,9 +123,9 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
 
   return (
     <React.Fragment>
-      <Helmet>
+      <Head headId='token'>
         <title>{`Token ${props.tokenId} | Million Dollar Token Page`}</title>
-      </Helmet>
+      </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
         { tokenMetadata === undefined || gridItem === undefined ? (
           <React.Fragment>

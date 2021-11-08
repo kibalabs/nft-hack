@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Direction, Markdown, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Direction, Head, Markdown, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
 
 
 export const RoadmapPage = (): React.ReactElement => {
@@ -43,9 +43,14 @@ export const RoadmapPage = (): React.ReactElement => {
   `;
 
   return (
-    <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
-      <Text variant='header1'>{'MDTP Roadmap'}</Text>
-      <Markdown source={text} />
-    </Stack>
+    <React.Fragment>
+      <Head headId='roadmap'>
+        <title>{'Roadmap | Million Dollar Token Page'}</title>
+      </Head>
+      <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
+        <Text variant='header1'>{'MDTP Roadmap'}</Text>
+        <Markdown source={text} />
+      </Stack>
+    </React.Fragment>
   );
 };

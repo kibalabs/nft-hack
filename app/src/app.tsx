@@ -3,11 +3,9 @@ import React from 'react';
 import { LocalStorageClient, Requester } from '@kibalabs/core';
 import { Route, Router, useInitialization } from '@kibalabs/core-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
-import { KibaApp } from '@kibalabs/ui-react';
+import { Head, KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { BigNumber, ethers } from 'ethers';
-import ReactGA from 'react-ga';
-import { Helmet } from 'react-helmet';
 import { toast, ToastContainer } from 'react-toastify';
 import { Web3Storage } from 'web3.storage/dist/bundle.esm.min.js';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -38,8 +36,6 @@ const localStorageClient = new LocalStorageClient(window.localStorage);
 const apiClient = new MdtpClient(requester, window.KRT_API_URL);
 const web3StorageClient = new Web3Storage({ token: window.KRT_WEB3STORAGE_API_KEY });
 
-ReactGA.initialize('UA-31771231-11');
-ReactGA.pageview(window.location.pathname + window.location.search);
 const tracker = new EveryviewTracker('ee4224993fcf4c2fb2240ecc749c98a8');
 tracker.trackApplicationOpen();
 
@@ -117,6 +113,14 @@ export const App = (): React.ReactElement => {
 
   useInitialization((): void => {
     loadWeb3();
+    const analyticsScript = document.createElement('script');
+    analyticsScript.text = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-31771231-11');
+    `;
+    document.body.appendChild(analyticsScript);
   });
 
   React.useEffect((): void => {
@@ -143,9 +147,9 @@ export const App = (): React.ReactElement => {
 
   return (
     <KibaApp theme={theme} isFullPageApp={true}>
-      <Helmet>
-        <link href='https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@300;400;500;600;700;800;900&display=swap' rel='stylesheet' />
-      </Helmet>
+      <Head headId='app'>
+        <script async src='https://www.googletagmanager.com/gtag/js?id=UA-31771231-11' />
+      </Head>
       <GlobalsProvider globals={{ ...globals, network, contract, web3, chainId }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router>
