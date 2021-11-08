@@ -1,12 +1,12 @@
 import React from 'react';
 
+import { isMobile } from '@kibalabs/core';
 import { useInterval, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Direction, LayerContainer, LinkBase, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
 import { BigNumber } from 'ethers';
 
 import { NetworkStatus } from '../client';
 import { useGlobals } from '../globalsContext';
-import { isMobile } from '../util/browserUtil';
 
 const BATCH1_DATE = new Date(Date.UTC(2021, 8, 5, 16, 0));
 const BATCH1_LIMIT = 1000;

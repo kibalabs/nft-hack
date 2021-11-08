@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { truncateMiddle } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, Button, Direction, Head, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
@@ -9,7 +10,6 @@ import { OwnedGridItemView } from '../../components/OwnedGridItemView';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getAccountEtherscanUrl } from '../../util/chainUtil';
-import { truncateMiddle } from '../../util/stringUtil';
 
 interface GridItemGroup {
   groupId: string | null;

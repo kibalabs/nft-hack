@@ -1,13 +1,12 @@
 import React from 'react';
 
-import { deepCompare } from '@kibalabs/core';
+import { deepCompare, isMobile } from '@kibalabs/core';
 import { arePointRangesEqual, arePointsEqual, diffPoints, floorPoint, ISize, ORIGIN_POINT, Point, PointRange, scalePoint, sumPoints, useDebouncedCallback, useDeepCompareEffect, useMousePositionRef, usePan, usePreviousValue, useScale, useSize } from '@kibalabs/core-react';
 import { useColors } from '@kibalabs/ui-react';
 
 import { BaseImage, GridItem } from '../client';
 import { useGlobals } from '../globalsContext';
 import { useTokenSelection } from '../tokenSelectionContext';
-import { isMobile } from '../util/browserUtil';
 
 const tokenWidth = 10;
 const tokenHeight = 10;
