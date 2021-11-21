@@ -1,11 +1,6 @@
 
 import { ContractInterface } from 'ethers';
 
-import contract1 from '../contract1.json';
-import contract2 from '../contract2.json';
-import contract3 from '../contract3.json';
-import contract4 from '../contract4.json';
-import contract5 from '../contract5.json';
 import contract6 from '../contract6.json';
 import contract7 from '../contract7.json';
 
@@ -29,30 +24,20 @@ export enum ChainId {
 export const DEFAULT_CHAIN_ID = ChainId.Mainnet;
 
 export const isBeta = (): boolean => {
-  return !!window.KRT_NEW_CONTRACT;
+  return typeof window !== 'undefined' && !!window.KRT_NEW_CONTRACT;
 };
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
-  [ChainId.Rinkeby]: window.KRT_NEW_CONTRACT ? 'rinkeby6' : undefined,
+  [ChainId.Rinkeby]: isBeta() ? 'rinkeby6' : undefined,
   [ChainId.Mainnet]: 'mainnet1',
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
-  rinkeby: '0x2744fE5e7776BCA0AF1CDEAF3bA3d1F5cae515d3',
-  rinkeby2: '0xeDa9C05612579ff3888C5dCd689566406Df54e01',
-  rinkeby3: '0x19559Ac1471e2e4887d63c9363C85BF9f85Fdb67',
-  rinkeby4: '0x9B84318C9aC64F564eEc4a703f2dbb742a4D1401',
-  rinkeby5: '0xaE70a9accF2E0c16b380C0aa3060E9fBa6718daf',
   rinkeby6: '0x8f1F643637046c867675Ca101ce28E2763daC1E2',
   mainnet1: '0x1Cf33F4c6C4E6391F4D2B445aa3a36639b77dd68',
 };
 
 const networkContractMap: Record<string, ContractInterface | null> = {
-  rinkeby: contract1 as unknown as ContractInterface,
-  rinkeby2: contract2 as unknown as ContractInterface,
-  rinkeby3: contract3 as unknown as ContractInterface,
-  rinkeby4: contract4 as unknown as ContractInterface,
-  rinkeby5: contract5 as unknown as ContractInterface,
   rinkeby6: contract6 as unknown as ContractInterface,
   mainnet1: contract7 as unknown as ContractInterface,
 };
@@ -122,20 +107,8 @@ export const getAccountEtherscanUrl = (network: string, account: string): string
 };
 
 export const getProductOpenseaUrl = (network: string): string | null => {
-  if (network === 'rinkeby') {
-    return 'https://testnets.opensea.io/collection/mdtp-test-2';
-  }
-  if (network === 'rinkeby2') {
-    return 'https://testnets.opensea.io/collection/milliondollartokenpage-v2';
-  }
-  if (network === 'rinkeby3') {
-    return 'https://testnets.opensea.io/collection/milliondollartokenpage3';
-  }
-  if (network === 'rinkeby4') {
-    return 'https://testnets.opensea.io/collection/milliondollartokenpage4';
-  }
-  if (network === 'rinkeby5') {
-    return 'https://testnets.opensea.io/collection/milliondollartokenpage-tyvw2ocd5n';
+  if (network === 'rinkeby6') {
+    return 'https://testnets.opensea.io/collection/milliondollartokenpage-sgxa7mknyi';
   }
   if (network === 'mainnet1') {
     return 'https://opensea.io/collection/milliondollartokenpage';

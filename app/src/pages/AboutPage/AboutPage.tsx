@@ -5,7 +5,6 @@ import { Alignment, Direction, Markdown, PaddingSize, Spacing, Stack, Text } fro
 
 export const AboutPage = (): React.ReactElement => {
   const mainText = `
-
 **MDTP is the Homepage of the Metaverse! 🔮**
 
 Show off your NFTs on space that you own as an NFT 😎
@@ -32,7 +31,6 @@ It's that simple! Join us now to own a piece of crypto history! ❤️
 `;
 
   const learnMoreText = `
-
 **Don't get crypto and want to learn more? Read on... 🤓**
 
 When created in 2005 milliondollarhomepage acted as an advertising board on the internet, selling one million pixels on the web for $1 each. Back then the web was still very static and there were no digital native forms of transacting value so when pixels were bought and set, they could no longer be re-sold or updated.
@@ -62,7 +60,6 @@ The first relates to the fact that when data is written into the Ethereum blockc
 Secondly, as an owner of this NFT, you can use external marketplace like [opensea](https://opensea.io/) to re-sell that block for whatever price you like. So if you have a block that someone else finds particularly desirable, they can bid up prices to buy them off you, and an NFT you bought for say $100 could sell for $1000 or more depending on demand - the sky is the limit!
 
 The more people know about the site the more demand will rise and subsequently the price of your NFTs! So make sure to share the site with your friends and followers and own a piece of crypto history! ❤️
-
   `;
 
   return (
