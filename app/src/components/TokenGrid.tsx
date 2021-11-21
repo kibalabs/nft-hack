@@ -23,7 +23,7 @@ interface TokenGridProps {
   onScaleChanged: React.Dispatch<React.SetStateAction<number>>;
 }
 
-// eslint-ignore-next-line react/display-name
+// eslint-disable-next-line react/display-name
 export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement => {
   const { apiClient, network } = useGlobals();
   const colors = useColors();
