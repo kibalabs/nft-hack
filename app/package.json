@@ -13,11 +13,11 @@
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "5.5.1",
-    "@kibalabs/core": "file:/Users/krishan/Projects/core-js/kibalabs-core-0.5.5-1.tgz",
-    "@kibalabs/core-react": "file:/Users/krishan/Projects/core-react/kibalabs-core-react-0.6.2-3.tgz",
+    "@kibalabs/core": "0.5.6",
+    "@kibalabs/core-react": "0.7.0",
     "@kibalabs/everyview-tracker": "0.2.5",
     "@kibalabs/everyview-tracker-react": "0.2.5",
-    "@kibalabs/ui-react": "file:/Users/krishan/Projects/ui-react/kibalabs-ui-react-0.9.4-5.tgz",
+    "@kibalabs/ui-react": "0.9.5",
     "@metamask/detect-provider": "1.2.0",
     "canvas-size": "1.2.5",
     "ethers": "5.5.1",
@@ -30,7 +30,7 @@
     "web3.storage": "3.3.3"
   },
   "devDependencies": {
-    "@kibalabs/build": "file:/Users/krishan/Projects/build-js/kibalabs-build-0.8.0-3.tgz",
+    "@kibalabs/build": "0.8.1",
     "@types/react": "17.0.34",
     "@types/react-dom": "17.0.11",
     "@types/styled-components": "5.1.15"
