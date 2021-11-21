@@ -2,7 +2,7 @@ import React from 'react';
 
 import { truncateMiddle } from '@kibalabs/core';
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Button, Direction, Head, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Head, Image, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccountIds } from '../../accountsContext';
 import { GridItem } from '../../client';
@@ -70,12 +70,12 @@ export const OwnerPage = (props: OwnerPageProps): React.ReactElement => {
 
   const loadOwnerName = React.useCallback(async (): Promise<void> => {
     setOwnerName(undefined);
-    if (web3) {
-      const retrievedOwnerName = await web3.lookupAddress(props.ownerId);
-      setOwnerName(retrievedOwnerName);
-    } else {
+    if (!web3) {
       setOwnerName(null);
+      return;
     }
+    const retrievedOwnerName = await web3.lookupAddress(props.ownerId);
+    setOwnerName(retrievedOwnerName);
   }, [props.ownerId, web3]);
 
   React.useEffect((): void => {
@@ -92,7 +92,7 @@ export const OwnerPage = (props: OwnerPageProps): React.ReactElement => {
   return (
     <React.Fragment>
       <Head headId='owner'>
-        <title>{`${props.ownerId}'s Tokens' | Million Dollar Token Page`}</title>
+        <title>{`${props.ownerId}'s Tokens | Million Dollar Token Page`}</title>
       </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
         { network === undefined || gridItems === undefined || gridItemGroups === undefined ? (
@@ -107,7 +107,12 @@ export const OwnerPage = (props: OwnerPageProps): React.ReactElement => {
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <Text variant='header2' alignment={TextAlignment.Center}>{isOwnerUser ? 'Your Tokens' : `${ownerIdString}'s Tokens`}</Text>
+            <Stack isFullWidth={true} direction={Direction.Horizontal} contentAlignment={Alignment.Center} childAlignment={Alignment.Center} shouldAddGutters={true}>
+              <Box height='2em' width='2em'>
+                <Image source={`https://web3-images-api.kibalabs.com/v1/accounts/${props.ownerId}/image`} alternativeText='Owner Profile Picture' />
+              </Box>
+              <Text variant='header2' alignment={TextAlignment.Center}>{isOwnerUser ? 'Your Tokens' : `${ownerIdString}'s Tokens`}</Text>
+            </Stack>
             {gridItems.length === 0 ? (
               <Text alignment={TextAlignment.Center}>{'No tokens owned'}</Text>
             ) : (

@@ -1,13 +1,13 @@
 import React from 'react';
 
 import { LocalStorageClient, Requester } from '@kibalabs/core';
-import { Route, Router, useInitialization } from '@kibalabs/core-react';
+import { MockStorage, Route, Router, useInitialization } from '@kibalabs/core-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
-import { Head, KibaApp } from '@kibalabs/ui-react';
+import { Head, IHeadRootProviderProps, KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { BigNumber, ethers } from 'ethers';
 import { toast, ToastContainer } from 'react-toastify';
-import { Web3Storage } from 'web3.storage/dist/bundle.esm.min.js';
+import { Web3Storage } from 'web3.storage';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 import { AccountControlProvider } from './accountsContext';
@@ -32,12 +32,11 @@ declare global {
 }
 
 const requester = new Requester(undefined, undefined, false);
-const localStorageClient = new LocalStorageClient(window.localStorage);
-const apiClient = new MdtpClient(requester, window.KRT_API_URL);
-const web3StorageClient = new Web3Storage({ token: window.KRT_WEB3STORAGE_API_KEY });
+const localStorageClient = new LocalStorageClient(typeof window !== 'undefined' ? window.localStorage : new MockStorage());
+const apiClient = new MdtpClient(requester, typeof window !== 'undefined' ? window.KRT_API_URL : undefined);
+const web3StorageClient = new Web3Storage({ token: typeof window !== 'undefined' ? window.KRT_WEB3STORAGE_API_KEY : '' });
 
 const tracker = new EveryviewTracker('ee4224993fcf4c2fb2240ecc749c98a8');
-tracker.trackApplicationOpen();
 
 const theme = buildMDTPTheme();
 const globals: Globals = {
@@ -51,7 +50,11 @@ const globals: Globals = {
   chainId: undefined,
 };
 
-export const App = (): React.ReactElement => {
+export interface IAppProps extends IHeadRootProviderProps {
+  staticPath?: string;
+}
+
+export const App = (props: IAppProps): React.ReactElement => {
   const [accounts, setAccounts] = React.useState<ethers.Signer[] | undefined | null>(undefined);
   const [accountIds, setAccountIds] = React.useState<string[] | undefined | null>(undefined);
   const [chainId, setChainId] = React.useState<number | null | undefined>(undefined);
@@ -97,6 +100,10 @@ export const App = (): React.ReactElement => {
     web3.provider.on('accountsChanged', onAccountsChanged);
   }, [web3, onChainChanged, onAccountsChanged]);
 
+  React.useEffect((): void => {
+    loadAccounts();
+  }, [loadAccounts]);
+
   const onLinkAccountsClicked = async (): Promise<void> => {
     if (web3) {
       web3.provider.request({ method: 'eth_requestAccounts', params: [] }).then(async (): Promise<void> => {
@@ -113,6 +120,7 @@ export const App = (): React.ReactElement => {
 
   useInitialization((): void => {
     loadWeb3();
+    tracker.trackApplicationOpen();
     const analyticsScript = document.createElement('script');
     analyticsScript.text = `
       window.dataLayer = window.dataLayer || [];
@@ -122,10 +130,6 @@ export const App = (): React.ReactElement => {
     `;
     document.body.appendChild(analyticsScript);
   });
-
-  React.useEffect((): void => {
-    loadAccounts();
-  }, [loadAccounts]);
 
   React.useEffect((): void => {
     const newNetwork = chainId === undefined ? undefined : chainId === null ? null : getNetwork(chainId);
@@ -146,13 +150,13 @@ export const App = (): React.ReactElement => {
   }, [chainId, web3]);
 
   return (
-    <KibaApp theme={theme} isFullPageApp={true}>
+    <KibaApp theme={theme} isFullPageApp={true} setHead={props.setHead}>
       <Head headId='app'>
         <script async src='https://www.googletagmanager.com/gtag/js?id=UA-31771231-11' />
       </Head>
       <GlobalsProvider globals={{ ...globals, network, contract, web3, chainId }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
-          <Router>
+          <Router staticPath={props.staticPath}>
             <Route default={true} page={HomePage}>
               <Route path='/tokens/:tokenId' page={TokenPage} />
               <Route path='/tokens/:tokenId/update' page={TokenUpdatePage} />

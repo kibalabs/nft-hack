@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { isMobile } from '@kibalabs/core';
-import { useInterval, useNavigator } from '@kibalabs/core-react';
+import { useInterval } from '@kibalabs/core-react';
 import { Alignment, Box, Direction, LayerContainer, LinkBase, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
 import { BigNumber } from 'ethers';
 
@@ -14,7 +14,6 @@ const BATCH2_DATE = new Date(Date.UTC(2021, 9, 18, 13, 0));
 const BATCH2_LIMIT = 2000;
 
 export const FomoBar = (): React.ReactElement => {
-  const navigator = useNavigator();
   const { contract, apiClient, network } = useGlobals();
   const [mintedCount, setMintedCount] = React.useState<number | undefined | null>(undefined);
   const [mintingLimit, setMintingLimit] = React.useState<number | undefined | null>(undefined);
@@ -50,14 +49,6 @@ export const FomoBar = (): React.ReactElement => {
   useInterval(60, (): void => {
     updateData();
   });
-
-  const onMintClicked = (): void => {
-    navigator.navigateTo(`/tokens/${randomAvailableTokenId}/mint`);
-  };
-
-  const onNextBatchClicked = (): void => {
-    navigator.navigateTo('/about');
-  };
 
   const hasMintedAll = mintedCount ? mintedCount >= 10000 : false;
   const hasMintedAllInTranch = mintedCount && mintingLimit ? mintedCount >= mintingLimit : false;
@@ -111,15 +102,15 @@ export const FomoBar = (): React.ReactElement => {
             ) : hasMintedAll ? (
               <Text variant='light-bold-small-uppercase'>{'All tokens sold 🤩'}</Text>
             ) : countdownTime ? (
-              <LinkBase onClicked={onNextBatchClicked}>
+              <LinkBase target={'/about'}>
                 <Text variant='light-bold-small-uppercase'>{`Next batch releasing in ${countdownTime} ⏳`}</Text>
               </LinkBase>
             ) : hasMintedAllInTranch ? (
-              <LinkBase onClicked={onNextBatchClicked}>
+              <LinkBase target={'/about'}>
                 <Text variant='light-bold-small-uppercase'>{'All available tokens sold, more coming soon 👀'}</Text>
               </LinkBase>
             ) : (
-              <LinkBase onClicked={onMintClicked}>
+              <LinkBase target={`/tokens/${randomAvailableTokenId}/mint`}>
                 <Text variant='light-bold-small-uppercase'>{getMintingString()}</Text>
               </LinkBase>
             )}
