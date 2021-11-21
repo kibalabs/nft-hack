@@ -36,6 +36,7 @@ export const HomePage = (): React.ReactElement => {
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null | undefined>(undefined);
   const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
+  // @ts-ignore Wierd error between core and core-react
   const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete', localStorageClient);
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
   const [focussedTokenIds, setFocussedTokenIds] = React.useState<number[]>([]);
