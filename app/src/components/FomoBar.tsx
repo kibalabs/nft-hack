@@ -1,12 +1,12 @@
 import React from 'react';
 
-import { useInterval, useNavigator } from '@kibalabs/core-react';
+import { isMobile } from '@kibalabs/core';
+import { useInterval } from '@kibalabs/core-react';
 import { Alignment, Box, Direction, LayerContainer, LinkBase, PaddingSize, Stack, Text } from '@kibalabs/ui-react';
 import { BigNumber } from 'ethers';
 
 import { NetworkStatus } from '../client';
 import { useGlobals } from '../globalsContext';
-import { isMobile } from '../util/browserUtil';
 
 const BATCH1_DATE = new Date(Date.UTC(2021, 8, 5, 16, 0));
 const BATCH1_LIMIT = 1000;
@@ -14,7 +14,6 @@ const BATCH2_DATE = new Date(Date.UTC(2021, 9, 18, 13, 0));
 const BATCH2_LIMIT = 2000;
 
 export const FomoBar = (): React.ReactElement => {
-  const navigator = useNavigator();
   const { contract, apiClient, network } = useGlobals();
   const [mintedCount, setMintedCount] = React.useState<number | undefined | null>(undefined);
   const [mintingLimit, setMintingLimit] = React.useState<number | undefined | null>(undefined);
@@ -51,14 +50,6 @@ export const FomoBar = (): React.ReactElement => {
     updateData();
   });
 
-  const onMintClicked = (): void => {
-    navigator.navigateTo(`/tokens/${randomAvailableTokenId}/mint`);
-  };
-
-  const onNextBatchClicked = (): void => {
-    navigator.navigateTo('/about');
-  };
-
   const hasMintedAll = mintedCount ? mintedCount >= 10000 : false;
   const hasMintedAllInTranch = mintedCount && mintingLimit ? mintedCount >= mintingLimit : false;
   const remainingCount = mintedCount && mintingLimit ? mintingLimit - mintedCount : 0;
@@ -76,6 +67,13 @@ export const FomoBar = (): React.ReactElement => {
     }
     return `${days} days, ${hours} hours, ${minutes} mins, ${seconds} secs`;
   }, [isRunningOnMobile]);
+
+  const getMintingString = React.useCallback((): string => {
+    if (isRunningOnMobile) {
+      return `${remainingCount} / ${mintingLimit} tokens left. Mint now for only 0.01Ξ 🌟`;
+    }
+    return `${remainingCount} / ${mintingLimit} tokens left. Mint one now for only 0.01Ξ 🌟`;
+  }, [isRunningOnMobile, remainingCount, mintingLimit]);
 
   useInterval(1, () => {
     if (!mintedCount || hasMintedAll || !hasMintedAllInTranch) {
@@ -104,16 +102,24 @@ export const FomoBar = (): React.ReactElement => {
             ) : hasMintedAll ? (
               <Text variant='light-bold-small-uppercase'>{'All tokens sold 🤩'}</Text>
             ) : countdownTime ? (
+<<<<<<< HEAD
               <LinkBase onClicked={onNextBatchClicked}>
                 <Text variant='light-bold-small-uppercase'>{`Next batch releasing in ${countdownTime} ⏳`}</Text>
               </LinkBase>
             ) : hasMintedAllInTranch ? (
               <LinkBase onClicked={onNextBatchClicked}>
+=======
+              <LinkBase target={'/about'}>
+                <Text variant='light-bold-small-uppercase'>{`Next batch releasing in ${countdownTime} ⏳`}</Text>
+              </LinkBase>
+            ) : hasMintedAllInTranch ? (
+              <LinkBase target={'/about'}>
+>>>>>>> 4c3a2bbc2ce89aa930af7c88c78d51defc1efef1
                 <Text variant='light-bold-small-uppercase'>{'All available tokens sold, more coming soon 👀'}</Text>
               </LinkBase>
             ) : (
-              <LinkBase onClicked={onMintClicked} isEnabled={randomAvailableTokenId != null}>
-                <Text variant='light-bold-small-uppercase'>{`${remainingCount} / ${mintingLimit} tokens available. Mint one now 🌟`}</Text>
+              <LinkBase target={`/tokens/${randomAvailableTokenId}/mint`}>
+                <Text variant='light-bold-small-uppercase'>{getMintingString()}</Text>
               </LinkBase>
             )}
           </Stack>

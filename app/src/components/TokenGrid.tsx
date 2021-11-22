@@ -1,17 +1,12 @@
 import React from 'react';
 
-import { deepCompare } from '@kibalabs/core';
-import { ISize, useDebouncedCallback, useDeepCompareEffect, usePreviousValue, useSize } from '@kibalabs/core-react';
+import { deepCompare, isMobile } from '@kibalabs/core';
+import { arePointRangesEqual, arePointsEqual, diffPoints, floorPoint, ISize, ORIGIN_POINT, Point, PointRange, scalePoint, sumPoints, useDebouncedCallback, useDeepCompareEffect, useMousePositionRef, usePan, usePreviousValue, useScale, useSize } from '@kibalabs/core-react';
 import { useColors } from '@kibalabs/ui-react';
 
 import { BaseImage, GridItem } from '../client';
 import { useGlobals } from '../globalsContext';
 import { useTokenSelection } from '../tokenSelectionContext';
-import { isMobile } from '../util/browserUtil';
-import { arePointRangesEqual, arePointsEqual, diffPoints, floorPoint, ORIGIN_POINT, Point, PointRange, scalePoint, sumPoints } from '../util/pointUtil';
-import { useMousePositionRef } from '../util/useMousePositionRef';
-import { usePan } from '../util/usePan';
-import { useScale } from '../util/useScale';
 
 const tokenWidth = 10;
 const tokenHeight = 10;
@@ -28,6 +23,7 @@ interface TokenGridProps {
   onScaleChanged: React.Dispatch<React.SetStateAction<number>>;
 }
 
+// eslint-disable-next-line react/display-name
 export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement => {
   const { apiClient, network } = useGlobals();
   const colors = useColors();
@@ -176,7 +172,7 @@ export const TokenGrid = React.memo((props: TokenGridProps): React.ReactElement 
       for (let x = Math.max(0, topLeft.x); x <= bottomRight.x; x += 1) {
         const tokenIndex = x + (y * (canvasWidth / tokenWidth));
         if (tokenIndex < props.tokenCount) {
-          setTimeout((): void => {
+          requestAnimationFrame((): void => {
             drawTokenImageOnCanvas(tokenIndex, truncatedScale);
           });
         }

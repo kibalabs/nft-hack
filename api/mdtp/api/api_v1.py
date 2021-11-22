@@ -95,7 +95,7 @@ def create_api(manager: MdtpManager) -> KibaRouter():
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-offchain-contents', response_model=UpdateOffchainContentsForTokenGroupResponse)
     async def update_offchain_contents_for_token_group(network: str, tokenId: int, request: UpdateOffchainContentsForTokenGroupRequest) -> UpdateOffchainContentsForTokenGroupResponse:
-        await manager.update_offchain_contents_for_token_group(network=network, tokenId=tokenId, width=request.width, height=request.height, contentUrls=request.contentUrls, blockNumber=request.blockNumber, signature=request.signature)
+        await manager.update_offchain_contents_for_token_group(network=network, tokenId=tokenId, width=request.width, height=request.height, contentUrls=request.contentUrls, blockNumber=request.blockNumber, signature=request.signature, shouldAllowPendingChange=request.shouldAllowPendingChange)
         return UpdateOffchainContentsForTokenGroupResponse()
 
     @router.post('/networks/{network}/tokens/{tokenId}/update-token-deferred', response_model=UpdateTokenDeferredResponse)

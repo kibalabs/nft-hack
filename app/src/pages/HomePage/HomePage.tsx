@@ -1,9 +1,8 @@
 import React from 'react';
 
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Head, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import canvasSize from 'canvas-size';
-import { Helmet } from 'react-helmet';
 import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
@@ -33,11 +32,12 @@ const DEFAULT_SCALE = 1;
 export const HomePage = (): React.ReactElement => {
   const navigator = useNavigator();
   const location = useLocation();
-  const { apiClient, network, chainId } = useGlobals();
+  const { apiClient, network, chainId, localStorageClient } = useGlobals();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null | undefined>(undefined);
   const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
-  const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete');
+  // @ts-ignore Wierd error between core and core-react
+  const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete', localStorageClient);
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
   const [focussedTokenIds, setFocussedTokenIds] = React.useState<number[]>([]);
   const [maxScale, setMaxScale] = React.useState<number | undefined>(undefined);
@@ -78,22 +78,6 @@ export const HomePage = (): React.ReactElement => {
 
   const onTokenIdClicked = (tokenId: number) => {
     navigator.navigateTo(`/tokens/${tokenId}`);
-  };
-
-  const onCloseTokenPanelClicked = (): void => {
-    navigator.navigateTo('/');
-  };
-
-  const onAboutClicked = () => {
-    navigator.navigateTo('/about');
-  };
-
-  const onRoadmapClicked = () => {
-    navigator.navigateTo('/roadmap');
-  };
-
-  const onShareClicked = (): void => {
-    navigator.navigateTo('/share');
   };
 
   const isTokenUpdatePanelShowing = location.pathname.includes('/tokens/') && location.pathname.endsWith('/update');
@@ -149,9 +133,9 @@ export const HomePage = (): React.ReactElement => {
 
   return (
     <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
-      <Helmet>
-        <title>{'Million Dollar Token Page - Own a piece of crypto history!'}</title>
-      </Helmet>
+      <Head headId='home'>
+        <title>{'Million Dollar Token Page - The Homepage of the Metaverse!'}</title>
+      </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true}>
         <Stack.Item growthFactor={1} shrinkFactor={1}>
           <LayerContainer>
@@ -171,8 +155,8 @@ export const HomePage = (): React.ReactElement => {
                         <Text alignment={TextAlignment.Center}>You’re on a chain we don’t recognize. Please switch your wallet to &quot;Ethereum Mainnet&quot;. You can choose this at the top of the MetaMask dropdown.</Text>
                         <Spacing />
                         <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} shouldAddGutters={true}>
-                          <Button variant='primary' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
-                          <Button variant='primary' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} onClicked={onRoadmapClicked} />
+                          <Button variant='primary' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} target={'/about'} />
+                          <Button variant='primary' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} target={'/roadmap'} />
                         </Stack>
                       </React.Fragment>
                     ) : (
@@ -218,9 +202,9 @@ export const HomePage = (): React.ReactElement => {
                 <Button variant='overlay' text='Menu' iconLeft={<KibaIcon iconId={isMenuOpen ? 'ion-close' : 'ion-menu'} />} onClicked={onMenuClicked} />
                 {isMenuOpen && (
                   <React.Fragment>
-                    <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} onClicked={onAboutClicked} />
-                    <Button variant='overlay' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} onClicked={onRoadmapClicked} />
-                    <Button variant='overlay' text='Refer a Friend' iconLeft={<KibaIcon iconId='ion-share' />} onClicked={onShareClicked} />
+                    <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} target={'/about'} />
+                    <Button variant='overlay' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} target={'/roadmap'} />
+                    <Button variant='overlay' text='Refer a Friend' iconLeft={<KibaIcon iconId='ion-share' />} target={'/share'} />
                     <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
                     <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
                     <Button variant='overlay' text='Open Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network || '') || ''} />
@@ -239,7 +223,7 @@ export const HomePage = (): React.ReactElement => {
                       </LayerContainer.Layer>
                       <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
                         <Box variant='panelButtonHolder'>
-                          <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} onClicked={onCloseTokenPanelClicked} />
+                          <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} target={'/'} />
                         </Box>
                       </LayerContainer.Layer>
                     </LayerContainer>

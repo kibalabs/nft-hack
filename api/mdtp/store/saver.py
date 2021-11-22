@@ -12,6 +12,7 @@ from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
 from mdtp.store.schema import OffchainContentsTable
+from mdtp.store.schema import OffchainPendingContentsTable
 
 _EMPTY_STRING = '_EMPTY_STRING'
 
@@ -113,3 +114,28 @@ class MdtpSaver(Saver):
             OffchainContentsTable.c.signedMessage.key: signedMessage,
         })
         return OffchainContent(offchainContentId=offchainContentId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, contentUrl=contentUrl, blockNumber=blockNumber, ownerId=ownerId, signature=signature, signedMessage=signedMessage)
+
+    async def create_offchain_pending_content(self, tokenId: int, network: str, contentUrl: str, blockNumber: int, ownerId: str, signature: str, signedMessage: str) -> OffchainContent:
+        createdDate = date_util.datetime_from_now()
+        updatedDate = createdDate
+        offchainContentId = await self._execute(query=OffchainPendingContentsTable.insert(), values={  # pylint: disable=no-value-for-parameter
+            OffchainPendingContentsTable.c.createdDate.key: createdDate,
+            OffchainPendingContentsTable.c.updatedDate.key: updatedDate,
+            OffchainPendingContentsTable.c.network.key: network,
+            OffchainPendingContentsTable.c.tokenId.key: tokenId,
+            OffchainPendingContentsTable.c.contentUrl.key: contentUrl,
+            OffchainPendingContentsTable.c.blockNumber.key: blockNumber,
+            OffchainPendingContentsTable.c.ownerId.key: ownerId,
+            OffchainPendingContentsTable.c.signature.key: signature,
+            OffchainPendingContentsTable.c.signedMessage.key: signedMessage,
+        })
+        return OffchainContent(offchainContentId=offchainContentId, createdDate=createdDate, updatedDate=updatedDate, network=network, tokenId=tokenId, contentUrl=contentUrl, blockNumber=blockNumber, ownerId=ownerId, signature=signature, signedMessage=signedMessage)
+
+    async def update_offchain_pending_content(self, offchainPendingContentId: int, appliedDate: Optional[datetime.datetime] = None) -> None:
+        query = OffchainPendingContentsTable.update(OffchainPendingContentsTable.c.offchainPendingContentId == offchainPendingContentId)
+        values = {}
+        if appliedDate is not None:
+            values[OffchainPendingContentsTable.c.appliedDate.key] = appliedDate
+        if len(values) > 0:
+            values[OffchainPendingContentsTable.c.updatedDate.key] = date_util.datetime_from_now()
+        await self.database.execute(query=query, values=values)

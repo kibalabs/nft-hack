@@ -230,6 +230,7 @@ export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
     readonly blockNumber: number,
     readonly contentUrls: string[],
     readonly signature: string,
+    readonly shouldAllowPendingChange: boolean,
   ) {
     super();
   }
@@ -241,6 +242,7 @@ export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
       blockNumber: this.blockNumber,
       contentUrls: this.contentUrls,
       signature: this.signature,
+      shouldAllowPendingChange: this.shouldAllowPendingChange,
     };
   }
 }

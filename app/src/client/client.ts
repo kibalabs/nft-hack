@@ -80,10 +80,10 @@ export class MdtpClient extends ServiceClient {
     return response.tokenMetadataUrls;
   }
 
-  public updateOffchainContentsForTokenGroup = async (network: string, tokenId: number, width: number, height: number, blockNumber: number, contentUrls: string[], signature: string): Promise<void> => {
+  public updateOffchainContentsForTokenGroup = async (network: string, tokenId: number, width: number, height: number, blockNumber: number, contentUrls: string[], signature: string, shouldAllowPendingChange: boolean): Promise<void> => {
     const method = RestMethod.POST;
     const path = `v1/networks/${network}/tokens/${tokenId}/update-offchain-contents`;
-    const request = new Endpoints.UpdateOffchainContentsForTokenGroupRequest(width, height, blockNumber, contentUrls, signature);
+    const request = new Endpoints.UpdateOffchainContentsForTokenGroupRequest(width, height, blockNumber, contentUrls, signature, shouldAllowPendingChange);
     await this.makeRequest(method, path, request, Endpoints.UpdateOffchainContentsForTokenGroupResponse);
   }
 

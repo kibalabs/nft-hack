@@ -10,14 +10,18 @@ from sqlalchemy.sql import select
 
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
+from mdtp.model import OffchainContent
+from mdtp.model import OffchainPendingContent
 from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
 from mdtp.store.schema import OffchainContentsTable
+from mdtp.store.schema import OffchainPendingContentsTable
 from mdtp.store.schema_conversions import base_image_from_row
 from mdtp.store.schema_conversions import grid_item_from_row
 from mdtp.store.schema_conversions import network_update_from_row
 from mdtp.store.schema_conversions import offchain_content_from_row
+from mdtp.store.schema_conversions import offchain_pending_content_from_row
 
 
 class MdtpRetriever(Retriever):
@@ -82,7 +86,7 @@ class MdtpRetriever(Retriever):
         networkUpdate = network_update_from_row(row)
         return networkUpdate
 
-    async def list_offchain_contents(self, fieldFilters: Optional[Sequence[FieldFilter]] = None, orders: Optional[Sequence[Order]] = None, limit: Optional[int] = None) -> Sequence[GridItem]:
+    async def list_offchain_contents(self, fieldFilters: Optional[Sequence[FieldFilter]] = None, orders: Optional[Sequence[Order]] = None, limit: Optional[int] = None) -> Sequence[OffchainContent]:
         query = OffchainContentsTable.select()
         if fieldFilters:
             query = self._apply_field_filters(query=query, table=OffchainContentsTable, fieldFilters=fieldFilters)
@@ -93,3 +97,15 @@ class MdtpRetriever(Retriever):
         rows = await self.database.fetch_all(query=query)
         offchainContents = [offchain_content_from_row(row) for row in rows]
         return offchainContents
+
+    async def list_offchain_pending_contents(self, fieldFilters: Optional[Sequence[FieldFilter]] = None, orders: Optional[Sequence[Order]] = None, limit: Optional[int] = None) -> Sequence[OffchainPendingContent]:
+        query = OffchainPendingContentsTable.select()
+        if fieldFilters:
+            query = self._apply_field_filters(query=query, table=OffchainPendingContentsTable, fieldFilters=fieldFilters)
+        if orders:
+            query = self._apply_orders(query=query, table=OffchainPendingContentsTable, orders=orders)
+        if limit:
+            query = query.limit(limit)
+        rows = await self.database.fetch_all(query=query)
+        offchainPEndingContents = [offchain_pending_content_from_row(row) for row in rows]
+        return offchainPEndingContents
