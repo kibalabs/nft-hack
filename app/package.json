@@ -12,21 +12,12 @@
     "type-check": "type-check"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@ethersproject/abstract-provider": "^5.4.1",
-    "@kibalabs/core": "^0.5.5",
-    "@kibalabs/core-react": "0.6.3-next.1",
-    "@kibalabs/everyview-tracker": "^0.2.5",
-    "@kibalabs/everyview-tracker-react": "^0.2.5",
-    "@kibalabs/ui-react": "^0.9.4",
-=======
     "@ethersproject/abstract-provider": "5.5.1",
-    "@kibalabs/core": "0.5.6",
-    "@kibalabs/core-react": "0.7.0",
+    "@kibalabs/core": "0.5.7-next.0",
+    "@kibalabs/core-react": "0.7.1-next.0",
     "@kibalabs/everyview-tracker": "0.2.5",
     "@kibalabs/everyview-tracker-react": "0.2.5",
-    "@kibalabs/ui-react": "0.9.5",
->>>>>>> 4c3a2bbc2ce89aa930af7c88c78d51defc1efef1
+    "@kibalabs/ui-react": "0.9.6-next.1",
     "@metamask/detect-provider": "1.2.0",
     "canvas-size": "1.2.5",
     "ethers": "5.5.1",

@@ -102,19 +102,11 @@ export const FomoBar = (): React.ReactElement => {
             ) : hasMintedAll ? (
               <Text variant='light-bold-small-uppercase'>{'All tokens sold 🤩'}</Text>
             ) : countdownTime ? (
-<<<<<<< HEAD
-              <LinkBase onClicked={onNextBatchClicked}>
-                <Text variant='light-bold-small-uppercase'>{`Next batch releasing in ${countdownTime} ⏳`}</Text>
-              </LinkBase>
-            ) : hasMintedAllInTranch ? (
-              <LinkBase onClicked={onNextBatchClicked}>
-=======
               <LinkBase target={'/about'}>
                 <Text variant='light-bold-small-uppercase'>{`Next batch releasing in ${countdownTime} ⏳`}</Text>
               </LinkBase>
             ) : hasMintedAllInTranch ? (
               <LinkBase target={'/about'}>
->>>>>>> 4c3a2bbc2ce89aa930af7c88c78d51defc1efef1
                 <Text variant='light-bold-small-uppercase'>{'All available tokens sold, more coming soon 👀'}</Text>
               </LinkBase>
             ) : (
