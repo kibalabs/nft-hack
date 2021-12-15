@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { getLinkableUrl, getUrlDisplayString, truncateMiddle, truncateStart } from '@kibalabs/core';
-import { useNavigator } from '@kibalabs/core-react';
+import { useNavigator, useRouteParams } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Head, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
@@ -17,16 +17,15 @@ import { getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/
 import { useOwnerId } from '../../util/useOwnerId';
 import { useTokenData } from '../../util/useTokenMetadata';
 
-export type TokenPageProps = {
-  tokenId: string;
-}
+export const TokenPage = (): React.ReactElement => {
+  const routeParams = useRouteParams();
+  const tokenId = routeParams.tokenId as string;
 
-export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   const navigator = useNavigator();
   const setTokenSelection = useSetTokenSelection();
   const { contract, apiClient, network, web3 } = useGlobals();
-  const chainOwnerId = useOwnerId(Number(props.tokenId));
-  const tokenData = useTokenData(Number(props.tokenId));
+  const chainOwnerId = useOwnerId(Number(tokenId));
+  const tokenData = useTokenData(Number(tokenId));
   const tokenMetadata = tokenData.tokenMetadata;
   const gridItem = tokenData.gridItem;
   const [groupGridItems, setGroupGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
@@ -83,12 +82,12 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
     if (groupGridItems) {
       setTokenSelection(groupGridItems.map((blockGridItem: GridItem): number => blockGridItem.tokenId));
     } else {
-      setTokenSelection([Number(props.tokenId)]);
+      setTokenSelection([Number(tokenId)]);
     }
-  }, [props.tokenId, setTokenSelection, groupGridItems]);
+  }, [tokenId, setTokenSelection, groupGridItems]);
 
   const onUpdateTokenClicked = (): void => {
-    navigator.navigateTo(`/tokens/${props.tokenId}/update`);
+    navigator.navigateTo(`/tokens/${tokenId}/update`);
   };
 
   const onUpdateGroupClicked = (): void => {
@@ -102,7 +101,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   };
 
   const onMintClicked = (): void => {
-    navigator.navigateTo(`/tokens/${props.tokenId}/mint`);
+    navigator.navigateTo(`/tokens/${tokenId}/mint`);
   };
 
   const getShareText = (): string => {
@@ -124,7 +123,7 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
   return (
     <React.Fragment>
       <Head headId='token'>
-        <title>{`Token ${props.tokenId} | Million Dollar Token Page`}</title>
+        <title>{`Token ${tokenId} | Million Dollar Token Page`}</title>
       </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
         { tokenMetadata === undefined || gridItem === undefined ? (
@@ -171,8 +170,8 @@ export const TokenPage = (props: TokenPageProps): React.ReactElement => {
                     <React.Fragment>
                       <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](/owners/${String(ownerId)})`} />
                       <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
-                        <Button variant='secondary' target={getTokenOpenseaUrl(network, props.tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
-                        <Button variant='secondary' target={getTokenEtherscanUrl(network, props.tokenId) || ''} text='View on Etherscan' />
+                        <Button variant='secondary' target={getTokenOpenseaUrl(network, tokenId) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
+                        <Button variant='secondary' target={getTokenEtherscanUrl(network, tokenId) || ''} text='View on Etherscan' />
                       </Stack>
                     </React.Fragment>
                   ) : (
