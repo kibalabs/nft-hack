@@ -177,8 +177,10 @@ export const TokenPage = (): React.ReactElement => {
                     <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
                   )}
                 </Stack.Item>
-                { !accounts || !accountIds || !tokenMetadata ? (
+                { (accounts === undefined || accountIds === undefined || tokenMetadata === undefined) ? (
                   <LoadingSpinner />
+                ) : (accounts === null || accountIds === null || tokenMetadata === null) ? (
+                  <React.Fragment />
                 ) : (!contract || accounts?.length === 0) || (accountIds?.length === 0) ? (
                   <Text variant='note'>{'Please connect your account to view more options.'}</Text>
                 ) : isOwnedByUser && (

@@ -21,11 +21,11 @@ export const TokenUpdatePage = (): React.ReactElement => {
   const { contract, requester, apiClient, network, web3StorageClient, web3 } = useGlobals();
   const colors = useColors();
   const setTokenSelection = useSetTokenSelection();
-  const tokenData = useTokenData(Number(tokenId));
+  const tokenData = useTokenData(tokenId);
   const tokenMetadata = tokenData.tokenMetadata;
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
   const [requestWidth, setRequestWidth] = React.useState<number>(1);
-  const tokenIds = getTokenIds(Number(tokenId), requestWidth, requestHeight);
+  const tokenIds = getTokenIds(tokenId, requestWidth, requestHeight);
   const ownerIds = useOwnerIds(tokenIds);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
   const [offchainTransaction, setOffchainTransaction] = React.useState<Promise<void> | null>(null);
@@ -81,8 +81,8 @@ export const TokenUpdatePage = (): React.ReactElement => {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
-    // const tokenId = Number(tokenId);
-    const chainOwnerId = ownerIds.get(Number(tokenId));
+    // const tokenId = tokenId;
+    const chainOwnerId = ownerIds.get(tokenId);
     const signerIndex = accountIds.indexOf(chainOwnerId || '0x0000000000000000000000000000000000000000');
     if (signerIndex === -1) {
       return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
@@ -98,9 +98,9 @@ export const TokenUpdatePage = (): React.ReactElement => {
     let tokenMetadataUrls: string[];
     try {
       if (isUpdatingMultiple) {
-        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, Number(tokenId), shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
       } else {
-        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, Number(tokenId), shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
+        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
         tokenMetadataUrls = [tokenMetadataUrl];
       }
     } catch (error: unknown) {
@@ -120,7 +120,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
       } catch (error: unknown) {
         return { isSuccess: false, message: (error as Error).message };
       }
-      const request = apiClient.updateOffchainContentsForTokenGroup(network, Number(tokenId), requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, false);
+      const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, false);
       setOffchainTransaction(request);
       return { isSuccess: false, message: 'Update in progress.' };
     }
