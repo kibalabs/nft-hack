@@ -44,7 +44,7 @@ export const TokenMintPage = (): React.ReactElement => {
   const isOverOwnershipLimit = (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
   const isOverBalance = (balance && totalPrice) ? balance.sub(totalPrice).isNegative() : false;
   const isAnyTokenMinted = ownedTokenIds ? ownedTokenIds.length > 0 : false;
-  const tokenIds = getTokenIds(Number(tokenId), requestWidth, requestHeight);
+  const tokenIds = getTokenIds(tokenId, requestWidth, requestHeight);
   const hasMinted = transaction != null || transactionReceipt != null;
 
   const loadData = React.useCallback(async (): Promise<void> => {
@@ -205,9 +205,9 @@ export const TokenMintPage = (): React.ReactElement => {
     let newTransaction = null;
     try {
       if (requestCount > 1) {
-        newTransaction = await contractWithSigner.mintTokenGroup(Number(tokenId), requestWidth, requestHeight, { value: totalPrice });
+        newTransaction = await contractWithSigner.mintTokenGroup(tokenId, requestWidth, requestHeight, { value: totalPrice });
       } else {
-        newTransaction = await contractWithSigner.mintToken(Number(tokenId), { value: totalPrice });
+        newTransaction = await contractWithSigner.mintToken(tokenId, { value: totalPrice });
       }
     } catch (error: unknown) {
       setTransactionError(error as Error);
@@ -271,7 +271,7 @@ export const TokenMintPage = (): React.ReactElement => {
     const formData = new FormData();
     let presignedUpload: PresignedUpload;
     try {
-      presignedUpload = await apiClient.generateImageUploadForToken(network, Number(tokenId));
+      presignedUpload = await apiClient.generateImageUploadForToken(network, tokenId);
     } catch (error: unknown) {
       return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}` };
     }
@@ -302,14 +302,14 @@ export const TokenMintPage = (): React.ReactElement => {
       return { isSuccess: false, message: 'Please provide an image.' };
     }
 
-    // const tokenId = Number(tokenId);
+    // const tokenId = tokenId;
     const isUpdatingMultiple = requestWidth > 1 || requestHeight > 1;
     let tokenMetadataUrls: string[];
     try {
       if (isUpdatingMultiple) {
-        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, Number(tokenId), shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
       } else {
-        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, Number(tokenId), shouldUseIpfs, title, description, imageUrl, url);
+        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl, url);
         tokenMetadataUrls = [tokenMetadataUrl];
       }
     } catch (error: unknown) {
@@ -328,7 +328,7 @@ export const TokenMintPage = (): React.ReactElement => {
     } catch (error: unknown) {
       return { isSuccess: false, message: (error as Error).message };
     }
-    const request = apiClient.updateOffchainContentsForTokenGroup(network, Number(tokenId), requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, true);
+    const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, true);
     try {
       await request;
       setUpdateReceipt(true);
