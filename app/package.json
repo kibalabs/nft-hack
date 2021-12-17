@@ -13,26 +13,26 @@
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "5.5.1",
-    "@kibalabs/core": "0.5.7-next.0",
+    "@kibalabs/core": "0.5.7-next.1",
     "@kibalabs/core-react": "0.7.1-next.2",
     "@kibalabs/everyview-tracker": "0.2.5",
     "@kibalabs/everyview-tracker-react": "0.2.5",
-    "@kibalabs/ui-react": "0.9.6-next.1",
+    "@kibalabs/ui-react": "0.9.6-next.5",
     "@metamask/detect-provider": "1.2.0",
     "canvas-size": "1.2.5",
-    "ethers": "5.5.1",
+    "ethers": "5.5.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-dropzone": "11.4.2",
     "react-toastify": "8.1.0",
     "react-tooltip": "4.2.21",
     "styled-components": "5.3.3",
-    "web3.storage": "3.3.3"
+    "web3.storage": "3.5.1"
   },
   "devDependencies": {
-    "@kibalabs/build": "0.8.1",
-    "@types/react": "17.0.34",
+    "@kibalabs/build": "0.8.2-next.1",
+    "@types/react": "17.0.33",
     "@types/react-dom": "17.0.11",
-    "@types/styled-components": "5.1.15"
+    "@types/styled-components": "5.1.18"
   }
 }
