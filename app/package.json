@@ -14,7 +14,7 @@
   "dependencies": {
     "@ethersproject/abstract-provider": "5.5.1",
     "@kibalabs/core": "0.5.7-next.0",
-    "@kibalabs/core-react": "0.7.1-next.1",
+    "@kibalabs/core-react": "0.7.1-next.2",
     "@kibalabs/everyview-tracker": "0.2.5",
     "@kibalabs/everyview-tracker-react": "0.2.5",
     "@kibalabs/ui-react": "0.9.6-next.1",

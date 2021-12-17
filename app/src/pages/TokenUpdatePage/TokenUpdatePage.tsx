@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
-import { useRouteParams } from '@kibalabs/core-react';
+import { useNumberRouteParam } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 
@@ -17,8 +17,7 @@ import { useOwnerIds } from '../../util/useOwnerIds';
 import { useTokenData } from '../../util/useTokenMetadata';
 
 export const TokenUpdatePage = (): React.ReactElement => {
-  const routeParams = useRouteParams();
-  const tokenId = routeParams.tokenId as string;
+  const tokenId = useNumberRouteParam('tokenId');
   const { contract, requester, apiClient, network, web3StorageClient, web3 } = useGlobals();
   const colors = useColors();
   const setTokenSelection = useSetTokenSelection();
@@ -57,7 +56,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
     const formData = new FormData();
     let presignedUpload: PresignedUpload;
     try {
-      presignedUpload = await apiClient.generateImageUploadForToken(network, Number(tokenId));
+      presignedUpload = await apiClient.generateImageUploadForToken(network, tokenId);
     } catch (error: unknown) {
       return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}` };
     }

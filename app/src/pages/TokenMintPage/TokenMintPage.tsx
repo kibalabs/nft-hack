@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
-import { useDeepCompareCallback, useRouteParams } from '@kibalabs/core-react';
+import { useDeepCompareCallback, useNumberRouteParam } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 
@@ -14,8 +14,7 @@ import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
 import { getTokenIds } from '../../util/gridItemUtil';
 
 export const TokenMintPage = (): React.ReactElement => {
-  const routeParams = useRouteParams();
-  const tokenId = routeParams.tokenId as string;
+  const tokenId = useNumberRouteParam('tokenId');
   const { contract, apiClient, network, requester, web3StorageClient, web3 } = useGlobals();
   const setTokenSelection = useSetTokenSelection();
   const [mintPrice, setMintPrice] = React.useState<BigNumber | undefined | null>(undefined);

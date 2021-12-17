@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { truncateMiddle } from '@kibalabs/core';
-import { useNavigator, useRouteParams } from '@kibalabs/core-react';
+import { useNavigator, useStringRouteParam } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, Image, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccountIds } from '../../accountsContext';
@@ -18,8 +18,7 @@ interface GridItemGroup {
 }
 
 export const OwnerPage = (): React.ReactElement => {
-  const routeParams = useRouteParams();
-  const ownerId = routeParams.ownerId as string;
+  const ownerId = useStringRouteParam('ownerId');
   const navigator = useNavigator();
   const { apiClient, network, web3 } = useGlobals();
   const setTokenSelection = useSetTokenSelection();

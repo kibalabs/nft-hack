@@ -150,19 +150,15 @@ export const App = (props: IAppProps): React.ReactElement => {
   }, [chainId, web3]);
 
   const routes: IRoute[] = [
-    { default: true,
-      path: '/',
+    { path: '/',
       page: HomePage,
-      subRoutes: [{ path: '/tokens/:tokenId',
-        page: TokenPage,
-        subRoutes: [
-          { path: ':tokenId/update', page: TokenUpdatePage },
-          { path: ':tokenId/mint', page: TokenMintPage },
-        ] },
-      { path: '/owners/:ownerId', page: OwnerPage },
-      { path: '/about', page: AboutPage },
-      { path: '/roadmap', page: RoadmapPage },
-      { path: '/share', page: SharePage },
+      subRoutes: [{ path: '/tokens/:tokenId', page: TokenPage },
+        { path: '/tokens/:tokenId/update', page: TokenUpdatePage },
+        { path: '/tokens/:tokenId/mint', page: TokenMintPage },
+        { path: '/owners/:ownerId', page: OwnerPage },
+        { path: '/about', page: AboutPage },
+        { path: '/roadmap', page: RoadmapPage },
+        { path: '/share', page: SharePage },
       ] },
   ];
 

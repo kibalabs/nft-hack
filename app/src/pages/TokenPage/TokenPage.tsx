@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { getLinkableUrl, getUrlDisplayString, truncateMiddle, truncateStart } from '@kibalabs/core';
-import { useNavigator, useRouteParams } from '@kibalabs/core-react';
+import { useNavigator, useStringRouteParam } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Head, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
@@ -18,8 +18,7 @@ import { useOwnerId } from '../../util/useOwnerId';
 import { useTokenData } from '../../util/useTokenMetadata';
 
 export const TokenPage = (): React.ReactElement => {
-  const routeParams = useRouteParams();
-  const tokenId = routeParams.tokenId as string;
+  const tokenId = useStringRouteParam('tokenId');
 
   const navigator = useNavigator();
   const setTokenSelection = useSetTokenSelection();
