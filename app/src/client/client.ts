@@ -24,7 +24,7 @@ export class MdtpClient extends ServiceClient {
     return response.baseImage;
   }
 
-  public listGridItems = async (network: string, shouldCompact = false, ownerId?: string, updatedSinceDate?: Date, groupId?: string): Promise<Resources.GridItem[]> => {
+  public listGridItems = async (network: string, shouldCompact: boolean, ownerId?: string, updatedSinceDate?: Date, groupId?: string): Promise<Resources.GridItem[]> => {
     const method = RestMethod.GET;
     const path = `v1/networks/${network}/grid-items`;
     const request = new Endpoints.ListGridItemsRequest(shouldCompact, ownerId, updatedSinceDate, groupId);
