@@ -171,9 +171,9 @@ export const TokenMintPage = (): React.ReactElement => {
     if (contract === undefined) {
       return;
     }
-    const chainOwnerIdPromises = tokenIds.map(async (tokenId: number): Promise<string | null> => {
+    const chainOwnerIdPromises = tokenIds.map(async (tokenID: number): Promise<string | null> => {
       try {
-        return await contract.ownerOf(tokenId);
+        return await contract.ownerOf(tokenID);
       } catch (error: unknown) {
         if (!(error as Error).message.includes('nonexistent token')) {
           console.error(error);
@@ -182,9 +182,9 @@ export const TokenMintPage = (): React.ReactElement => {
       }
     });
     const retrievedChainOwnerIds = await Promise.all(chainOwnerIdPromises);
-    const calculatedOwnedTokenIds = tokenIds.reduce((accumulator: number[], tokenId: number, index: number): number[] => {
+    const calculatedOwnedTokenIds = tokenIds.reduce((accumulator: number[], tokenID: number, index: number): number[] => {
       if (retrievedChainOwnerIds[index] && retrievedChainOwnerIds[index] !== NON_OWNER) {
-        accumulator.push(tokenId);
+        accumulator.push(tokenID);
       }
       return accumulator;
     }, []);
@@ -221,8 +221,8 @@ export const TokenMintPage = (): React.ReactElement => {
       try {
         const receipt = await transaction.wait();
         setTransactionReceipt(receipt);
-        tokenIds.forEach((tokenId: number): void => {
-          apiClient.updateTokenDeferred(network, tokenId);
+        tokenIds.forEach((tokenID: number): void => {
+          apiClient.updateTokenDeferred(network, tokenID);
         });
       } catch (error: unknown) {
         setTransactionError(new Error(`Transaction failed: ${(error as Error).message || 'Unknown error'}`));

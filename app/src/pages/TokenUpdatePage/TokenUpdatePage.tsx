@@ -148,8 +148,8 @@ export const TokenUpdatePage = (): React.ReactElement => {
     if (transaction && network) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
-      tokenIds.forEach((tokenId: number): void => {
-        apiClient.updateTokenDeferred(network, tokenId);
+      tokenIds.forEach((tokenID: number): void => {
+        apiClient.updateTokenDeferred(network, tokenID);
       });
     } else if (offchainTransaction) {
       try {
