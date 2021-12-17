@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
+import { useNumberRouteParam } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 
@@ -15,19 +16,16 @@ import { getTokenIds } from '../../util/gridItemUtil';
 import { useOwnerIds } from '../../util/useOwnerIds';
 import { useTokenData } from '../../util/useTokenMetadata';
 
-export type TokenUpdatePageProps = {
-  tokenId: string;
-}
-
-export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement => {
+export const TokenUpdatePage = (): React.ReactElement => {
+  const tokenId = useNumberRouteParam('tokenId');
   const { contract, requester, apiClient, network, web3StorageClient, web3 } = useGlobals();
   const colors = useColors();
   const setTokenSelection = useSetTokenSelection();
-  const tokenData = useTokenData(Number(props.tokenId));
+  const tokenData = useTokenData(Number(tokenId));
   const tokenMetadata = tokenData.tokenMetadata;
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
   const [requestWidth, setRequestWidth] = React.useState<number>(1);
-  const tokenIds = getTokenIds(Number(props.tokenId), requestWidth, requestHeight);
+  const tokenIds = getTokenIds(Number(tokenId), requestWidth, requestHeight);
   const ownerIds = useOwnerIds(tokenIds);
   const [transaction, setTransaction] = React.useState<ContractTransaction | null>(null);
   const [offchainTransaction, setOffchainTransaction] = React.useState<Promise<void> | null>(null);
@@ -58,7 +56,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     const formData = new FormData();
     let presignedUpload: PresignedUpload;
     try {
-      presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
+      presignedUpload = await apiClient.generateImageUploadForToken(network, tokenId);
     } catch (error: unknown) {
       return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}` };
     }
@@ -83,8 +81,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
-    const tokenId = Number(props.tokenId);
-    const chainOwnerId = ownerIds.get(tokenId);
+    // const tokenId = Number(tokenId);
+    const chainOwnerId = ownerIds.get(Number(tokenId));
     const signerIndex = accountIds.indexOf(chainOwnerId || '0x0000000000000000000000000000000000000000');
     if (signerIndex === -1) {
       return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
@@ -100,9 +98,9 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     let tokenMetadataUrls: string[];
     try {
       if (isUpdatingMultiple) {
-        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, Number(tokenId), shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
       } else {
-        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
+        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, Number(tokenId), shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
         tokenMetadataUrls = [tokenMetadataUrl];
       }
     } catch (error: unknown) {
@@ -122,7 +120,7 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
       } catch (error: unknown) {
         return { isSuccess: false, message: (error as Error).message };
       }
-      const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, false);
+      const request = apiClient.updateOffchainContentsForTokenGroup(network, Number(tokenId), requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, false);
       setOffchainTransaction(request);
       return { isSuccess: false, message: 'Update in progress.' };
     }
@@ -150,8 +148,8 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
     if (transaction && network) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
-      tokenIds.forEach((tokenId: number): void => {
-        apiClient.updateTokenDeferred(network, tokenId);
+      tokenIds.forEach((tokenID: number): void => {
+        apiClient.updateTokenDeferred(network, tokenID);
       });
     } else if (offchainTransaction) {
       try {
@@ -202,11 +200,11 @@ export const TokenUpdatePage = (props: TokenUpdatePageProps): React.ReactElement
   return (
     <React.Fragment>
       <Head headId='token-update'>
-        <title>{`Update Token ${props.tokenId} | Million Dollar Token Page`}</title>
+        <title>{`Update Token ${tokenId} | Million Dollar Token Page`}</title>
       </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
-        <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${props.tokenId}`}</Text>
-        <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
+        <Text variant='header2' alignment={TextAlignment.Center}>{`Update Token ${tokenId}`}</Text>
+        <Link text='Go to token' target={`/tokens/${tokenId}`} />
         <Spacing />
         { contract === null || network === null ? (
           <Text variant='error'>You can&apos;t update a token if you aren&apos;t connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
