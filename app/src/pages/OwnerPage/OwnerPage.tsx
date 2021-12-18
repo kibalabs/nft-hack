@@ -9,7 +9,7 @@ import { GridItem } from '../../client';
 import { OwnedGridItemView } from '../../components/OwnedGridItemView';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
-import { getAccountEtherscanUrl } from '../../util/chainUtil';
+import { getAccountEtherscanUrl, normalizeAddress } from '../../util/chainUtil';
 
 interface GridItemGroup {
   groupId: string | null;
@@ -18,7 +18,7 @@ interface GridItemGroup {
 }
 
 export const OwnerPage = (): React.ReactElement => {
-  const ownerId = useStringRouteParam('ownerId');
+  const ownerId = normalizeAddress(useStringRouteParam('ownerId'));
   const navigator = useNavigator();
   const { apiClient, network, web3 } = useGlobals();
   const setTokenSelection = useSetTokenSelection();
@@ -30,6 +30,9 @@ export const OwnerPage = (): React.ReactElement => {
   const loadTokens = React.useCallback(async (): Promise<void> => {
     if (network === null) {
       setGridItemGroups(null);
+      return;
+    }
+    if (ownerId === null) {
       return;
     }
     setGridItemGroups(undefined);
@@ -67,7 +70,7 @@ export const OwnerPage = (): React.ReactElement => {
 
   const loadOwnerName = React.useCallback(async (): Promise<void> => {
     setOwnerName(undefined);
-    if (!web3) {
+    if (!web3 || !ownerId) {
       setOwnerName(null);
       return;
     }
@@ -79,8 +82,8 @@ export const OwnerPage = (): React.ReactElement => {
     loadOwnerName();
   }, [loadOwnerName]);
 
-  const isOwnerUser = Boolean(accountIds && accountIds.indexOf(ownerId) !== -1);
-  const ownerIdString = ownerName || truncateMiddle(ownerId, 10);
+  const isOwnerUser = Boolean(ownerId && accountIds && accountIds.indexOf(ownerId) !== -1);
+  const ownerIdString = ownerId ? (ownerName || truncateMiddle(ownerId, 10)) : null;
 
   const onTokenIdClicked = (startTokenId: string): void => {
     navigator.navigateTo(`/tokens/${startTokenId}`);
@@ -92,7 +95,12 @@ export const OwnerPage = (): React.ReactElement => {
         <title>{`${ownerId}'s Tokens | Million Dollar Token Page`}</title>
       </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
-        { network === undefined || gridItems === undefined || gridItemGroups === undefined ? (
+        { ownerId === null ? (
+          <React.Fragment>
+            <Spacing variant={PaddingSize.Wide3} />
+            <Text variant='error'>Invalid owner address passed. Please go back and try again.</Text>
+          </React.Fragment>
+        ) : network === undefined || gridItems === undefined || gridItemGroups === undefined ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />
