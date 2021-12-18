@@ -11,7 +11,7 @@ For this reason we're doing things a little differently. We're releasing the NFT
 
 Together with your input, we'll iteratively launch the batches all the way up to the collection's full 10,000 NFTs.
 
-Click the image below to view our roadmap. We will keep it up to date as we progress through the batches. We'd love to hear your thoughts and what you're excited for from the project 🔥🔥
+Click the image below to view our roadmap. We will keep it up to date as we progress through the batches. We'd love to hear your thoughts and what you're excited to see from MDTP 🔥🔥
   `;
   //   const text = `
   // **Batch 0 (Pre-launch): ~150 tokens for 0 ETH 🐣**
