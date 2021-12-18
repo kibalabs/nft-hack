@@ -12,33 +12,33 @@ For this reason we're doing things a little differently. We're releasing the NFT
 Together with your input, we'll iteratively launch the batches all the way up to the collection's full 10,000 NFTs.
 
 Click the image below to view our roadmap. We will keep it up to date as we progress through the batches. We'd love to hear your thoughts and what you're excited for from the project 🔥🔥
-  `
-//   const text = `
-// **Batch 0 (Pre-launch): ~150 tokens for 0 ETH 🐣**
+  `;
+  //   const text = `
+  // **Batch 0 (Pre-launch): ~150 tokens for 0 ETH 🐣**
 
-// If you were a BETA user before our launch on Monday 6th September '21 we rewarded you with free NFTs! This was all done through our Discord and we're glad to say it went very well 🔥
+  // If you were a BETA user before our launch on Monday 6th September '21 we rewarded you with free NFTs! This was all done through our Discord and we're glad to say it went very well 🔥
 
-// **Batch 1 (Launch): 150 - 1000 tokens for 0.01 ETH 👥**
+  // **Batch 1 (Launch): 150 - 1000 tokens for 0.01 ETH 👥**
 
-// The first 1000 tokens will have a mint fee of only 0.01 ETH each. Individual accounts can hold at most 35 NFTs to promote a varied community and deter whales.
+  // The first 1000 tokens will have a mint fee of only 0.01 ETH each. Individual accounts can hold at most 35 NFTs to promote a varied community and deter whales.
 
-// **Batch 2: 1000 - 2000 tokens for 0.01 ETH 🦍**
+  // **Batch 2: 1000 - 2000 tokens for 0.01 ETH 🦍**
 
-// For the second batch and beyond we'll get your input on how best to release them. For example you, the community, might decide we should sell the next 1000 only to CryptoPunk or BAYC owners to try and get NFT OGs onboard! Whatever gets decided will be a community oriented decision.
+  // For the second batch and beyond we'll get your input on how best to release them. For example you, the community, might decide we should sell the next 1000 only to CryptoPunk or BAYC owners to try and get NFT OGs onboard! Whatever gets decided will be a community oriented decision.
 
-// **Batch 3: 2000 - 3000 tokens for ?? ETH**  🎨
+  // **Batch 3: 2000 - 3000 tokens for ?? ETH**  🎨
 
-// ... (lots more to come) ...
-// We’ll revamp the NFT artwork with a top artist and introduce traits - all with community involvement!
+  // ... (lots more to come) ...
+  // We’ll revamp the NFT artwork with a top artist and introduce traits - all with community involvement!
 
-// ... (lots more to come) ...
+  // ... (lots more to come) ...
 
-// **Final Batch: 9500 - 10,000 tokens 🏆**
+  // **Final Batch: 9500 - 10,000 tokens 🏆**
 
-// The middle 500 blocks will have their own unique artwork and traits, and be auctioned off at the very final batch in the fairest and most fun way possible!
+  // The middle 500 blocks will have their own unique artwork and traits, and be auctioned off at the very final batch in the fairest and most fun way possible!
 
-// MDTP is a project focused on the exciting and emerging NFT community. We've built it using blockchain technology so that one day it can grow to outlive even us. We're looking forward to going on this journey with you. Join us and own a piece of crypto history! ❤️
-//   `;
+  // MDTP is a project focused on the exciting and emerging NFT community. We've built it using blockchain technology so that one day it can grow to outlive even us. We're looking forward to going on this journey with you. Join us and own a piece of crypto history! ❤️
+  //   `;
 
   return (
     <React.Fragment>
