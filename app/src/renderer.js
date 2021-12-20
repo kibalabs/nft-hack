@@ -116,9 +116,6 @@ var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryP
         sourceDirectory = sourceDirectoryPath;
         buildDirectory = buildDirectoryPath || path_1["default"].join(process_1["default"].cwd(), 'build');
         outputDirectory = outputDirectoryPath || path_1["default"].join(process_1["default"].cwd(), 'dist');
-        fs_1["default"].mkdirSync(sourceDirectory, { recursive: true });
-        fs_1["default"].mkdirSync(buildDirectory, { recursive: true });
-        fs_1["default"].mkdirSync(outputDirectory, { recursive: true });
         pages = [{
                 path: '/',
                 filename: 'index.html'
@@ -152,19 +149,13 @@ var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryP
                         var bodyString = server_2["default"].renderToString(react_1["default"].createElement(server_1.ChunkExtractorManager, { extractor: extractor },
                             react_1["default"].createElement(styled_components_1.StyleSheetManager, { sheet: styledComponentsSheet.instance },
                                 react_1["default"].createElement(App, { staticPath: page.path, setHead: setHead }))));
-                        console.log('bodyString', bodyString.length);
                         var tags = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], (pageHead.title ? [pageHead.title] : []), true), (pageHead.base ? [pageHead.base] : []), true), pageHead.links, true), pageHead.metas, true), pageHead.styles, true), pageHead.scripts, true);
                         var headString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement("head", null,
                             tags.map(function (tag) { return (react_1["default"].createElement(tag.type, __assign(__assign({}, tag.attributes), { 'ui-react-head': tag.headId }), tag.content)); }),
-                            extractor.getPreAssets().map(function (preAsset) { return (react_1["default"].createElement("link", { key: preAsset.filename, "data-chunk": preAsset.chunk, rel: preAsset.linkType, as: preAsset.scriptType, href: "/".concat(preAsset.filename) })); }),
+                            extractor.getPreAssets().map(function (asset) { return (react_1["default"].createElement('link', { key: asset.filename, 'data-chunk': asset.chunk, rel: asset.linkType, as: asset.scriptType, href: asset.url })); }),
                             styledComponentsSheet.getStyleElement()));
-                        console.log('headString', headString.length);
-                        // TODO(krishan711): use stylesheets and css
-                        var bodyScriptsString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement(react_1["default"].Fragment, null, extractor.getMainAssets().map(function (mainAsset) { return (
-                        // eslint-disable-next-line react/self-closing-comp
-                        react_1["default"].createElement("script", { key: mainAsset.filename, "data-chunk": mainAsset.chunk, async: true, src: "/".concat(mainAsset.filename) })); })));
-                        console.log('bodyScriptsString', bodyScriptsString.length);
-                        var output = "<!DOCTYPE html>\n        <html lang=\"en\">\n          ".concat(headString, "\n          <body>\n            <div id=\"root\">").concat(bodyString, "</div>\n            ").concat(bodyScriptsString, "\n          </body>\n        </html>\n      ");
+                        var bodyAssetsString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement(react_1["default"].Fragment, null, extractor.getMainAssets().map(function (asset) { return (react_1["default"].createElement(asset.scriptType, { key: asset.filename, 'data-chunk': asset.chunk, async: true, src: asset.url })); })));
+                        var output = "<!DOCTYPE html>\n        <html lang=\"en\">\n          ".concat(headString, "\n          <body>\n            <div id=\"root\">").concat(bodyString, "</div>\n            ").concat(bodyAssetsString, "\n          </body>\n        </html>\n      ");
                         var outputPath = path_1["default"].join(outputDirectory, page.filename);
                         fs_1["default"].mkdirSync(path_1["default"].dirname(outputPath), { recursive: true });
                         fs_1["default"].writeFileSync(outputPath, output);

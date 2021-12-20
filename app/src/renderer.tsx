@@ -25,6 +25,7 @@ import ReactDOMServer from 'react-dom/server';
 import { ServerStyleSheet, StyleSheetManager } from 'styled-components';
 import webpackMerge from 'webpack-merge';
 
+
 export interface IPage {
   path: string;
   filename: string;
@@ -115,7 +116,6 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
           </StyleSheetManager>
         </ChunkExtractorManager>,
       );
-      console.log('bodyString', bodyString.length);
       const tags: IHeadTag[] = [
         ...(pageHead.title ? [pageHead.title] : []),
         ...(pageHead.base ? [pageHead.base] : []),
@@ -129,30 +129,25 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
           {tags.map((tag: IHeadTag): React.ReactElement => (
             React.createElement(tag.type, { ...tag.attributes, 'ui-react-head': tag.headId }, tag.content)
           ))}
-          {/* @ts-ignore */}
-          {extractor.getPreAssets().map((preAsset: Chunk): React.ReactElement => (
-            <link key={preAsset.filename} data-chunk={preAsset.chunk} rel={preAsset.linkType} as={preAsset.scriptType} href={`/${preAsset.filename}`} />
+          {extractor.getPreAssets().map((asset: Chunk): React.ReactElement => (
+            React.createElement('link', { key: asset.filename, 'data-chunk': asset.chunk, rel: asset.linkType, as: asset.scriptType, href: asset.url })
           ))}
           {styledComponentsSheet.getStyleElement()}
         </head>,
       );
-      console.log('headString', headString.length);
-      // TODO(krishan711): use stylesheets and css
-      const bodyScriptsString = ReactDOMServer.renderToStaticMarkup(
+      const bodyAssetsString = ReactDOMServer.renderToStaticMarkup(
         <React.Fragment>
-          {extractor.getMainAssets().map((mainAsset: Chunk): React.ReactElement => (
-            // eslint-disable-next-line react/self-closing-comp
-            <script key={mainAsset.filename} data-chunk={mainAsset.chunk} async={true} src={`/${mainAsset.filename}`}></script>
+          {extractor.getMainAssets().map((asset: Chunk): React.ReactElement => (
+            React.createElement(asset.scriptType, { key: asset.filename, 'data-chunk': asset.chunk, async: true, src: asset.url })
           ))}
         </React.Fragment>,
       );
-      console.log('bodyScriptsString', bodyScriptsString.length);
       const output = `<!DOCTYPE html>
         <html lang="en">
           ${headString}
           <body>
             <div id="root">${bodyString}</div>
-            ${bodyScriptsString}
+            ${bodyAssetsString}
           </body>
         </html>
       `;
