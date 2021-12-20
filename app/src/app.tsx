@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { LocalStorageClient, Requester } from '@kibalabs/core';
-import { MockStorage, Route, Router, useInitialization } from '@kibalabs/core-react';
+import { IRoute, MockStorage, Router, useInitialization } from '@kibalabs/core-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
 import { Head, IHeadRootProviderProps, KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
@@ -149,6 +149,19 @@ export const App = (props: IAppProps): React.ReactElement => {
     }
   }, [chainId, web3]);
 
+  const routes: IRoute[] = [
+    { path: '/',
+      page: HomePage,
+      subRoutes: [{ path: '/tokens/:tokenId', page: TokenPage },
+        { path: '/tokens/:tokenId/update', page: TokenUpdatePage },
+        { path: '/tokens/:tokenId/mint', page: TokenMintPage },
+        { path: '/owners/:ownerId', page: OwnerPage },
+        { path: '/about', page: AboutPage },
+        { path: '/roadmap', page: RoadmapPage },
+        { path: '/share', page: SharePage },
+      ] },
+  ];
+
   return (
     <KibaApp theme={theme} isFullPageApp={true} setHead={props.setHead}>
       <Head headId='app'>
@@ -156,17 +169,7 @@ export const App = (props: IAppProps): React.ReactElement => {
       </Head>
       <GlobalsProvider globals={{ ...globals, network, contract, web3, chainId }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
-          <Router staticPath={props.staticPath}>
-            <Route default={true} page={HomePage}>
-              <Route path='/tokens/:tokenId' page={TokenPage} />
-              <Route path='/tokens/:tokenId/update' page={TokenUpdatePage} />
-              <Route path='/tokens/:tokenId/mint' page={TokenMintPage} />
-              <Route path='/owners/:ownerId' page={OwnerPage} />
-              <Route path='/about' page={AboutPage} />
-              <Route path='/roadmap' page={RoadmapPage} />
-              <Route path='/share' page={SharePage} />
-            </Route>
-          </Router>
+          <Router staticPath={props.staticPath} routes ={routes} />
         </AccountControlProvider>
       </GlobalsProvider>
       <ToastContainer />

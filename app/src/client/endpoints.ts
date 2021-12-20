@@ -249,8 +249,7 @@ export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
 
 export class UpdateOffchainContentsForTokenGroupResponse extends ResponseData {
   public static fromObject = (): UpdateOffchainContentsForTokenGroupResponse => {
-    return new UpdateOffchainContentsForTokenGroupResponse(
-    );
+    return new UpdateOffchainContentsForTokenGroupResponse();
   }
 }
 
@@ -263,7 +262,6 @@ export class UpdateTokenDeferredRequest extends RequestData {
 
 export class UpdateTokenDeferredResponse extends ResponseData {
   public static fromObject = (): UpdateTokenDeferredResponse => {
-    return new UpdateTokenDeferredResponse(
-    );
+    return new UpdateTokenDeferredResponse();
   }
 }

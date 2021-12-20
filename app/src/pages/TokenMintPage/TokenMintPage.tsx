@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
-import { useDeepCompareCallback } from '@kibalabs/core-react';
+import { useDeepCompareCallback, useNumberRouteParam } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Form, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 
@@ -13,11 +13,8 @@ import { useSetTokenSelection } from '../../tokenSelectionContext';
 import { getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
 import { getTokenIds } from '../../util/gridItemUtil';
 
-export type TokenMintPageProps = {
-  tokenId: string;
-}
-
-export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => {
+export const TokenMintPage = (): React.ReactElement => {
+  const tokenId = useNumberRouteParam('tokenId');
   const { contract, apiClient, network, requester, web3StorageClient, web3 } = useGlobals();
   const setTokenSelection = useSetTokenSelection();
   const [mintPrice, setMintPrice] = React.useState<BigNumber | undefined | null>(undefined);
@@ -47,7 +44,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   const isOverOwnershipLimit = (ownershipMintLimit && userOwnedCount) ? requestCount + userOwnedCount > ownershipMintLimit : false;
   const isOverBalance = (balance && totalPrice) ? balance.sub(totalPrice).isNegative() : false;
   const isAnyTokenMinted = ownedTokenIds ? ownedTokenIds.length > 0 : false;
-  const tokenIds = getTokenIds(Number(props.tokenId), requestWidth, requestHeight);
+  const tokenIds = getTokenIds(tokenId, requestWidth, requestHeight);
   const hasMinted = transaction != null || transactionReceipt != null;
 
   const loadData = React.useCallback(async (): Promise<void> => {
@@ -174,9 +171,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     if (contract === undefined) {
       return;
     }
-    const chainOwnerIdPromises = tokenIds.map(async (tokenId: number): Promise<string | null> => {
+    const chainOwnerIdPromises = tokenIds.map(async (tokenID: number): Promise<string | null> => {
       try {
-        return await contract.ownerOf(tokenId);
+        return await contract.ownerOf(tokenID);
       } catch (error: unknown) {
         if (!(error as Error).message.includes('nonexistent token')) {
           console.error(error);
@@ -185,9 +182,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       }
     });
     const retrievedChainOwnerIds = await Promise.all(chainOwnerIdPromises);
-    const calculatedOwnedTokenIds = tokenIds.reduce((accumulator: number[], tokenId: number, index: number): number[] => {
+    const calculatedOwnedTokenIds = tokenIds.reduce((accumulator: number[], tokenID: number, index: number): number[] => {
       if (retrievedChainOwnerIds[index] && retrievedChainOwnerIds[index] !== NON_OWNER) {
-        accumulator.push(tokenId);
+        accumulator.push(tokenID);
       }
       return accumulator;
     }, []);
@@ -208,9 +205,9 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     let newTransaction = null;
     try {
       if (requestCount > 1) {
-        newTransaction = await contractWithSigner.mintTokenGroup(Number(props.tokenId), requestWidth, requestHeight, { value: totalPrice });
+        newTransaction = await contractWithSigner.mintTokenGroup(tokenId, requestWidth, requestHeight, { value: totalPrice });
       } else {
-        newTransaction = await contractWithSigner.mintToken(Number(props.tokenId), { value: totalPrice });
+        newTransaction = await contractWithSigner.mintToken(tokenId, { value: totalPrice });
       }
     } catch (error: unknown) {
       setTransactionError(error as Error);
@@ -224,8 +221,8 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       try {
         const receipt = await transaction.wait();
         setTransactionReceipt(receipt);
-        tokenIds.forEach((tokenId: number): void => {
-          apiClient.updateTokenDeferred(network, tokenId);
+        tokenIds.forEach((tokenID: number): void => {
+          apiClient.updateTokenDeferred(network, tokenID);
         });
       } catch (error: unknown) {
         setTransactionError(new Error(`Transaction failed: ${(error as Error).message || 'Unknown error'}`));
@@ -274,7 +271,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
     const formData = new FormData();
     let presignedUpload: PresignedUpload;
     try {
-      presignedUpload = await apiClient.generateImageUploadForToken(network, Number(props.tokenId));
+      presignedUpload = await apiClient.generateImageUploadForToken(network, tokenId);
     } catch (error: unknown) {
       return { isSuccess: false, message: `Failed to generate upload: ${(error as Error).message}` };
     }
@@ -305,7 +302,7 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
       return { isSuccess: false, message: 'Please provide an image.' };
     }
 
-    const tokenId = Number(props.tokenId);
+    // const tokenId = tokenId;
     const isUpdatingMultiple = requestWidth > 1 || requestHeight > 1;
     let tokenMetadataUrls: string[];
     try {
@@ -346,11 +343,11 @@ export const TokenMintPage = (props: TokenMintPageProps): React.ReactElement => 
   return (
     <React.Fragment>
       <Head headId='token-mint'>
-        <title>{`Mint Token ${props.tokenId} | Million Dollar Token Page`}</title>
+        <title>{`Mint Token ${tokenId} | Million Dollar Token Page`}</title>
       </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide2} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true}>
-        <Text variant='header2' alignment={TextAlignment.Center}>{`Mint Token ${props.tokenId}`}</Text>
-        <Link text='Go to token' target={`/tokens/${props.tokenId}`} />
+        <Text variant='header2' alignment={TextAlignment.Center}>{`Mint Token ${tokenId}`}</Text>
+        <Link text='Go to token' target={`/tokens/${tokenId}`} />
         <Spacing />
         { contract === null || network === null ? (
           <Text variant='error'>You can&apos;t mint tokens if you aren&apos;t connected to the network 🤪. Please connect using the button at the bottom of the page</Text>

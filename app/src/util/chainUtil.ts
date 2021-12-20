@@ -1,5 +1,6 @@
 
 import { ContractInterface } from 'ethers';
+import { getAddress } from 'ethers/lib/utils';
 
 import contract6 from '../contract6.json';
 import contract7 from '../contract7.json';
@@ -114,4 +115,12 @@ export const getProductOpenseaUrl = (network: string): string | null => {
     return 'https://opensea.io/collection/milliondollartokenpage';
   }
   return null;
+};
+
+export const normalizeAddress = (address: string): string | null => {
+  try {
+    return getAddress(address);
+  } catch {
+    return null;
+  }
 };
