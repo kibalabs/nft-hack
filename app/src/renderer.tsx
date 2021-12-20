@@ -63,9 +63,6 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
   const sourceDirectory = sourceDirectoryPath;
   const buildDirectory = buildDirectoryPath || path.join(process.cwd(), 'build');
   const outputDirectory = outputDirectoryPath || path.join(process.cwd(), 'dist');
-  fs.mkdirSync(sourceDirectory, { recursive: true });
-  fs.mkdirSync(buildDirectory, { recursive: true });
-  fs.mkdirSync(outputDirectory, { recursive: true });
 
   const pages: IPage[] = [{
     path: '/',
@@ -107,10 +104,10 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
     const { App } = require(path.resolve(buildDirectory, 'index.js'));
     pages.forEach((page: IPage): void => {
       console.log(`EP: rendering page ${page.path} to ${page.filename}`);
-      let head: IHead | null = null;
+      let pageHead: IHead = { headId: '', base: null, title: null, links: [], metas: [], styles: [], scripts: [], noscripts: [] };
+      const setHead = (newHead: IHead): void => { pageHead = newHead; };
       const styledComponentsSheet = new ServerStyleSheet();
       const extractor = new ChunkExtractor({ stats: webpackBuildStats });
-      const setHead = (newHead: IHead): void => { head = newHead; };
       const bodyString = ReactDOMServer.renderToString(
         <ChunkExtractorManager extractor={extractor}>
           <StyleSheetManager sheet={styledComponentsSheet.instance}>
@@ -119,27 +116,17 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
         </ChunkExtractorManager>,
       );
       console.log('bodyString', bodyString.length);
+      const tags: IHeadTag[] = [
+        ...(pageHead.title ? [pageHead.title] : []),
+        ...(pageHead.base ? [pageHead.base] : []),
+        ...pageHead.links,
+        ...pageHead.metas,
+        ...pageHead.styles,
+        ...pageHead.scripts,
+      ];
       const headString = ReactDOMServer.renderToStaticMarkup(
         <head>
-          {head.title && (
-            React.createElement(head.title.type, { ...head.title.attributes, 'ui-react-head': head.title.headId }, head.title.content)
-          )}
-          {head.base && (
-            React.createElement(head.base.type, { ...head.base.attributes, 'ui-react-head': head.base.headId }, head.base.content)
-          )}
-          {head.links.forEach((tag: IHeadTag): React.ReactElement => (
-            React.createElement(tag.type, { ...tag.attributes, 'ui-react-head': tag.headId }, tag.content)
-          ))}
-          {head.metas.forEach((tag: IHeadTag): React.ReactElement => (
-            React.createElement(tag.type, { ...tag.attributes, 'ui-react-head': tag.headId }, tag.content)
-          ))}
-          {head.styles.forEach((tag: IHeadTag): React.ReactElement => (
-            React.createElement(tag.type, { ...tag.attributes, 'ui-react-head': tag.headId }, tag.content)
-          ))}
-          {head.scripts.forEach((tag: IHeadTag): React.ReactElement => (
-            React.createElement(tag.type, { ...tag.attributes, 'ui-react-head': tag.headId }, tag.content)
-          ))}
-          {head.noscripts.forEach((tag: IHeadTag): React.ReactElement => (
+          {tags.map((tag: IHeadTag): React.ReactElement => (
             React.createElement(tag.type, { ...tag.attributes, 'ui-react-head': tag.headId }, tag.content)
           ))}
           {/* @ts-ignore */}
