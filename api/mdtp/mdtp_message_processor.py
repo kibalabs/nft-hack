@@ -7,6 +7,7 @@ from mdtp.messages import BuildBaseImageMessageContent
 from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
+from mdtp.messages import UpdateGroupImageMessageContent
 
 
 class MdtpMessageProcessor(MessageProcessor):
@@ -26,6 +27,10 @@ class MdtpMessageProcessor(MessageProcessor):
         if message.command == UploadTokenImageMessageContent.get_command():
             messageContent = UploadTokenImageMessageContent.parse_obj(message.content)
             await self.manager.upload_token_image(network=messageContent.network, tokenId=messageContent.tokenId)
+            return
+        if message.command == UpdateGroupImageMessageContent.get_command():
+            messageContent = UpdateGroupImageMessageContent.parse_obj(message.content)
+            await self.manager.upload_group_image(network=messageContent.network, groupId=messageContent.groupId)
             return
         if message.command == BuildBaseImageMessageContent.get_command():
             messageContent = BuildBaseImageMessageContent.parse_obj(message.content)

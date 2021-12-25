@@ -1,11 +1,11 @@
 from typing import Mapping
 
-from mdtp.model import BaseImage
+from mdtp.model import BaseImage, GridItemGroupImage
 from mdtp.model import GridItem
 from mdtp.model import NetworkUpdate
 from mdtp.model import OffchainContent
 from mdtp.model import OffchainPendingContent
-from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import BaseImagesTable, GridItemGroupImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
 from mdtp.store.schema import OffchainContentsTable
@@ -78,4 +78,15 @@ def offchain_pending_content_from_row(row: Mapping) -> OffchainPendingContent:
         ownerId=row[OffchainPendingContentsTable.c.ownerId],
         signature=row[OffchainPendingContentsTable.c.signature],
         signedMessage=row[OffchainPendingContentsTable.c.signedMessage],
+    )
+
+def grid_item_group_image_from_row(row: Mapping) -> GridItemGroupImage:
+    return GridItemGroupImage(
+        gridItemGroupImageId=row[GridItemGroupImagesTable.c.gridItemGroupImageId],
+        createdDate=row[GridItemGroupImagesTable.c.createdDate],
+        updatedDate=row[GridItemGroupImagesTable.c.updatedDate],
+        network=row[GridItemGroupImagesTable.c.network],
+        groupId=row[GridItemGroupImagesTable.c.groupId],
+        ownerId=row[GridItemGroupImagesTable.c.ownerId],
+        imageUrl=row[GridItemGroupImagesTable.c.imageUrl],
     )
