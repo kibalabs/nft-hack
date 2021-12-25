@@ -4,11 +4,13 @@ from typing import Optional
 from core.store.saver import Saver
 from core.util import date_util
 
-from mdtp.model import BaseImage, GridItemGroupImage
+from mdtp.model import BaseImage
 from mdtp.model import GridItem
+from mdtp.model import GridItemGroupImage
 from mdtp.model import NetworkUpdate
 from mdtp.model import OffchainContent
-from mdtp.store.schema import BaseImagesTable, GridItemGroupImagesTable
+from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import GridItemGroupImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
 from mdtp.store.schema import OffchainContentsTable

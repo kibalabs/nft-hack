@@ -39,12 +39,13 @@ from mdtp.image_manager import ImageManager
 from mdtp.ipfs_manager import IpfsManager
 from mdtp.messages import BuildBaseImageMessageContent
 from mdtp.messages import UpdateAllTokensMessageContent
+from mdtp.messages import UpdateGroupImageMessageContent
 from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
-from mdtp.messages import UpdateGroupImageMessageContent
-from mdtp.model import BaseImage, GridItemGroupImage
+from mdtp.model import BaseImage
 from mdtp.model import GridItem
+from mdtp.model import GridItemGroupImage
 from mdtp.model import NetworkStatus
 from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata
@@ -243,7 +244,6 @@ class MdtpManager:
             tokenIndex = gridItem.tokenId - 1
             xPosition = tokenIndex % canvasSizeX
             yPosition = math.floor(tokenIndex / canvasSizeY)
-            print('image', image)
             outputImage.paste(emptyTokenImage, (xPosition * tokenWidth, yPosition * tokenHeight))
             outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
         outputFilePath = 'base_image_output.png'
@@ -437,7 +437,6 @@ class MdtpManager:
     async def update_grid_item_group_image(self, network: str, ownerId: str, groupId: str) -> None:
         logging.info(f'Updating image for network{network} ownerId {ownerId} groupId {groupId}')
         gridItems = await self.list_grid_items(network=network, ownerId=ownerId, groupId=groupId)
-        print('gridItems', gridItems)
         if any(not gridItem.resizableImageUrl for gridItem in gridItems):
             logging.info(f'Skipping updating image for network{network} ownerId {ownerId} groupId {groupId} as not all gridItems have a resizableImageUrl')
             return
@@ -445,19 +444,14 @@ class MdtpManager:
             gridItemGroupImage = await self.retriever.get_grid_item_group_image_by_network_owner_id_group_id(network=network, ownerId=ownerId, groupId=groupId)
         except NotFoundException:
             gridItemGroupImage = None
-        print('gridItemGroupImage', gridItemGroupImage)
         canvasTokenWidth = 100
         canvasTokenHeight = 100
         xPositions = [(gridItem.tokenId - 1) % canvasTokenWidth for gridItem in gridItems]
-        print('xPositions', xPositions)
         yPositions = [math.floor((gridItem.tokenId - 1) / canvasTokenHeight) for gridItem in gridItems]
-        print('yPositions', yPositions)
         minX = min(xPositions)
         gridSizeX = max(xPositions) - minX + 1
-        print('gridSizeX', gridSizeX)
         minY = min(yPositions)
         gridSizeY = max(yPositions) - minY + 1
-        print('gridSizeY', gridSizeY)
         # NOTE(krishan711): everything is double so that it works well in retina
         scale = 2
         gridWidth = 1000 * scale
@@ -477,9 +471,7 @@ class MdtpManager:
                 image = tokenImage.resize(size=(tokenWidth, tokenHeight))
             tokenIndex = gridItem.tokenId - 1
             xPosition = (tokenIndex % canvasTokenHeight) - minX
-            print('xPosition', xPosition)
             yPosition = math.floor(tokenIndex / canvasTokenHeight) - minY
-            print('yPosition', yPosition)
             outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), image)
         outputFilePath = 'grid_item_group_image_output.png'
         outputImage.save(outputFilePath)

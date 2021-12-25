@@ -8,17 +8,20 @@ from core.store.retriever import Retriever
 from sqlalchemy.sql import func
 from sqlalchemy.sql import select
 
-from mdtp.model import GridItem, GridItemGroupImage
+from mdtp.model import GridItem
+from mdtp.model import GridItemGroupImage
 from mdtp.model import NetworkUpdate
 from mdtp.model import OffchainContent
 from mdtp.model import OffchainPendingContent
-from mdtp.store.schema import BaseImagesTable, GridItemGroupImagesTable
+from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import GridItemGroupImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
 from mdtp.store.schema import OffchainContentsTable
 from mdtp.store.schema import OffchainPendingContentsTable
-from mdtp.store.schema_conversions import base_image_from_row, grid_item_group_image_from_row
+from mdtp.store.schema_conversions import base_image_from_row
 from mdtp.store.schema_conversions import grid_item_from_row
+from mdtp.store.schema_conversions import grid_item_group_image_from_row
 from mdtp.store.schema_conversions import network_update_from_row
 from mdtp.store.schema_conversions import offchain_content_from_row
 from mdtp.store.schema_conversions import offchain_pending_content_from_row
