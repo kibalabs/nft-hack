@@ -25,7 +25,6 @@ from core.store.retriever import Order
 from core.store.retriever import RandomOrder
 from core.store.retriever import StringFieldFilter
 from core.util import date_util
-from core.util import dict_util
 from core.util import file_util
 from eth_account.messages import defunct_hash_message
 from PIL import Image as PILImage
@@ -45,7 +44,6 @@ from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
 from mdtp.model import BaseImage
 from mdtp.model import GridItem
-from mdtp.model import GridItemGroupImage
 from mdtp.model import NetworkStatus
 from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata

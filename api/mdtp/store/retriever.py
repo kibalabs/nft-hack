@@ -125,7 +125,7 @@ class MdtpRetriever(Retriever):
         gridItemGroupImages = [grid_item_group_image_from_row(row) for row in rows]
         return gridItemGroupImages
 
-    async def get_grid_item_group_image_by_network_owner_id_group_id(self, network: str, ownerId: str, groupId: str) -> GridItemGroupImage:
+    async def get_grid_item_group_image_by_network_owner_id_group_id(self, network: str, ownerId: str, groupId: str) -> GridItemGroupImage: # pylint: disable=invalid-name
         query = GridItemGroupImagesTable.select() \
             .where(GridItemGroupImagesTable.c.network == network) \
             .where(GridItemGroupImagesTable.c.ownerId == ownerId) \
