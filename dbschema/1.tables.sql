@@ -4,7 +4,7 @@ CREATE TABLE tbl_grid_items (
     updated_date TIMESTAMP NOT NULL,
     network TEXT NOT NULL,
     token_id INTEGER NOT NULL,
-    content_url TEXT, -- NOTE(krishan711): make this NOT NULL when filled
+    content_url TEXT,
     title TEXT NOT NULL,
     description TEXT,
     image_url TEXT NOT NULL,
@@ -12,7 +12,9 @@ CREATE TABLE tbl_grid_items (
     url TEXT,
     -- NOTE(krishan711): this should really be groupId
     block_id TEXT,
-    owner_id TEXT NOT NULL
+    owner_id TEXT NOT NULL,
+    block_number INTEGER NOT NULL,
+    owner_id TEXT NOT NULL,
 );
 CREATE UNIQUE INDEX tbl_grid_items_uq_token_id_network ON tbl_grid_items (token_id, network);
 CREATE INDEX tbl_grid_items_updated_date ON tbl_grid_items (updated_date);
