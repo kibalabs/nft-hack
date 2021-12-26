@@ -10,3 +10,5 @@ GRANT INSERT, SELECT, UPDATE ON tbl_offchain_contents TO mdtp_api;
 GRANT ALL ON SEQUENCE tbl_offchain_contents_id_seq TO mdtp_api;
 GRANT INSERT, SELECT, UPDATE ON tbl_offchain_pending_contents TO mdtp_api;
 GRANT ALL ON SEQUENCE tbl_offchain_pending_contents_id_seq TO mdtp_api;
+GRANT INSERT, SELECT, UPDATE ON tbl_grid_item_group_images TO mdtp_api;
+GRANT ALL ON SEQUENCE tbl_grid_item_group_images_id_seq TO mdtp_api;

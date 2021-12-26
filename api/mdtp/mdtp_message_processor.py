@@ -4,6 +4,7 @@ from core.queues.model import SqsMessage
 
 from mdtp.manager import MdtpManager
 from mdtp.messages import BuildBaseImageMessageContent
+from mdtp.messages import UpdateGroupImageMessageContent
 from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
@@ -26,6 +27,10 @@ class MdtpMessageProcessor(MessageProcessor):
         if message.command == UploadTokenImageMessageContent.get_command():
             messageContent = UploadTokenImageMessageContent.parse_obj(message.content)
             await self.manager.upload_token_image(network=messageContent.network, tokenId=messageContent.tokenId)
+            return
+        if message.command == UpdateGroupImageMessageContent.get_command():
+            messageContent = UpdateGroupImageMessageContent.parse_obj(message.content)
+            await self.manager.update_grid_item_group_image(network=messageContent.network, ownerId=messageContent.ownerId, groupId=messageContent.groupId)
             return
         if message.command == BuildBaseImageMessageContent.get_command():
             messageContent = BuildBaseImageMessageContent.parse_obj(message.content)

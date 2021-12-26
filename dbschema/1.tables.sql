@@ -4,7 +4,7 @@ CREATE TABLE tbl_grid_items (
     updated_date TIMESTAMP NOT NULL,
     network TEXT NOT NULL,
     token_id INTEGER NOT NULL,
-    content_url TEXT, -- NOTE(krishan711): make this NOT NULL when filled
+    content_url TEXT,
     title TEXT NOT NULL,
     description TEXT,
     image_url TEXT NOT NULL,
@@ -12,7 +12,9 @@ CREATE TABLE tbl_grid_items (
     url TEXT,
     -- NOTE(krishan711): this should really be groupId
     block_id TEXT,
-    owner_id TEXT NOT NULL
+    owner_id TEXT NOT NULL,
+    block_number INTEGER NOT NULL,
+    owner_id TEXT NOT NULL,
 );
 CREATE UNIQUE INDEX tbl_grid_items_uq_token_id_network ON tbl_grid_items (token_id, network);
 CREATE INDEX tbl_grid_items_updated_date ON tbl_grid_items (updated_date);
@@ -78,3 +80,19 @@ CREATE INDEX tbl_offchain_pending_contents_network ON tbl_offchain_pending_conte
 CREATE INDEX tbl_offchain_pending_contents_token_id ON tbl_offchain_pending_contents (token_id);
 CREATE INDEX tbl_offchain_pending_contents_block_number ON tbl_offchain_pending_contents (block_number);
 CREATE INDEX tbl_offchain_pending_contents_owner_id ON tbl_offchain_pending_contents (owner_id);
+
+CREATE TABLE tbl_grid_item_group_images (
+    id BIGSERIAL PRIMARY KEY,
+    created_date TIMESTAMP NOT NULL,
+    updated_date TIMESTAMP NOT NULL,
+    network TEXT NOT NULL,
+    group_id TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    image_url TEXT NOT NULL
+);
+CREATE UNIQUE INDEX tbl_grid_item_group_images_uq_network_group_id_owner_id ON tbl_grid_item_group_images (network, group_id, owner_id);
+CREATE INDEX tbl_grid_item_group_images_updated_date ON tbl_grid_item_group_images (updated_date);
+CREATE INDEX tbl_grid_item_group_images_applied_date ON tbl_grid_item_group_images (applied_date);
+CREATE INDEX tbl_grid_item_group_images_network ON tbl_grid_item_group_images (network);
+CREATE INDEX tbl_grid_item_group_images_group_id ON tbl_grid_item_group_images (group_id);
+CREATE INDEX tbl_grid_item_group_images_owner_id ON tbl_grid_item_group_images (owner_id);

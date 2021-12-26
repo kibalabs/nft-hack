@@ -59,7 +59,7 @@ export const isValidChain = (chainId: ChainId): boolean => {
   return validChainIdNetworkMap[chainId] !== undefined;
 };
 
-export const getTokenOpenseaUrl = (network: string, tokenId: string): string | null => {
+export const getTokenOpenseaUrl = (network: string, tokenId: number): string | null => {
   const contractAddress = getContractAddress(network);
   if (!contractAddress) {
     return null;
@@ -73,7 +73,7 @@ export const getTokenOpenseaUrl = (network: string, tokenId: string): string | n
   return null;
 };
 
-export const getTokenEtherscanUrl = (network: string, tokenId: string): string | null => {
+export const getTokenEtherscanUrl = (network: string, tokenId: number): string | null => {
   const contractAddress = getContractAddress(network);
   if (!contractAddress) {
     return null;

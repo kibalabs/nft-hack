@@ -8,6 +8,18 @@ export class MdtpClient extends ServiceClient {
     super(requester, baseUrl || 'https://d2a7i2107hou45.cloudfront.net');
   }
 
+  public getApiUrl = (path: string): string => {
+    return `${this.baseUrl}/${path}`;
+  }
+
+  public getTokenImageUrl = (network: string, tokenId: number): string => {
+    return this.getApiUrl(`v1/networks/${network}/tokens/${tokenId}/go-to-image`);
+  }
+
+  public getTokenGroupImageUrl = (network: string, tokenId: number): string => {
+    return this.getApiUrl(`v1/networks/${network}/tokens/${tokenId}/go-to-group-image`);
+  }
+
   public getTokenDefaultContent = async (tokenId: number): Promise<Resources.TokenMetadata> => {
     const method = RestMethod.GET;
     const path = `token-default-contents/${tokenId}`;

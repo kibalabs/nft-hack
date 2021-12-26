@@ -121,3 +121,13 @@ class OffchainPendingContent:
     ownerId: str
     signature: str
     signedMessage: str
+
+@dataclasses.dataclass
+class GridItemGroupImage:
+    gridItemGroupImageId: int
+    createdDate: datetime.datetime
+    updatedDate: datetime.datetime
+    network: str
+    groupId: str
+    ownerId: str
+    imageUrl: str
