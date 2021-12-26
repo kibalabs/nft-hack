@@ -59,7 +59,12 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
     shouldAliasModules: false,
     addHtmlOutput: false,
   };
-  const params = { ...defaultParams, ...inputParams };
+  let params = { ...defaultParams, ...inputParams };
+  if (params.configModifier) {
+    // eslint-disable-next-line import/no-dynamic-require, global-require
+    const configModifier = require(path.join(process.cwd(), params.configModifier));
+    params = configModifier(params);
+  }
 
   const sourceDirectory = path.resolve(sourceDirectoryPath);
   const buildDirectory = buildDirectoryPath ? path.resolve(buildDirectoryPath) : path.join(process.cwd(), 'build');
@@ -78,21 +83,27 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
 
   // NOTE(krishan711): this is weird.. find an alternative (taking into account EP uses workspaces)
   const nodeModulesPaths = findAncestorSibling('node_modules');
-  const nodeWebpackConfig = webpackMerge(
+  let nodeWebpackConfig = webpackMerge(
     makeCommonWebpackConfig({ ...params, name: 'site-node' }),
     makeJsWebpackConfig({ ...params, polyfill: false, react: true }),
     makeImagesWebpackConfig(params),
     makeCssWebpackConfig(params),
     makeReactComponentWebpackConfig({ ...params, entryFilePath: path.join(sourceDirectory, './app.tsx'), outputDirectory: buildDirectory, excludeAllNodeModules: true, nodeModulesPaths }),
   );
-  const webWebpackConfig = webpackMerge(
+  if (params.webpackConfigModifier) {
+    nodeWebpackConfig = params.webpackConfigModifier(nodeWebpackConfig);
+  }
+
+  let webWebpackConfig = webpackMerge(
     makeCommonWebpackConfig({ ...params, name: 'site' }),
     makeJsWebpackConfig({ ...params, polyfill: true, react: true }),
     makeImagesWebpackConfig(params),
     makeCssWebpackConfig(params),
     makeReactAppWebpackConfig({ ...params, entryFilePath: path.join(sourceDirectory, './index.tsx'), outputDirectory }),
   );
-  console.log('webWebpackConfig', webWebpackConfig)
+  if (params.webpackConfigModifier) {
+    webWebpackConfig = params.webpackConfigModifier(webWebpackConfig);
+  }
 
   await createAndRunCompiler(nodeWebpackConfig);
   // // NOTE(krishan711): this ensures the require is not executed at build time (only during runtime)

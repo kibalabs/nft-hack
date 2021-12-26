@@ -102,7 +102,7 @@ var findAncestorSibling = function (name, startingDirectory) {
 };
 exports.findAncestorSibling = findAncestorSibling;
 var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryPath, inputParams) { return __awaiter(void 0, void 0, void 0, function () {
-    var defaultParams, params, sourceDirectory, buildDirectory, outputDirectory, pages, nodeModulesPaths, nodeWebpackConfig, webWebpackConfig, App, webpackBuildStats;
+    var defaultParams, params, configModifier, sourceDirectory, buildDirectory, outputDirectory, pages, nodeModulesPaths, nodeWebpackConfig, webWebpackConfig, App, webpackBuildStats;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -115,6 +115,10 @@ var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryP
                     addHtmlOutput: false
                 };
                 params = __assign(__assign({}, defaultParams), inputParams);
+                if (params.configModifier) {
+                    configModifier = require(path_1["default"].join(process_1["default"].cwd(), params.configModifier));
+                    params = configModifier(params);
+                }
                 sourceDirectory = path_1["default"].resolve(sourceDirectoryPath);
                 buildDirectory = buildDirectoryPath ? path_1["default"].resolve(buildDirectoryPath) : path_1["default"].join(process_1["default"].cwd(), 'build');
                 outputDirectory = outputDirectoryPath ? path_1["default"].resolve(outputDirectoryPath) : path_1["default"].join(process_1["default"].cwd(), 'dist');
@@ -130,7 +134,13 @@ var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryP
                     }];
                 nodeModulesPaths = (0, exports.findAncestorSibling)('node_modules');
                 nodeWebpackConfig = (0, webpack_merge_1["default"])((0, common_webpack_1["default"])(__assign(__assign({}, params), { name: 'site-node' })), (0, js_webpack_1["default"])(__assign(__assign({}, params), { polyfill: false, react: true })), (0, images_webpack_1["default"])(params), (0, css_webpack_1["default"])(params), (0, component_webpack_1["default"])(__assign(__assign({}, params), { entryFilePath: path_1["default"].join(sourceDirectory, './app.tsx'), outputDirectory: buildDirectory, excludeAllNodeModules: true, nodeModulesPaths: nodeModulesPaths })));
+                if (params.webpackConfigModifier) {
+                    nodeWebpackConfig = params.webpackConfigModifier(nodeWebpackConfig);
+                }
                 webWebpackConfig = (0, webpack_merge_1["default"])((0, common_webpack_1["default"])(__assign(__assign({}, params), { name: 'site' })), (0, js_webpack_1["default"])(__assign(__assign({}, params), { polyfill: true, react: true })), (0, images_webpack_1["default"])(params), (0, css_webpack_1["default"])(params), (0, app_webpack_1["default"])(__assign(__assign({}, params), { entryFilePath: path_1["default"].join(sourceDirectory, './index.tsx'), outputDirectory: outputDirectory })));
+                if (params.webpackConfigModifier) {
+                    webWebpackConfig = params.webpackConfigModifier(webWebpackConfig);
+                }
                 return [4 /*yield*/, (0, webpackUtil_1.createAndRunCompiler)(nodeWebpackConfig)];
             case 1:
                 _a.sent();

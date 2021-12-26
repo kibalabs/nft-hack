@@ -29,6 +29,7 @@
     "react-toastify": "8.1.0",
     "react-tooltip": "4.2.21",
     "styled-components": "5.3.3",
+    "url": "^0.11.0",
     "web3.storage": "3.5.1"
   },
   "devDependencies": {
