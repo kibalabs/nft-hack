@@ -136,8 +136,8 @@ export const TokenPage = (): React.ReactElement => {
           </React.Fragment>
         ) : (
           <React.Fragment>
-            <Box maxHeight='400px' variant='tokenHeader'>
-              <MdtpImage isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={apiClient.getTokenGroupImageUrl(network, tokenId)} alternativeText={'token image'} />
+            <Box maxHeight='400px' isFullWidth={true} variant='tokenHeader'>
+              <MdtpImage isCenteredHorizontally={true} fitType='contain' isFullWidth={true} isFullHeight={true} variant='tokenPageHeaderGrid' source={apiClient.getTokenGroupImageUrl(network, tokenId)} alternativeText={'token image'} />
             </Box>
             <Stack.Item growthFactor={1}>
               <Stack direction={Direction.Vertical} isFullWidth={true} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingTop={PaddingSize.Wide2} paddingBottom={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2}>

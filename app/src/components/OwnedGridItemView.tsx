@@ -29,7 +29,7 @@ export const OwnedGridItemView = (props: IOwnedGridItemViewProps): React.ReactEl
     <Box variant={`card${boxVariantSuffix}`}>
       <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true} shouldAddGutters={true} childAlignment={Alignment.Center}>
         <Box width='3em' height='3em' shouldClipContent={true}>
-          <MdtpImage source={apiClient.getTokenGroupImageUrl(props.gridItems[0].network, props.gridItems[0].tokenId)} alternativeText={'Token image'} />
+          <MdtpImage fitType='contain' source={apiClient.getTokenGroupImageUrl(props.gridItems[0].network, props.gridItems[0].tokenId)} alternativeText={'Token image'} />
         </Box>
         <Stack.Item growthFactor={1} shrinkFactor={1}>
           <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} contentAlignment={Alignment.Center}>
