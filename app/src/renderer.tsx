@@ -70,10 +70,10 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
     filename: 'index.html',
   }, {
     path: '/about',
-    filename: 'about',
+    filename: 'about/index.html',
   }, {
     path: '/roadmap',
-    filename: 'roadmap',
+    filename: 'roadmap/index.html',
   }];
 
   // NOTE(krishan711): this is weird but needed to work both locally (with lerna) and on the builder-api
@@ -126,8 +126,8 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
       ];
       const headString = ReactDOMServer.renderToStaticMarkup(
         <head>
-          {tags.map((tag: IHeadTag): React.ReactElement => (
-            React.createElement(tag.type, { ...tag.attributes, 'ui-react-head': tag.headId }, tag.content)
+          {tags.map((tag: IHeadTag, index: number): React.ReactElement => (
+            React.createElement(tag.type, { ...tag.attributes, key: index, 'ui-react-head': tag.headId }, tag.content)
           ))}
           {extractor.getPreAssets().map((asset: Chunk): React.ReactElement => (
             React.createElement('link', { key: asset.filename, 'data-chunk': asset.chunk, rel: asset.linkType, as: asset.scriptType, href: asset.url })

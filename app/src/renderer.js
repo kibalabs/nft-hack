@@ -121,10 +121,10 @@ var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryP
                 filename: 'index.html'
             }, {
                 path: '/about',
-                filename: 'about'
+                filename: 'about/index.html'
             }, {
                 path: '/roadmap',
-                filename: 'roadmap'
+                filename: 'roadmap/index.html'
             }];
         nodeModulesPaths = (0, exports.findAncestorSibling)('node_modules');
         nodeWebpackConfig = (0, webpack_merge_1["default"])((0, common_webpack_1["default"])(__assign(__assign({}, params), { name: 'site-node' })), (0, js_webpack_1["default"])(__assign(__assign({}, params), { polyfill: false, react: true })), (0, images_webpack_1["default"])(params), (0, css_webpack_1["default"])(params), (0, component_webpack_1["default"])(__assign(__assign({}, params), { entryFilePath: path_1["default"].join(sourceDirectory, './app.tsx'), outputDirectory: buildDirectory, excludeAllNodeModules: true, nodeModulesPaths: nodeModulesPaths })));
@@ -151,7 +151,7 @@ var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryP
                                 react_1["default"].createElement(App, { staticPath: page.path, setHead: setHead }))));
                         var tags = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], (pageHead.title ? [pageHead.title] : []), true), (pageHead.base ? [pageHead.base] : []), true), pageHead.links, true), pageHead.metas, true), pageHead.styles, true), pageHead.scripts, true);
                         var headString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement("head", null,
-                            tags.map(function (tag) { return (react_1["default"].createElement(tag.type, __assign(__assign({}, tag.attributes), { 'ui-react-head': tag.headId }), tag.content)); }),
+                            tags.map(function (tag, index) { return (react_1["default"].createElement(tag.type, __assign(__assign({}, tag.attributes), { key: index, 'ui-react-head': tag.headId }), tag.content)); }),
                             extractor.getPreAssets().map(function (asset) { return (react_1["default"].createElement('link', { key: asset.filename, 'data-chunk': asset.chunk, rel: asset.linkType, as: asset.scriptType, href: asset.url })); }),
                             styledComponentsSheet.getStyleElement()));
                         var bodyAssetsString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement(react_1["default"].Fragment, null, extractor.getMainAssets().map(function (asset) { return (react_1["default"].createElement(asset.scriptType, { key: asset.filename, 'data-chunk': asset.chunk, async: true, src: asset.url })); })));
