@@ -5,8 +5,8 @@ import { Alignment, Box, Button, Direction, Stack, Text } from '@kibalabs/ui-rea
 
 import { GridItem } from '../client';
 import { isUpdated } from '../util/gridItemUtil';
-import { ImageGrid } from './ImageGrid';
 import { MdtpImage } from './MdtpImage';
+import { useGlobals } from '../globalsContext';
 
 export interface IOwnedGridItemViewProps {
   gridItems: GridItem[];
@@ -15,6 +15,7 @@ export interface IOwnedGridItemViewProps {
 }
 
 export const OwnedGridItemView = (props: IOwnedGridItemViewProps): React.ReactElement => {
+  const { apiClient } = useGlobals();
   const navigator = useNavigator();
   const firstGridItem = props.gridItems[0];
   const hasNotUpdated = props.isOwner && !isUpdated(firstGridItem);
@@ -28,11 +29,7 @@ export const OwnedGridItemView = (props: IOwnedGridItemViewProps): React.ReactEl
     <Box variant={`card${boxVariantSuffix}`}>
       <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true} shouldAddGutters={true} childAlignment={Alignment.Center}>
         <Box width='3em' height='3em' shouldClipContent={true}>
-          {props.gridItems.length > 0 ? (
-            <ImageGrid blockGridItems={props.gridItems} />
-          ) : (
-            <MdtpImage source={props.gridItems[0].imageUrl} alternativeText={'Token image'} />
-          )}
+          <MdtpImage source={apiClient.getTokenGroupImageUrl(props.gridItems[0].network, props.gridItems[0].tokenId)} alternativeText={'Token image'} />
         </Box>
         <Stack.Item growthFactor={1} shrinkFactor={1}>
           <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} contentAlignment={Alignment.Center}>

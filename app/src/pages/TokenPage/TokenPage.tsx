@@ -1,13 +1,12 @@
 import React from 'react';
 
 import { getLinkableUrl, getUrlDisplayString, truncateMiddle, truncateStart } from '@kibalabs/core';
-import { useNavigator, useStringRouteParam } from '@kibalabs/core-react';
+import { useNavigator, useNumberRouteParam } from '@kibalabs/core-react';
 import { Alignment, BackgroundView, Box, Button, Direction, Head, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem } from '../../client';
 import { Badge } from '../../components/Badge';
-import { ImageGrid } from '../../components/ImageGrid';
 import { KeyValue } from '../../components/KeyValue';
 import { MdtpImage } from '../../components/MdtpImage';
 import { ShareForm } from '../../components/ShareForm';
@@ -18,13 +17,13 @@ import { useOwnerId } from '../../util/useOwnerId';
 import { useTokenData } from '../../util/useTokenMetadata';
 
 export const TokenPage = (): React.ReactElement => {
-  const tokenId = useStringRouteParam('tokenId');
+  const tokenId = useNumberRouteParam('tokenId');
 
   const navigator = useNavigator();
   const setTokenSelection = useSetTokenSelection();
   const { contract, apiClient, network, web3 } = useGlobals();
-  const chainOwnerId = useOwnerId(Number(tokenId));
-  const tokenData = useTokenData(Number(tokenId));
+  const chainOwnerId = useOwnerId(tokenId);
+  const tokenData = useTokenData(tokenId);
   const tokenMetadata = tokenData.tokenMetadata;
   const gridItem = tokenData.gridItem;
   const [groupGridItems, setGroupGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
@@ -81,7 +80,7 @@ export const TokenPage = (): React.ReactElement => {
     if (groupGridItems) {
       setTokenSelection(groupGridItems.map((blockGridItem: GridItem): number => blockGridItem.tokenId));
     } else {
-      setTokenSelection([Number(tokenId)]);
+      setTokenSelection([tokenId]);
     }
   }, [tokenId, setTokenSelection, groupGridItems]);
 
@@ -138,13 +137,7 @@ export const TokenPage = (): React.ReactElement => {
         ) : (
           <React.Fragment>
             <Box maxHeight='400px' variant='tokenHeader'>
-              { (gridItem && groupGridItems) ? (
-                <ImageGrid gridItem={gridItem} blockGridItems={groupGridItems} />
-              ) : (
-                <BackgroundView color='#000000'>
-                  <MdtpImage isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={tokenMetadata.image} alternativeText={'token image'} />
-                </BackgroundView>
-              )}
+              <MdtpImage isCenteredHorizontally={true} variant='tokenPageHeaderGrid' fitType={'cover'} source={apiClient.getTokenGroupImageUrl(network, tokenId)} alternativeText={'token image'} />
             </Box>
             <Stack.Item growthFactor={1}>
               <Stack direction={Direction.Vertical} isFullWidth={true} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} paddingTop={PaddingSize.Wide2} paddingBottom={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2}>
