@@ -18,9 +18,8 @@ GridItemsTable = sqlalchemy.Table(
     sqlalchemy.Column(key='url', name='url', type_=sqlalchemy.Text, nullable=True),
     sqlalchemy.Column(key='groupId', name='block_id', type_=sqlalchemy.Text, nullable=True),
     sqlalchemy.Column(key='ownerId', name='owner_id', type_=sqlalchemy.Text, nullable=True),
-    # TODO(krishan711): make these not nullable when all are filled
-    sqlalchemy.Column(key='blockNumber', name='block_number', type_=sqlalchemy.Integer, nullable=True),
-    sqlalchemy.Column(key='source', name='source', type_=sqlalchemy.Text, nullable=True),
+    sqlalchemy.Column(key='blockNumber', name='block_number', type_=sqlalchemy.Integer, nullable=False),
+    sqlalchemy.Column(key='source', name='source', type_=sqlalchemy.Text, nullable=False),
 )
 
 BaseImagesTable = sqlalchemy.Table(
@@ -73,4 +72,16 @@ OffchainPendingContentsTable = sqlalchemy.Table(
     sqlalchemy.Column(key='ownerId', name='owner_id', type_=sqlalchemy.Text, nullable=False),
     sqlalchemy.Column(key='signature', name='signature', type_=sqlalchemy.Text, nullable=False),
     sqlalchemy.Column(key='signedMessage', name='signed_message', type_=sqlalchemy.Text, nullable=False),
+)
+
+GridItemGroupImagesTable = sqlalchemy.Table(
+    'tbl_grid_item_group_images',
+    metadata,
+    sqlalchemy.Column(key='gridItemGroupImageId', name='id', type_=sqlalchemy.Integer, autoincrement=True, primary_key=True, nullable=False),
+    sqlalchemy.Column(key='createdDate', name='created_date', type_=sqlalchemy.DateTime, nullable=False),
+    sqlalchemy.Column(key='updatedDate', name='updated_date', type_=sqlalchemy.DateTime, nullable=False),
+    sqlalchemy.Column(key='network', name='network', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='groupId', name='group_id', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='ownerId', name='owner_id', type_=sqlalchemy.Text, nullable=False),
+    sqlalchemy.Column(key='imageUrl', name='image_url', type_=sqlalchemy.Text, nullable=False)
 )

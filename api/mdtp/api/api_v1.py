@@ -78,6 +78,11 @@ def create_api(manager: MdtpManager) -> KibaRouter():
         imageUrl = await manager.go_to_token_image(network=network, tokenId=tokenId, width=w, height=h)
         return Response(status_code=302, headers={'location': imageUrl})
 
+    @router.get('/networks/{network}/tokens/{tokenId}/go-to-group-image')
+    async def go_to_token_group_image(network: str, tokenId: int, w: Optional[int] = None, h: Optional[int] = None) -> Response:  # pylint: disable=invalid-name
+        imageUrl = await manager.go_to_token_group_image(network=network, tokenId=tokenId, width=w, height=h)
+        return Response(status_code=302, headers={'location': imageUrl})
+
     @router.post('/networks/{network}/tokens/{tokenId}/generate-image-upload', response_model=GenerateImageUploadForTokenResponse)
     async def generate_image_upload_for_token(network: str, tokenId: int):
         presignedUpload = await manager.generate_image_upload_for_token(network=network, tokenId=tokenId)

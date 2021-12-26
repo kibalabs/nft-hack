@@ -6,9 +6,11 @@ from core.util import date_util
 
 from mdtp.model import BaseImage
 from mdtp.model import GridItem
+from mdtp.model import GridItemGroupImage
 from mdtp.model import NetworkUpdate
 from mdtp.model import OffchainContent
 from mdtp.store.schema import BaseImagesTable
+from mdtp.store.schema import GridItemGroupImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import NetworkUpdatesTable
 from mdtp.store.schema import OffchainContentsTable
@@ -138,4 +140,26 @@ class MdtpSaver(Saver):
             values[OffchainPendingContentsTable.c.appliedDate.key] = appliedDate
         if len(values) > 0:
             values[OffchainPendingContentsTable.c.updatedDate.key] = date_util.datetime_from_now()
+        await self.database.execute(query=query, values=values)
+
+    async def create_grid_item_group_image(self, network: str, ownerId: str, groupId: str, imageUrl: str) -> GridItemGroupImage:
+        createdDate = date_util.datetime_from_now()
+        updatedDate = createdDate
+        gridItemGroupImageId = await self._execute(query=GridItemGroupImagesTable.insert(), values={  # pylint: disable=no-value-for-parameter
+            GridItemGroupImagesTable.c.createdDate.key: createdDate,
+            GridItemGroupImagesTable.c.updatedDate.key: updatedDate,
+            GridItemGroupImagesTable.c.network.key: network,
+            GridItemGroupImagesTable.c.ownerId.key: ownerId,
+            GridItemGroupImagesTable.c.groupId.key: groupId,
+            GridItemGroupImagesTable.c.imageUrl.key: imageUrl,
+        })
+        return GridItemGroupImage(gridItemGroupImageId=gridItemGroupImageId, createdDate=createdDate, updatedDate=updatedDate, network=network, ownerId=ownerId, groupId=groupId, imageUrl=imageUrl)
+
+    async def update_grid_item_group_image(self, gridItemGroupImageId: int, imageUrl: Optional[str] = None) -> None:
+        query = GridItemGroupImagesTable.update(GridItemGroupImagesTable.c.gridItemGroupImageId == gridItemGroupImageId)
+        values = {}
+        if imageUrl is not None:
+            values[GridItemGroupImagesTable.c.imageUrl.key] = imageUrl
+        if len(values) > 0:
+            values[GridItemGroupImagesTable.c.updatedDate.key] = date_util.datetime_from_now()
         await self.database.execute(query=query, values=values)

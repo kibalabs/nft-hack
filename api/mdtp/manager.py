@@ -25,7 +25,6 @@ from core.store.retriever import Order
 from core.store.retriever import RandomOrder
 from core.store.retriever import StringFieldFilter
 from core.util import date_util
-from core.util import dict_util
 from core.util import file_util
 from eth_account.messages import defunct_hash_message
 from PIL import Image as PILImage
@@ -39,6 +38,7 @@ from mdtp.image_manager import ImageManager
 from mdtp.ipfs_manager import IpfsManager
 from mdtp.messages import BuildBaseImageMessageContent
 from mdtp.messages import UpdateAllTokensMessageContent
+from mdtp.messages import UpdateGroupImageMessageContent
 from mdtp.messages import UpdateTokenMessageContent
 from mdtp.messages import UpdateTokensMessageContent
 from mdtp.messages import UploadTokenImageMessageContent
@@ -59,6 +59,8 @@ _MEGABYTE = _KILOBYTE * 1024
 _CACHE_CONTROL_TEMPORARY_FILE = CacheControlHeader(shouldCachePublically=True, maxAge=1).to_value_string()
 _CACHE_CONTROL_FINAL_FILE = CacheControlHeader(shouldCachePublically=True, maxAge=60 * 60 * 24 * 365).to_value_string()
 
+_API_URL = 'https://d2a7i2107hou45.cloudfront.net'
+
 class MdtpManager:
 
     def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager, ipfsManager: IpfsManager):
@@ -72,6 +74,17 @@ class MdtpManager:
         self.imageManager = imageManager
         self.ipfsManager = ipfsManager
         self.ownerAddress = '0xce11d6fb4f1e006e5a348230449dc387fde850cc'
+
+    @staticmethod
+    def _get_resized_image_url(resizableImageUrl: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
+        urlParts = urlparse.urlparse(resizableImageUrl)
+        currentQuery = urlparse.parse_qs(urlParts.query)
+        if width:
+            currentQuery['w'] = width
+        if height:
+            currentQuery['h'] = height
+        queryString = urlparse.urlencode(currentQuery, doseq=True)
+        return urlparse.urlunsplit(components=(urlParts.scheme, urlParts.netloc, urlParts.path, queryString, urlParts.fragment))
 
     async def _get_json_content(self, url: str) -> Dict[str, Any]:
         if url.startswith('ipfs://'):
@@ -191,6 +204,8 @@ class MdtpManager:
     async def build_base_image(self, network: str) -> Optional[BaseImage]:
         # NOTE(krishan711): everything is double so that it works well in retina
         scale = 2
+        canvasSizeX = 100
+        canvasSizeY = 100
         width = 1000 * scale
         height = 1000 * scale
         tokenHeight = 10 * scale
@@ -212,26 +227,27 @@ class MdtpManager:
                 image = baseImage.resize(size=(width, height))
                 outputImage.paste(image, (0, 0))
         logging.info(f'Drawing {len(gridItems)} new grid items')
+        emptyTokenImage = PILImage.new('RGB', (tokenWidth, tokenHeight))
         for gridItem in gridItems:
             logging.info(f'Drawing grid item {gridItem.gridItemId}')
-            imageUrl = f'{gridItem.resizableImageUrl}?w={tokenWidth}&h={tokenHeight}' if gridItem.resizableImageUrl else gridItem.imageUrl
+            imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
             if imageUrl.startswith('ipfs://'):
                 imageResponse = await self.ipfsManager.read_file(cid=imageUrl.replace('ipfs://', ''))
             else:
                 imageResponse = await self.requester.get(url=imageUrl)
             contentBuffer = BytesIO(imageResponse.content)
             with PILImage.open(fp=contentBuffer) as tokenImage:
-                tokenIndex = gridItem.tokenId - 1
-                xPosition = (tokenIndex * tokenWidth) % width
-                yPosition = tokenHeight * math.floor((tokenIndex * tokenWidth) / width)
                 image = tokenImage.resize(size=(tokenWidth, tokenHeight))
-                # NOTE(krishan711): this doesn't use transparency as we aren't using the 3rd (mask) param
-                outputImage.paste(image, (xPosition, yPosition))
-        outputFilePath = 'output.png'
+            tokenIndex = gridItem.tokenId - 1
+            xPosition = tokenIndex % canvasSizeX
+            yPosition = math.floor(tokenIndex / canvasSizeY)
+            outputImage.paste(emptyTokenImage, (xPosition * tokenWidth, yPosition * tokenHeight))
+            outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
+        outputFilePath = 'base_image_output.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
         await file_util.remove_file(filePath=outputFilePath)
-        imageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
+        imageUrl = f'{_API_URL}/v1/images/{imageId}/go'
         baseImage = await self.saver.create_base_image(network=network, url=imageUrl, generatedDate=generatedDate)
         return baseImage
 
@@ -407,8 +423,72 @@ class MdtpManager:
         logging.info(f'Uploading image for token {tokenId}')
         gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
         imageId = await self.imageManager.upload_image_from_url(url=gridItem.imageUrl)
-        resizableImageUrl = f'https://d2a7i2107hou45.cloudfront.net/v1/images/{imageId}/go'
+        resizableImageUrl = f'{_API_URL}/v1/images/{imageId}/go'
         await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, resizableImageUrl=resizableImageUrl)
+        if gridItem.groupId:
+            await self.update_grid_item_group_image_deferred(network=network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
+
+    async def update_grid_item_group_image_deferred(self, network: str, ownerId: str, groupId: str, delay: Optional[int] = None) -> None:
+        await self.workQueue.send_message(message=UpdateGroupImageMessageContent(network=network, ownerId=ownerId, groupId=groupId).to_message(), delaySeconds=delay or 0)
+
+    async def update_grid_item_group_image(self, network: str, ownerId: str, groupId: str) -> None:
+        logging.info(f'Updating image for network {network} ownerId {ownerId} groupId {groupId}')
+        gridItems = await self.list_grid_items(network=network, ownerId=ownerId, groupId=groupId)
+        if len(gridItems) == 0:
+            logging.info(f'Skipping updating image for network {network} ownerId {ownerId} groupId {groupId} as there are no gridItems')
+            return
+        if any(not gridItem.resizableImageUrl for gridItem in gridItems):
+            logging.info(f'Skipping updating image for network {network} ownerId {ownerId} groupId {groupId} as not all gridItems have a resizableImageUrl')
+            return
+        try:
+            gridItemGroupImage = await self.retriever.get_grid_item_group_image_by_network_owner_id_group_id(network=network, ownerId=ownerId, groupId=groupId)
+        except NotFoundException:
+            gridItemGroupImage = None
+        if gridItemGroupImage and gridItemGroupImage.updatedDate > max(gridItem.updatedDate for gridItem in gridItems):
+            logging.info(f'Skipping updating image for network {network} ownerId {ownerId} groupId {groupId} as nothing has changed since it was generated')
+            return
+        if len(gridItems) == 1:
+            imageUrl = gridItems[0].resizableImageUrl
+        else:
+            canvasTokenWidth = 100
+            canvasTokenHeight = 100
+            xPositions = [(gridItem.tokenId - 1) % canvasTokenWidth for gridItem in gridItems]
+            yPositions = [math.floor((gridItem.tokenId - 1) / canvasTokenHeight) for gridItem in gridItems]
+            minX = min(xPositions)
+            gridSizeX = max(xPositions) - minX + 1
+            minY = min(yPositions)
+            gridSizeY = max(yPositions) - minY + 1
+            # NOTE(krishan711): everything is double so that it works well in retina
+            scale = 2
+            aspectRatio = gridSizeX / gridSizeY
+            gridWidth = math.floor(1000 * scale * (aspectRatio if aspectRatio < 1 else 1))
+            tokenWidth = math.ceil(gridWidth / gridSizeX)
+            gridHeight = math.floor(1000 * scale * (1.0 / aspectRatio if aspectRatio > 1 else 1))
+            tokenHeight = math.ceil(gridHeight / gridSizeY)
+            outputImage = PILImage.new('RGB', (gridWidth, gridHeight))
+            for gridItem in gridItems:
+                logging.info(f'Drawing grid item {gridItem.gridItemId}')
+                imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
+                if imageUrl.startswith('ipfs://'):
+                    imageResponse = await self.ipfsManager.read_file(cid=imageUrl.replace('ipfs://', ''))
+                else:
+                    imageResponse = await self.requester.get(url=imageUrl)
+                contentBuffer = BytesIO(imageResponse.content)
+                with PILImage.open(fp=contentBuffer) as tokenImage:
+                    image = tokenImage.resize(size=(tokenWidth, tokenHeight))
+                tokenIndex = gridItem.tokenId - 1
+                xPosition = (tokenIndex % canvasTokenHeight) - minX
+                yPosition = math.floor(tokenIndex / canvasTokenHeight) - minY
+                outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
+            outputFilePath = 'grid_item_group_image_output.png'
+            outputImage.save(outputFilePath)
+            imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
+            await file_util.remove_file(filePath=outputFilePath)
+            imageUrl = f'{_API_URL}/v1/images/{imageId}/go'
+        if not gridItemGroupImage:
+            await self.saver.create_grid_item_group_image(network=network, ownerId=ownerId, groupId=groupId, imageUrl=imageUrl)
+        else:
+            await self.saver.update_grid_item_group_image(gridItemGroupImageId=gridItemGroupImage.gridItemGroupImageId, imageUrl=imageUrl)
 
     async def update_token_deferred(self, network: str, tokenId: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokenMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
@@ -474,16 +554,18 @@ class MdtpManager:
         except NotFoundException:
             gridItem = await self.get_token_default_grid_item(network=network, tokenId=tokenId)
         if gridItem.resizableImageUrl:
-            if gridItem.resizableImageUrl.startswith('https://mdtp-api.kibalabs.com/v1/images/'):
-                imageId = gridItem.resizableImageUrl.replace('https://mdtp-api.kibalabs.com/v1/images/', '').replace('/go', '')
-                return await self.go_to_image(imageId=imageId, width=width, height=height)
-            params = {}
-            if width:
-                params['w'] = width
-            if height:
-                params['h'] = height
-            urlParts = urlparse.urlparse(gridItem.resizableImageUrl)
-            currentQuery = urlparse.parse_qs(urlParts.query)
-            queryString = urlparse.urlencode(dict_util.merge_dicts(currentQuery, params), doseq=True)
-            return urlparse.urlunsplit(components=(urlParts.scheme, urlParts.netloc, urlParts.path, queryString, urlParts.fragment))
+            return self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=width, height=height)
         return gridItem.imageUrl
+
+    async def go_to_token_group_image(self, network: str, tokenId: int, width: Optional[int] = None, height: Optional[int] = None) -> str:
+        try:
+            gridItem = await self.retriever.get_grid_item_by_token_id_network(network=network, tokenId=tokenId)
+        except NotFoundException:
+            return await self.go_to_token_image(network=network, tokenId=tokenId, width=width, height=height)
+        if not gridItem.groupId:
+            return await self.go_to_token_image(network=network, tokenId=tokenId, width=width, height=height)
+        try:
+            gridItemGroupImage = await self.retriever.get_grid_item_group_image_by_network_owner_id_group_id(network=gridItem.network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
+        except NotFoundException:
+            return await self.go_to_token_image(network=network, tokenId=tokenId, width=width, height=height)
+        return self._get_resized_image_url(resizableImageUrl=gridItemGroupImage.imageUrl, width=width, height=height)
