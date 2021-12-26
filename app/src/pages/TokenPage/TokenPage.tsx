@@ -124,12 +124,12 @@ export const TokenPage = (): React.ReactElement => {
         <title>{`Token ${tokenId} | Million Dollar Token Page`}</title>
       </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true}>
-        { tokenMetadata === undefined || gridItem === undefined ? (
+        { network === undefined || tokenMetadata === undefined || gridItem === undefined ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <LoadingSpinner />
           </React.Fragment>
-        ) : tokenMetadata === null || gridItem === null ? (
+        ) : network === null || tokenMetadata === null || gridItem === null ? (
           <React.Fragment>
             <Spacing variant={PaddingSize.Wide3} />
             <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
