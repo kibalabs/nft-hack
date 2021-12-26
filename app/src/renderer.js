@@ -102,69 +102,66 @@ var findAncestorSibling = function (name, startingDirectory) {
 };
 exports.findAncestorSibling = findAncestorSibling;
 var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryPath, inputParams) { return __awaiter(void 0, void 0, void 0, function () {
-    var defaultParams, params, sourceDirectory, buildDirectory, outputDirectory, pages, nodeModulesPaths, nodeWebpackConfig, webWebpackConfig;
+    var defaultParams, params, sourceDirectory, buildDirectory, outputDirectory, pages, nodeModulesPaths, nodeWebpackConfig, webWebpackConfig, App, webpackBuildStats;
     return __generator(this, function (_a) {
-        defaultParams = {
-            configModifier: undefined,
-            dev: false,
-            webpackConfigModifier: undefined,
-            analyzeBundle: false,
-            shouldAliasModules: false,
-            addHtmlOutput: false
-        };
-        params = __assign(__assign({}, defaultParams), inputParams);
-        sourceDirectory = sourceDirectoryPath;
-        buildDirectory = buildDirectoryPath || path_1["default"].join(process_1["default"].cwd(), 'build');
-        outputDirectory = outputDirectoryPath || path_1["default"].join(process_1["default"].cwd(), 'dist');
-        pages = [{
-                path: '/',
-                filename: 'index.html'
-            }, {
-                path: '/about',
-                filename: 'about/index.html'
-            }, {
-                path: '/roadmap',
-                filename: 'roadmap/index.html'
-            }];
-        nodeModulesPaths = (0, exports.findAncestorSibling)('node_modules');
-        nodeWebpackConfig = (0, webpack_merge_1["default"])((0, common_webpack_1["default"])(__assign(__assign({}, params), { name: 'site-node' })), (0, js_webpack_1["default"])(__assign(__assign({}, params), { polyfill: false, react: true })), (0, images_webpack_1["default"])(params), (0, css_webpack_1["default"])(params), (0, component_webpack_1["default"])(__assign(__assign({}, params), { entryFilePath: path_1["default"].join(sourceDirectory, './app.tsx'), outputDirectory: buildDirectory, excludeAllNodeModules: true, nodeModulesPaths: nodeModulesPaths })));
-        webWebpackConfig = (0, webpack_merge_1["default"])((0, common_webpack_1["default"])(__assign(__assign({}, params), { name: 'site' })), (0, js_webpack_1["default"])(__assign(__assign({}, params), { polyfill: true, react: true })), (0, images_webpack_1["default"])(params), (0, css_webpack_1["default"])(params), (0, app_webpack_1["default"])(__assign(__assign({}, params), { entryFilePath: path_1["default"].join(sourceDirectory, './index.tsx'), outputDirectory: outputDirectory })));
-        console.log('EP: generating node output');
-        return [2 /*return*/, (0, webpackUtil_1.createAndRunCompiler)(nodeWebpackConfig).then(function () { return __awaiter(void 0, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    console.log('EP: generating web output');
-                    return [2 /*return*/, (0, webpackUtil_1.createAndRunCompiler)(webWebpackConfig)];
+        switch (_a.label) {
+            case 0:
+                defaultParams = {
+                    configModifier: undefined,
+                    dev: false,
+                    webpackConfigModifier: undefined,
+                    analyzeBundle: false,
+                    shouldAliasModules: false,
+                    addHtmlOutput: false
+                };
+                params = __assign(__assign({}, defaultParams), inputParams);
+                sourceDirectory = path_1["default"].resolve(sourceDirectoryPath);
+                buildDirectory = buildDirectoryPath ? path_1["default"].resolve(buildDirectoryPath) : path_1["default"].join(process_1["default"].cwd(), 'build');
+                outputDirectory = outputDirectoryPath ? path_1["default"].resolve(outputDirectoryPath) : path_1["default"].join(process_1["default"].cwd(), 'dist');
+                pages = [{
+                        path: '/',
+                        filename: 'index.html'
+                    }, {
+                        path: '/about',
+                        filename: 'about/index.html'
+                    }, {
+                        path: '/roadmap',
+                        filename: 'roadmap/index.html'
+                    }];
+                nodeModulesPaths = (0, exports.findAncestorSibling)('node_modules');
+                nodeWebpackConfig = (0, webpack_merge_1["default"])((0, common_webpack_1["default"])(__assign(__assign({}, params), { name: 'site-node' })), (0, js_webpack_1["default"])(__assign(__assign({}, params), { polyfill: false, react: true })), (0, images_webpack_1["default"])(params), (0, css_webpack_1["default"])(params), (0, component_webpack_1["default"])(__assign(__assign({}, params), { entryFilePath: path_1["default"].join(sourceDirectory, './app.tsx'), outputDirectory: buildDirectory, excludeAllNodeModules: true, nodeModulesPaths: nodeModulesPaths })));
+                webWebpackConfig = (0, webpack_merge_1["default"])((0, common_webpack_1["default"])(__assign(__assign({}, params), { name: 'site' })), (0, js_webpack_1["default"])(__assign(__assign({}, params), { polyfill: true, react: true })), (0, images_webpack_1["default"])(params), (0, css_webpack_1["default"])(params), (0, app_webpack_1["default"])(__assign(__assign({}, params), { entryFilePath: path_1["default"].join(sourceDirectory, './index.tsx'), outputDirectory: outputDirectory })));
+                return [4 /*yield*/, (0, webpackUtil_1.createAndRunCompiler)(nodeWebpackConfig)];
+            case 1:
+                _a.sent();
+                App = require(path_1["default"].resolve(buildDirectory, 'index.js')).App;
+                return [4 /*yield*/, (0, webpackUtil_1.createAndRunCompiler)(webWebpackConfig)];
+            case 2:
+                webpackBuildStats = _a.sent();
+                pages.forEach(function (page) {
+                    console.log("EP: rendering page ".concat(page.path, " to ").concat(page.filename));
+                    var pageHead = { headId: '', base: null, title: null, links: [], metas: [], styles: [], scripts: [], noscripts: [] };
+                    var setHead = function (newHead) { pageHead = newHead; };
+                    var styledComponentsSheet = new styled_components_1.ServerStyleSheet();
+                    var extractor = new server_1.ChunkExtractor({ stats: webpackBuildStats });
+                    var bodyString = server_2["default"].renderToString(react_1["default"].createElement(server_1.ChunkExtractorManager, { extractor: extractor },
+                        react_1["default"].createElement(styled_components_1.StyleSheetManager, { sheet: styledComponentsSheet.instance },
+                            react_1["default"].createElement(App, { staticPath: page.path, setHead: setHead }))));
+                    var tags = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], (pageHead.title ? [pageHead.title] : []), true), (pageHead.base ? [pageHead.base] : []), true), pageHead.links, true), pageHead.metas, true), pageHead.styles, true), pageHead.scripts, true);
+                    var headString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement("head", null,
+                        tags.map(function (tag, index) { return (react_1["default"].createElement(tag.type, __assign(__assign({}, tag.attributes), { key: index, 'ui-react-head': tag.headId }), tag.content)); }),
+                        extractor.getPreAssets().map(function (asset) { return (react_1["default"].createElement('link', { key: asset.filename, 'data-chunk': asset.chunk, rel: asset.linkType, as: asset.scriptType, href: asset.url })); }),
+                        styledComponentsSheet.getStyleElement()));
+                    var bodyAssetsString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement(react_1["default"].Fragment, null, extractor.getMainAssets().map(function (asset) { return (react_1["default"].createElement(asset.scriptType, { key: asset.filename, 'data-chunk': asset.chunk, async: true, src: asset.url })); })));
+                    var output = "<!DOCTYPE html>\n      <html lang=\"en\">\n        ".concat(headString, "\n        <body>\n          <div id=\"root\">").concat(bodyString, "</div>\n          ").concat(bodyAssetsString, "\n        </body>\n      </html>\n    ");
+                    var outputPath = path_1["default"].join(outputDirectory, page.filename);
+                    fs_1["default"].mkdirSync(path_1["default"].dirname(outputPath), { recursive: true });
+                    fs_1["default"].writeFileSync(outputPath, output);
+                    console.log("EP: done rendering page ".concat(page.path, " to ").concat(page.filename));
                 });
-            }); }).then(function (webpackBuildStats) { return __awaiter(void 0, void 0, void 0, function () {
-                var App;
-                return __generator(this, function (_a) {
-                    console.log('EP: generating static html');
-                    App = require(path_1["default"].resolve(buildDirectory, 'index.js')).App;
-                    pages.forEach(function (page) {
-                        console.log("EP: rendering page ".concat(page.path, " to ").concat(page.filename));
-                        var pageHead = { headId: '', base: null, title: null, links: [], metas: [], styles: [], scripts: [], noscripts: [] };
-                        var setHead = function (newHead) { pageHead = newHead; };
-                        var styledComponentsSheet = new styled_components_1.ServerStyleSheet();
-                        var extractor = new server_1.ChunkExtractor({ stats: webpackBuildStats });
-                        var bodyString = server_2["default"].renderToString(react_1["default"].createElement(server_1.ChunkExtractorManager, { extractor: extractor },
-                            react_1["default"].createElement(styled_components_1.StyleSheetManager, { sheet: styledComponentsSheet.instance },
-                                react_1["default"].createElement(App, { staticPath: page.path, setHead: setHead }))));
-                        var tags = __spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray(__spreadArray([], (pageHead.title ? [pageHead.title] : []), true), (pageHead.base ? [pageHead.base] : []), true), pageHead.links, true), pageHead.metas, true), pageHead.styles, true), pageHead.scripts, true);
-                        var headString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement("head", null,
-                            tags.map(function (tag, index) { return (react_1["default"].createElement(tag.type, __assign(__assign({}, tag.attributes), { key: index, 'ui-react-head': tag.headId }), tag.content)); }),
-                            extractor.getPreAssets().map(function (asset) { return (react_1["default"].createElement('link', { key: asset.filename, 'data-chunk': asset.chunk, rel: asset.linkType, as: asset.scriptType, href: asset.url })); }),
-                            styledComponentsSheet.getStyleElement()));
-                        var bodyAssetsString = server_2["default"].renderToStaticMarkup(react_1["default"].createElement(react_1["default"].Fragment, null, extractor.getMainAssets().map(function (asset) { return (react_1["default"].createElement(asset.scriptType, { key: asset.filename, 'data-chunk': asset.chunk, async: true, src: asset.url })); })));
-                        var output = "<!DOCTYPE html>\n        <html lang=\"en\">\n          ".concat(headString, "\n          <body>\n            <div id=\"root\">").concat(bodyString, "</div>\n            ").concat(bodyAssetsString, "\n          </body>\n        </html>\n      ");
-                        var outputPath = path_1["default"].join(outputDirectory, page.filename);
-                        fs_1["default"].mkdirSync(path_1["default"].dirname(outputPath), { recursive: true });
-                        fs_1["default"].writeFileSync(outputPath, output);
-                        console.log("EP: done rendering page ".concat(page.path, " to ").concat(page.filename));
-                    });
-                    console.log('EP: done generating static html');
-                    return [2 /*return*/];
-                });
-            }); })];
+                console.log('EP: done generating static html');
+                return [2 /*return*/];
+        }
     });
 }); };
 exports.render = render;

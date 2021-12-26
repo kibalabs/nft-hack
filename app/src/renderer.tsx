@@ -61,9 +61,9 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
   };
   const params = { ...defaultParams, ...inputParams };
 
-  const sourceDirectory = sourceDirectoryPath;
-  const buildDirectory = buildDirectoryPath || path.join(process.cwd(), 'build');
-  const outputDirectory = outputDirectoryPath || path.join(process.cwd(), 'dist');
+  const sourceDirectory = path.resolve(sourceDirectoryPath);
+  const buildDirectory = buildDirectoryPath ? path.resolve(buildDirectoryPath) : path.join(process.cwd(), 'build');
+  const outputDirectory = outputDirectoryPath ? path.resolve(outputDirectoryPath) : path.join(process.cwd(), 'dist');
 
   const pages: IPage[] = [{
     path: '/',
@@ -76,7 +76,7 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
     filename: 'roadmap/index.html',
   }];
 
-  // NOTE(krishan711): this is weird but needed to work both locally (with lerna) and on the builder-api
+  // NOTE(krishan711): this is weird.. find an alternative (taking into account EP uses workspaces)
   const nodeModulesPaths = findAncestorSibling('node_modules');
   const nodeWebpackConfig = webpackMerge(
     makeCommonWebpackConfig({ ...params, name: 'site-node' }),
@@ -92,70 +92,68 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
     makeCssWebpackConfig(params),
     makeReactAppWebpackConfig({ ...params, entryFilePath: path.join(sourceDirectory, './index.tsx'), outputDirectory }),
   );
-  console.log('EP: generating node output');
-  return createAndRunCompiler(nodeWebpackConfig).then(async (): Promise<Record<string, unknown>> => {
-    console.log('EP: generating web output');
-    return createAndRunCompiler(webWebpackConfig);
-  }).then(async (webpackBuildStats: Record<string, unknown>): Promise<void> => {
-    console.log('EP: generating static html');
-    // NOTE(krishan711): this ensures the require is not executed at build time (only during runtime)
-    // @ts-ignore
-    // eslint-disable-next-line no-undef
-    // const { App } = __non_webpack_require__(path.resolve(buildDirectory, 'index.js'));
-    const { App } = require(path.resolve(buildDirectory, 'index.js'));
-    pages.forEach((page: IPage): void => {
-      console.log(`EP: rendering page ${page.path} to ${page.filename}`);
-      let pageHead: IHead = { headId: '', base: null, title: null, links: [], metas: [], styles: [], scripts: [], noscripts: [] };
-      const setHead = (newHead: IHead): void => { pageHead = newHead; };
-      const styledComponentsSheet = new ServerStyleSheet();
-      const extractor = new ChunkExtractor({ stats: webpackBuildStats });
-      const bodyString = ReactDOMServer.renderToString(
-        <ChunkExtractorManager extractor={extractor}>
-          <StyleSheetManager sheet={styledComponentsSheet.instance}>
-            <App staticPath={page.path} setHead={setHead} />
-          </StyleSheetManager>
-        </ChunkExtractorManager>,
-      );
-      const tags: IHeadTag[] = [
-        ...(pageHead.title ? [pageHead.title] : []),
-        ...(pageHead.base ? [pageHead.base] : []),
-        ...pageHead.links,
-        ...pageHead.metas,
-        ...pageHead.styles,
-        ...pageHead.scripts,
-      ];
-      const headString = ReactDOMServer.renderToStaticMarkup(
-        <head>
-          {tags.map((tag: IHeadTag, index: number): React.ReactElement => (
-            React.createElement(tag.type, { ...tag.attributes, key: index, 'ui-react-head': tag.headId }, tag.content)
-          ))}
-          {extractor.getPreAssets().map((asset: Chunk): React.ReactElement => (
-            React.createElement('link', { key: asset.filename, 'data-chunk': asset.chunk, rel: asset.linkType, as: asset.scriptType, href: asset.url })
-          ))}
-          {styledComponentsSheet.getStyleElement()}
-        </head>,
-      );
-      const bodyAssetsString = ReactDOMServer.renderToStaticMarkup(
-        <React.Fragment>
-          {extractor.getMainAssets().map((asset: Chunk): React.ReactElement => (
-            React.createElement(asset.scriptType, { key: asset.filename, 'data-chunk': asset.chunk, async: true, src: asset.url })
-          ))}
-        </React.Fragment>,
-      );
-      const output = `<!DOCTYPE html>
-        <html lang="en">
-          ${headString}
-          <body>
-            <div id="root">${bodyString}</div>
-            ${bodyAssetsString}
-          </body>
-        </html>
-      `;
-      const outputPath = path.join(outputDirectory, page.filename);
-      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-      fs.writeFileSync(outputPath, output);
-      console.log(`EP: done rendering page ${page.path} to ${page.filename}`);
-    });
-    console.log('EP: done generating static html');
+  console.log('webWebpackConfig', webWebpackConfig)
+
+  await createAndRunCompiler(nodeWebpackConfig);
+  // // NOTE(krishan711): this ensures the require is not executed at build time (only during runtime)
+  // @ts-ignore
+  // eslint-disable-next-line no-undef
+  // // const { App } = __non_webpack_require__(path.resolve(buildDirectory, 'index.js'));
+  const { App } = require(path.resolve(buildDirectory, 'index.js'));
+  const webpackBuildStats = await createAndRunCompiler(webWebpackConfig);
+  pages.forEach((page: IPage): void => {
+    console.log(`EP: rendering page ${page.path} to ${page.filename}`);
+    let pageHead: IHead = { headId: '', base: null, title: null, links: [], metas: [], styles: [], scripts: [], noscripts: [] };
+    const setHead = (newHead: IHead): void => { pageHead = newHead; };
+    const styledComponentsSheet = new ServerStyleSheet();
+    const extractor = new ChunkExtractor({ stats: webpackBuildStats });
+    const bodyString = ReactDOMServer.renderToString(
+      <ChunkExtractorManager extractor={extractor}>
+        <StyleSheetManager sheet={styledComponentsSheet.instance}>
+          <App staticPath={page.path} setHead={setHead} />
+        </StyleSheetManager>
+      </ChunkExtractorManager>,
+    );
+    const tags: IHeadTag[] = [
+      ...(pageHead.title ? [pageHead.title] : []),
+      ...(pageHead.base ? [pageHead.base] : []),
+      ...pageHead.links,
+      ...pageHead.metas,
+      ...pageHead.styles,
+      ...pageHead.scripts,
+    ];
+    const headString = ReactDOMServer.renderToStaticMarkup(
+      <head>
+        {tags.map((tag: IHeadTag, index: number): React.ReactElement => (
+          React.createElement(tag.type, { ...tag.attributes, key: index, 'ui-react-head': tag.headId }, tag.content)
+        ))}
+        {extractor.getPreAssets().map((asset: Chunk): React.ReactElement => (
+          React.createElement('link', { key: asset.filename, 'data-chunk': asset.chunk, rel: asset.linkType, as: asset.scriptType, href: asset.url })
+        ))}
+        {styledComponentsSheet.getStyleElement()}
+      </head>,
+    );
+    const bodyAssetsString = ReactDOMServer.renderToStaticMarkup(
+      <React.Fragment>
+        {extractor.getMainAssets().map((asset: Chunk): React.ReactElement => (
+          React.createElement(asset.scriptType, { key: asset.filename, 'data-chunk': asset.chunk, async: true, src: asset.url })
+        ))}
+      </React.Fragment>,
+    );
+    const output = `<!DOCTYPE html>
+      <html lang="en">
+        ${headString}
+        <body>
+          <div id="root">${bodyString}</div>
+          ${bodyAssetsString}
+        </body>
+      </html>
+    `;
+    const outputPath = path.join(outputDirectory, page.filename);
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, output);
+    console.log(`EP: done rendering page ${page.path} to ${page.filename}`);
   });
+  console.log('EP: done generating static html');
+  return;
 };

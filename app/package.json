@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "build-react-app --config-modifier ./config.build.js",
-    "build-static": "tsc --jsx react --esModuleInterop src/renderer.tsx && node -e \"const render = require('./src/renderer').render; render('/Users/krishan/Projects/nft-hack/app/src', undefined, undefined, {configModifier: '/Users/krishan/Projects/nft-hack/app/config.build.js'});\"",
+    "build-static": "tsc --jsx react --esModuleInterop src/renderer.tsx && node -e \"require('./src/renderer').render('./src', undefined, undefined, {configModifier: './config.build.js'})\"",
     "start": "build-react-app --config-modifier ./config.build.js --start",
     "start-dev": "build-react-app --config-modifier ./config.build.js --start --dev",
     "clean": "rm -rf ./node_modules ./package-lock.json ./dist",
@@ -14,14 +14,15 @@
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "5.5.1",
-    "@kibalabs/core": "0.5.7-next.1",
-    "@kibalabs/core-react": "0.7.1-next.2",
-    "@kibalabs/everyview-tracker": "0.2.5",
-    "@kibalabs/everyview-tracker-react": "0.2.5",
-    "@kibalabs/ui-react": "0.9.6-next.5",
+    "@kibalabs/core": "0.5.7",
+    "@kibalabs/core-react": "0.8.0",
+    "@kibalabs/everyview-tracker": "0.3.1",
+    "@kibalabs/everyview-tracker-react": "0.3.1",
+    "@kibalabs/ui-react": "0.9.6",
     "@metamask/detect-provider": "1.2.0",
     "canvas-size": "1.2.5",
     "ethers": "5.5.2",
+    "querystring-es3": "^0.2.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-dropzone": "11.4.2",
@@ -31,7 +32,7 @@
     "web3.storage": "3.5.1"
   },
   "devDependencies": {
-    "@kibalabs/build": "0.8.2-next.1",
+    "@kibalabs/build": "0.8.2",
     "@types/react": "17.0.33",
     "@types/react-dom": "17.0.11",
     "@types/styled-components": "5.1.18"
