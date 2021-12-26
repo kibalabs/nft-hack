@@ -434,6 +434,9 @@ class MdtpManager:
     async def update_grid_item_group_image(self, network: str, ownerId: str, groupId: str) -> None:
         logging.info(f'Updating image for network {network} ownerId {ownerId} groupId {groupId}')
         gridItems = await self.list_grid_items(network=network, ownerId=ownerId, groupId=groupId)
+        if len(gridItems) == 0:
+            logging.info(f'Skipping updating image for network {network} ownerId {ownerId} groupId {groupId} as there are no gridItems')
+            return
         if any(not gridItem.resizableImageUrl for gridItem in gridItems):
             logging.info(f'Skipping updating image for network {network} ownerId {ownerId} groupId {groupId} as not all gridItems have a resizableImageUrl')
             return

@@ -30,7 +30,7 @@ class MdtpMessageProcessor(MessageProcessor):
             return
         if message.command == UpdateGroupImageMessageContent.get_command():
             messageContent = UpdateGroupImageMessageContent.parse_obj(message.content)
-            await self.manager.upload_group_image(network=messageContent.network, groupId=messageContent.groupId)
+            await self.manager.update_grid_item_group_image(network=messageContent.network, ownerId=messageContent.ownerId, groupId=messageContent.groupId)
             return
         if message.command == BuildBaseImageMessageContent.get_command():
             messageContent = BuildBaseImageMessageContent.parse_obj(message.content)
