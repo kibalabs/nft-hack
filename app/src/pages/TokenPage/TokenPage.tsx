@@ -2,7 +2,7 @@ import React from 'react';
 
 import { getLinkableUrl, getUrlDisplayString, truncateMiddle, truncateStart } from '@kibalabs/core';
 import { useNavigator, useNumberRouteParam } from '@kibalabs/core-react';
-import { Alignment, BackgroundView, Box, Button, Direction, Head, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Head, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccountIds, useAccounts } from '../../accountsContext';
 import { GridItem } from '../../client';

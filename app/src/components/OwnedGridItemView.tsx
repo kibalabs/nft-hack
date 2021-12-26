@@ -4,9 +4,9 @@ import { useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Stack, Text } from '@kibalabs/ui-react';
 
 import { GridItem } from '../client';
+import { useGlobals } from '../globalsContext';
 import { isUpdated } from '../util/gridItemUtil';
 import { MdtpImage } from './MdtpImage';
-import { useGlobals } from '../globalsContext';
 
 export interface IOwnedGridItemViewProps {
   gridItems: GridItem[];

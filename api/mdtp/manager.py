@@ -432,15 +432,18 @@ class MdtpManager:
         await self.workQueue.send_message(message=UpdateGroupImageMessageContent(network=network, ownerId=ownerId, groupId=groupId).to_message(), delaySeconds=delay or 0)
 
     async def update_grid_item_group_image(self, network: str, ownerId: str, groupId: str) -> None:
-        logging.info(f'Updating image for network{network} ownerId {ownerId} groupId {groupId}')
+        logging.info(f'Updating image for network {network} ownerId {ownerId} groupId {groupId}')
         gridItems = await self.list_grid_items(network=network, ownerId=ownerId, groupId=groupId)
         if any(not gridItem.resizableImageUrl for gridItem in gridItems):
-            logging.info(f'Skipping updating image for network{network} ownerId {ownerId} groupId {groupId} as not all gridItems have a resizableImageUrl')
+            logging.info(f'Skipping updating image for network {network} ownerId {ownerId} groupId {groupId} as not all gridItems have a resizableImageUrl')
             return
         try:
             gridItemGroupImage = await self.retriever.get_grid_item_group_image_by_network_owner_id_group_id(network=network, ownerId=ownerId, groupId=groupId)
         except NotFoundException:
             gridItemGroupImage = None
+        if gridItemGroupImage and gridItemGroupImage.updatedDate > max(gridItem.updatedDate for gridItem in gridItems):
+            logging.info(f'Skipping updating image for network {network} ownerId {ownerId} groupId {groupId} as nothing has changed since it was generated')
+            return
         canvasTokenWidth = 100
         canvasTokenHeight = 100
         xPositions = [(gridItem.tokenId - 1) % canvasTokenWidth for gridItem in gridItems]
@@ -469,7 +472,7 @@ class MdtpManager:
             tokenIndex = gridItem.tokenId - 1
             xPosition = (tokenIndex % canvasTokenHeight) - minX
             yPosition = math.floor(tokenIndex / canvasTokenHeight) - minY
-            outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), image)
+            outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
         outputFilePath = 'grid_item_group_image_output.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
