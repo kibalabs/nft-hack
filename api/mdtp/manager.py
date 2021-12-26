@@ -460,9 +460,10 @@ class MdtpManager:
             gridSizeY = max(yPositions) - minY + 1
             # NOTE(krishan711): everything is double so that it works well in retina
             scale = 2
-            gridWidth = 1000 * scale
+            aspectRatio = gridSizeX / gridSizeY
+            gridWidth = math.floor(1000 * scale * (aspectRatio if aspectRatio < 1 else 1))
             tokenWidth = math.ceil(gridWidth / gridSizeX)
-            gridHeight = 1000 * scale
+            gridHeight = math.floor(1000 * scale * (1.0 / aspectRatio if aspectRatio > 1 else 1))
             tokenHeight = math.ceil(gridHeight / gridSizeY)
             outputImage = PILImage.new('RGB', (gridWidth, gridHeight))
             for gridItem in gridItems:
