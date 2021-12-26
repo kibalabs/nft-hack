@@ -447,40 +447,43 @@ class MdtpManager:
         if gridItemGroupImage and gridItemGroupImage.updatedDate > max(gridItem.updatedDate for gridItem in gridItems):
             logging.info(f'Skipping updating image for network {network} ownerId {ownerId} groupId {groupId} as nothing has changed since it was generated')
             return
-        canvasTokenWidth = 100
-        canvasTokenHeight = 100
-        xPositions = [(gridItem.tokenId - 1) % canvasTokenWidth for gridItem in gridItems]
-        yPositions = [math.floor((gridItem.tokenId - 1) / canvasTokenHeight) for gridItem in gridItems]
-        minX = min(xPositions)
-        gridSizeX = max(xPositions) - minX + 1
-        minY = min(yPositions)
-        gridSizeY = max(yPositions) - minY + 1
-        # NOTE(krishan711): everything is double so that it works well in retina
-        scale = 2
-        gridWidth = 1000 * scale
-        tokenWidth = math.ceil(gridWidth / gridSizeX)
-        gridHeight = 1000 * scale
-        tokenHeight = math.ceil(gridHeight / gridSizeY)
-        outputImage = PILImage.new('RGB', (gridWidth, gridHeight))
-        for gridItem in gridItems:
-            logging.info(f'Drawing grid item {gridItem.gridItemId}')
-            imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
-            if imageUrl.startswith('ipfs://'):
-                imageResponse = await self.ipfsManager.read_file(cid=imageUrl.replace('ipfs://', ''))
-            else:
-                imageResponse = await self.requester.get(url=imageUrl)
-            contentBuffer = BytesIO(imageResponse.content)
-            with PILImage.open(fp=contentBuffer) as tokenImage:
-                image = tokenImage.resize(size=(tokenWidth, tokenHeight))
-            tokenIndex = gridItem.tokenId - 1
-            xPosition = (tokenIndex % canvasTokenHeight) - minX
-            yPosition = math.floor(tokenIndex / canvasTokenHeight) - minY
-            outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
-        outputFilePath = 'grid_item_group_image_output.png'
-        outputImage.save(outputFilePath)
-        imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
-        await file_util.remove_file(filePath=outputFilePath)
-        imageUrl = f'{_API_URL}/v1/images/{imageId}/go'
+        if len(gridItems) == 1:
+            imageUrl = gridItems[0].resizableImageUrl
+        else:
+            canvasTokenWidth = 100
+            canvasTokenHeight = 100
+            xPositions = [(gridItem.tokenId - 1) % canvasTokenWidth for gridItem in gridItems]
+            yPositions = [math.floor((gridItem.tokenId - 1) / canvasTokenHeight) for gridItem in gridItems]
+            minX = min(xPositions)
+            gridSizeX = max(xPositions) - minX + 1
+            minY = min(yPositions)
+            gridSizeY = max(yPositions) - minY + 1
+            # NOTE(krishan711): everything is double so that it works well in retina
+            scale = 2
+            gridWidth = 1000 * scale
+            tokenWidth = math.ceil(gridWidth / gridSizeX)
+            gridHeight = 1000 * scale
+            tokenHeight = math.ceil(gridHeight / gridSizeY)
+            outputImage = PILImage.new('RGB', (gridWidth, gridHeight))
+            for gridItem in gridItems:
+                logging.info(f'Drawing grid item {gridItem.gridItemId}')
+                imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
+                if imageUrl.startswith('ipfs://'):
+                    imageResponse = await self.ipfsManager.read_file(cid=imageUrl.replace('ipfs://', ''))
+                else:
+                    imageResponse = await self.requester.get(url=imageUrl)
+                contentBuffer = BytesIO(imageResponse.content)
+                with PILImage.open(fp=contentBuffer) as tokenImage:
+                    image = tokenImage.resize(size=(tokenWidth, tokenHeight))
+                tokenIndex = gridItem.tokenId - 1
+                xPosition = (tokenIndex % canvasTokenHeight) - minX
+                yPosition = math.floor(tokenIndex / canvasTokenHeight) - minY
+                outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
+            outputFilePath = 'grid_item_group_image_output.png'
+            outputImage.save(outputFilePath)
+            imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
+            await file_util.remove_file(filePath=outputFilePath)
+            imageUrl = f'{_API_URL}/v1/images/{imageId}/go'
         if not gridItemGroupImage:
             await self.saver.create_grid_item_group_image(network=network, ownerId=ownerId, groupId=groupId, imageUrl=imageUrl)
         else:
