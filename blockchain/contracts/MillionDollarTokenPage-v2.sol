@@ -28,8 +28,8 @@ library Bits {
 }
 
 interface IERC721CollectionMetadata {
-    /* Read more at https://dev.milliondollartokenpage.com/ierc721collectionmetadata */
-    function collectionURI() external returns (string memory) ;
+    /* Read more at https://docs.token.page/IERC721CollectionMetadata */
+    function contractURI() external returns (string memory) ;
 }
 
 interface MillionDollarTokenPageV1 {
@@ -48,7 +48,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     uint16 public constant ROW_COUNT = 100;
     uint16 public constant SUPPLY_LIMIT = COLUMN_COUNT * ROW_COUNT;
 
-    uint8 public royaltyPercentage;
+    uint16 public royaltyBasisPoints;
     uint16 public totalMintLimit;
     uint16 public singleMintLimit;
     uint16 public userMintLimit;
@@ -58,7 +58,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
 
     string public metadataBaseURI;
     string public defaultContentBaseURI;
-    string public override collectionURI;
+    string public collectionURI;
 
     // TODO(krishan711): document migration process here
     MillionDollarTokenPageV1 public original;
@@ -67,8 +67,9 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     uint256[(SUPPLY_LIMIT / 256) + 1] private tokenIdsToMigrateBitmap;
 
     event TokenContentURIChanged(uint256 indexed tokenId);
+    event TokenMigrated(uint256 indexed tokenId);
 
-    constructor(uint16 _totalMintLimit, uint16 _singleMintLimit, uint16 _userMintLimit, uint256 _mintPrice, string memory _metadataBaseURI, string memory _defaultContentBaseURI, string memory _collectionURI, uint8 _royaltyPercentage, address _original) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() Pausable() {
+    constructor(uint16 _totalMintLimit, uint16 _singleMintLimit, uint16 _userMintLimit, uint256 _mintPrice, string memory _metadataBaseURI, string memory _defaultContentBaseURI, string memory _collectionURI, uint8 _royaltyBasisPoints, address _original) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() Pausable() {
         isSaleActive = false;
         isCenterSaleActive = false;
         canAddTokenIdsToMigrate = false;
@@ -79,7 +80,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         singleMintLimit = _singleMintLimit;
         userMintLimit = _userMintLimit;
         mintPrice = _mintPrice;
-        royaltyPercentage = _royaltyPercentage;
+        royaltyBasisPoints = _royaltyBasisPoints;
         original = MillionDollarTokenPageV1(_original);
     }
 
@@ -88,11 +89,16 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
             interfaceId == type(IERC721Receiver).interfaceId ||
             interfaceId == type(IERC721Enumerable).interfaceId ||
             interfaceId == type(IERC2981).interfaceId ||
+            interfaceId == type(IERC721CollectionMetadata).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
     function royaltyInfo(uint256, uint256 salePrice) external view override returns (address, uint256) {
-        return (address(this), salePrice * 100 / royaltyPercentage);
+        return (address(this), salePrice * royaltyBasisPoints / 10000);
+    }
+
+    function contractURI() external view override returns (string memory) {
+        return collectionURI;
     }
 
     // Utils
@@ -161,13 +167,14 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         collectionURI = newCollectionURI;
     }
 
-    function setRoyaltyPercentage(uint8 newRoyaltyPercentage) external onlyOwner {
-        royaltyPercentage = newRoyaltyPercentage;
+    function setRoyaltyBasisPoints(uint16 newRoyaltyBasisPoints) external onlyOwner {
+        require(newRoyaltyBasisPoints >= 0, "MDTP: royaltyBasisPoints must be >= 0");
+        require(newRoyaltyBasisPoints < 5000, "MDTP: royaltyBasisPoints must be < 5000 (50%)");
+        royaltyBasisPoints = newRoyaltyBasisPoints;
     }
 
     function withdraw() external onlyOwner {
         uint256 balance = address(this).balance;
-        console.log('balance', balance);
         (bool success, ) = owner().call{value: balance}("");
         require(success, "Transfer failed.");
     }
@@ -403,6 +410,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         tokenIdsToMigrateBitmap[tokenId / 256] = tokenIdsToMigrateBitmap[tokenId / 256].clearBit(uint8(tokenId % 256));
         tokenIdsToMigrateCount -= 1;
         mintedTokenCount += 1;
+        emit TokenMigrated(tokenId);
         return this.onERC721Received.selector;
     }
 

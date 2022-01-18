@@ -23,11 +23,8 @@ module.exports = {
     },
     rinkeby: {
       url: process.env.ALCHEMY_URL,
-      from: '0xF3A535cEdf65cB8C287Cb5CAc67E970E94eb372D',
+      accounts: [process.env.PRIVATE_KEY],
     },
-    matic: {
-      url: "https://rpc-mumbai.maticvigil.com",
-    }
   },
   gasReporter: {
     enabled: true,

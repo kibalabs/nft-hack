@@ -35,13 +35,15 @@ const validChainIdNetworkMap: Record<number, string | undefined> = {
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
-  rinkeby7: '0xcb784b2901D77e13981D87094AB54B7822b0D421',
+  rinkeby6: '0x8f1F643637046c867675Ca101ce28E2763daC1E2',
   mainnet1: '0x1Cf33F4c6C4E6391F4D2B445aa3a36639b77dd68',
+  rinkeby7: '0xef3593DE8e2bF96881773fd3125FEDD82a3acaA8',
 };
 
 const networkContractMap: Record<string, ContractInterface | null> = {
-  rinkeby7: contract8 as unknown as ContractInterface,
+  rinkeby6: contract7 as unknown as ContractInterface,
   mainnet1: contract7 as unknown as ContractInterface,
+  rinkeby7: contract8 as unknown as ContractInterface,
 };
 
 export const getNetwork = (chainId: ChainId): string | null => {

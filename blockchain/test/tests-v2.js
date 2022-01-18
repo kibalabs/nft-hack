@@ -6,7 +6,7 @@ const arrayWithRange = (start, end) => {
 };
 
 describe("MillionDollarTokenPageV2 contract", async function() {
-  let myWallet;
+  let ownerWallet;
   let otherWallet;
   let contractFactory;
   let originalContractFactory;
@@ -21,10 +21,10 @@ describe("MillionDollarTokenPageV2 contract", async function() {
   const defaultSingleMintLimit = 20;
   const defaultUserMintLimit = 35;
   const defaultMintPrice = 0;
-  const defaultRoyaltyPercentage = 5;
+  const defaultRoyaltyBasisPoints = 250; // 2.5%
 
   before(async () => {
-    [myWallet, otherWallet] = await hardhat.ethers.getSigners();
+    [ownerWallet, otherWallet] = await hardhat.ethers.getSigners();
     originalContractFactory = await hardhat.ethers.getContractFactory("MillionDollarTokenPage");
     contractFactory = await hardhat.ethers.getContractFactory("MillionDollarTokenPageV2");
   })
@@ -32,7 +32,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
   beforeEach(async () => {
     originalMdtp = await originalContractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultUserMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri);
     originalContractAccount = hardhat.ethers.utils.getAddress(originalMdtp.address);
-    mdtp = await contractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultUserMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri, defaultCollectionUri, defaultRoyaltyPercentage, originalContractAccount);
+    mdtp = await contractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultUserMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri, defaultCollectionUri, defaultRoyaltyBasisPoints, originalContractAccount);
   });
 
   describe("Admin", async function() {
@@ -171,14 +171,14 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction2).to.be.reverted;
     });
 
-    it("allows admins to setRoyaltyPercentage", async function() {
-      await mdtp.setRoyaltyPercentage(17);
-      const royaltyPercentage = await mdtp.royaltyPercentage();
-      expect(royaltyPercentage).to.equal(17);
+    it("allows admins to setRoyaltyBasisPoints", async function() {
+      await mdtp.setRoyaltyBasisPoints(17);
+      const royaltyBasisPoints = await mdtp.royaltyBasisPoints();
+      expect(royaltyBasisPoints).to.equal(17);
     });
 
-    it("prevents non-admins to setRoyaltyPercentage", async function() {
-      const transaction = mdtp.connect(otherWallet).setRoyaltyPercentage(8);
+    it("prevents non-admins to setRoyaltyBasisPoints", async function() {
+      const transaction = mdtp.connect(otherWallet).setRoyaltyBasisPoints(8);
       await expect(transaction).to.be.reverted;
     });
 
@@ -186,10 +186,10 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await mdtp.setIsSaleActive(true);
       await mdtp.setMintPrice(ethers.utils.parseEther("0.01"));
       await mdtp.connect(otherWallet).mintToken(100, {value: ethers.utils.parseEther("0.01")});
-      const previousBalance = await myWallet.getBalance();
+      const previousBalance = await ownerWallet.getBalance();
       const transaction = await((await mdtp.withdraw()).wait());
       const transactionGasUsed = transaction.cumulativeGasUsed * transaction.effectiveGasPrice;
-      const newBalance = await myWallet.getBalance();
+      const newBalance = await ownerWallet.getBalance();
       expect(newBalance.add(transactionGasUsed).sub(previousBalance)).to.equal(ethers.utils.parseEther("0.01"));
     });
 
@@ -224,6 +224,11 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       const collectionUri = await mdtp.collectionURI();
       expect(collectionUri).to.equal(defaultCollectionUri);
     });
+
+    it("should have the correct contractURI", async function() {
+      const contractURI = await mdtp.contractURI();
+      expect(contractURI).to.equal(defaultCollectionUri);
+    });
   });
 
   describe("Token Content URIs", async function() {
@@ -240,7 +245,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     //   await mdtp.mintToken(100);
     //   const newUri = "https://www.com/tokens/100"
     //   await mdtp.setTokenContentURI(100, newUri);
-    //   await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+    //   await mdtp.transferFrom(ownerWallet.address, otherWallet.address, 100);
     //   const contentUri = await mdtp.tokenContentURI(100);
     //   expect(contentUri).to.equal(`${defaultContentBaseUri}100.json`);
     // });
@@ -267,7 +272,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents a non-owner to change the content uri", async function() {
       await mdtp.mintToken(100);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, 100)
+      await mdtp.transferFrom(ownerWallet.address, otherWallet.address, 100)
       const newUri = "https://www.com/tokens/100";
       const transaction = mdtp.setTokenContentURI(100, newUri);
       await expect(transaction).to.be.reverted;
@@ -342,7 +347,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents a non-owner of any token in the group to set content uri", async function() {
       await mdtp.mintTokenGroup(100, 2, 2);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, 101)
+      await mdtp.transferFrom(ownerWallet.address, otherWallet.address, 101)
       const newUris = ["1", "2", "3", "4"]
       const transaction = mdtp.setTokenGroupContentURIs(100, 2, 2, newUris);
       await expect(transaction).to.be.reverted;
@@ -434,7 +439,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("emits a Transfer event when a token is minted", async function() {
       const transaction = mdtp.mintToken(100);
-      await expect(transaction).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
+      await expect(transaction).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', ownerWallet.address, 100);
     });
 
     it("updates mintedCount when a token is minted", async function() {
@@ -478,7 +483,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     it("sets the owner to the caller", async function() {
       await mdtp.mintToken(100);
       const owner = await mdtp.ownerOf(100);
-      expect(owner).to.equal(myWallet.address)
+      expect(owner).to.equal(ownerWallet.address)
     });
 
     it("should change the content uri to the metadata uri after minting", async function() {
@@ -725,13 +730,13 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     it("sets the owner to the caller", async function() {
       await mdtp.mintTokenGroup(100, 2, 2);
       const owner = await mdtp.ownerOf(100);
-      expect(owner).to.equal(myWallet.address)
+      expect(owner).to.equal(ownerWallet.address)
       const owner2 = await mdtp.ownerOf(101);
-      expect(owner2).to.equal(myWallet.address)
+      expect(owner2).to.equal(ownerWallet.address)
       const owner3 = await mdtp.ownerOf(200);
-      expect(owner3).to.equal(myWallet.address)
+      expect(owner3).to.equal(ownerWallet.address)
       const owner4 = await mdtp.ownerOf(201);
-      expect(owner4).to.equal(myWallet.address)
+      expect(owner4).to.equal(ownerWallet.address)
     });
 
     it("prevents a width < 0", async function() {
@@ -793,10 +798,10 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     it("emits Transfer events when tokens are minted", async function() {
       const transaction = mdtp.mintTokenGroup(100, 2, 2);
       const receipt = await transaction;
-      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 100);
-      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 101);
-      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 200);
-      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', myWallet.address, 201);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', ownerWallet.address, 100);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', ownerWallet.address, 101);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', ownerWallet.address, 200);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', ownerWallet.address, 201);
     });
 
     it("updates mintedCount when tokens are minted", async function() {
@@ -1139,7 +1144,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     });
 
     it("returns 0 for the balance of a non-token holder", async function () {
-      const balance = await mdtp.balanceOf(myWallet.address);
+      const balance = await mdtp.balanceOf(ownerWallet.address);
       expect(balance).to.equal(0);
     });
 
@@ -1147,14 +1152,14 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await mdtp.mintToken(100);
       await mdtp.mintToken(101);
       await mdtp.mintToken(102);
-      const balance = await mdtp.balanceOf(myWallet.address);
+      const balance = await mdtp.balanceOf(ownerWallet.address);
       expect(balance).to.equal(3);
     });
 
     it("returns the correct value for the balance of a transferred token", async function () {
       await mdtp.mintToken(100);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
-      const balance1 = await mdtp.balanceOf(myWallet.address);
+      await mdtp.transferFrom(ownerWallet.address, otherWallet.address, 100);
+      const balance1 = await mdtp.balanceOf(ownerWallet.address);
       expect(balance1).to.equal(0);
       const balance2 = await mdtp.balanceOf(otherWallet.address);
       expect(balance2).to.equal(1);
@@ -1168,12 +1173,12 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     it("returns the correct value for ownerOf of a minted token", async function () {
       await mdtp.mintToken(100);
       const owner = await mdtp.ownerOf(100);
-      expect(owner).to.equal(myWallet.address);
+      expect(owner).to.equal(ownerWallet.address);
     });
 
     it("returns the correct value for ownerOf of a transferred token", async function () {
       await mdtp.mintToken(100);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+      await mdtp.transferFrom(ownerWallet.address, otherWallet.address, 100);
       const owner = await mdtp.ownerOf(100);
       expect(owner).to.equal(otherWallet.address);
     });
@@ -1192,7 +1197,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await mdtp.mintToken(100);
       await mdtp.mintToken(101);
       await mdtp.mintToken(102);
-      const tokenId = await mdtp.tokenOfOwnerByIndex(myWallet.address, 1);
+      const tokenId = await mdtp.tokenOfOwnerByIndex(ownerWallet.address, 1);
       expect(tokenId).to.equal(101);
     });
 
@@ -1200,15 +1205,15 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await mdtp.mintToken(100);
       await mdtp.mintToken(101);
       await mdtp.mintToken(102);
-      const tokenId = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
+      const tokenId = await mdtp.tokenOfOwnerByIndex(ownerWallet.address, 0);
       expect(tokenId).to.equal(100);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
-      const tokenId2 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
+      await mdtp.transferFrom(ownerWallet.address, otherWallet.address, 100);
+      const tokenId2 = await mdtp.tokenOfOwnerByIndex(ownerWallet.address, 0);
       expect(tokenId2).to.equal(101);
-      const tokenId3 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 1);
+      const tokenId3 = await mdtp.tokenOfOwnerByIndex(ownerWallet.address, 1);
       expect(tokenId3).to.equal(102);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, 101);
-      const tokenId4 = await mdtp.tokenOfOwnerByIndex(myWallet.address, 0);
+      await mdtp.transferFrom(ownerWallet.address, otherWallet.address, 101);
+      const tokenId4 = await mdtp.tokenOfOwnerByIndex(ownerWallet.address, 0);
       expect(tokenId4).to.equal(102);
     });
   });
@@ -1220,15 +1225,15 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("emits a Transfer event when a token is transferred", async function() {
       await mdtp.mintToken(100);
-      const transaction = mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
-      await expect(transaction).to.emit(mdtp, 'Transfer').withArgs(myWallet.address, otherWallet.address, 100);
+      const transaction = mdtp.transferFrom(ownerWallet.address, otherWallet.address, 100);
+      await expect(transaction).to.emit(mdtp, 'Transfer').withArgs(ownerWallet.address, otherWallet.address, 100);
     });
 
     it("does not change mintedCount when a token is transferred", async function() {
       await mdtp.mintToken(100);
       const mintedCount = await mdtp.mintedCount();
       expect(mintedCount).to.equal(1);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+      await mdtp.transferFrom(ownerWallet.address, otherWallet.address, 100);
       const mintedCount2 = await mdtp.mintedCount();
       expect(mintedCount2).to.equal(1);
     });
@@ -1236,79 +1241,79 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     it("prevents transferFrom when paused", async function() {
       await mdtp.mintToken(100);
       await mdtp.pause();
-      const transaction = mdtp.transferFrom(myWallet.address, otherWallet.address, 100);
+      const transaction = mdtp.transferFrom(ownerWallet.address, otherWallet.address, 100);
       await expect(transaction).to.be.reverted;
     });
 
     it("prevents transferFrom a non-owned token", async function() {
       await mdtp.mintToken(100);
-      const transaction = mdtp.transferFrom(myWallet.address, otherWallet.address, 101);
+      const transaction = mdtp.transferFrom(ownerWallet.address, otherWallet.address, 101);
       await expect(transaction).to.be.reverted;
     });
 
     it("allows transferGroupFrom", async function() {
       await mdtp.mintTokenGroup(100, 2, 2);
-      await mdtp.transferGroupFrom(myWallet.address, otherWallet.address, 100, 2, 1);
+      await mdtp.transferGroupFrom(ownerWallet.address, otherWallet.address, 100, 2, 1);
       const owner100 = await mdtp.ownerOf(100);
       expect(owner100).to.equal(otherWallet.address);
       const owner101 = await mdtp.ownerOf(101);
       expect(owner101).to.equal(otherWallet.address);
       const owner200 = await mdtp.ownerOf(200);
-      expect(owner200).to.equal(myWallet.address);
+      expect(owner200).to.equal(ownerWallet.address);
       const owner201 = await mdtp.ownerOf(201);
-      expect(owner201).to.equal(myWallet.address);
+      expect(owner201).to.equal(ownerWallet.address);
     });
 
     it("prevents transferGroupFrom when paused", async function() {
       await mdtp.mintToken(100);
       await mdtp.pause();
-      const transaction = mdtp.transferGroupFrom(myWallet.address, otherWallet.address, 100, 1, 1);
+      const transaction = mdtp.transferGroupFrom(ownerWallet.address, otherWallet.address, 100, 1, 1);
       await expect(transaction).to.be.reverted;
     });
 
     it("prevents transferGroupFrom of a non-owned token", async function() {
       await mdtp.mintToken(100);
       await mdtp.pause();
-      const transaction = mdtp.transferGroupFrom(myWallet.address, otherWallet.address, 100, 2, 1);
+      const transaction = mdtp.transferGroupFrom(ownerWallet.address, otherWallet.address, 100, 2, 1);
       await expect(transaction).to.be.reverted;
     });
 
     it("allows safeTransferGroupFrom", async function() {
       await mdtp.mintTokenGroup(100, 2, 2);
-      await mdtp.safeTransferGroupFrom(myWallet.address, otherWallet.address, 100, 2, 1);
+      await mdtp.safeTransferGroupFrom(ownerWallet.address, otherWallet.address, 100, 2, 1);
       const owner100 = await mdtp.ownerOf(100);
       expect(owner100).to.equal(otherWallet.address);
       const owner101 = await mdtp.ownerOf(101);
       expect(owner101).to.equal(otherWallet.address);
       const owner200 = await mdtp.ownerOf(200);
-      expect(owner200).to.equal(myWallet.address);
+      expect(owner200).to.equal(ownerWallet.address);
       const owner201 = await mdtp.ownerOf(201);
-      expect(owner201).to.equal(myWallet.address);
+      expect(owner201).to.equal(ownerWallet.address);
     });
 
     it("prevents safeTransferGroupFrom when paused", async function() {
       await mdtp.mintToken(100);
       await mdtp.pause();
-      const transaction = mdtp.safeTransferGroupFrom(myWallet.address, otherWallet.address, 100, 1, 1);
+      const transaction = mdtp.safeTransferGroupFrom(ownerWallet.address, otherWallet.address, 100, 1, 1);
       await expect(transaction).to.be.reverted;
     });
 
     it("prevents safeTransferGroupFrom of a non-owned token", async function() {
       await mdtp.mintToken(100);
       await mdtp.pause();
-      const transaction = mdtp.safeTransferGroupFrom(myWallet.address, otherWallet.address, 100, 2, 1);
+      const transaction = mdtp.safeTransferGroupFrom(ownerWallet.address, otherWallet.address, 100, 2, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("calculates royalties correctly for a single token transfer", async function() {
+    it.only("calculates royalties correctly for a single token transfer", async function() {
       const royaltyValue = await mdtp.royaltyInfo(100, 1000);
-      expect(royaltyValue).to.eql([mdtp.address, ethers.BigNumber.from(Math.floor(1000 * 100 / defaultRoyaltyPercentage))]);
+      expect(royaltyValue).to.eql([mdtp.address, ethers.BigNumber.from(Math.floor(1000 * defaultRoyaltyBasisPoints / 10000))]);
     });
 
-    it("calculates royalties correctly for a single token transfer after update", async function() {
-      await mdtp.setRoyaltyPercentage(17);
-      const royaltyValue = await mdtp.royaltyInfo(100, 1000);
-      expect(royaltyValue).to.eql([mdtp.address, ethers.BigNumber.from(Math.floor(1000 * 100 / 17))]);
+    it.only("calculates royalties correctly for a single token transfer after update", async function() {
+      await mdtp.setRoyaltyBasisPoints(100); // 1%
+      const royaltyValue = await mdtp.royaltyInfo(100, 1000000);
+      expect(royaltyValue).to.eql([mdtp.address, ethers.BigNumber.from(Math.floor(1000000 * 0.01))]);
     });
   });
 
@@ -1357,13 +1362,13 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     it("prevents a transfer from a contract that is not the original", async function() {
       const oldMdtp2 = await originalContractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultUserMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri);
       await oldMdtp2.mintToken(tokenIdsToMigrate[0]);
-      const transaction = oldMdtp2['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      const transaction = oldMdtp2['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       await expect(transaction).to.be.reverted;
     });
 
     it("prevents a transfer if the token is not in the migration list", async function() {
       await originalMdtp.mintToken(100);
-      const transaction = originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, 100);
+      const transaction = originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, 100);
       await expect(transaction).to.be.reverted;
     });
 
@@ -1371,26 +1376,26 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       const owner = await mdtp.ownerOf(tokenIdsToMigrate[0]);
       expect(owner).to.equal(originalContractAccount);
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
-      await originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       const owner2 = await mdtp.ownerOf(tokenIdsToMigrate[0]);
-      expect(owner2).to.equal(myWallet.address);
+      expect(owner2).to.equal(ownerWallet.address);
     });
 
     it("keeps the minted count the same when a token is migrated", async function() {
       const mintedCount = await mdtp.mintedCount();
       expect(mintedCount).to.equal(tokenIdsToMigrate.length);
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
-      await originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       const mintedCount2 = await mdtp.mintedCount();
       expect(mintedCount2).to.equal(tokenIdsToMigrate.length);
     });
 
     it("increments the new transerrer's balance when a token is migrated", async function() {
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
-      const balance = await mdtp.balanceOf(myWallet.address);
+      const balance = await mdtp.balanceOf(ownerWallet.address);
       expect(balance).to.equal(0);
-      await originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
-      const balance2 = await mdtp.balanceOf(myWallet.address);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      const balance2 = await mdtp.balanceOf(ownerWallet.address);
       expect(balance2).to.equal(1);
     });
 
@@ -1398,22 +1403,22 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
       const balance = await mdtp.balanceOf(originalMdtp.address);
       expect(balance).to.equal(tokenIdsToMigrate.length);
-      await originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       const balance2 = await mdtp.balanceOf(originalMdtp.address);
       expect(balance2).to.equal(tokenIdsToMigrate.length - 1);
     });
 
     it("prevents a token to be migrated twice", async function() {
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
-      await originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
-      const transaction = originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      const transaction = originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       await expect(transaction).to.be.reverted;
     });
 
     it("allows transferring after the token is migrated", async function() {
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
-      await originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
-      await mdtp.transferFrom(myWallet.address, otherWallet.address, tokenIdsToMigrate[0]);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      await mdtp.transferFrom(ownerWallet.address, otherWallet.address, tokenIdsToMigrate[0]);
       const owner = await mdtp.ownerOf(tokenIdsToMigrate[0]);
       expect(owner).to.equal(otherWallet.address);
     });
@@ -1428,7 +1433,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("allows setting a content url after the token is migrated", async function() {
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
-      await originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       const contentUri = 'https://url.com';
       await mdtp.setTokenContentURI(tokenIdsToMigrate[0], contentUri)
       const receivedContentUri = await mdtp.tokenContentURI(tokenIdsToMigrate[0])
@@ -1439,13 +1444,13 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await mdtp.setIsSaleActive(true);
       await mdtp.mintToken(100);
       const owner = await mdtp.proxiedOwnerOf(100);
-      expect(owner).to.equal(myWallet.address);
+      expect(owner).to.equal(ownerWallet.address);
     });
 
     it("returns the original contracts owner for un-migrated tokens from proxiedOwnerOf", async function() {
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
       const owner = await mdtp.proxiedOwnerOf(tokenIdsToMigrate[0]);
-      expect(owner).to.equal(myWallet.address);
+      expect(owner).to.equal(ownerWallet.address);
     });
 
     it("returns an error from proxiedOwnerOf for a token that is not owned in either contract", async function() {
@@ -1455,13 +1460,19 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("returns the correct owner from proxiedOwnerOf after a migration", async function() {
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
-      await originalMdtp['safeTransferFrom(address,address,uint256)'](myWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       const owner = await mdtp.proxiedOwnerOf(tokenIdsToMigrate[0]);
-      expect(owner).to.equal(myWallet.address);
+      expect(owner).to.equal(ownerWallet.address);
     });
 
     it("allows sending 1000 tokens to migrate", async function() {
       await mdtp.addTokensToMigrate(arrayWithRange(1000, 2000));
+    });
+
+    it("emit an event on migration", async function() {
+      await originalMdtp.mintToken(tokenIdsToMigrate[0]);
+      const transaction = originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      await expect(transaction).to.emit(mdtp, 'TokenMigrated').withArgs(tokenIdsToMigrate[0]);
     });
   });
 });

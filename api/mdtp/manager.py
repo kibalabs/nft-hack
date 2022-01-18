@@ -414,7 +414,7 @@ class MdtpManager:
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
-            await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
+            await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
     async def upload_token_image_deferred(self, network: str, tokenId: int, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UploadTokenImageMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
@@ -495,31 +495,43 @@ class MdtpManager:
 
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
+        shouldCheckMigrations = await self.contractStore.should_check_migrations(network=network)
         try:
-            ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
+            if shouldCheckMigrations:
+                ownerId = await self.contractStore.get_proxied_token_owner(network=network, tokenId=tokenId)
+            else:
+                ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception: # pylint: disable=broad-except
             ownerId = NON_OWNER_ID
-        contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-        blockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId) or 0
-        # Resolve pending contents for the current owner only
-        offchainPendingContents = await self.retriever.list_offchain_pending_contents(fieldFilters=[
-            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.network.key, eq=network),
-            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.tokenId.key, eq=tokenId),
-            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.ownerId.key, eq=ownerId),
-            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.appliedDate.key, eq=None),
-        ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.ASCENDING)])
-        for offchainPendingContent in offchainPendingContents:
-            await self.saver.create_offchain_content(network=offchainPendingContent.network, tokenId=offchainPendingContent.tokenId, contentUrl=offchainPendingContent.contentUrl, blockNumber=offchainPendingContent.blockNumber, ownerId=offchainPendingContent.ownerId, signature=offchainPendingContent.signature, signedMessage=offchainPendingContent.signedMessage)
-            await self.saver.update_offchain_pending_content(offchainPendingContentId=offchainPendingContent.offchainPendingContentId, appliedDate=date_util.datetime_from_now())
-        source = 'onchain'
-        latestOffchainContents = await self.retriever.list_offchain_contents(fieldFilters=[
-            StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
-            StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
-        ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
-        if len(latestOffchainContents) > 0 and (latestOffchainContents[0].blockNumber > blockNumber):
-            contentUrl = latestOffchainContents[0].contentUrl
-            source = 'offchain'
-            blockNumber = latestOffchainContents[0].blockNumber
+        if shouldCheckMigrations:
+            originalAddress = await self.contractStore.get_migration_target(network=network)
+            originalContract = self.contractStore.get_contract_by_address(address=originalAddress)
+            originalGridItem = await self.retrieve_grid_item(network=originalContract.network, tokenId=tokenId)
+            contentUrl = originalGridItem.contentUrl
+            source = originalGridItem.source
+            blockNumber = originalGridItem.blockNumber
+        else:
+            contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+            blockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId) or 0
+            # Resolve pending contents for the current owner only
+            offchainPendingContents = await self.retriever.list_offchain_pending_contents(fieldFilters=[
+                StringFieldFilter(fieldName=OffchainPendingContentsTable.c.network.key, eq=network),
+                StringFieldFilter(fieldName=OffchainPendingContentsTable.c.tokenId.key, eq=tokenId),
+                StringFieldFilter(fieldName=OffchainPendingContentsTable.c.ownerId.key, eq=ownerId),
+                StringFieldFilter(fieldName=OffchainPendingContentsTable.c.appliedDate.key, eq=None),
+            ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.ASCENDING)])
+            for offchainPendingContent in offchainPendingContents:
+                await self.saver.create_offchain_content(network=offchainPendingContent.network, tokenId=offchainPendingContent.tokenId, contentUrl=offchainPendingContent.contentUrl, blockNumber=offchainPendingContent.blockNumber, ownerId=offchainPendingContent.ownerId, signature=offchainPendingContent.signature, signedMessage=offchainPendingContent.signedMessage)
+                await self.saver.update_offchain_pending_content(offchainPendingContentId=offchainPendingContent.offchainPendingContentId, appliedDate=date_util.datetime_from_now())
+            source = 'onchain'
+            latestOffchainContents = await self.retriever.list_offchain_contents(fieldFilters=[
+                StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
+                StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
+            ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
+            if len(latestOffchainContents) > 0 and (latestOffchainContents[0].blockNumber > blockNumber):
+                contentUrl = latestOffchainContents[0].contentUrl
+                source = 'offchain'
+                blockNumber = latestOffchainContents[0].blockNumber
         contentJson = await self._get_json_content(url=contentUrl)
         title = contentJson.get('title') or contentJson.get('name') or None
         imageUrl = contentJson.get('imageUrl') or contentJson.get('image') or None

@@ -5,6 +5,7 @@ from typing import List
 from typing import Optional
 
 from core.exceptions import NotFoundException
+from core.exceptions import BadRequestException
 from core.exceptions import ServerException
 from core.web3.eth_client import EthClientInterface
 from web3.main import Web3
@@ -25,6 +26,8 @@ class Contract:
     address: str
     abi: dict
     ethClient: EthClientInterface
+    migrationTargetMethodName: Optional[str]
+    isTokenSetForMigrationMethodName: Optional[str]
     ownerOfMethodName: str
     metadataUriMethodName: str
     tokenContentUriMethodName: str
@@ -53,6 +56,12 @@ class ContractStore:
                 return contract
         raise NotFoundException()
 
+    def get_contract_by_address(self, address: str) -> Contract:
+        for contract in self.contracts:
+            if contract.address == address:
+                return contract
+        raise NotFoundException()
+
     async def _call_function(self, contract: Contract, methodName: str, arguments: Optional[dict] = None) -> List[Any]:
         functionAbi = [abi for abi in contract.abi if abi.get('name') == methodName][0]
         response = await contract.ethClient.call_function(toAddress=contract.address, contractAbi=contract.abi, functionAbi=functionAbi, arguments=arguments)
@@ -70,6 +79,26 @@ class ContractStore:
         ownerIdResponse = await self._call_function(contract=contract, methodName=contract.ownerOfMethodName, arguments={'tokenId': int(tokenId)})
         ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
         return ownerId
+
+    async def should_check_migrations(self, network: str) -> bool:
+        contract = self.get_contract(network=network)
+        return contract.migrationTargetMethodName != None
+
+    async def get_migration_target(self, network: str) -> str:
+        contract = self.get_contract(network=network)
+        if not contract.migrationTargetMethodName:
+            raise BadRequestException('Contract does not have a migrationTargetMethodName')
+        ownerIdResponse = await self._call_function(contract=contract, methodName=contract.migrationTargetMethodName)
+        migrationTarget = Web3.toChecksumAddress(ownerIdResponse[0].strip())
+        return migrationTarget
+
+    async def is_token_set_for_migration(self, network: str, tokenId: int) -> bool:
+        contract = self.get_contract(network=network)
+        if not contract.isTokenSetForMigrationMethodName:
+            raise BadRequestException('Contract does not have a isTokenSetForMigrationMethodName')
+        ownerIdResponse = await self._call_function(contract=contract, methodName=contract.isTokenSetForMigrationMethodName, arguments={'tokenId': int(tokenId)})
+        isTokenSetForMigration = bool(ownerIdResponse[0].strip())
+        return isTokenSetForMigration
 
     async def get_total_supply(self, network: str) -> int:
         contract = self.get_contract(network=network)
