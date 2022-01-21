@@ -167,7 +167,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
         setOffchainTransaction(null);
       }
     }
-  }, [transaction, offchainTransaction, apiClient, network]);
+  }, [transaction, offchainTransaction, network]);
 
   React.useEffect((): void => {
     waitForTransaction();
@@ -175,8 +175,8 @@ export const TokenUpdatePage = (): React.ReactElement => {
 
   const processTransactionComplete = useDeepCompareCallback(async (): Promise<void> => {
     if (transactionReceipt && network) {
-      tokenIds.forEach((tokenId: number): void => {
-        apiClient.updateTokenDeferred(tokenData.isSetForMigration ? migrationNetwork : network, tokenId);
+      tokenIds.forEach((innerTokenId: number): void => {
+        apiClient.updateTokenDeferred(tokenData.isSetForMigration ? migrationNetwork : network, innerTokenId);
       });
     }
   }, [transactionReceipt, apiClient, network, migrationNetwork, tokenIds]);
@@ -212,8 +212,6 @@ export const TokenUpdatePage = (): React.ReactElement => {
     return accumulator;
   }, []) : [];
   const isOwnerOfTokens = unownedTokenIds.length === 0;
-
-  console.log('ownerIds', ownerIds);
 
   const isValidDescription = tokenMetadata?.description && !tokenMetadata.description.startsWith('This NFT gives you full ownership');
   const isValidName = tokenMetadata?.name && !tokenMetadata.name.startsWith('MDTP Token');
@@ -296,7 +294,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
               isEnabled={isOwnerOfTokens}
             />
             {updateOnchain && tokenData.isSetForMigration && (
-              <Text variant='note'>{`This token is being proxied from MDTP v1. We will send the update to the old contract.`}</Text>
+              <Text variant='note'>{'This token is being proxied from MDTP v1. We will send the update to the old contract.'}</Text>
             )}
             {!isOwnerOfTokens && (
               <Text variant='error'>{`You don't own these tokens: ${unownedTokenIds.join(', ')}`}</Text>

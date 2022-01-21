@@ -367,7 +367,7 @@ export const TokenMintPage = (): React.ReactElement => {
                 <Text variant='note' alignment={TextAlignment.Center}>Please note that minting multiple tokens raises the risk that your transaction clashes with someone else trying to buy the same tokens 👀</Text>
               )}
               { !isSaleActive && (
-                <Text variant='error' alignment={TextAlignment.Center}>Sale is not active yet. Please join our discord (https://discord.gg/bUeQjW4KSN) and we'll let you know when it's coming back on.</Text>
+                <Text variant='error' alignment={TextAlignment.Center}>Sale is not active yet. Please join our discord (https://discord.gg/bUeQjW4KSN) and we&apos;ll let you know when the sale is back on.</Text>
               )}
               { isOverSingleLimit && (
                 <Text variant='error' alignment={TextAlignment.Center}>{`You can only mint ${singleMintLimit} tokens at once.`}</Text>

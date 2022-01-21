@@ -27,7 +27,7 @@ class Contract:
     abi: dict
     ethClient: EthClientInterface
     migrationTargetMethodName: Optional[str]
-    isTokenSetForMigrationMethodName: Optional[str]
+    isTokenSetForMigrationMethodName: Optional[str]  # pylint: disable=invalid-name
     ownerOfMethodName: str
     metadataUriMethodName: str
     tokenContentUriMethodName: str
@@ -83,7 +83,7 @@ class ContractStore:
 
     async def should_check_migrations(self, network: str) -> bool:
         contract = self.get_contract(network=network)
-        return contract.migrationTargetMethodName != None
+        return contract.migrationTargetMethodName is not None
 
     async def get_migration_target(self, network: str) -> str:
         contract = self.get_contract(network=network)

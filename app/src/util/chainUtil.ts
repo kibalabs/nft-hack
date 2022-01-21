@@ -2,7 +2,6 @@
 import { ContractInterface } from 'ethers';
 import { getAddress } from 'ethers/lib/utils';
 
-import contract6 from '../contract6.json';
 import contract7 from '../contract7.json';
 import contract8 from '../contract8.json';
 
@@ -51,7 +50,7 @@ export const getMigrationNetwork = (network: string): string => {
     return 'rinkeby6';
   }
   return null;
-}
+};
 
 export const getNetwork = (chainId: ChainId): string | null => {
   return validChainIdNetworkMap[chainId] || null;
