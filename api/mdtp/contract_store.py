@@ -42,6 +42,7 @@ class Contract:
     mintLimitMethodName: str
     transferMethodSignature: str
     updateMethodSignature: Optional[str]
+    sourceNetwork: Optional[str]
 
 class ContractStore:
 
@@ -97,7 +98,7 @@ class ContractStore:
         if not contract.isTokenSetForMigrationMethodName:
             raise BadRequestException('Contract does not have a isTokenSetForMigrationMethodName')
         ownerIdResponse = await self._call_function(contract=contract, methodName=contract.isTokenSetForMigrationMethodName, arguments={'tokenId': int(tokenId)})
-        isTokenSetForMigration = bool(ownerIdResponse[0].strip())
+        isTokenSetForMigration = bool(ownerIdResponse[0])
         return isTokenSetForMigration
 
     async def get_total_supply(self, network: str) -> int:

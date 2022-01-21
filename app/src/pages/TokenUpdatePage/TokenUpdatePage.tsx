@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
-import { useNumberRouteParam } from '@kibalabs/core-react';
+import { useDeepCompareCallback, useDeepCompareEffect, useNumberRouteParam } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 
@@ -18,7 +18,7 @@ import { useTokenData } from '../../util/useTokenMetadata';
 
 export const TokenUpdatePage = (): React.ReactElement => {
   const tokenId = useNumberRouteParam('tokenId');
-  const { contract, requester, apiClient, network, web3StorageClient, web3 } = useGlobals();
+  const { contract, migrationContract, requester, apiClient, network, migrationNetwork, web3StorageClient, web3 } = useGlobals();
   const colors = useColors();
   const setTokenSelection = useSetTokenSelection();
   const tokenData = useTokenData(tokenId);
@@ -81,6 +81,17 @@ export const TokenUpdatePage = (): React.ReactElement => {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
+    let networkToUse = network;
+    let contractToUse = contract;
+
+    if (tokenData.isSetForMigration) {
+      if (!migrationNetwork || !migrationContract) {
+        return { isSuccess: false, message: 'Could not connect to migration contract. Please refresh and try again.' };
+      }
+      networkToUse = migrationNetwork;
+      contractToUse = migrationContract;
+    }
+
     // const tokenId = tokenId;
     const chainOwnerId = ownerIds.get(tokenId);
     const signerIndex = accountIds.indexOf(chainOwnerId || '0x0000000000000000000000000000000000000000');
@@ -98,9 +109,9 @@ export const TokenUpdatePage = (): React.ReactElement => {
     let tokenMetadataUrls: string[];
     try {
       if (isUpdatingMultiple) {
-        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(network, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
+        tokenMetadataUrls = await apiClient.createMetadataForTokenGroup(networkToUse, tokenId, shouldUseIpfs, requestWidth, requestHeight, title, description, imageUrl, url);
       } else {
-        const tokenMetadataUrl = await apiClient.createMetadataForToken(network, tokenId, shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
+        const tokenMetadataUrl = await apiClient.createMetadataForToken(networkToUse, tokenId, shouldUseIpfs, title, description, imageUrl || tokenMetadata.image, url);
         tokenMetadataUrls = [tokenMetadataUrl];
       }
     } catch (error: unknown) {
@@ -113,27 +124,25 @@ export const TokenUpdatePage = (): React.ReactElement => {
     if (!updateOnchain) {
       const blockNumber = await web3.getBlockNumber();
       const signer = accounts[signerIndex];
-      const message = JSON.stringify({ network, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls });
+      const message = JSON.stringify({ network: networkToUse, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls });
       let signature;
       try {
         signature = await signer.signMessage(message);
       } catch (error: unknown) {
         return { isSuccess: false, message: (error as Error).message };
       }
-      const request = apiClient.updateOffchainContentsForTokenGroup(network, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, false);
+      const request = apiClient.updateOffchainContentsForTokenGroup(networkToUse, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, false);
       setOffchainTransaction(request);
       return { isSuccess: false, message: 'Update in progress.' };
     }
 
     let newTransaction = null;
     try {
-      const contractWithSigner = contract.connect(accounts[signerIndex]);
+      const contractWithSigner = contractToUse.connect(accounts[signerIndex]);
       if (isUpdatingMultiple && contractWithSigner.setTokenGroupContentURIs) {
         newTransaction = await contractWithSigner.setTokenGroupContentURIs(tokenId, requestWidth, requestHeight, tokenMetadataUrls);
       } else if (!isUpdatingMultiple && contractWithSigner.setTokenContentURI) {
         newTransaction = await contractWithSigner.setTokenContentURI(tokenId, tokenMetadataUrls[0]);
-      } else if (!isUpdatingMultiple && contractWithSigner.setTokenURI) {
-        newTransaction = await contractWithSigner.setTokenURI(tokenId, tokenMetadataUrls[0]);
       } else {
         return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
       }
@@ -148,9 +157,6 @@ export const TokenUpdatePage = (): React.ReactElement => {
     if (transaction && network) {
       const receipt = await transaction.wait();
       setTransactionReceipt(receipt);
-      tokenIds.forEach((tokenID: number): void => {
-        apiClient.updateTokenDeferred(network, tokenID);
-      });
     } else if (offchainTransaction) {
       try {
         await offchainTransaction;
@@ -158,15 +164,28 @@ export const TokenUpdatePage = (): React.ReactElement => {
       } catch (error: unknown) {
         setErrorMessage((error as Error).message);
         setOffchainTransactionReceipt(false);
+        setOffchainTransaction(null);
       }
     }
-  }, [transaction, offchainTransaction, apiClient, network, tokenIds]);
+  }, [transaction, offchainTransaction, apiClient, network]);
 
   React.useEffect((): void => {
     waitForTransaction();
   }, [waitForTransaction]);
 
+  const processTransactionComplete = useDeepCompareCallback(async (): Promise<void> => {
+    if (transactionReceipt && network) {
+      tokenIds.forEach((tokenId: number): void => {
+        apiClient.updateTokenDeferred(tokenData.isSetForMigration ? migrationNetwork : network, tokenId);
+      });
+    }
+  }, [transactionReceipt, apiClient, network, migrationNetwork, tokenIds]);
+
   React.useEffect((): void => {
+    processTransactionComplete();
+  }, [processTransactionComplete]);
+
+  useDeepCompareEffect((): void => {
     setTokenSelection(tokenIds);
   }, [setTokenSelection, tokenIds]);
 
@@ -194,9 +213,10 @@ export const TokenUpdatePage = (): React.ReactElement => {
   }, []) : [];
   const isOwnerOfTokens = unownedTokenIds.length === 0;
 
+  console.log('ownerIds', ownerIds);
+
   const isValidDescription = tokenMetadata?.description && !tokenMetadata.description.startsWith('This NFT gives you full ownership');
   const isValidName = tokenMetadata?.name && !tokenMetadata.name.startsWith('MDTP Token');
-
   return (
     <React.Fragment>
       <Head headId='token-update'>
@@ -220,7 +240,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
             <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
             <Spacing />
             <ShareForm
-              initialShareText={`Frens, I just updated my NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app 🔥🔥 You too can show off your JPGs and projects here, LFG 🚀`}
+              initialShareText={`Frens, I just updated my NFT on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @mdtp_app 🔥🔥 You too can show off your JPGs and projects here, LFG 🚀`}
               minRowCount={3}
             />
           </React.Fragment>
@@ -275,6 +295,9 @@ export const TokenUpdatePage = (): React.ReactElement => {
               onImageFilesChosen={onImageFilesChosen}
               isEnabled={isOwnerOfTokens}
             />
+            {updateOnchain && tokenData.isSetForMigration && (
+              <Text variant='note'>{`This token is being proxied from MDTP v1. We will send the update to the old contract.`}</Text>
+            )}
             {!isOwnerOfTokens && (
               <Text variant='error'>{`You don't own these tokens: ${unownedTokenIds.join(', ')}`}</Text>
             )}

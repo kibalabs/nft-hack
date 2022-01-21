@@ -8,7 +8,7 @@ async function main() {
   console.log("Deploying contracts with the account:", deployer.address);
   console.log("Account balance:", (await deployer.getBalance()).toString());
   const contractFactory = await hardhat.ethers.getContractFactory("MillionDollarTokenPageV2");
-  const deployedContract = await contractFactory.deploy(...args, { gasPrice: 5 * GWEI, nonce: 30499 });
+  const deployedContract = await contractFactory.deploy(...args, { gasPrice: 5 * GWEI });
   await deployedContract.deployed();
   console.log("Contract deployed to address:", deployedContract.address);
   // const deployedContract = await hardhat.upgrades.deployProxy(contractFactory, args, { gasPrice: 100 * GWEI });

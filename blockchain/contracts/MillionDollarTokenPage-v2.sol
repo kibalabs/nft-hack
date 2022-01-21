@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "hardhat/console.sol";
+import "./Bits.sol";
 import "./ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
@@ -9,32 +9,17 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-
-// https://github.com/ethereum/solidity-examples/blob/master/docs/bits/Bits.md
-library Bits {
-    uint constant internal ONE = uint(1);
-
-    function setBit(uint self, uint8 index) internal pure returns (uint) {
-        return self | ONE << index;
-    }
-
-    function clearBit(uint self, uint8 index) internal pure returns (uint) {
-        return self & ~(ONE << index);
-    }
-
-    function isBitSet(uint self, uint8 index) internal pure returns (bool) {
-        return self >> index & 1 == 1;
-    }
-}
+// import "hardhat/console.sol";
 
 interface IERC721CollectionMetadata {
     /* Read more at https://docs.token.page/IERC721CollectionMetadata */
-    function contractURI() external returns (string memory) ;
+    function contractURI() external returns (string memory);
 }
 
 interface MillionDollarTokenPageV1 {
     function ownerOf(uint256 tokenId) external view returns (address);
     function tokenContentURI(uint256 tokenId) external view returns (string memory);
+    function setTokenContentURI(uint256 tokenId, string memory contentURI) external;
 }
 
 contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC721Receiver, IERC721Enumerable, IERC721CollectionMetadata {
@@ -51,7 +36,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     uint16 public royaltyBasisPoints;
     uint16 public totalMintLimit;
     uint16 public singleMintLimit;
-    uint16 public userMintLimit;
+    uint16 public ownershipMintLimit;
     uint256 public mintPrice;
     bool public isSaleActive;
     bool public isCenterSaleActive;
@@ -69,7 +54,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     event TokenContentURIChanged(uint256 indexed tokenId);
     event TokenMigrated(uint256 indexed tokenId);
 
-    constructor(uint16 _totalMintLimit, uint16 _singleMintLimit, uint16 _userMintLimit, uint256 _mintPrice, string memory _metadataBaseURI, string memory _defaultContentBaseURI, string memory _collectionURI, uint8 _royaltyBasisPoints, address _original) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() Pausable() {
+    constructor(uint16 _totalMintLimit, uint16 _singleMintLimit, uint16 _ownershipMintLimit, uint256 _mintPrice, string memory _metadataBaseURI, string memory _defaultContentBaseURI, string memory _collectionURI, uint16 _royaltyBasisPoints, address _original) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() Pausable() {
         isSaleActive = false;
         isCenterSaleActive = false;
         canAddTokenIdsToMigrate = false;
@@ -78,7 +63,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         collectionURI = _collectionURI;
         totalMintLimit = _totalMintLimit;
         singleMintLimit = _singleMintLimit;
-        userMintLimit = _userMintLimit;
+        ownershipMintLimit = _ownershipMintLimit;
         mintPrice = _mintPrice;
         royaltyBasisPoints = _royaltyBasisPoints;
         original = MillionDollarTokenPageV1(_original);
@@ -119,20 +104,10 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         _;
     }
 
-    modifier onlyTokenGroupOwner(uint256 tokenId, uint8 width, uint8 height) {
-        for (uint8 y = 0; y < height; y++) {
-            for (uint8 x = 0; x < width; x++) {
-                uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
-                require(ownerOf(innerTokenId) == _msgSender(), "MDTP: caller is not the tokenOwner of all tokens in group");
-            }
-        }
-        _;
-    }
-
     // Admin
 
-    function setIsSaleActive(bool newisSaleActive) external onlyOwner {
-        isSaleActive = newisSaleActive;
+    function setIsSaleActive(bool newIsSaleActive) external onlyOwner {
+        isSaleActive = newIsSaleActive;
     }
 
     function setIsCenterSaleActive(bool newIsCenterSaleActive) external onlyOwner {
@@ -147,8 +122,8 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         singleMintLimit = newSingleMintLimit;
     }
 
-    function setUserMintLimit(uint16 newUserMintLimit) external onlyOwner {
-        userMintLimit = newUserMintLimit;
+    function setOwnershipMintLimit(uint16 newOwnershipMintLimit) external onlyOwner {
+        ownershipMintLimit = newOwnershipMintLimit;
     }
 
     function setMintPrice(uint256 newMintPrice) external onlyOwner {
@@ -202,11 +177,11 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     // url: optional[string] -> a URI pointing to the location you want visitors of your content to go to.
     // groupId: optional[string] -> a unique identifier you can use to group multiple grid items together by giving them all the same groupId.
 
-    function setTokenContentURI(uint256 tokenId, string memory contentURI) external onlyTokenOwner(tokenId) {
+    function setTokenContentURI(uint256 tokenId, string memory contentURI) external {
         _setTokenContentURI(tokenId, contentURI);
     }
 
-    function setTokenGroupContentURIs(uint256 tokenId, uint8 width, uint8 height, string[] memory contentURIs) external onlyTokenGroupOwner(tokenId, width, height) onlyValidTokenGroup(tokenId, width, height) {
+    function setTokenGroupContentURIs(uint256 tokenId, uint8 width, uint8 height, string[] memory contentURIs) external {
         require(width * height == contentURIs.length, "MDTP: length of contentURIs incorrect");
         for (uint8 y = 0; y < height; y++) {
             for (uint8 x = 0; x < width; x++) {
@@ -217,7 +192,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         }
     }
 
-    function _setTokenContentURI(uint256 tokenId, string memory contentURI) internal whenNotPaused() {
+    function _setTokenContentURI(uint256 tokenId, string memory contentURI) internal onlyTokenOwner(tokenId) whenNotPaused() {
         _tokenContentURIs[tokenId] = contentURI;
         emit TokenContentURIChanged(tokenId);
     }
@@ -270,15 +245,15 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     }
 
     function _safeMint(address receiver, uint256 tokenId, uint8 width, uint8 height, bytes memory _data) internal onlyValidTokenGroup(tokenId, width, height) {
-        uint256 quantity = (width * height);
+        require(isSaleActive, "MDTP: sale not active");
+        require(receiver != address(0), "MDTP: invalid address");
         require(tokenId > 0, "MDTP: invalid tokenId");
         require(tokenId + (ROW_COUNT * height) + width < SUPPLY_LIMIT, "MDTP: invalid tokenId");
+        uint256 quantity = (width * height);
         require(quantity > 0, "MDTP: insufficient quantity");
         require(quantity <= singleMintLimit, "MDTP: over singleMintLimit");
-        require(isSaleActive, "MDTP: sale not active");
-        require(mintedCount() + quantity <= totalMintLimit, "MDTP: reached totalMintLimit");
-        require(balanceOf(receiver) + quantity <= userMintLimit, "MDTP: reached userMintLimit");
-        require(receiver != address(0), "MDTP: mint to the zero address");
+        require(mintedCount() + quantity <= totalMintLimit, "MDTP: over totalMintLimit");
+        require(balanceOf(receiver) + quantity <= ownershipMintLimit, "MDTP: over ownershipMintLimit");
 
         _beforeTokenTransfers(address(0), receiver, tokenId, width, height);
         for (uint8 y = 0; y < height; y++) {

@@ -19,7 +19,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
   const defaultCollectionUri = 'ipfs://789';
   const defaultTotalMintLimit = 1000;
   const defaultSingleMintLimit = 20;
-  const defaultUserMintLimit = 35;
+  const defaultOwnershipMintLimit = 35;
   const defaultMintPrice = 0;
   const defaultRoyaltyBasisPoints = 250; // 2.5%
 
@@ -30,9 +30,9 @@ describe("MillionDollarTokenPageV2 contract", async function() {
   })
 
   beforeEach(async () => {
-    originalMdtp = await originalContractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultUserMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri);
+    originalMdtp = await originalContractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultOwnershipMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri);
     originalContractAccount = hardhat.ethers.utils.getAddress(originalMdtp.address);
-    mdtp = await contractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultUserMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri, defaultCollectionUri, defaultRoyaltyBasisPoints, originalContractAccount);
+    mdtp = await contractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultOwnershipMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri, defaultCollectionUri, defaultRoyaltyBasisPoints, originalContractAccount);
   });
 
   describe("Admin", async function() {
@@ -70,20 +70,20 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("should have a default userMintLimit", async function() {
-      const userMintLimit = await mdtp.userMintLimit();
-      expect(userMintLimit).to.equal(defaultUserMintLimit);
+    it("should have a default ownershipMintLimit", async function() {
+      const ownershipMintLimit = await mdtp.ownershipMintLimit();
+      expect(ownershipMintLimit).to.equal(defaultOwnershipMintLimit);
     });
 
-    it("allows admins to setUserMintLimit", async function() {
+    it("allows admins to setOwnershipMintLimit", async function() {
       const newLimit = 123;
-      await mdtp.setUserMintLimit(newLimit);
-      const userMintLimit = await mdtp.userMintLimit();
-      expect(userMintLimit).to.equal(newLimit);
+      await mdtp.setOwnershipMintLimit(newLimit);
+      const ownershipMintLimit = await mdtp.ownershipMintLimit();
+      expect(ownershipMintLimit).to.equal(newLimit);
     });
 
-    it("prevents non-admins to setUserMintLimit", async function() {
-      const transaction = mdtp.connect(otherWallet).setUserMintLimit(100);
+    it("prevents non-admins to setOwnershipMintLimit", async function() {
+      const transaction = mdtp.connect(otherWallet).setOwnershipMintLimit(100);
       await expect(transaction).to.be.reverted;
     });
 
@@ -456,8 +456,8 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the userMintLimit", async function() {
-      await mdtp.setUserMintLimit(2);
+    it("cannot mint over the ownershipMintLimit", async function() {
+      await mdtp.setOwnershipMintLimit(2);
       await mdtp.mintToken(100);
       await mdtp.mintToken(101);
       const transaction = mdtp.mintToken(102);
@@ -614,8 +614,8 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the userMintLimit", async function() {
-      await mdtp.setUserMintLimit(2);
+    it("cannot mint over the ownershipMintLimit", async function() {
+      await mdtp.setOwnershipMintLimit(2);
       await mdtp.mintTokenTo(otherWallet.address, 100);
       await mdtp.mintTokenTo(otherWallet.address, 101);
       const transaction = mdtp.mintTokenTo(otherWallet.address, 102);
@@ -829,15 +829,15 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the userMintLimit in separate transactions", async function() {
-      await mdtp.setUserMintLimit(3);
+    it("cannot mint over the ownershipMintLimit in separate transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
       await mdtp.mintTokenGroup(100, 2, 1);
       const transaction = mdtp.mintTokenGroup(102, 2, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the userMintLimit in a single transactions", async function() {
-      await mdtp.setUserMintLimit(3);
+    it("cannot mint over the ownershipMintLimit in a single transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
       const transaction = mdtp.mintTokenGroup(100, 4, 1);
       await expect(transaction).to.be.reverted;
     });
@@ -1034,15 +1034,15 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the userMintLimit in separate transactions", async function() {
-      await mdtp.setUserMintLimit(3);
+    it("cannot mint over the ownershipMintLimit in separate transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
       await mdtp.mintTokenGroupTo(otherWallet.address, 100, 2, 1);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 102, 2, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the userMintLimit in a single transactions", async function() {
-      await mdtp.setUserMintLimit(3);
+    it("cannot mint over the ownershipMintLimit in a single transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 100, 4, 1);
       await expect(transaction).to.be.reverted;
     });
@@ -1305,12 +1305,12 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it.only("calculates royalties correctly for a single token transfer", async function() {
+    it("calculates royalties correctly for a single token transfer", async function() {
       const royaltyValue = await mdtp.royaltyInfo(100, 1000);
       expect(royaltyValue).to.eql([mdtp.address, ethers.BigNumber.from(Math.floor(1000 * defaultRoyaltyBasisPoints / 10000))]);
     });
 
-    it.only("calculates royalties correctly for a single token transfer after update", async function() {
+    it("calculates royalties correctly for a single token transfer after update", async function() {
       await mdtp.setRoyaltyBasisPoints(100); // 1%
       const royaltyValue = await mdtp.royaltyInfo(100, 1000000);
       expect(royaltyValue).to.eql([mdtp.address, ethers.BigNumber.from(Math.floor(1000000 * 0.01))]);
@@ -1360,7 +1360,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     });
 
     it("prevents a transfer from a contract that is not the original", async function() {
-      const oldMdtp2 = await originalContractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultUserMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri);
+      const oldMdtp2 = await originalContractFactory.deploy(defaultTotalMintLimit, defaultSingleMintLimit, defaultOwnershipMintLimit, defaultMintPrice, metadataBaseUri, defaultContentBaseUri);
       await oldMdtp2.mintToken(tokenIdsToMigrate[0]);
       const transaction = oldMdtp2['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       await expect(transaction).to.be.reverted;

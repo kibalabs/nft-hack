@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import field
 import datetime
 import json
 import logging
@@ -21,6 +22,7 @@ from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
 from core.store.retriever import DateFieldFilter
 from core.store.retriever import Direction
+from core.store.retriever import IntegerFieldFilter
 from core.store.retriever import Order
 from core.store.retriever import RandomOrder
 from core.store.retriever import StringFieldFilter
@@ -389,21 +391,36 @@ class MdtpManager:
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
+    async def _get_updated_token_ids(self, network: str, startBlockNumber: int, endBlockNumber: int) -> None:
+        tokenIdsToUpdate = set()
+        transferredTokenIds = await self.contractStore.get_transferred_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
+        logging.info(f'Found {len(transferredTokenIds)} transferred tokens in blocks {startBlockNumber}-{endBlockNumber}')
+        tokenIdsToUpdate.update(transferredTokenIds)
+        updatedTokenIds = await self.contractStore.get_updated_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
+        logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
+        tokenIdsToUpdate.update(updatedTokenIds)
+        offChainUpdatedTokens = await self.retriever.list_offchain_contents(fieldFilters=[
+            StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
+            IntegerFieldFilter(fieldName=OffchainContentsTable.c.blockNumber.key, gte=startBlockNumber),
+            IntegerFieldFilter(fieldName=OffchainContentsTable.c.blockNumber.key, lt=endBlockNumber),
+        ])
+        logging.info(f'Found {len(offChainUpdatedTokens)} on-chain updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
+        tokenIdsToUpdate.update([offchainContent.tokenId for offchainContent in offChainUpdatedTokens])
+        return tokenIdsToUpdate
+
     async def update_tokens(self, network: str) -> None:
         networkUpdate = await self.retriever.get_network_update_by_network(network=network)
         latestProcessedBlockNumber = networkUpdate.latestBlockNumber
         latestBlockNumber = await self.contractStore.get_latest_block_number(network=network)
+        contract = self.contractStore.get_contract(network=network)
         batchSize = 2500
         tokenIdsToUpdate = set()
         logging.info(f'Processing blocks from {latestProcessedBlockNumber} to {latestBlockNumber}')
         for startBlockNumber in range(latestProcessedBlockNumber + 1, latestBlockNumber + 1, batchSize):
             endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber)
-            transferredTokenIds = await self.contractStore.get_transferred_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
-            logging.info(f'Found {len(transferredTokenIds)} transferred tokens in blocks {startBlockNumber}-{endBlockNumber}')
-            tokenIdsToUpdate.update(transferredTokenIds)
-            updatedTokenIds = await self.contractStore.get_updated_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
-            logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
-            tokenIdsToUpdate.update(updatedTokenIds)
+            tokenIdsToUpdate.update(await self._get_updated_token_ids(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber))
+            if contract.sourceNetwork:
+                tokenIdsToUpdate.update(await self._get_updated_token_ids(network=contract.sourceNetwork, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber))
         for tokenId in list(tokenIdsToUpdate):
             await self.update_token_deferred(network=network, tokenId=tokenId)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
@@ -496,14 +513,13 @@ class MdtpManager:
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
         shouldCheckMigrations = await self.contractStore.should_check_migrations(network=network)
+        isTokenSetForMigration = shouldCheckMigrations and await self.contractStore.is_token_set_for_migration(network=network, tokenId=tokenId)
         try:
-            if shouldCheckMigrations:
-                ownerId = await self.contractStore.get_proxied_token_owner(network=network, tokenId=tokenId)
-            else:
-                ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
-        except Exception: # pylint: disable=broad-except
+            ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
+        except Exception as exception: # pylint: disable=broad-except
+            print(f'Error getting owner: {str(exception)}')
             ownerId = NON_OWNER_ID
-        if shouldCheckMigrations:
+        if isTokenSetForMigration:
             originalAddress = await self.contractStore.get_migration_target(network=network)
             originalContract = self.contractStore.get_contract_by_address(address=originalAddress)
             originalGridItem = await self.retrieve_grid_item(network=originalContract.network, tokenId=tokenId)
@@ -556,6 +572,8 @@ class MdtpManager:
         if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
+        if gridItem.groupId and gridItem.groupId != groupId:
+            await self.update_grid_item_group_image_deferred(network=network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)

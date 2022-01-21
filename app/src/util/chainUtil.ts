@@ -37,7 +37,7 @@ const validChainIdNetworkMap: Record<number, string | undefined> = {
 const networkContractAddressMap: Record<string, string | null> = {
   rinkeby6: '0x8f1F643637046c867675Ca101ce28E2763daC1E2',
   mainnet1: '0x1Cf33F4c6C4E6391F4D2B445aa3a36639b77dd68',
-  rinkeby7: '0xef3593DE8e2bF96881773fd3125FEDD82a3acaA8',
+  rinkeby7: '0x011c7e0cF9BB511B5edF265432582c2505f61677',
 };
 
 const networkContractMap: Record<string, ContractInterface | null> = {
@@ -45,6 +45,13 @@ const networkContractMap: Record<string, ContractInterface | null> = {
   mainnet1: contract7 as unknown as ContractInterface,
   rinkeby7: contract8 as unknown as ContractInterface,
 };
+
+export const getMigrationNetwork = (network: string): string => {
+  if (network === 'rinkeby7') {
+    return 'rinkeby6';
+  }
+  return null;
+}
 
 export const getNetwork = (chainId: ChainId): string | null => {
   return validChainIdNetworkMap[chainId] || null;
