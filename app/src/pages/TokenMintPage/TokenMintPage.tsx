@@ -62,61 +62,36 @@ export const TokenMintPage = (): React.ReactElement => {
     if (contract === undefined) {
       return;
     }
-    if (contract.mintPrice) {
-      contract.mintPrice().then((retrievedMintPrice: BigNumber): void => {
-        setMintPrice(retrievedMintPrice);
-      }).catch((error: unknown) => {
-        console.error(error);
-        setMintPrice(null);
-      });
-    } else {
-      console.error('Contract does not support mintPrice');
+    contract.mintPrice().then((retrievedMintPrice: BigNumber): void => {
+      setMintPrice(retrievedMintPrice);
+    }).catch((error: unknown) => {
+      console.error(error);
       setMintPrice(null);
-    }
-    if (contract.totalMintLimit) {
-      contract.totalMintLimit().then((retrievedTotalMintLimit: number): void => {
-        setTotalMintLimit(retrievedTotalMintLimit);
-      }).catch((error: unknown) => {
-        console.error(error);
-        setTotalMintLimit(null);
-      });
-    } else {
-      console.error('Contract does not support totalMintLimit');
+    });
+    contract.totalMintLimit().then((retrievedTotalMintLimit: number): void => {
+      setTotalMintLimit(retrievedTotalMintLimit);
+    }).catch((error: unknown) => {
+      console.error(error);
       setTotalMintLimit(null);
-    }
-    if (contract.singleMintLimit) {
-      contract.singleMintLimit().then((retrievedSingleMintLimit: number): void => {
-        setSingleMintLimit(retrievedSingleMintLimit);
-      }).catch((error: unknown) => {
-        console.error(error);
-        setSingleMintLimit(null);
-      });
-    } else {
-      console.error('Contract does not support singleMintLimit');
+    });
+    contract.singleMintLimit().then((retrievedSingleMintLimit: number): void => {
+      setSingleMintLimit(retrievedSingleMintLimit);
+    }).catch((error: unknown) => {
+      console.error(error);
       setSingleMintLimit(null);
-    }
-    if (contract.ownershipMintLimit) {
-      contract.ownershipMintLimit().then((retrievedOwnershipMintLimit: number): void => {
-        setOwnershipMintLimit(retrievedOwnershipMintLimit);
-      }).catch((error: unknown) => {
-        console.error(error);
-        setOwnershipMintLimit(null);
-      });
-    } else {
-      console.error('Contract does not support ownershipMintLimit');
+    });
+    contract.ownershipMintLimit().then((retrievedOwnershipMintLimit: number): void => {
+      setOwnershipMintLimit(retrievedOwnershipMintLimit);
+    }).catch((error: unknown) => {
+      console.error(error);
       setOwnershipMintLimit(null);
-    }
-    if (contract.mintedCount) {
-      contract.mintedCount().then((retrievedMintedCount: BigNumber): void => {
-        setMintedCount(retrievedMintedCount.toNumber());
-      }).catch((error: unknown) => {
-        console.error(error);
-        setMintedCount(null);
-      });
-    } else {
-      console.error('Contract does not support mintedCount');
+    });
+    contract.mintedCount().then((retrievedMintedCount: BigNumber): void => {
+      setMintedCount(retrievedMintedCount.toNumber());
+    }).catch((error: unknown) => {
+      console.error(error);
       setMintedCount(null);
-    }
+    });
   }, [contract]);
 
   React.useEffect((): void => {
