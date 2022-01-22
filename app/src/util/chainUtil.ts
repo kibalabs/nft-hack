@@ -2,7 +2,6 @@
 import { ContractInterface } from 'ethers';
 import { getAddress } from 'ethers/lib/utils';
 
-import contract6 from '../contract6.json';
 import contract7 from '../contract7.json';
 
 export const NON_OWNER = '0x0000000000000000000000000000000000000000';
@@ -39,7 +38,7 @@ const networkContractAddressMap: Record<string, string | null> = {
 };
 
 const networkContractMap: Record<string, ContractInterface | null> = {
-  rinkeby6: contract6 as unknown as ContractInterface,
+  rinkeby6: contract7 as unknown as ContractInterface,
   mainnet1: contract7 as unknown as ContractInterface,
 };
 
