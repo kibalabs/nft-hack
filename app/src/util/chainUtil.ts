@@ -45,7 +45,7 @@ const networkContractMap: Record<string, ContractInterface | null> = {
   rinkeby7: contract8 as unknown as ContractInterface,
 };
 
-export const getMigrationNetwork = (network: string): string => {
+export const getMigrationNetwork = (network: string): string | null => {
   if (network === 'rinkeby7') {
     return 'rinkeby6';
   }

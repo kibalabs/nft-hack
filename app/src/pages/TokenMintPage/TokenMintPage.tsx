@@ -388,7 +388,7 @@ export const TokenMintPage = (): React.ReactElement => {
                 <Text variant='error' alignment={TextAlignment.Center}>{String(transactionError.message)}</Text>
               )}
               <Stack.Item growthFactor={1} shrinkFactor={1}>
-                <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={isSaleActive && !isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !isAnyTokenMinted} />
+                <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!!isSaleActive && !isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !isAnyTokenMinted} />
               </Stack.Item>
             </Stack>
           </Form>

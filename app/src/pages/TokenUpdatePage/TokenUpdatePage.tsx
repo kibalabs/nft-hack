@@ -176,7 +176,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
   const processTransactionComplete = useDeepCompareCallback(async (): Promise<void> => {
     if (transactionReceipt && network) {
       tokenIds.forEach((innerTokenId: number): void => {
-        apiClient.updateTokenDeferred(tokenData.isSetForMigration ? migrationNetwork : network, innerTokenId);
+        apiClient.updateTokenDeferred(tokenData.isSetForMigration && migrationNetwork ? migrationNetwork : network, innerTokenId);
       });
     }
   }, [transactionReceipt, apiClient, network, migrationNetwork, tokenIds]);
