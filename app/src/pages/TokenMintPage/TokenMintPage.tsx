@@ -23,6 +23,7 @@ export const TokenMintPage = (): React.ReactElement => {
   const [ownershipMintLimit, setOwnershipMintLimit] = React.useState<number | undefined | null>(undefined);
   const [userOwnedCount, setUserOwnedCount] = React.useState<number | undefined | null>(undefined);
   const [mintedCount, setMintedCount] = React.useState<number | undefined | null>(undefined);
+  const [isSaleActive, setIsSaleActive] = React.useState<boolean | undefined | null>(undefined);
   const [ownedTokenIds, setOwnedTokenIds] = React.useState<number[] | null | undefined>(undefined);
   const [balance, setBalance] = React.useState<BigNumber | undefined | null>(undefined);
   const [requestHeight, setRequestHeight] = React.useState<number>(1);
@@ -61,6 +62,17 @@ export const TokenMintPage = (): React.ReactElement => {
     setMintedCount(undefined);
     if (contract === undefined) {
       return;
+    }
+    if (contract.isSaleActive) {
+      contract.isSaleActive().then((retrievedIsSaleActive: boolean): void => {
+        setIsSaleActive(retrievedIsSaleActive);
+      }).catch((error: unknown) => {
+        console.error(error);
+        setIsSaleActive(null);
+      });
+    } else {
+      console.error('Contract does not support isSaleActive');
+      setIsSaleActive(true);
     }
     contract.mintPrice().then((retrievedMintPrice: BigNumber): void => {
       setMintPrice(retrievedMintPrice);
@@ -120,17 +132,12 @@ export const TokenMintPage = (): React.ReactElement => {
       console.error(error);
       setBalance(null);
     });
-    if (contract.balanceOf) {
-      contract.balanceOf(accountIds[0]).then((retrievedBalance: BigNumber): void => {
-        setUserOwnedCount(retrievedBalance.toNumber());
-      }).catch((error: unknown) => {
-        console.error(error);
-        setUserOwnedCount(null);
-      });
-    } else {
-      console.error('Failed to get the userOwnedCount');
+    contract.balanceOf(accountIds[0]).then((retrievedBalance: BigNumber): void => {
+      setUserOwnedCount(retrievedBalance.toNumber());
+    }).catch((error: unknown) => {
+      console.error(error);
       setUserOwnedCount(null);
-    }
+    });
   }, [accounts, accountIds, contract]);
 
   React.useEffect((): void => {
@@ -359,6 +366,9 @@ export const TokenMintPage = (): React.ReactElement => {
               { requestCount > 1 && (
                 <Text variant='note' alignment={TextAlignment.Center}>Please note that minting multiple tokens raises the risk that your transaction clashes with someone else trying to buy the same tokens 👀</Text>
               )}
+              { !isSaleActive && (
+                <Text variant='error' alignment={TextAlignment.Center}>Sale is not active yet. Please join our discord (https://discord.gg/bUeQjW4KSN) and we&apos;ll let you know when the sale is back on.</Text>
+              )}
               { isOverSingleLimit && (
                 <Text variant='error' alignment={TextAlignment.Center}>{`You can only mint ${singleMintLimit} tokens at once.`}</Text>
               )}
@@ -378,7 +388,7 @@ export const TokenMintPage = (): React.ReactElement => {
                 <Text variant='error' alignment={TextAlignment.Center}>{String(transactionError.message)}</Text>
               )}
               <Stack.Item growthFactor={1} shrinkFactor={1}>
-                <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !isAnyTokenMinted} />
+                <Button variant='primary' text='Confirm' buttonType='submit' isEnabled={!!isSaleActive && !isOverSingleLimit && !isOverTotalLimit && !isOverBalance && !isOverOwnershipLimit && !isAnyTokenMinted} />
               </Stack.Item>
             </Stack>
           </Form>

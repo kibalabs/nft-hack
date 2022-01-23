@@ -16,7 +16,9 @@ export interface Globals {
   apiClient: MdtpClient;
   web3StorageClient: Web3Storage;
   network: string | null | undefined;
+  migrationNetwork: string | null | undefined;
   contract: ethers.Contract | null | undefined;
+  migrationContract: ethers.Contract | null | undefined;
   web3: ethers.providers.Web3Provider | null | undefined;
   chainId: ChainId | null | undefined;
 }

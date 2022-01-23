@@ -8,7 +8,7 @@ const DEFAULT_SINGLE_MINT_LIMIT = 20;
 const DEFAULT_OWNERSHIP_MINT_LIMIT = 35;
 const DEFAULT_MINT_PRICE = 0;
 
-describe("MillionDollarTokenPage contract", async function() {
+describe.skip("MillionDollarTokenPage contract", async function() {
   let myWallet;
   let otherWallet;
   let mdtp;

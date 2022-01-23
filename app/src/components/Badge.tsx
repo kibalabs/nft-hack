@@ -7,6 +7,7 @@ import ReactTooltip from 'react-tooltip';
 
 interface IBadgeProps{
   iconId: string;
+  type?: string;
   hoverText?: string;
 }
 
@@ -16,7 +17,7 @@ export const Badge = (props: IBadgeProps): React.ReactElement => {
   return (
     <React.Fragment>
       <div data-tip data-for={badgeId}>
-        <BackgroundView color='$colors.pastel2'>
+        <BackgroundView color={props.type === 'alert' ? '$colors.pastel9' : '$colors.pastel2'}>
           <Box variant='badge'>
             {/* <Text variant='light-uppercase-singleLine-extraSmall'>{props.text}</Text> */}
             <KibaIcon variant='small' iconId={props.iconId} _color={colors.lightText} />
