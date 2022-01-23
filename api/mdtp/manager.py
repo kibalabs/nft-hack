@@ -300,6 +300,7 @@ class MdtpManager:
         groupId = str(uuid.uuid4())
         imageId = await self.imageManager.upload_image_from_url(url=imageUrl)
         outputDirectory = f'./token-group-images-{str(uuid.uuid4())}'
+        print('outputDirectory', outputDirectory)
         imageFileNames = await self.imageManager.crop_image(imageId=imageId, outputDirectory=outputDirectory, width=width, height=height)
         if shouldUseIpfs:
             fileContentMap = {imageFileName: open(os.path.join(outputDirectory, imageFileName), 'rb') for imageFileName in imageFileNames}  # pylint: disable=consider-using-with
@@ -312,8 +313,10 @@ class MdtpManager:
             await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
             outputUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
             imageUrls = [os.path.join(outputUrl, imageFileName) for imageFileName in imageFileNames]
+        print('removing outputDirectory', outputDirectory)
         await file_util.remove_directory(directory=outputDirectory)
         outputDirectory = f'./token-group-{str(uuid.uuid4())}'
+        print('outputDirectory', outputDirectory)
         await file_util.create_directory(directory=outputDirectory)
         metadataFileNames = []
         for row in range(0, height):
@@ -341,6 +344,7 @@ class MdtpManager:
             await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
             outputUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
             tokenMetadataUrls = [os.path.join(outputUrl, metadataFileName) for metadataFileName in metadataFileNames]
+        print('removing outputDirectory', outputDirectory)
         await file_util.remove_directory(directory=outputDirectory)
         return tokenMetadataUrls
 
@@ -566,11 +570,11 @@ class MdtpManager:
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
-        if not resizableImageUrl:
-            await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
         if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
+        if not resizableImageUrl:
+            await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
         if gridItem.groupId and gridItem.groupId != groupId:
             await self.update_grid_item_group_image_deferred(network=network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
 
