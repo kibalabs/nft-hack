@@ -300,7 +300,6 @@ class MdtpManager:
         groupId = str(uuid.uuid4())
         imageId = await self.imageManager.upload_image_from_url(url=imageUrl)
         outputDirectory = f'./token-group-images-{str(uuid.uuid4())}'
-        print('outputDirectory', outputDirectory)
         imageFileNames = await self.imageManager.crop_image(imageId=imageId, outputDirectory=outputDirectory, width=width, height=height)
         if shouldUseIpfs:
             fileContentMap = {imageFileName: open(os.path.join(outputDirectory, imageFileName), 'rb') for imageFileName in imageFileNames}  # pylint: disable=consider-using-with
@@ -313,10 +312,8 @@ class MdtpManager:
             await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
             outputUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
             imageUrls = [os.path.join(outputUrl, imageFileName) for imageFileName in imageFileNames]
-        print('removing outputDirectory', outputDirectory)
         await file_util.remove_directory(directory=outputDirectory)
         outputDirectory = f'./token-group-{str(uuid.uuid4())}'
-        print('outputDirectory', outputDirectory)
         await file_util.create_directory(directory=outputDirectory)
         metadataFileNames = []
         for row in range(0, height):
@@ -344,7 +341,6 @@ class MdtpManager:
             await self.s3Manager.upload_directory(sourceDirectory=outputDirectory, target=target, accessControl='public-read', cacheControl=_CACHE_CONTROL_FINAL_FILE)
             outputUrl = target.replace('s3://mdtp-images', 'https://mdtp-images.s3.amazonaws.com')
             tokenMetadataUrls = [os.path.join(outputUrl, metadataFileName) for metadataFileName in metadataFileNames]
-        print('removing outputDirectory', outputDirectory)
         await file_util.remove_directory(directory=outputDirectory)
         return tokenMetadataUrls
 
