@@ -116,6 +116,31 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
+    it("should allow admins to setMetadataFinalized", async function() {
+      const isMetadataFinalized = await mdtp.isMetadataFinalized();
+      expect(isMetadataFinalized).to.equal(false);
+      await mdtp.setMetadataFinalized();
+      const isMetadataFinalized2 = await mdtp.isMetadataFinalized();
+      expect(isMetadataFinalized2).to.equal(true);
+    });
+
+    it("should not allow non-admins to setMetadataFinalized", async function() {
+      const transaction = mdtp.connect(otherWallet).setMetadataFinalized();
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("should not allow admins to setMetadataFinalized twice", async function() {
+      await mdtp.setMetadataFinalized();
+      const transaction = mdtp.setMetadataFinalized();
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("should not allow admins to setMetadataBaseURI after setMetadataFinalized", async function() {
+      await mdtp.setMetadataFinalized();
+      const transaction = mdtp.setMetadataBaseURI('newuri');
+      await expect(transaction).to.be.reverted;
+    });
+
     it("allows admins to setDefaultContentBaseURI", async function() {
       const newUri = 'abc/';
       await mdtp.setDefaultContentBaseURI(newUri);

@@ -41,11 +41,12 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     bool public isSaleActive;
     bool public isCenterSaleActive;
 
+    string public collectionURI;
     string public metadataBaseURI;
     string public defaultContentBaseURI;
-    string public collectionURI;
+    bool public isMetadataFinalized;
 
-    // TODO(krishan711): document migration process here
+    // Read about migration at https:/MillionDollarTokenPage.com/migration
     MillionDollarTokenPageV1 public original;
     bool public canAddTokenIdsToMigrate;
     uint256 private tokenIdsToMigrateCount;
@@ -130,7 +131,12 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         mintPrice = newMintPrice;
     }
 
+    function setCollectionURI(string calldata newCollectionURI) external onlyOwner {
+        collectionURI = newCollectionURI;
+    }
+
     function setMetadataBaseURI(string calldata newMetadataBaseURI) external onlyOwner {
+        require(!isMetadataFinalized, 'MDTP: metadata is now final');
         metadataBaseURI = newMetadataBaseURI;
     }
 
@@ -138,8 +144,9 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         defaultContentBaseURI = newDefaultContentBaseURI;
     }
 
-    function setCollectionURI(string calldata newCollectionURI) external onlyOwner {
-        collectionURI = newCollectionURI;
+    function setMetadataFinalized() external onlyOwner {
+        require(!isMetadataFinalized, 'MDTP: metadata is now final');
+        isMetadataFinalized = true;
     }
 
     function setRoyaltyBasisPoints(uint16 newRoyaltyBasisPoints) external onlyOwner {
