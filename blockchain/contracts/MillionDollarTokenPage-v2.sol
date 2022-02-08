@@ -330,11 +330,11 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
                 tokenIndex++;
             }
         }
-        return 0;
+        revert('MDTP: unable to get token of owner by index');
     }
 
     function tokenByIndex(uint256 index) external pure override(IERC721Enumerable) returns (uint256) {
-        require(index >= 0 && index < SUPPLY_LIMIT, "MDTP: invalid index");
+        require(index < SUPPLY_LIMIT, "MDTP: invalid index");
         return index + 1;
     }
 

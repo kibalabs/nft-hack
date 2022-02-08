@@ -334,7 +334,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     });
   });
 
-  describe("Set Token Group Content URIs", async function() {
+  describe("Token Group Content URIs", async function() {
     beforeEach(async () => {
       await mdtp.setIsSaleActive(true);
     });
