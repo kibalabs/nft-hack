@@ -21,6 +21,7 @@ from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
 from core.store.retriever import DateFieldFilter
 from core.store.retriever import Direction
+from core.store.retriever import IntegerFieldFilter
 from core.store.retriever import Order
 from core.store.retriever import RandomOrder
 from core.store.retriever import StringFieldFilter
@@ -389,21 +390,36 @@ class MdtpManager:
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
 
+    async def _get_updated_token_ids(self, network: str, startBlockNumber: int, endBlockNumber: int) -> None:
+        tokenIdsToUpdate = set()
+        transferredTokenIds = await self.contractStore.get_transferred_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
+        logging.info(f'Found {len(transferredTokenIds)} transferred tokens in blocks {startBlockNumber}-{endBlockNumber}')
+        tokenIdsToUpdate.update(transferredTokenIds)
+        updatedTokenIds = await self.contractStore.get_updated_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
+        logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
+        tokenIdsToUpdate.update(updatedTokenIds)
+        offChainUpdatedTokens = await self.retriever.list_offchain_contents(fieldFilters=[
+            StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
+            IntegerFieldFilter(fieldName=OffchainContentsTable.c.blockNumber.key, gte=startBlockNumber),
+            IntegerFieldFilter(fieldName=OffchainContentsTable.c.blockNumber.key, lt=endBlockNumber),
+        ])
+        logging.info(f'Found {len(offChainUpdatedTokens)} on-chain updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
+        tokenIdsToUpdate.update([offchainContent.tokenId for offchainContent in offChainUpdatedTokens])
+        return tokenIdsToUpdate
+
     async def update_tokens(self, network: str) -> None:
         networkUpdate = await self.retriever.get_network_update_by_network(network=network)
         latestProcessedBlockNumber = networkUpdate.latestBlockNumber
         latestBlockNumber = await self.contractStore.get_latest_block_number(network=network)
+        contract = self.contractStore.get_contract(network=network)
         batchSize = 2500
         tokenIdsToUpdate = set()
         logging.info(f'Processing blocks from {latestProcessedBlockNumber} to {latestBlockNumber}')
         for startBlockNumber in range(latestProcessedBlockNumber + 1, latestBlockNumber + 1, batchSize):
             endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber)
-            transferredTokenIds = await self.contractStore.get_transferred_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
-            logging.info(f'Found {len(transferredTokenIds)} transferred tokens in blocks {startBlockNumber}-{endBlockNumber}')
-            tokenIdsToUpdate.update(transferredTokenIds)
-            updatedTokenIds = await self.contractStore.get_updated_token_ids_in_blocks(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber)
-            logging.info(f'Found {len(updatedTokenIds)} updated tokens in blocks {startBlockNumber}-{endBlockNumber}')
-            tokenIdsToUpdate.update(updatedTokenIds)
+            tokenIdsToUpdate.update(await self._get_updated_token_ids(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber))
+            if contract.sourceNetwork:
+                tokenIdsToUpdate.update(await self._get_updated_token_ids(network=contract.sourceNetwork, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber))
         for tokenId in list(tokenIdsToUpdate):
             await self.update_token_deferred(network=network, tokenId=tokenId)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
@@ -414,7 +430,7 @@ class MdtpManager:
     async def update_all_tokens(self, network: str) -> None:
         tokenCount = await self.contractStore.get_total_supply(network=network)
         for tokenIndex in range(tokenCount):
-            await self.update_token_deferred(network=network, tokenId=(tokenIndex + 1))
+            await self.update_token(network=network, tokenId=(tokenIndex + 1))
 
     async def upload_token_image_deferred(self, network: str, tokenId: int, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UploadTokenImageMessageContent(network=network, tokenId=tokenId).to_message(), delaySeconds=delay or 0)
@@ -495,31 +511,42 @@ class MdtpManager:
 
     async def update_token(self, network: str, tokenId: int) -> None:
         logging.info(f'Updating token {network}/{tokenId}')
+        shouldCheckMigrations = await self.contractStore.should_check_migrations(network=network)
+        isTokenSetForMigration = shouldCheckMigrations and await self.contractStore.is_token_set_for_migration(network=network, tokenId=tokenId)
         try:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
-        except Exception: # pylint: disable=broad-except
+        except Exception as exception: # pylint: disable=broad-except
+            print(f'Error getting owner: {str(exception)}')
             ownerId = NON_OWNER_ID
-        contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-        blockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId) or 0
-        # Resolve pending contents for the current owner only
-        offchainPendingContents = await self.retriever.list_offchain_pending_contents(fieldFilters=[
-            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.network.key, eq=network),
-            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.tokenId.key, eq=tokenId),
-            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.ownerId.key, eq=ownerId),
-            StringFieldFilter(fieldName=OffchainPendingContentsTable.c.appliedDate.key, eq=None),
-        ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.ASCENDING)])
-        for offchainPendingContent in offchainPendingContents:
-            await self.saver.create_offchain_content(network=offchainPendingContent.network, tokenId=offchainPendingContent.tokenId, contentUrl=offchainPendingContent.contentUrl, blockNumber=offchainPendingContent.blockNumber, ownerId=offchainPendingContent.ownerId, signature=offchainPendingContent.signature, signedMessage=offchainPendingContent.signedMessage)
-            await self.saver.update_offchain_pending_content(offchainPendingContentId=offchainPendingContent.offchainPendingContentId, appliedDate=date_util.datetime_from_now())
-        source = 'onchain'
-        latestOffchainContents = await self.retriever.list_offchain_contents(fieldFilters=[
-            StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
-            StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
-        ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
-        if len(latestOffchainContents) > 0 and (latestOffchainContents[0].blockNumber > blockNumber):
-            contentUrl = latestOffchainContents[0].contentUrl
-            source = 'offchain'
-            blockNumber = latestOffchainContents[0].blockNumber
+        if isTokenSetForMigration:
+            originalAddress = await self.contractStore.get_migration_target(network=network)
+            originalContract = self.contractStore.get_contract_by_address(address=originalAddress)
+            originalGridItem = await self.retrieve_grid_item(network=originalContract.network, tokenId=tokenId)
+            contentUrl = originalGridItem.contentUrl
+            source = originalGridItem.source
+            blockNumber = originalGridItem.blockNumber
+        else:
+            contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+            blockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId) or 0
+            # Resolve pending contents for the current owner only
+            offchainPendingContents = await self.retriever.list_offchain_pending_contents(fieldFilters=[
+                StringFieldFilter(fieldName=OffchainPendingContentsTable.c.network.key, eq=network),
+                StringFieldFilter(fieldName=OffchainPendingContentsTable.c.tokenId.key, eq=tokenId),
+                StringFieldFilter(fieldName=OffchainPendingContentsTable.c.ownerId.key, eq=ownerId),
+                StringFieldFilter(fieldName=OffchainPendingContentsTable.c.appliedDate.key, eq=None),
+            ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.ASCENDING)])
+            for offchainPendingContent in offchainPendingContents:
+                await self.saver.create_offchain_content(network=offchainPendingContent.network, tokenId=offchainPendingContent.tokenId, contentUrl=offchainPendingContent.contentUrl, blockNumber=offchainPendingContent.blockNumber, ownerId=offchainPendingContent.ownerId, signature=offchainPendingContent.signature, signedMessage=offchainPendingContent.signedMessage)
+                await self.saver.update_offchain_pending_content(offchainPendingContentId=offchainPendingContent.offchainPendingContentId, appliedDate=date_util.datetime_from_now())
+            source = 'onchain'
+            latestOffchainContents = await self.retriever.list_offchain_contents(fieldFilters=[
+                StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
+                StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
+            ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
+            if len(latestOffchainContents) > 0 and (latestOffchainContents[0].blockNumber > blockNumber):
+                contentUrl = latestOffchainContents[0].contentUrl
+                source = 'offchain'
+                blockNumber = latestOffchainContents[0].blockNumber
         contentJson = await self._get_json_content(url=contentUrl)
         title = contentJson.get('title') or contentJson.get('name') or None
         imageUrl = contentJson.get('imageUrl') or contentJson.get('image') or None
@@ -539,11 +566,13 @@ class MdtpManager:
         resizableImageUrl = gridItem.resizableImageUrl
         if gridItem.imageUrl != imageUrl:
             resizableImageUrl = None
-        if not resizableImageUrl:
-            await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
         if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
+        if not resizableImageUrl:
+            await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
+        if gridItem.groupId and gridItem.groupId != groupId:
+            await self.update_grid_item_group_image_deferred(network=network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)

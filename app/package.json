@@ -21,11 +21,11 @@
     "@kibalabs/ui-react": "0.9.6",
     "@metamask/detect-provider": "1.2.0",
     "canvas-size": "1.2.5",
-    "ethers": "5.5.2",
+    "ethers": "5.5.3",
     "querystring-es3": "^0.2.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-dropzone": "11.4.2",
+    "react-dropzone": "11.5.1",
     "react-toastify": "8.1.0",
     "react-tooltip": "4.2.21",
     "styled-components": "5.3.3",
@@ -34,8 +34,8 @@
   },
   "devDependencies": {
     "@kibalabs/build": "0.8.2",
-    "@types/react": "17.0.33",
+    "@types/react": "17.0.38",
     "@types/react-dom": "17.0.11",
-    "@types/styled-components": "5.1.18"
+    "@types/styled-components": "5.1.21"
   }
 }

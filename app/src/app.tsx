@@ -22,7 +22,7 @@ import { TokenMintPage } from './pages/TokenMintPage';
 import { TokenPage } from './pages/TokenPage';
 import { TokenUpdatePage } from './pages/TokenUpdatePage';
 import { buildMDTPTheme } from './theme';
-import { DEFAULT_CHAIN_ID, getContractAddress, getContractJson, getNetwork } from './util/chainUtil';
+import { DEFAULT_CHAIN_ID, getContractAddress, getContractJson, getMigrationNetwork, getNetwork } from './util/chainUtil';
 
 declare global {
   export interface Window {
@@ -44,9 +44,11 @@ const globals: Globals = {
   localStorageClient,
   apiClient,
   web3StorageClient,
-  contract: undefined,
   web3: undefined,
   network: undefined,
+  migrationNetwork: undefined,
+  contract: undefined,
+  migrationContract: undefined,
   chainId: undefined,
 };
 
@@ -59,7 +61,9 @@ export const App = (props: IAppProps): React.ReactElement => {
   const [accountIds, setAccountIds] = React.useState<string[] | undefined | null>(undefined);
   const [chainId, setChainId] = React.useState<number | null | undefined>(undefined);
   const [network, setNetwork] = React.useState<string | null | undefined>(undefined);
+  const [migrationNetwork, setMigrationNetwork] = React.useState<string | null | undefined>(undefined);
   const [contract, setContract] = React.useState<ethers.Contract | null | undefined>(undefined);
+  const [migrationContract, setMigrationContract] = React.useState<ethers.Contract | null | undefined>(undefined);
   const [web3, setWeb3] = React.useState<ethers.providers.Web3Provider | null | undefined>(undefined);
 
   const loadWeb3 = async (): Promise<void> => {
@@ -138,8 +142,10 @@ export const App = (props: IAppProps): React.ReactElement => {
     setNetwork(newNetwork);
     if (newNetwork === undefined) {
       setContract(undefined);
+      setMigrationNetwork(undefined);
     } else if (newNetwork === null) {
       setContract(null);
+      setMigrationNetwork(null);
     } else {
       const contractAddress = getContractAddress(newNetwork);
       const contractJson = getContractJson(newNetwork);
@@ -147,6 +153,17 @@ export const App = (props: IAppProps): React.ReactElement => {
         setContract(new ethers.Contract(contractAddress, contractJson.abi, web3));
       } else {
         setContract(null);
+      }
+      const newMigrationNetwork = getMigrationNetwork(newNetwork);
+      setMigrationNetwork(newMigrationNetwork);
+      if (newMigrationNetwork) {
+        const migrationContractAddress = getContractAddress(newMigrationNetwork);
+        const migrationContractJson = getContractJson(newMigrationNetwork);
+        if (web3 && migrationContractAddress) {
+          setMigrationContract(new ethers.Contract(migrationContractAddress, migrationContractJson.abi, web3));
+        } else {
+          setMigrationContract(null);
+        }
       }
     }
   }, [chainId, web3]);
@@ -169,7 +186,7 @@ export const App = (props: IAppProps): React.ReactElement => {
       <Head headId='app'>
         <script async src='https://www.googletagmanager.com/gtag/js?id=UA-31771231-11' />
       </Head>
-      <GlobalsProvider globals={{ ...globals, network, contract, web3, chainId }}>
+      <GlobalsProvider globals={{ ...globals, network, migrationNetwork, contract, migrationContract, web3, chainId }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
           <Router staticPath={props.staticPath} routes ={routes} />
         </AccountControlProvider>

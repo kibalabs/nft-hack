@@ -64,6 +64,7 @@ jobs:
           host: ${{ secrets.MDTPBOX_URL }}
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
+          port: ${{ secrets.MDTPBOX_PORT }}
           envs: DOCKER_IMAGE,NAME
           script_stop: true
           script: |
@@ -94,6 +95,7 @@ jobs:
           host: ${{ secrets.MDTPBOX_URL }}
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
+          port: ${{ secrets.MDTPBOX_PORT }}
           envs: DOCKER_IMAGE,NAME
           script_stop: true
           script: |
@@ -124,6 +126,7 @@ jobs:
           host: ${{ secrets.MDTPBOX_URL }}
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
+          port: ${{ secrets.MDTPBOX_PORT }}
           envs: DOCKER_IMAGE,NAME
           script_stop: true
           script: |
@@ -151,6 +154,7 @@ jobs:
           host: ${{ secrets.MDTPBOX_URL }}
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
+          port: ${{ secrets.MDTPBOX_PORT }}
           envs: DOCKER_IMAGE,NAME
           script_stop: true
           script: |
@@ -181,6 +185,7 @@ jobs:
           host: ${{ secrets.MDTPBOX_URL }}
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
+          port: ${{ secrets.MDTPBOX_PORT }}
           envs: DOCKER_IMAGE,NAME
           script_stop: true
           script: |

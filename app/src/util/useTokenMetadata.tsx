@@ -11,12 +11,14 @@ interface TokenData {
   tokenMetadata: TokenMetadata | null | undefined;
   gridItem: GridItem | null | undefined;
   chainGridItem: GridItem | null | undefined;
+  isSetForMigration: boolean | null | undefined;
 }
 
 export const useTokenData = (tokenId: number): TokenData => {
   const { contract, apiClient, requester, network, web3 } = useGlobals();
   const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
   const [chainGridItem, setChainGridItem] = React.useState<GridItem | null | undefined>(undefined);
+  const [isSetForMigration, setIsSetForMigration] = React.useState<boolean | null | undefined>(undefined);
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -42,21 +44,27 @@ export const useTokenData = (tokenId: number): TokenData => {
       return;
     }
     if (contract) {
-      // NOTE(krishan711): this only works for the new contracts
-      if (contract.tokenContentURI) {
-        contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
-          const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
-          requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
-            const filter = contract.filters.TokenContentURIChanged(tokenId);
-            web3.getLogs({ address: filter.address, topics: filter.topics, fromBlock: 0 }).then((logs: Log[]): void => {
-              const blockNumber = logs.length > 0 ? logs[logs.length - 1].blockNumber : 0;
-              const tokenContentJson = JSON.parse(response.content);
-              // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
-              setChainGridItem(new GridItem(-1, new Date(), tokenId, network, tokenMetadataUrl, tokenContentJson.name, tokenContentJson.description, tokenContentJson.image, null, '', tokenContentJson.url, tokenContentJson.groupId, blockNumber, 'onchain'));
-            });
+      contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
+        const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://ipfs.infura.io/ipfs/') : tokenMetadataUrl;
+        requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
+          const filter = contract.filters.TokenContentURIChanged(tokenId);
+          web3.getLogs({ address: filter.address, topics: filter.topics, fromBlock: 0 }).then((logs: Log[]): void => {
+            const blockNumber = logs.length > 0 ? logs[logs.length - 1].blockNumber : 0;
+            const tokenContentJson = JSON.parse(response.content);
+            // NOTE(krishan711): this should validate the content cos if someone hasn't filled it correctly it could cause something bad
+            setChainGridItem(new GridItem(-1, new Date(), tokenId, network, tokenMetadataUrl, tokenContentJson.name, tokenContentJson.description, tokenContentJson.image, null, '', tokenContentJson.url, tokenContentJson.groupId, blockNumber, 'onchain'));
           });
         });
+      });
+      if (contract.isTokenSetForMigration) {
+        contract.isTokenSetForMigration(tokenId).then((value: boolean): void => {
+          setIsSetForMigration(value);
+        });
+      } else {
+        setIsSetForMigration(false);
       }
+    } else {
+      setIsSetForMigration(null);
     }
   }, [tokenId, network, contract, requester, web3]);
 
@@ -91,5 +99,5 @@ export const useTokenData = (tokenId: number): TokenData => {
     return undefined;
   }, [gridItem, chainGridItem]);
 
-  return { tokenMetadata, gridItem, chainGridItem };
+  return { tokenMetadata, gridItem, chainGridItem, isSetForMigration };
 };

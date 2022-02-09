@@ -5,7 +5,7 @@ import { Alignment, Direction, Head, Markdown, PaddingSize, Spacing, Stack, Text
 import { ShareForm } from '../../components/ShareForm';
 
 export const SharePage = (): React.ReactElement => {
-  const initialShareText = 'Frens, just found this site milliondollartokenpage.com @mdtp_app where you show off your JPGs and own the space as an NFT. Probably nothing fren but gonna Ape in. WGMI! 🚀';
+  const initialShareText = 'Frens, just found this site MillionDollarTokenPage.com @mdtp_app where you show off your JPGs and own the space as an NFT. Probably nothing fren but gonna Ape in. WGMI! 🚀';
 
   const referralText = `
 **Get FREE NFTs referring friends!** 🤑

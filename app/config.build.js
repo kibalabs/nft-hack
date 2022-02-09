@@ -32,10 +32,11 @@ module.exports = (config) => {
         disableDotRule: true,
       },
     };
-    webpackConfig.resolve = webpackConfig.resolve || {};
-    webpackConfig.resolve.fallback = webpackConfig.resolve.fallback || {};
-    webpackConfig.resolve.fallback.querystring = 'querystring-es3';
-    webpackConfig.resolve.fallback.url = 'url';
+    webpackConfig.resolve.fallback = {
+      ...webpackConfig.resolve.fallback,
+      "querystring": false,
+      "url": false,
+    }
     return webpackConfig;
   }
   return config;

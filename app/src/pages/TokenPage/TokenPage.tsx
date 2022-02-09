@@ -108,11 +108,11 @@ export const TokenPage = (): React.ReactElement => {
     }
     if (isOwned) {
       if (tokenMetadata.url) {
-        return `Frens, check out "${tokenMetadata.name}" (${tokenMetadata.url}), looks legit! I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
+        return `Frens, check out "${tokenMetadata.name}" (${tokenMetadata.url}), looks legit! I just found it on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
       }
-      return `Frens, check out "${tokenMetadata.name}", looks legit! I just found it on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
+      return `Frens, check out "${tokenMetadata.name}", looks legit! I just found it on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
     }
-    return `Frens, you can mint this NFT on milliondollartokenpage.com/tokens/${tokenMetadata.tokenId} and show off your JPGs. @mdtp_app I'm gonna ape in, LFG! 🚀`;
+    return `Frens, you can mint this NFT on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} and show off your JPGs. @mdtp_app I'm gonna ape in, LFG! 🚀`;
   };
 
   const isOnChain = gridItem && gridItem.source === 'onchain';
@@ -144,10 +144,13 @@ export const TokenPage = (): React.ReactElement => {
                 <Stack direction={Direction.Horizontal} shouldAddGutters={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Center}>
                   <Text variant='header6' alignment={TextAlignment.Center}>{`TOKEN #${tokenMetadata.tokenId}`}</Text>
                   {isOnChain && (
-                    <Badge iconId='feather-check' hoverText='The link to this content is stored on the ethereum blockchain. It will live there forever ♾' />
+                    <Badge iconId='feather-check' hoverText='The link to this content is stored on the ethereum blockchain. It will live there forever ⛓' />
                   )}
                   {isIPFS && (
-                    <Badge iconId='ion-planet-outline' hoverText='This content is stored on the IPFS network. It will live there forever ♾' />
+                    <Badge iconId='ion-planet-outline' hoverText='This content is stored on the IPFS network. It will live there forever ⛓' />
+                  )}
+                  {tokenData.isSetForMigration && (
+                    <Badge type='alert' iconId='ion-repeat-outline' hoverText='This token is being proxied from MDTP v1. The owner is a true OG 💪' />
                   )}
                 </Stack>
                 <Text variant='header2' alignment={TextAlignment.Center}>{`${tokenMetadata.name}`}</Text>

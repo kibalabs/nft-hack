@@ -20,6 +20,9 @@ export const useOwnerIds = (tokenIds: number[]): Map<number, string | null> | un
     }
     const chainOwnerIdPromises = tokenIds.map(async (internalTokenId: number): Promise<string | null> => {
       try {
+        if (contract.proxiedOwnerOf) {
+          return await contract.proxiedOwnerOf(internalTokenId);
+        }
         return await contract.ownerOf(internalTokenId);
       } catch (error: unknown) {
         if (!(error as Error).message.includes('nonexistent token')) {
