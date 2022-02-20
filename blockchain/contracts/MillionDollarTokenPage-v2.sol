@@ -150,8 +150,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
 
     function withdraw() external onlyOwner {
         uint256 balance = address(this).balance;
-        (bool success, ) = owner().call{value: balance}("");
-        require(success, "Transfer failed.");
+        payable(owner).transfer(balance);
     }
 
     function pause() external onlyOwner {
