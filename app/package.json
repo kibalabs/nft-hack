@@ -18,7 +18,7 @@
     "@kibalabs/core-react": "0.8.0",
     "@kibalabs/everyview-tracker": "0.3.1",
     "@kibalabs/everyview-tracker-react": "0.3.1",
-    "@kibalabs/ui-react": "0.9.7-next.8",
+    "@kibalabs/ui-react": "0.9.7-next.9",
     "@metamask/detect-provider": "1.2.0",
     "canvas-size": "1.2.5",
     "ethers": "5.5.4",
@@ -33,7 +33,7 @@
     "web3.storage": "3.5.1"
   },
   "devDependencies": {
-    "@kibalabs/build": "0.8.2",
+    "@kibalabs/build": "0.8.3-next.0",
     "@types/react": "17.0.39",
     "@types/react-dom": "17.0.11",
     "@types/styled-components": "5.1.23"

@@ -10,15 +10,15 @@ export class MdtpClient extends ServiceClient {
 
   public getApiUrl = (path: string): string => {
     return `${this.baseUrl}/${path}`;
-  }
+  };
 
   public getTokenImageUrl = (network: string, tokenId: number): string => {
     return this.getApiUrl(`v1/networks/${network}/tokens/${tokenId}/go-to-image`);
-  }
+  };
 
   public getTokenGroupImageUrl = (network: string, tokenId: number): string => {
     return this.getApiUrl(`v1/networks/${network}/tokens/${tokenId}/go-to-group-image`);
-  }
+  };
 
   public getTokenDefaultContent = async (tokenId: number): Promise<Resources.TokenMetadata> => {
     const method = RestMethod.GET;
@@ -26,7 +26,7 @@ export class MdtpClient extends ServiceClient {
     const request = undefined;
     const response = await this.makeRequest(method, path, request, Resources.TokenMetadata);
     return response;
-  }
+  };
 
   public getLatestBaseImage = async (network: string): Promise<Resources.BaseImage> => {
     const method = RestMethod.GET;
@@ -34,7 +34,7 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.GetLatestBaseImageRequest();
     const response = await this.makeRequest(method, path, request, Endpoints.GetLatestBaseImageResponse);
     return response.baseImage;
-  }
+  };
 
   public listGridItems = async (network: string, shouldCompact: boolean, ownerId?: string, updatedSinceDate?: Date, groupId?: string): Promise<Resources.GridItem[]> => {
     const method = RestMethod.GET;
@@ -42,7 +42,7 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.ListGridItemsRequest(shouldCompact, ownerId, updatedSinceDate, groupId);
     const response = await this.makeRequest(method, path, request, Endpoints.ListGridItemsResponse);
     return response.gridItems;
-  }
+  };
 
   public retrieveGridItem = async (network: string, tokenId: number): Promise<Resources.GridItem> => {
     const method = RestMethod.POST;
@@ -50,7 +50,7 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.RetrieveGridItemRequest(tokenId);
     const response = await this.makeRequest(method, path, request, Endpoints.RetrieveGridItemResponse);
     return response.gridItem;
-  }
+  };
 
   public getNetworkSummary = async (network: string): Promise<Resources.NetworkSummary> => {
     const method = RestMethod.GET;
@@ -58,7 +58,7 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.GetNetworkSummaryRequest();
     const response = await this.makeRequest(method, path, request, Endpoints.GetNetworkSummaryResponse);
     return response.networkSummary;
-  }
+  };
 
   public getNetworkStatus = async (network: string): Promise<Resources.NetworkStatus> => {
     const method = RestMethod.GET;
@@ -66,7 +66,7 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.GetNetworkStatusRequest();
     const response = await this.makeRequest(method, path, request, Endpoints.GetNetworkStatusResponse);
     return response.networkStatus;
-  }
+  };
 
   public generateImageUploadForToken = async (network: string, tokenId: number): Promise<Resources.PresignedUpload> => {
     const method = RestMethod.POST;
@@ -74,7 +74,7 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.GenerateImageUploadForTokenRequest();
     const response = await this.makeRequest(method, path, request, Endpoints.GenerateImageUploadForTokenResponse);
     return response.presignedUpload;
-  }
+  };
 
   public createMetadataForToken = async (network: string, tokenId: number, shouldUseIpfs: boolean, name: string, description: string | null, imageUrl: string, url: string | null): Promise<string> => {
     const method = RestMethod.POST;
@@ -82,7 +82,7 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.UploadMetadataForTokenRequest(shouldUseIpfs, name, description, imageUrl, url);
     const response = await this.makeRequest(method, path, request, Endpoints.UploadMetadataForTokenResponse);
     return response.tokenMetadataUrl;
-  }
+  };
 
   public createMetadataForTokenGroup = async (network: string, tokenId: number, shouldUseIpfs: boolean, width: number, height: number, name: string, description: string | null, imageUrl: string, url: string | null): Promise<string[]> => {
     const method = RestMethod.POST;
@@ -90,19 +90,19 @@ export class MdtpClient extends ServiceClient {
     const request = new Endpoints.UploadMetadataForTokenGroupRequest(shouldUseIpfs, width, height, name, description, imageUrl, url);
     const response = await this.makeRequest(method, path, request, Endpoints.UploadMetadataForTokenGroupResponse);
     return response.tokenMetadataUrls;
-  }
+  };
 
   public updateOffchainContentsForTokenGroup = async (network: string, tokenId: number, width: number, height: number, blockNumber: number, contentUrls: string[], signature: string, shouldAllowPendingChange: boolean): Promise<void> => {
     const method = RestMethod.POST;
     const path = `v1/networks/${network}/tokens/${tokenId}/update-offchain-contents`;
     const request = new Endpoints.UpdateOffchainContentsForTokenGroupRequest(width, height, blockNumber, contentUrls, signature, shouldAllowPendingChange);
     await this.makeRequest(method, path, request, Endpoints.UpdateOffchainContentsForTokenGroupResponse);
-  }
+  };
 
   public updateTokenDeferred = async (network: string, tokenId: number): Promise<void> => {
     const method = RestMethod.POST;
     const path = `v1/networks/${network}/tokens/${tokenId}/update-token-deferred`;
     const request = new Endpoints.UpdateTokenDeferredRequest();
     await this.makeRequest(method, path, request, Endpoints.UpdateTokenDeferredResponse);
-  }
+  };
 }

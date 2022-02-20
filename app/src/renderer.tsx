@@ -1,4 +1,5 @@
-/* eslint-disable no-console */
+/* eslint-disable */
+
 import fs from 'fs';
 import path from 'path';
 import process from 'process';
@@ -65,6 +66,10 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
     const configModifier = require(path.join(process.cwd(), params.configModifier));
     params = configModifier(params);
   }
+  if (params.dev) {
+    throw Error('Unable to run static build in dev mode');
+  }
+  process.env.NODE_ENV = params.dev ? 'development' : 'production';
 
   const sourceDirectory = path.resolve(sourceDirectoryPath);
   const buildDirectory = buildDirectoryPath ? path.resolve(buildDirectoryPath) : path.join(process.cwd(), 'build');
@@ -109,7 +114,7 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
   // // NOTE(krishan711): this ensures the require is not executed at build time (only during runtime)
   // @ts-ignore
   // eslint-disable-next-line no-undef
-  // // const { App } = __non_webpack_require__(path.resolve(buildDirectory, 'index.js'));
+  // const { App } = __non_webpack_require__(path.resolve(buildDirectory, 'index.js'));
   const { App } = require(path.resolve(buildDirectory, 'index.js'));
   const webpackBuildStats = await createAndRunCompiler(webWebpackConfig);
   pages.forEach((page: IPage): void => {
@@ -166,5 +171,4 @@ export const render = async (sourceDirectoryPath: string, buildDirectoryPath?: s
     console.log(`EP: done rendering page ${page.path} to ${page.filename}`);
   });
   console.log('EP: done generating static html');
-  return;
 };

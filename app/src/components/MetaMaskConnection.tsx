@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Direction, Image, LinkBase, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Direction, Image, LinkBase, LoadingSpinner, Stack, Text } from '@kibalabs/ui-react';
 
 import { useAccountIds, useOnLinkAccountsClicked } from '../accountsContext';
 import { GridItem } from '../client';
@@ -18,12 +18,12 @@ export const MetaMaskConnection = (): React.ReactElement => {
   const [hasNonUpdatedGridItems, setHasNonUpdatedGridItems] = React.useState<boolean>(false);
 
   const loadTokens = React.useCallback(async (): Promise<void> => {
-    if (network === null || accountIds === null) {
-      setGridItems(null);
-      return;
-    }
     setGridItems(undefined);
     if (network === undefined || accountIds === undefined) {
+      return;
+    }
+    if (network === null || accountIds === null) {
+      setGridItems(null);
       return;
     }
     const groupedGridItems = await Promise.all(accountIds.map(async (accountId: string): Promise<GridItem[]> => {
@@ -55,7 +55,9 @@ export const MetaMaskConnection = (): React.ReactElement => {
   return (
     <LinkBase onClicked={onClicked}>
       <Box variant={`overlay-horizontal${boxVariantSuffix}`} isFullWidth={false}>
-        { !accountIds ? (
+        { accountIds === undefined ? (
+          <React.Fragment />
+        ) : accountIds === null ? (
           <Text variant='bold'>Install metamask to get started</Text>
         ) : accountIds.length === 0 ? (
           <Text variant='bold'>Connect accounts to get started</Text>

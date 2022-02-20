@@ -25,7 +25,7 @@ export class TokenMetadata {
       obj.url ? String(obj.url) : null,
       obj.groupId ? String(obj.groupId) : null,
     );
-  }
+  };
 }
 
 export class GridItem {
@@ -65,7 +65,7 @@ export class GridItem {
       Number(obj.blockNumber),
       String(obj.source),
     );
-  }
+  };
 }
 
 export class NetworkSummary {
@@ -83,7 +83,7 @@ export class NetworkSummary {
       Number(obj.totalSales),
       Number(obj.averagePrice),
     );
-  }
+  };
 }
 
 export class NetworkStatus {
@@ -101,7 +101,7 @@ export class NetworkStatus {
       Number(obj.mintLimit),
       obj.randomAvailableTokenId ? Number(obj.randomAvailableTokenId) : null,
     );
-  }
+  };
 }
 
 export class PresignedUpload {
@@ -117,7 +117,7 @@ export class PresignedUpload {
       String(obj.url),
       obj.params as Record<string, string>,
     );
-  }
+  };
 }
 
 export class BaseImage {
@@ -137,5 +137,5 @@ export class BaseImage {
       String(obj.url),
       dateFromString(obj.generatedDate as string),
     );
-  }
+  };
 }

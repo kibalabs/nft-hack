@@ -16,7 +16,7 @@ import { getProductOpenseaUrl } from '../../util/chainUtil';
 
 const PanelLayer = styled.div`
   width: 95vw;
-  max-width: 500px;
+  max-width: ;
   height: 100%;
 `;
 
@@ -130,6 +130,10 @@ export const HomePage = (): React.ReactElement => {
       setFocussedTokenIds([]);
     }
   }, [isPanelShowing, focussedTokenIds]);
+  console.log('isPanelShowing', isPanelShowing);
+  console.log('network', network);
+  console.log('baseImage', baseImage);
+  console.log('isHidden', !isPanelShowing);
 
   return (
     <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
@@ -170,25 +174,27 @@ export const HomePage = (): React.ReactElement => {
                 </ResponsiveContainingView>
               </LayerContainer.Layer>
             ) : (
-              <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
-                <HidingView isHidden={!isPanelShowing}>
-                  <GridOffset />
-                </HidingView>
-                <Stack.Item shrinkFactor={1} growthFactor={1}>
-                  {maxScale && (
-                    <TokenGrid
-                      minScale={MIN_SCALE}
-                      maxScale={maxScale}
-                      baseImage={baseImage}
-                      newGridItems={gridItems || []}
-                      tokenCount={10000}
-                      onTokenIdClicked={onTokenIdClicked}
-                      scale={scale}
-                      onScaleChanged={setConstrainedScale}
-                    />
-                  )}
-                </Stack.Item>
-              </Stack>
+              <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
+                <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
+                  <HidingView isHidden={!isPanelShowing}>
+                    <GridOffset />
+                  </HidingView>
+                  <Stack.Item shrinkFactor={1} growthFactor={1}>
+                    {maxScale && (
+                      <TokenGrid
+                        minScale={MIN_SCALE}
+                        maxScale={maxScale}
+                        baseImage={baseImage}
+                        newGridItems={gridItems || []}
+                        tokenCount={10000}
+                        onTokenIdClicked={onTokenIdClicked}
+                        scale={scale}
+                        onScaleChanged={setConstrainedScale}
+                      />
+                    )}
+                  </Stack.Item>
+                </Stack>
+              </LayerContainer.Layer>
             )}
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
               <GridControl
@@ -213,25 +219,22 @@ export const HomePage = (): React.ReactElement => {
                 )}
               </Stack>
             </LayerContainer.Layer>
-            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} />
-            {isPanelShowing && (
-              <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
-                <PanelLayer>
-                  <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
-                    <LayerContainer>
-                      <LayerContainer.Layer>
-                        <SubRouterOutlet />
-                      </LayerContainer.Layer>
-                      <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
-                        <Box variant='panelButtonHolder'>
-                          <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} target={'/'} />
-                        </Box>
-                      </LayerContainer.Layer>
-                    </LayerContainer>
-                  </Box>
-                </PanelLayer>
-              </LayerContainer.Layer>
-            )}
+            <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
+              <HidingView isHidden={!isPanelShowing}>
+                <Box variant='homePanel' isFullHeight={true} width='95vw' maxWidth='500px' shouldClipContent={true} >
+                  <LayerContainer>
+                    <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
+                      <SubRouterOutlet />
+                    </LayerContainer.Layer>
+                    <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+                      <Box variant='panelButtonHolder'>
+                        <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} target={'/'} />
+                      </Box>
+                    </LayerContainer.Layer>
+                  </LayerContainer>
+                </Box>
+              </HidingView>
+            </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
             </LayerContainer.Layer>

@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable */
 var __assign = (this && this.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -60,7 +61,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 exports.__esModule = true;
 exports.render = exports.findAncestorSibling = void 0;
-/* eslint-disable no-console */
 var fs_1 = __importDefault(require("fs"));
 var path_1 = __importDefault(require("path"));
 var process_1 = __importDefault(require("process"));
@@ -119,6 +119,10 @@ var render = function (sourceDirectoryPath, buildDirectoryPath, outputDirectoryP
                     configModifier = require(path_1["default"].join(process_1["default"].cwd(), params.configModifier));
                     params = configModifier(params);
                 }
+                if (params.dev) {
+                    throw Error('Unable to run static build in dev mode');
+                }
+                process_1["default"].env.NODE_ENV = params.dev ? 'development' : 'production';
                 sourceDirectory = path_1["default"].resolve(sourceDirectoryPath);
                 buildDirectory = buildDirectoryPath ? path_1["default"].resolve(buildDirectoryPath) : path_1["default"].join(process_1["default"].cwd(), 'build');
                 outputDirectory = outputDirectoryPath ? path_1["default"].resolve(outputDirectoryPath) : path_1["default"].join(process_1["default"].cwd(), 'dist');
