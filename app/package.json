@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "build-react-app --config-modifier ./config.build.js",
-    "build-static": "tsc --jsx react --esModuleInterop src/renderer.tsx && node -e \"require('./src/renderer').render('./src', undefined, undefined, {configModifier: './config.build.js'})\"",
+    "build-static": "build-react-app-static --config-modifier ./config.build.js",
     "start": "build-react-app --config-modifier ./config.build.js --start",
     "start-dev": "build-react-app --config-modifier ./config.build.js --start --dev",
     "clean": "rm -rf ./node_modules ./package-lock.json ./dist",
@@ -33,7 +33,7 @@
     "web3.storage": "3.5.1"
   },
   "devDependencies": {
-    "@kibalabs/build": "0.8.3-next.0",
+    "@kibalabs/build": "file:/Users/krishan/Projects/build-js/kibalabs-build-0.8.2-13.tgz",
     "@types/react": "17.0.39",
     "@types/react-dom": "17.0.11",
     "@types/styled-components": "5.1.23"
