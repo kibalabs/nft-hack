@@ -220,7 +220,7 @@ export const HomePage = (): React.ReactElement => {
               </Stack>
             </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
-              <HidingView isHidden={!isPanelShowing}>
+              {isPanelShowing && (
                 <Box variant='homePanel' isFullHeight={true} width='95vw' maxWidth='500px' shouldClipContent={true} >
                   <LayerContainer>
                     <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
@@ -233,7 +233,7 @@ export const HomePage = (): React.ReactElement => {
                     </LayerContainer.Layer>
                   </LayerContainer>
                 </Box>
-              </HidingView>
+              )}
             </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
