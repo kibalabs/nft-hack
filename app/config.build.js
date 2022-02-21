@@ -58,6 +58,9 @@ module.exports = (config) => {
   }, {
     path: '/roadmap',
     filename: 'roadmap.html',
+  }, {
+    path: '/share',
+    filename: 'share.html',
   }];
   return config;
 };
