@@ -119,10 +119,6 @@ export const HomePage = (): React.ReactElement => {
       setFocussedTokenIds([]);
     }
   }, [isPanelShowing, focussedTokenIds]);
-  console.log('isPanelShowing', isPanelShowing);
-  console.log('network', network);
-  console.log('baseImage', baseImage);
-  console.log('isHidden', !isPanelShowing);
 
   return (
     <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
