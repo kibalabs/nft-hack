@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
+import { SubRouterOutlet, useBooleanLocalStorageState, useInitialization, useLocation, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import canvasSize from 'canvas-size';
 
@@ -18,6 +18,7 @@ const MAX_SCALE = 5;
 const DEFAULT_SCALE = 1;
 
 export const HomePage = (): React.ReactElement => {
+  const isInitialized = useInitialization((): void => null);
   const navigator = useNavigator();
   const location = useLocation();
   const { apiClient, network, chainId, localStorageClient } = useGlobals();
@@ -75,7 +76,10 @@ export const HomePage = (): React.ReactElement => {
   const isRoadmapPanelShowing = location.pathname.includes('/roadmap');
   const isSharePanelShowing = location.pathname.includes('/share');
   const isOwnerPanelShowing = location.pathname.includes('/owners/');
-  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing || isOwnerPanelShowing;
+  // NOTE(krishan711): the difference between static and dynamic here is cos some pages are not pre-rendered
+  const isStaticPanelShowing = isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing;
+  const isDynamicPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isOwnerPanelShowing;
+  const isPanelShowing = isStaticPanelShowing || (isInitialized && isDynamicPanelShowing) ;
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself

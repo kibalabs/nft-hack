@@ -9,6 +9,7 @@ const imageUrl = `${url}/assets/banner.png`;
 
 const seoTags = [
   new InjectSeoPlugin.MetaTag('description', description),
+  new InjectSeoPlugin.Tag('meta', {property: 'og:type', content: 'website'}),
   new InjectSeoPlugin.Tag('meta', {property: 'og:title', content: title}),
   new InjectSeoPlugin.Tag('meta', {property: 'og:description', content: description}),
   new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
@@ -58,6 +59,7 @@ module.exports = (config) => {
     filename: 'about.html',
     seoTags: [
       new InjectSeoPlugin.MetaTag('description', description),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:type', content: 'website'}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:title', content: `About | ${title}`}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:description', content: description}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
@@ -71,6 +73,7 @@ module.exports = (config) => {
     filename: 'roadmap.html',
     seoTags: [
       new InjectSeoPlugin.MetaTag('description', description),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:type', content: 'website'}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:title', content: `Roadmap | ${title}`}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:description', content: description}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
@@ -84,6 +87,7 @@ module.exports = (config) => {
     filename: 'share.html',
     seoTags: [
       new InjectSeoPlugin.MetaTag('description', description),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:type', content: 'website'}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:title', content: `Share | ${title}`}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:description', content: description}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
