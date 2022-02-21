@@ -54,7 +54,7 @@ export const MetaMaskConnection = (): React.ReactElement => {
 
   return (
     <LinkBase onClicked={onClicked}>
-      <Box variant={`overlay-horizontal${boxVariantSuffix}`} isFullWidth={false}>
+      <Box variant={`overlayView-horizontal${boxVariantSuffix}`} isFullWidth={false}>
         { accountIds === undefined ? (
           <React.Fragment />
         ) : accountIds === null ? (

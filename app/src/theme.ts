@@ -52,7 +52,7 @@ export const buildMDTPTheme = (): ITheme => {
     },
   };
 
-  const overlayBoxTheme = {
+  const overlayViewBoxTheme = {
     'background-color': 'rgba(255, 255, 255, 0.85)',
     'backdrop-filter': 'blur(3px)',
     'border-radius': '0.75em',
@@ -74,7 +74,10 @@ export const buildMDTPTheme = (): ITheme => {
       'border-width': '1px',
       'border-color': '$colors.success',
     },
-    overlay: overlayBoxTheme,
+    overlay: {
+      'background-color': '$colors.backgroundClear25',
+    },
+    overlayView: overlayViewBoxTheme,
     overlayError: {
       'border-width': '2px',
       'border-color': '$colors.error',
@@ -186,7 +189,7 @@ export const buildMDTPTheme = (): ITheme => {
     overlay: {
       normal: {
         default: {
-          background: mergeThemePartial(overlayBoxTheme, {
+          background: mergeThemePartial(overlayViewBoxTheme, {
             'background-color': 'rgba(255, 255, 255, 0.75)',
             margin: '0',
           }),
@@ -217,7 +220,7 @@ export const buildMDTPTheme = (): ITheme => {
         default: {
           background: {
             'background-color': 'rgba(255, 255, 255, 0.75)',
-            'backdrop-filter': overlayBoxTheme['backdrop-filter'],
+            'backdrop-filter': overlayViewBoxTheme['backdrop-filter'],
           },
         },
         hover: {
