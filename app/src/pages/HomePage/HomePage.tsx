@@ -3,7 +3,6 @@ import React from 'react';
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import canvasSize from 'canvas-size';
-import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
 import { FomoBar } from '../../components/FomoBar';
@@ -206,7 +205,7 @@ export const HomePage = (): React.ReactElement => {
             </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
               {isPanelShowing && (
-                <Box variant='homePanel' isFullHeight={true} width='95vw' maxWidth='500px' shouldClipContent={true} >
+                <Box variant='homePanel' isFullHeight={true} width='95vw' maxWidth='500px' shouldClipContent={true}>
                   <LayerContainer>
                     <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
                       <SubRouterOutlet />

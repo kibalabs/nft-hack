@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigator } from '@kibalabs/core-react';
-import { Alignment, Box, Direction, Image, LinkBase, LoadingSpinner, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Box, Direction, Image, LinkBase, Stack, Text } from '@kibalabs/ui-react';
 
 import { useAccountIds, useOnLinkAccountsClicked } from '../accountsContext';
 import { GridItem } from '../client';
