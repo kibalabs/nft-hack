@@ -18,7 +18,7 @@ const MAX_SCALE = 5;
 const DEFAULT_SCALE = 1;
 
 export const HomePage = (): React.ReactElement => {
-  const isInitialized = useInitialization((): void => null);
+  const isInitialized = useInitialization((): void => undefined);
   const navigator = useNavigator();
   const location = useLocation();
   const { apiClient, network, chainId, localStorageClient } = useGlobals();
