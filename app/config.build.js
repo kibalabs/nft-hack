@@ -52,15 +52,46 @@ module.exports = (config) => {
   config.pages = [{
     path: '/',
     filename: 'index.html',
+    seoTags: seoTags,
   }, {
     path: '/about',
     filename: 'about.html',
+    seoTags: [
+      new InjectSeoPlugin.MetaTag('description', description),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:title', content: `About | ${title}`}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:description', content: description}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:url', content: `${url}/about`}),
+      new InjectSeoPlugin.MetaTag('twitter:card', 'summary_large_image'),
+      new InjectSeoPlugin.MetaTag('twitter:site', '@mdtp_app'),
+      new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/svg+xml', href: '/assets/favicon.svg'}),
+    ],
   }, {
     path: '/roadmap',
     filename: 'roadmap.html',
+    seoTags: [
+      new InjectSeoPlugin.MetaTag('description', description),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:title', content: `Roadmap | ${title}`}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:description', content: description}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:url', content: `${url}/roadmap`}),
+      new InjectSeoPlugin.MetaTag('twitter:card', 'summary_large_image'),
+      new InjectSeoPlugin.MetaTag('twitter:site', '@mdtp_app'),
+      new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/svg+xml', href: '/assets/favicon.svg'}),
+    ],
   }, {
     path: '/share',
     filename: 'share.html',
+    seoTags: [
+      new InjectSeoPlugin.MetaTag('description', description),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:title', content: `Share | ${title}`}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:description', content: description}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
+      new InjectSeoPlugin.Tag('meta', {property: 'og:url', content: `${url}/share`}),
+      new InjectSeoPlugin.MetaTag('twitter:card', 'summary_large_image'),
+      new InjectSeoPlugin.MetaTag('twitter:site', '@mdtp_app'),
+      new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/svg+xml', href: '/assets/favicon.svg'}),
+    ],
   }];
   return config;
 };
