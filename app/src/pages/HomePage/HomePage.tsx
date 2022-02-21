@@ -14,17 +14,6 @@ import { useGlobals } from '../../globalsContext';
 import { TokenSelectionProvider } from '../../tokenSelectionContext';
 import { getProductOpenseaUrl } from '../../util/chainUtil';
 
-const PanelLayer = styled.div`
-  width: 95vw;
-  max-width: ;
-  height: 100%;
-`;
-
-const GridOffset = styled.div`
-  width: 95vw;
-  max-width: 500px;
-`;
-
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
 const DEFAULT_SCALE = 1;
@@ -177,7 +166,7 @@ export const HomePage = (): React.ReactElement => {
               <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
                 <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
                   <HidingView isHidden={!isPanelShowing}>
-                    <GridOffset />
+                    <Box width='95vw' maxWidth='500px' />
                   </HidingView>
                   <Stack.Item shrinkFactor={1} growthFactor={1}>
                     {maxScale && (

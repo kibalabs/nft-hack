@@ -44,10 +44,10 @@ module.exports = (config) => {
     filename: 'index.html',
   }, {
     path: '/about',
-    filename: 'about/index.html',
+    filename: 'about.html',
   }, {
     path: '/roadmap',
-    filename: 'roadmap/index.html',
+    filename: 'roadmap.html',
   }];
   return config;
 };
