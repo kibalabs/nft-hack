@@ -79,7 +79,7 @@ export const HomePage = (): React.ReactElement => {
   // NOTE(krishan711): the difference between static and dynamic here is cos some pages are not pre-rendered
   const isStaticPanelShowing = isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing;
   const isDynamicPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isOwnerPanelShowing;
-  const isPanelShowing = isStaticPanelShowing || (isInitialized && isDynamicPanelShowing) ;
+  const isPanelShowing = isStaticPanelShowing || (isInitialized && isDynamicPanelShowing);
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
