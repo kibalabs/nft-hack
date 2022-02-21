@@ -119,6 +119,7 @@ export const HomePage = (): React.ReactElement => {
     }
   }, [isPanelShowing, focussedTokenIds]);
 
+  console.log('isPanelShowing', isPanelShowing);
   return (
     <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
       <Head headId='home'>
@@ -161,7 +162,7 @@ export const HomePage = (): React.ReactElement => {
               <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
                 <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
                   <HidingView isHidden={!isPanelShowing}>
-                    <Box width='95vw' maxWidth='500px' />
+                    <Box isFullHeight={true} width='95vw' maxWidth='500px' />
                   </HidingView>
                   <Stack.Item shrinkFactor={1} growthFactor={1}>
                     {maxScale && (
@@ -190,8 +191,8 @@ export const HomePage = (): React.ReactElement => {
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Start}>
               <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
                 <Button variant='overlay' text='Menu' iconLeft={<KibaIcon iconId={isMenuOpen ? 'ion-close' : 'ion-menu'} />} onClicked={onMenuClicked} />
-                {isMenuOpen && (
-                  <React.Fragment>
+                <HidingView isHidden={!isMenuOpen}>
+                  <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Narrow}>
                     <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} target={'/about'} />
                     <Button variant='overlay' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} target={'/roadmap'} />
                     <Button variant='overlay' text='Refer a Friend' iconLeft={<KibaIcon iconId='ion-share' />} target={'/share'} />
@@ -199,13 +200,13 @@ export const HomePage = (): React.ReactElement => {
                     <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
                     <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
                     <Button variant='overlay' text='Open Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network || '') || ''} />
-                  </React.Fragment>
-                )}
+                  </Stack>
+                </HidingView>
               </Stack>
             </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
-              {isPanelShowing && (
-                <Box variant='homePanel' isFullHeight={true} width='95vw' maxWidth='500px' shouldClipContent={true}>
+              <HidingView isHidden={!isPanelShowing}>
+                <Box variant='homePanel' shouldClipContent={true} isFullHeight={true} width='95vw' maxWidth='500px'>
                   <LayerContainer>
                     <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
                       <SubRouterOutlet />
@@ -217,7 +218,7 @@ export const HomePage = (): React.ReactElement => {
                     </LayerContainer.Layer>
                   </LayerContainer>
                 </Box>
-              )}
+              </HidingView>
             </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
