@@ -38,6 +38,16 @@ module.exports = (config) => {
       "url": false,
     }
     return webpackConfig;
-  }
+  };
+  config.pages = [{
+    path: '/',
+    filename: 'index.html',
+  }, {
+    path: '/about',
+    filename: 'about.html',
+  }, {
+    path: '/roadmap',
+    filename: 'roadmap.html',
+  }];
   return config;
 };

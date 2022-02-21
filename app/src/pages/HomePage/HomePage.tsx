@@ -3,7 +3,6 @@ import React from 'react';
 import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import canvasSize from 'canvas-size';
-import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
 import { FomoBar } from '../../components/FomoBar';
@@ -13,17 +12,6 @@ import { TokenGrid } from '../../components/TokenGrid';
 import { useGlobals } from '../../globalsContext';
 import { TokenSelectionProvider } from '../../tokenSelectionContext';
 import { getProductOpenseaUrl } from '../../util/chainUtil';
-
-const PanelLayer = styled.div`
-  width: 95vw;
-  max-width: 500px;
-  height: 100%;
-`;
-
-const GridOffset = styled.div`
-  width: 95vw;
-  max-width: 500px;
-`;
 
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
@@ -36,7 +24,7 @@ export const HomePage = (): React.ReactElement => {
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null | undefined>(undefined);
   const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
-  // @ts-ignore Wierd error between core and core-react
+  // @ts-ignore Weird error between core and core-react
   const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete', localStorageClient);
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
   const [focussedTokenIds, setFocussedTokenIds] = React.useState<number[]>([]);
@@ -170,25 +158,27 @@ export const HomePage = (): React.ReactElement => {
                 </ResponsiveContainingView>
               </LayerContainer.Layer>
             ) : (
-              <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
-                <HidingView isHidden={!isPanelShowing}>
-                  <GridOffset />
-                </HidingView>
-                <Stack.Item shrinkFactor={1} growthFactor={1}>
-                  {maxScale && (
-                    <TokenGrid
-                      minScale={MIN_SCALE}
-                      maxScale={maxScale}
-                      baseImage={baseImage}
-                      newGridItems={gridItems || []}
-                      tokenCount={10000}
-                      onTokenIdClicked={onTokenIdClicked}
-                      scale={scale}
-                      onScaleChanged={setConstrainedScale}
-                    />
-                  )}
-                </Stack.Item>
-              </Stack>
+              <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
+                <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
+                  <HidingView isHidden={!isPanelShowing}>
+                    <Box width='95vw' maxWidth='500px' />
+                  </HidingView>
+                  <Stack.Item shrinkFactor={1} growthFactor={1}>
+                    {maxScale && (
+                      <TokenGrid
+                        minScale={MIN_SCALE}
+                        maxScale={maxScale}
+                        baseImage={baseImage}
+                        newGridItems={gridItems || []}
+                        tokenCount={10000}
+                        onTokenIdClicked={onTokenIdClicked}
+                        scale={scale}
+                        onScaleChanged={setConstrainedScale}
+                      />
+                    )}
+                  </Stack.Item>
+                </Stack>
+              </LayerContainer.Layer>
             )}
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
               <GridControl
@@ -213,25 +203,22 @@ export const HomePage = (): React.ReactElement => {
                 )}
               </Stack>
             </LayerContainer.Layer>
-            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} />
-            {isPanelShowing && (
-              <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
-                <PanelLayer>
-                  <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
-                    <LayerContainer>
-                      <LayerContainer.Layer>
-                        <SubRouterOutlet />
-                      </LayerContainer.Layer>
-                      <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
-                        <Box variant='panelButtonHolder'>
-                          <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} target={'/'} />
-                        </Box>
-                      </LayerContainer.Layer>
-                    </LayerContainer>
-                  </Box>
-                </PanelLayer>
-              </LayerContainer.Layer>
-            )}
+            <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
+              {isPanelShowing && (
+                <Box variant='homePanel' isFullHeight={true} width='95vw' maxWidth='500px' shouldClipContent={true}>
+                  <LayerContainer>
+                    <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
+                      <SubRouterOutlet />
+                    </LayerContainer.Layer>
+                    <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+                      <Box variant='panelButtonHolder'>
+                        <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} target={'/'} />
+                      </Box>
+                    </LayerContainer.Layer>
+                  </LayerContainer>
+                </Box>
+              )}
+            </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
             </LayerContainer.Layer>
