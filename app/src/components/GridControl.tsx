@@ -10,7 +10,7 @@ interface GridControlProps {
 
 export const GridControl = (props: GridControlProps): React.ReactElement => {
   return (
-    <Box variant='overlay-vertical-unpadded' isFullWidth={false}>
+    <Box variant='overlayView-vertical-unpadded' isFullWidth={false}>
       <Stack direction={Direction.Vertical} padding={PaddingSize.None} shouldAddGutters={true} defaultGutter={PaddingSize.Narrow} childAlignment={Alignment.Center}>
         <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-add' />} onClicked={props.onZoomInClicked} />
         <Text variant='smaller' alignment={TextAlignment.Center}>{props.zoomLevel}</Text>

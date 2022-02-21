@@ -129,7 +129,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
       try {
         signature = await signer.signMessage(message);
       } catch (error: unknown) {
-        return { isSuccess: false, message: (error as Error).message };
+      return { isSuccess: false, message: (error as Error).message };
       }
       const request = apiClient.updateOffchainContentsForTokenGroup(networkToUse, tokenId, requestWidth, requestHeight, blockNumber, tokenMetadataUrls, signature, false);
       setOffchainTransaction(request);

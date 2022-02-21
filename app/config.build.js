@@ -1,5 +1,6 @@
 /* eslint-disable */
 const InjectSeoPlugin = require('@kibalabs/build/scripts/plugins/injectSeoPlugin');
+const webpack = require('webpack');
 
 const title = 'Million Dollar Token Page';
 const description = 'MillionDollarTokenPage (MDTP) is the Homepage of the Metaverse. Discover the latest NFTs and own a piece of the front-page of the new internet!';
@@ -36,7 +37,16 @@ module.exports = (config) => {
       ...webpackConfig.resolve.fallback,
       "querystring": false,
       "url": false,
-    }
+    },
+    webpackConfig.plugins = [
+      ...webpackConfig.plugins,
+      new webpack.DefinePlugin({
+        // NOTE(krishan711): this is only here because web3.storage uses parse-link-header which uses these
+        // Remove it once either of these has fixed this shitty implementation
+        'process.env.PARSE_LINK_HEADER_MAXLEN': 2000,
+        'process.env.PARSE_LINK_HEADER_THROW_ON_MAXLEN_EXCEEDED': null,
+      }),
+    ];
     return webpackConfig;
   };
   config.pages = [{

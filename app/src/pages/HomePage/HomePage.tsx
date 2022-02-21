@@ -119,7 +119,6 @@ export const HomePage = (): React.ReactElement => {
     }
   }, [isPanelShowing, focussedTokenIds]);
 
-  console.log('isPanelShowing', isPanelShowing);
   return (
     <TokenSelectionProvider tokenSelection={focussedTokenIds} setTokenSelection={setFocussedTokenIds}>
       <Head headId='home'>
