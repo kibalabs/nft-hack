@@ -53,7 +53,6 @@ module.exports = (config) => {
   config.pages = [{
     path: '/',
     filename: 'index.html',
-    seoTags: seoTags,
   }, {
     path: '/about',
     filename: 'about.html',
