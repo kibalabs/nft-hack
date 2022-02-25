@@ -6,7 +6,6 @@ import asyncclick as click
 
 import cairosvg
 from colour import Color
-import colors as colorslib
 from frame_util import Delaunator
 
 class SVG(object):
