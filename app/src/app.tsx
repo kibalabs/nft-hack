@@ -188,7 +188,7 @@ export const App = (props: IAppProps): React.ReactElement => {
       </Head>
       <GlobalsProvider globals={{ ...globals, network, migrationNetwork, contract, migrationContract, web3, chainId }}>
         <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
-          <Router staticPath={props.staticPath} routes ={routes} />
+          <Router staticPath={props.staticPath} routes={routes} />
         </AccountControlProvider>
       </GlobalsProvider>
       <ToastContainer />
