@@ -157,11 +157,8 @@ def geo_triangles(seed: str):
         triangleCenterPointX += (random.random() - 0.5) * jitterOffset
         triangleCenterPointY += (random.random() - 0.5) * jitterOffset
         colorDistances = [1.0 / distance_between_points(x1=triangleCenterPointX, y1=triangleCenterPointY, x2=colorPoint['x'], y2=colorPoint['y']) for colorPoint in colorPoints]
-        print('colorDistances', colorDistances)
         colorDistanceSum = sum(colorDistances)
-        print('colorDistanceSum', colorDistanceSum)
         colorFactors = [(colorDistance / colorDistanceSum) for colorDistance in colorDistances]
-        print('colorFactors', colorFactors)
         color = merge_colors(colors=[colorPoint['color'] for colorPoint in colorPoints], factors=colorFactors)
         svg.polygon(f'{p1x},{p1y} {p2x},{p2y} {p3x},{p3y}', **{
             'opacity': 1,
@@ -173,8 +170,10 @@ def geo_triangles(seed: str):
 
 @click.command()
 async def run():
-    patternSvg = geo_triangles('abc.')
-    cairosvg.svg2png(bytestring=patternSvg, write_to="output.png")
+    patternSvg = geo_triangles('hello')
+    cairosvg.svg2png(bytestring=patternSvg, write_to="output1.png")
+    patternSvg = geo_triangles('world')
+    cairosvg.svg2png(bytestring=patternSvg, write_to="output2.png")
 
 
 if __name__ == '__main__':
