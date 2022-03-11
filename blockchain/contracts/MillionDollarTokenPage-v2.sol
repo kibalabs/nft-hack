@@ -41,11 +41,12 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     bool public isSaleActive;
     bool public isCenterSaleActive;
 
+    string public collectionURI;
     string public metadataBaseURI;
     string public defaultContentBaseURI;
-    string public collectionURI;
+    bool public isMetadataFinalized;
 
-    // TODO(krishan711): document migration process here
+    // Read about migration at https://MillionDollarTokenPage.com/migration
     MillionDollarTokenPageV1 public original;
     bool public canAddTokenIdsToMigrate;
     uint256 private tokenIdsToMigrateCount;
@@ -104,6 +105,12 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         _;
     }
 
+    function isInMiddle(uint256 tokenId) internal pure returns (bool) {
+        uint256 x = tokenId % COLUMN_COUNT;
+        uint256 y = tokenId / ROW_COUNT;
+        return x >= 38 && x <= 62 && y >= 40 && y <= 59;
+    }
+
     // Admin
 
     function setIsSaleActive(bool newIsSaleActive) external onlyOwner {
@@ -130,7 +137,12 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         mintPrice = newMintPrice;
     }
 
+    function setCollectionURI(string calldata newCollectionURI) external onlyOwner {
+        collectionURI = newCollectionURI;
+    }
+
     function setMetadataBaseURI(string calldata newMetadataBaseURI) external onlyOwner {
+        require(!isMetadataFinalized, 'MDTP: metadata is now final');
         metadataBaseURI = newMetadataBaseURI;
     }
 
@@ -138,8 +150,9 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         defaultContentBaseURI = newDefaultContentBaseURI;
     }
 
-    function setCollectionURI(string calldata newCollectionURI) external onlyOwner {
-        collectionURI = newCollectionURI;
+    function setMetadataFinalized() external onlyOwner {
+        require(!isMetadataFinalized, 'MDTP: metadata is now final');
+        isMetadataFinalized = true;
     }
 
     function setRoyaltyBasisPoints(uint16 newRoyaltyBasisPoints) external onlyOwner {
@@ -150,7 +163,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
 
     function withdraw() external onlyOwner {
         uint256 balance = address(this).balance;
-        payable(owner).transfer(balance);
+        payable(owner()).transfer(balance);
     }
 
     function pause() external onlyOwner {
@@ -212,12 +225,6 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     }
 
     // Minting
-
-    function isInMiddle(uint256 tokenId) internal pure returns (bool) {
-        uint256 x = tokenId % COLUMN_COUNT;
-        uint256 y = tokenId / ROW_COUNT;
-        return x >= 38 && x <= 62 && y >= 40 && y <= 59;
-    }
 
     function mintToken(uint256 tokenId) external payable {
         require(msg.value >= mintPrice, "MDTP: insufficient payment");
@@ -322,11 +329,11 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
                 tokenIndex++;
             }
         }
-        return 0;
+        revert('MDTP: unable to get token of owner by index');
     }
 
     function tokenByIndex(uint256 index) external pure override(IERC721Enumerable) returns (uint256) {
-        require(index >= 0 && index < SUPPLY_LIMIT, "MDTP: invalid index");
+        require(index < SUPPLY_LIMIT, "MDTP: invalid index");
         return index + 1;
     }
 

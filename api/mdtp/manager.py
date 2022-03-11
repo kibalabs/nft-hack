@@ -419,7 +419,7 @@ class MdtpManager:
             endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber)
             tokenIdsToUpdate.update(await self._get_updated_token_ids(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber))
             if contract.sourceNetwork:
-                tokenIdsToUpdate.update(await self._get_updated_token_ids(network=contract.sourceNetwork, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber))
+                tokenIdsToUpdate.update(await self._get_updated_token_ids(network=contract.sourceNetwork, startBlockNumber=startBlockNumber-15, endBlockNumber=endBlockNumber))
         for tokenId in list(tokenIdsToUpdate):
             await self.update_token_deferred(network=network, tokenId=tokenId)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
@@ -516,7 +516,7 @@ class MdtpManager:
         try:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception as exception: # pylint: disable=broad-except
-            print(f'Error getting owner: {str(exception)}')
+            logging.info(f'Error getting owner: {str(exception)}')
             ownerId = NON_OWNER_ID
         if isTokenSetForMigration:
             originalAddress = await self.contractStore.get_migration_target(network=network)
