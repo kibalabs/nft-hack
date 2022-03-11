@@ -516,14 +516,12 @@ class MdtpManager:
         try:
             ownerId = await self.contractStore.get_token_owner(network=network, tokenId=tokenId)
         except Exception as exception: # pylint: disable=broad-except
-            print(f'Error getting owner: {str(exception)}')
+            logging.info(f'Error getting owner: {str(exception)}')
             ownerId = NON_OWNER_ID
-        print('isTokenSetForMigration', isTokenSetForMigration)
         if isTokenSetForMigration:
             originalAddress = await self.contractStore.get_migration_target(network=network)
             originalContract = self.contractStore.get_contract_by_address(address=originalAddress)
             originalGridItem = await self.retrieve_grid_item(network=originalContract.network, tokenId=tokenId)
-            print('originalGridItem', originalGridItem)
             contentUrl = originalGridItem.contentUrl
             source = originalGridItem.source
             blockNumber = originalGridItem.blockNumber

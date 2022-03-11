@@ -46,7 +46,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     string public defaultContentBaseURI;
     bool public isMetadataFinalized;
 
-    // Read about migration at https:/MillionDollarTokenPage.com/migration
+    // Read about migration at https://MillionDollarTokenPage.com/migration
     MillionDollarTokenPageV1 public original;
     bool public canAddTokenIdsToMigrate;
     uint256 private tokenIdsToMigrateCount;
@@ -157,7 +157,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
 
     function withdraw() external onlyOwner {
         uint256 balance = address(this).balance;
-        payable(owner).transfer(balance);
+        payable(owner()).transfer(balance);
     }
 
     function pause() external onlyOwner {
