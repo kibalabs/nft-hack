@@ -105,6 +105,12 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         _;
     }
 
+    function isInMiddle(uint256 tokenId) internal pure returns (bool) {
+        uint256 x = tokenId % COLUMN_COUNT;
+        uint256 y = tokenId / ROW_COUNT;
+        return x >= 38 && x <= 62 && y >= 40 && y <= 59;
+    }
+
     // Admin
 
     function setIsSaleActive(bool newIsSaleActive) external onlyOwner {
@@ -219,12 +225,6 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     }
 
     // Minting
-
-    function isInMiddle(uint256 tokenId) internal pure returns (bool) {
-        uint256 x = tokenId % COLUMN_COUNT;
-        uint256 y = tokenId / ROW_COUNT;
-        return x >= 38 && x <= 62 && y >= 40 && y <= 59;
-    }
 
     function mintToken(uint256 tokenId) external payable {
         require(msg.value >= mintPrice, "MDTP: insufficient payment");
