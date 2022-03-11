@@ -3,10 +3,6 @@ import { dateToString, RequestData, ResponseData } from '@kibalabs/core';
 import * as Resources from './resources';
 
 export class GetLatestBaseImageRequest extends RequestData {
-  public toObject = (): Resources.RawObject => {
-    return {
-    };
-  }
 }
 
 export class GetLatestBaseImageResponse extends ResponseData {
@@ -20,7 +16,7 @@ export class GetLatestBaseImageResponse extends ResponseData {
     return new GetLatestBaseImageResponse(
       Resources.BaseImage.fromObject(obj.baseImage as Resources.RawObject),
     );
-  }
+  };
 }
 
 export class ListGridItemsRequest extends RequestData {
@@ -40,7 +36,7 @@ export class ListGridItemsRequest extends RequestData {
       updatedSinceDate: this.updatedSinceDate ? dateToString(this.updatedSinceDate) : undefined,
       groupId: this.groupId,
     };
-  }
+  };
 }
 
 export class ListGridItemsResponse extends ResponseData {
@@ -54,7 +50,7 @@ export class ListGridItemsResponse extends ResponseData {
     return new ListGridItemsResponse(
       (obj.gridItems as Resources.RawObject[]).map((entry: Resources.RawObject): Resources.GridItem => Resources.GridItem.fromObject(entry)),
     );
-  }
+  };
 }
 
 export class RetrieveGridItemRequest extends RequestData {
@@ -68,7 +64,7 @@ export class RetrieveGridItemRequest extends RequestData {
     return {
       tokenId: this.tokenId,
     };
-  }
+  };
 }
 
 export class RetrieveGridItemResponse extends ResponseData {
@@ -82,14 +78,10 @@ export class RetrieveGridItemResponse extends ResponseData {
     return new RetrieveGridItemResponse(
       Resources.GridItem.fromObject(obj.gridItem as Resources.RawObject),
     );
-  }
+  };
 }
 
 export class GetNetworkSummaryRequest extends RequestData {
-  public toObject = (): Resources.RawObject => {
-    return {
-    };
-  }
 }
 
 export class GetNetworkSummaryResponse extends ResponseData {
@@ -103,14 +95,10 @@ export class GetNetworkSummaryResponse extends ResponseData {
     return new GetNetworkSummaryResponse(
       Resources.NetworkSummary.fromObject(obj.networkSummary as Resources.RawObject),
     );
-  }
+  };
 }
 
 export class GetNetworkStatusRequest extends RequestData {
-  public toObject = (): Resources.RawObject => {
-    return {
-    };
-  }
 }
 
 export class GetNetworkStatusResponse extends ResponseData {
@@ -124,14 +112,10 @@ export class GetNetworkStatusResponse extends ResponseData {
     return new GetNetworkStatusResponse(
       Resources.NetworkStatus.fromObject(obj.networkStatus as Resources.RawObject),
     );
-  }
+  };
 }
 
 export class GenerateImageUploadForTokenRequest extends RequestData {
-  public toObject = (): Resources.RawObject => {
-    return {
-    };
-  }
 }
 
 export class GenerateImageUploadForTokenResponse extends ResponseData {
@@ -145,7 +129,7 @@ export class GenerateImageUploadForTokenResponse extends ResponseData {
     return new GenerateImageUploadForTokenResponse(
       Resources.PresignedUpload.fromObject(obj.presignedUpload as Resources.RawObject),
     );
-  }
+  };
 }
 
 export class UploadMetadataForTokenRequest extends RequestData {
@@ -167,7 +151,7 @@ export class UploadMetadataForTokenRequest extends RequestData {
       imageUrl: this.imageUrl,
       url: this.url,
     };
-  }
+  };
 }
 
 export class UploadMetadataForTokenResponse extends ResponseData {
@@ -181,7 +165,7 @@ export class UploadMetadataForTokenResponse extends ResponseData {
     return new UploadMetadataForTokenResponse(
       String(obj.tokenMetadataUrl),
     );
-  }
+  };
 }
 
 export class UploadMetadataForTokenGroupRequest extends RequestData {
@@ -207,7 +191,7 @@ export class UploadMetadataForTokenGroupRequest extends RequestData {
       imageUrl: this.imageUrl,
       url: this.url,
     };
-  }
+  };
 }
 
 export class UploadMetadataForTokenGroupResponse extends ResponseData {
@@ -221,7 +205,7 @@ export class UploadMetadataForTokenGroupResponse extends ResponseData {
     return new UploadMetadataForTokenGroupResponse(
       (obj.tokenMetadataUrls as Resources.RawObject[]).map((entry: Resources.RawObject): string => String(entry)),
     );
-  }
+  };
 }
 export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
   public constructor(
@@ -244,24 +228,20 @@ export class UpdateOffchainContentsForTokenGroupRequest extends RequestData {
       signature: this.signature,
       shouldAllowPendingChange: this.shouldAllowPendingChange,
     };
-  }
+  };
 }
 
 export class UpdateOffchainContentsForTokenGroupResponse extends ResponseData {
   public static fromObject = (): UpdateOffchainContentsForTokenGroupResponse => {
     return new UpdateOffchainContentsForTokenGroupResponse();
-  }
+  };
 }
 
 export class UpdateTokenDeferredRequest extends RequestData {
-  public toObject = (): Resources.RawObject => {
-    return {
-    };
-  }
 }
 
 export class UpdateTokenDeferredResponse extends ResponseData {
   public static fromObject = (): UpdateTokenDeferredResponse => {
     return new UpdateTokenDeferredResponse();
-  }
+  };
 }

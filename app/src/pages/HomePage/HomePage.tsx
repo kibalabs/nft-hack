@@ -1,9 +1,8 @@
 import React from 'react';
 
-import { SubRouterOutlet, useBooleanLocalStorageState, useLocation, useNavigator } from '@kibalabs/core-react';
+import { SubRouterOutlet, useBooleanLocalStorageState, useInitialization, useLocation, useNavigator } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, HidingView, IconButton, KibaIcon, LayerContainer, LoadingSpinner, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 import canvasSize from 'canvas-size';
-import styled from 'styled-components';
 
 import { BaseImage, GridItem } from '../../client';
 import { FomoBar } from '../../components/FomoBar';
@@ -14,29 +13,19 @@ import { useGlobals } from '../../globalsContext';
 import { TokenSelectionProvider } from '../../tokenSelectionContext';
 import { getProductOpenseaUrl } from '../../util/chainUtil';
 
-const PanelLayer = styled.div`
-  width: 95vw;
-  max-width: 500px;
-  height: 100%;
-`;
-
-const GridOffset = styled.div`
-  width: 95vw;
-  max-width: 500px;
-`;
-
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
 const DEFAULT_SCALE = 1;
 
 export const HomePage = (): React.ReactElement => {
+  const isInitialized = useInitialization((): void => undefined);
   const navigator = useNavigator();
   const location = useLocation();
   const { apiClient, network, chainId, localStorageClient } = useGlobals();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [baseImage, setBaseImage] = React.useState<BaseImage | null | undefined>(undefined);
   const [scale, setScale] = React.useState<number>(DEFAULT_SCALE);
-  // @ts-ignore Wierd error between core and core-react
+  // @ts-ignore Weird error between core and core-react
   const [isWelcomeComplete, setIsWelcomeComplete] = useBooleanLocalStorageState('welcomeComplete', localStorageClient);
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false);
   const [focussedTokenIds, setFocussedTokenIds] = React.useState<number[]>([]);
@@ -87,7 +76,10 @@ export const HomePage = (): React.ReactElement => {
   const isRoadmapPanelShowing = location.pathname.includes('/roadmap');
   const isSharePanelShowing = location.pathname.includes('/share');
   const isOwnerPanelShowing = location.pathname.includes('/owners/');
-  const isPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing || isOwnerPanelShowing;
+  // NOTE(krishan711): the difference between static and dynamic here is cos some pages are not pre-rendered
+  const isStaticPanelShowing = isAboutPanelShowing || isRoadmapPanelShowing || isSharePanelShowing;
+  const isDynamicPanelShowing = isTokenPanelShowing || isTokenUpdatePanelShowing || isTokenMintPanelShowing || isOwnerPanelShowing;
+  const isPanelShowing = isStaticPanelShowing || (isInitialized && isDynamicPanelShowing);
 
   React.useEffect((): void => {
     // NOTE(krishan711): force a resize event so the grid knows to recalculate itself
@@ -170,25 +162,27 @@ export const HomePage = (): React.ReactElement => {
                 </ResponsiveContainingView>
               </LayerContainer.Layer>
             ) : (
-              <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
-                <HidingView isHidden={!isPanelShowing}>
-                  <GridOffset />
-                </HidingView>
-                <Stack.Item shrinkFactor={1} growthFactor={1}>
-                  {maxScale && (
-                    <TokenGrid
-                      minScale={MIN_SCALE}
-                      maxScale={maxScale}
-                      baseImage={baseImage}
-                      newGridItems={gridItems || []}
-                      tokenCount={10000}
-                      onTokenIdClicked={onTokenIdClicked}
-                      scale={scale}
-                      onScaleChanged={setConstrainedScale}
-                    />
-                  )}
-                </Stack.Item>
-              </Stack>
+              <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
+                <Stack direction={Direction.Horizontal} isFullWidth={true} isFullHeight={true}>
+                  <HidingView isHidden={!isPanelShowing}>
+                    <Box isFullHeight={true} width='95vw' maxWidth='500px' />
+                  </HidingView>
+                  <Stack.Item shrinkFactor={1} growthFactor={1}>
+                    {maxScale && (
+                      <TokenGrid
+                        minScale={MIN_SCALE}
+                        maxScale={maxScale}
+                        baseImage={baseImage}
+                        newGridItems={gridItems || []}
+                        tokenCount={10000}
+                        onTokenIdClicked={onTokenIdClicked}
+                        scale={scale}
+                        onScaleChanged={setConstrainedScale}
+                      />
+                    )}
+                  </Stack.Item>
+                </Stack>
+              </LayerContainer.Layer>
             )}
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.End}>
               <GridControl
@@ -200,37 +194,35 @@ export const HomePage = (): React.ReactElement => {
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.Start} alignmentHorizontal={Alignment.Start}>
               <Stack direction={Direction.Vertical} shouldAddGutters={true} padding={PaddingSize.Default}>
                 <Button variant='overlay' text='Menu' iconLeft={<KibaIcon iconId={isMenuOpen ? 'ion-close' : 'ion-menu'} />} onClicked={onMenuClicked} />
-                {isMenuOpen && (
-                  <React.Fragment>
+                <HidingView isHidden={!isMenuOpen}>
+                  <Stack direction={Direction.Vertical} shouldAddGutters={true} defaultGutter={PaddingSize.Narrow}>
                     <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} target={'/about'} />
                     <Button variant='overlay' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} target={'/roadmap'} />
                     <Button variant='overlay' text='Refer a Friend' iconLeft={<KibaIcon iconId='ion-share' />} target={'/share'} />
+                    <Button variant='overlay' text='Read our Blog' iconLeft={<KibaIcon iconId='ion-newspaper' />} target={'https://blog.milliondollartokenpage.com'} />
                     <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
                     <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
                     <Button variant='overlay' text='Open Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network || '') || ''} />
-                  </React.Fragment>
-                )}
+                  </Stack>
+                </HidingView>
               </Stack>
             </LayerContainer.Layer>
-            <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} />
-            {isPanelShowing && (
-              <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
-                <PanelLayer>
-                  <Box variant='homePanel' isFullHeight={true} isFullWidth={true} shouldClipContent={true}>
-                    <LayerContainer>
-                      <LayerContainer.Layer>
-                        <SubRouterOutlet />
-                      </LayerContainer.Layer>
-                      <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
-                        <Box variant='panelButtonHolder'>
-                          <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} target={'/'} />
-                        </Box>
-                      </LayerContainer.Layer>
-                    </LayerContainer>
-                  </Box>
-                </PanelLayer>
-              </LayerContainer.Layer>
-            )}
+            <LayerContainer.Layer isFullHeight={true} isFullWidth={false} alignmentHorizontal={Alignment.Start}>
+              <HidingView isHidden={!isPanelShowing}>
+                <Box variant='homePanel' shouldClipContent={true} isFullHeight={true} width='95vw' maxWidth='500px'>
+                  <LayerContainer>
+                    <LayerContainer.Layer isFullHeight={true} isFullWidth={true}>
+                      <SubRouterOutlet />
+                    </LayerContainer.Layer>
+                    <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentHorizontal={Alignment.End} alignmentVertical={Alignment.Start}>
+                      <Box variant='panelButtonHolder'>
+                        <IconButton variant='tertiary' icon={<KibaIcon iconId='ion-close' />} target={'/'} />
+                      </Box>
+                    </LayerContainer.Layer>
+                  </LayerContainer>
+                </Box>
+              </HidingView>
+            </LayerContainer.Layer>
             <LayerContainer.Layer isFullHeight={false} isFullWidth={false} alignmentVertical={Alignment.End} alignmentHorizontal={Alignment.Start}>
               <MetaMaskConnection />
             </LayerContainer.Layer>

@@ -18,12 +18,12 @@ export const MetaMaskConnection = (): React.ReactElement => {
   const [hasNonUpdatedGridItems, setHasNonUpdatedGridItems] = React.useState<boolean>(false);
 
   const loadTokens = React.useCallback(async (): Promise<void> => {
-    if (network === null || accountIds === null) {
-      setGridItems(null);
-      return;
-    }
     setGridItems(undefined);
     if (network === undefined || accountIds === undefined) {
+      return;
+    }
+    if (network === null || accountIds === null) {
+      setGridItems(null);
       return;
     }
     const groupedGridItems = await Promise.all(accountIds.map(async (accountId: string): Promise<GridItem[]> => {
@@ -54,8 +54,10 @@ export const MetaMaskConnection = (): React.ReactElement => {
 
   return (
     <LinkBase onClicked={onClicked}>
-      <Box variant={`overlay-horizontal${boxVariantSuffix}`} isFullWidth={false}>
-        { !accountIds ? (
+      <Box variant={`overlayView-horizontal${boxVariantSuffix}`} isFullWidth={false}>
+        { accountIds === undefined ? (
+          <React.Fragment />
+        ) : accountIds === null ? (
           <Text variant='bold'>Install metamask to get started</Text>
         ) : accountIds.length === 0 ? (
           <Text variant='bold'>Connect accounts to get started</Text>

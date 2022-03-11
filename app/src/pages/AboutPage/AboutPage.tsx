@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Direction, Markdown, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
+import { Alignment, Direction, Head, Markdown, PaddingSize, Spacing, Stack, Text } from '@kibalabs/ui-react';
 
 
 export const AboutPage = (): React.ReactElement => {
@@ -63,11 +63,16 @@ The more people know about the site the more demand will rise and subsequently t
   `;
 
   return (
-    <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
-      <Text variant='header1'>{'Million Dollar Token Page'}</Text>
-      <Markdown source={mainText} />
-      <Spacing />
-      <Markdown source={learnMoreText} />
-    </Stack>
+    <React.Fragment>
+      <Head headId='about'>
+        <title>{'About | Million Dollar Token Page'}</title>
+      </Head>
+      <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
+        <Text variant='header1'>{'Million Dollar Token Page'}</Text>
+        <Markdown source={mainText} />
+        <Spacing />
+        <Markdown source={learnMoreText} />
+      </Stack>
+    </React.Fragment>
   );
 };
