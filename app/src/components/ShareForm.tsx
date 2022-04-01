@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Alignment, Button, Direction, IconButton, KibaIcon, MultiLineInput, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Button, Direction, IconButton, KibaIcon, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 interface IShareFormProps {
   initialShareText: string;
@@ -9,7 +9,7 @@ interface IShareFormProps {
 }
 
 export const ShareForm = (props: IShareFormProps): React.ReactElement => {
-  const [shareText, setShareText] = React.useState<string>(props.initialShareText);
+  const [shareText, _] = React.useState<string>(props.initialShareText);
 
   const getShareText = (): string => {
     return encodeURIComponent(shareText);
@@ -24,11 +24,11 @@ export const ShareForm = (props: IShareFormProps): React.ReactElement => {
   return (
     <Stack direction={Direction.Vertical} shouldAddGutters={true} isFullWidth={true}>
       <Text alignment={TextAlignment.Center}>{'❤️ Share with your friends and followers ❤️'}</Text>
-      <MultiLineInput
+      {/* <MultiLineInput
         value={shareText}
         onValueChanged={setShareText}
         minRowCount={props.minRowCount}
-      />
+      /> */}
       <Stack direction={Direction.Horizontal} contentAlignment={Alignment.Center} shouldAddGutters={true}>
         <IconButton variant={buttonVariant} icon={<KibaIcon iconId='ion-logo-whatsapp' />} target={`https://api.whatsapp.com/send/?phone&text=${getShareText()}`} />
         <IconButton variant={buttonVariant} icon={<KibaIcon iconId='ion-logo-facebook' />} target={`https://www.facebook.com/sharer/sharer.php?u=${getShareLink()}`} />

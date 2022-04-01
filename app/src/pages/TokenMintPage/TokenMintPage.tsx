@@ -5,7 +5,7 @@ import { useDeepCompareCallback, useNumberRouteParam } from '@kibalabs/core-reac
 import { Alignment, Box, Button, Direction, Form, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 
-import { useAccountIds, useAccounts } from '../../accountsContext';
+import { useAccount, useWeb3 } from '../../accountsContext';
 import { PresignedUpload } from '../../client';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
 import { useGlobals } from '../../globalsContext';
@@ -15,7 +15,10 @@ import { getTokenIds } from '../../util/gridItemUtil';
 
 export const TokenMintPage = (): React.ReactElement => {
   const tokenId = useNumberRouteParam('tokenId');
-  const { contract, apiClient, network, requester, web3StorageClient, web3 } = useGlobals();
+  const { contract, apiClient, network, requester, web3StorageClient } = useGlobals();
+  const colors = useColors();
+  const account = useAccount();
+  const web3 = useWeb3();
   const setTokenSelection = useSetTokenSelection();
   const [mintPrice, setMintPrice] = React.useState<BigNumber | undefined | null>(undefined);
   const [totalMintLimit, setTotalMintLimit] = React.useState<number | undefined | null>(undefined);
@@ -34,9 +37,6 @@ export const TokenMintPage = (): React.ReactElement => {
   const [transactionReceipt, setTransactionReceipt] = React.useState<ContractReceipt | null>(null);
   const [updateError, setUpdateError] = React.useState<Error | null>(null);
   const [updateReceipt, setUpdateReceipt] = React.useState<boolean | null>(null);
-  const accounts = useAccounts();
-  const accountIds = useAccountIds();
-  const colors = useColors();
 
   const requestCount = requestHeight * requestWidth;
   const totalPrice = mintPrice ? mintPrice.mul(requestCount) : undefined;
@@ -111,34 +111,29 @@ export const TokenMintPage = (): React.ReactElement => {
   }, [loadData]);
 
   const loadBalance = React.useCallback(async (): Promise<void> => {
-    if (accounts === null || accountIds === null || contract === null) {
+    if (account === null || contract === null) {
       setBalance(null);
       setUserOwnedCount(null);
       return;
     }
     setBalance(undefined);
     setUserOwnedCount(undefined);
-    if (contract === undefined || accounts === undefined || accountIds === undefined) {
+    if (contract === undefined || account === undefined) {
       return;
     }
-    if (accounts.length === 0 || accountIds.length === 0) {
-      setBalance(null);
-      setUserOwnedCount(null);
-      return;
-    }
-    accounts[0].getBalance().then((retrievedBalance: BigNumber): void => {
+    account.signer.getBalance().then((retrievedBalance: BigNumber): void => {
       setBalance(retrievedBalance);
     }).catch((error: unknown) => {
       console.error(error);
       setBalance(null);
     });
-    contract.balanceOf(accountIds[0]).then((retrievedBalance: BigNumber): void => {
+    contract.balanceOf(account.address).then((retrievedBalance: BigNumber): void => {
       setUserOwnedCount(retrievedBalance.toNumber());
     }).catch((error: unknown) => {
       console.error(error);
       setUserOwnedCount(null);
     });
-  }, [accounts, accountIds, contract]);
+  }, [account, contract]);
 
   React.useEffect((): void => {
     loadBalance();
@@ -178,12 +173,12 @@ export const TokenMintPage = (): React.ReactElement => {
   }, [loadOwners]);
 
   const onConfirmClicked = async (): Promise<void> => {
-    if (!contract || !accounts) {
+    if (!contract || !account) {
       return;
     }
     setTransaction(null);
     setIsSubmittingTransaction(true);
-    const contractWithSigner = contract.connect(accounts[0]);
+    const contractWithSigner = contract.connect(account.signer);
     let newTransaction = null;
     try {
       if (requestCount > 1) {
@@ -274,7 +269,7 @@ export const TokenMintPage = (): React.ReactElement => {
   };
 
   const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null): Promise<UpdateResult> => {
-    if (!network || !contract || !accounts || !accountIds || !web3) {
+    if (!network || !contract || !account || !web3) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
     if (!title) {
@@ -302,11 +297,10 @@ export const TokenMintPage = (): React.ReactElement => {
     }
 
     const blockNumber = await web3.getBlockNumber();
-    const signer = accounts[0];
     const message = JSON.stringify({ network, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls });
     let signature;
     try {
-      signature = await signer.signMessage(message);
+      signature = await account.signer.signMessage(message);
     } catch (error: unknown) {
       return { isSuccess: false, message: (error as Error).message };
     }

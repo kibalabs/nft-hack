@@ -1,7 +1,9 @@
+import dataclasses
 import math
 import logging
+import os
 import random
-from typing import List
+from typing import Dict, List
 import asyncclick as click
 
 import cairosvg
@@ -9,6 +11,22 @@ from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 from colour import Color
 from frame_util import Delaunator
+
+@dataclasses.dataclass
+class ColorConfig:
+    colorPoints: List[Dict]
+    shouldUseHslMerging: bool
+
+
+def generate_default_points(color1: str, color2: str) -> List[Dict]:
+    return [
+        {"x": -1, "y": -1, "color": color1},
+        {"x": -1, "y": 1, "color": color1},
+        {"x": 1, "y": -1, "color": color1},
+        # {"x": 0.5, "y": 0.5, "color": color2},
+        {"x": 0.85, "y": 0.85, "color": color2},
+    ]
+
 
 class SVG(object):
     def __init__(self):
@@ -108,8 +126,12 @@ def merge_colors(colors: List[str], factors: List[float], shouldUseHsl: bool = F
             output.blue += color.blue * factor
     return output.get_hex()
 
-def geo_triangles(seed: str):
-    random.seed(seed)
+def angle_between_points(x1: float, y1: float, x2: float, y2: float) -> float:
+    angleRadians = math.atan2(y2-y1, x2-x1)
+    return angleRadians
+
+def generate_svg(tokenId: int, colorConfig: ColorConfig) -> str:
+    random.seed(hash(tokenId))
     size = 1000
     width = 75
     outerDistance = size / 2.0
@@ -140,26 +162,8 @@ def geo_triangles(seed: str):
     colorAngle = random.random() * math.pi * 2
     colorAngleX = math.cos(colorAngle)
     colorAngleY = math.sin(colorAngle)
-    colorPoints = [
-        # Blue / green
-        # {"x": 1, "y": 1, "color": "#f7fcf0"},
-        # {"x": 0.5, "y": 0.5, "color": "#ccebc5"},
-        # {"x": 0, "y": 0, "color": "#7bccc4"},
-        # {"x": -0.5, "y": -0.5, "color": "#2b8cbe"},
-        # {"x": -1, "y": -1, "color": "#084081"},
-        # pink / purple
-        # {"x": 1, "y": 1, "color": "#FAB2FF"},
-        # {"x": -1, "y": -1, "color": "#1904E5"},
-        # green / yellow / orange
-        # {"x": 1, "y": 1, "color": "#C6FFDD"},
-        # {"x": 0, "y": 0, "color": "#FBD786"},
-        # {"x": -1, "y": -1, "color": "#f7797d"},
-        # red / purple
-        {"x": 1, "y": 1, "color": "#c31432"},
-        {"x": -1, "y": -1, "color": "#240b36"},
-    ]
-    shouldUseHslMerging = False
 
+    # Generate points
     points = []
     for i in range(edgePointCount):
         angle = i / edgePointCount * math.pi * 2
@@ -181,6 +185,7 @@ def geo_triangles(seed: str):
         y2 = (math.sin(angle2) * distance2) + centerY
         points.append([x2, y2])
 
+    # Draw triangles
     d = Delaunator(points)
     for i in range(0, len(d.triangles), 3):
         p1x = points[d.triangles[i + 0]][0]
@@ -197,31 +202,101 @@ def geo_triangles(seed: str):
             continue
         triangleCenterPointX += (random.random() - 0.5) * 2 * colorJitterDistance
         triangleCenterPointY += (random.random() - 0.5) * 2 * colorJitterDistance
-        colorDistances = [1.0 / distance_between_points(x1=triangleCenterPointX, y1=triangleCenterPointY, x2=centerX + (colorAngleX * outerDistance * colorPoint['x']), y2=centerY + (colorAngleY * outerDistance * colorPoint['y'])) for colorPoint in colorPoints]
+        colorDistances = [1.0 / distance_between_points(x1=triangleCenterPointX, y1=triangleCenterPointY, x2=centerX + (colorAngleX * outerDistance * colorPoint['x']), y2=centerY + (colorAngleY * outerDistance * colorPoint['y'])) for colorPoint in colorConfig.colorPoints]
         colorDistanceSum = sum(colorDistances)
         colorFactors = [(colorDistance / colorDistanceSum) for colorDistance in colorDistances]
-        color = merge_colors(colors=[colorPoint['color'] for colorPoint in colorPoints], factors=colorFactors, shouldUseHsl=shouldUseHslMerging)
+        color = merge_colors(colors=[colorPoint['color'] for colorPoint in colorConfig.colorPoints], factors=colorFactors, shouldUseHsl=colorConfig.shouldUseHslMerging)
         svg.polygon(f'{p1x},{p1y} {p2x},{p2y} {p3x},{p3y}', **{
             'opacity': 1,
             'fill': color,
             'stroke': color,
             'mask': "url(#ringmask)",
         })
+
+    tokenIndex = tokenId - 1
+    xCoord = size * ((tokenIndex % 100) / 100)
+    yCoord = size * (int(tokenIndex / 100) / 100)
+    # Draw a dot where the token is
+    # svg.rect(x=xCoord, y=yCoord, height=20, width=20, **{'fill': '#00ff00'})
+
+    # Draw a dot on the ring representing the token
+    starColor = '#ffffff'
+    boxSize = 15
+    angle = angle_between_points(centerX, centerY, xCoord, yCoord)
+    xCoord = (math.cos(angle) * (innerDistance + ((outerDistance - innerDistance) / 2.0))) + centerX
+    yCoord = (math.sin(angle) * (innerDistance + ((outerDistance - innerDistance) / 2.0))) + centerY
+    boxTopLeftX = xCoord-boxSize/2
+    boxTopLeftY = yCoord-boxSize/2
+    svg.rect(x=boxTopLeftX+boxSize/4, y=boxTopLeftY+boxSize/4, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 1})
+    svg.rect(x=boxTopLeftX, y=boxTopLeftY, height=boxSize, width=boxSize, **{'fill': starColor, 'opacity': 0.9})
+    # shadow boxes
+    firstShadowOffset = 3
+    svg.rect(x=boxTopLeftX-firstShadowOffset, y=boxTopLeftY-firstShadowOffset, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 0.5, 'rx': 1})
+    svg.rect(x=boxTopLeftX-firstShadowOffset, y=boxTopLeftY+boxSize/2+firstShadowOffset, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 0.5, 'rx': 1})
+    svg.rect(x=boxTopLeftX+boxSize/2+firstShadowOffset, y=boxTopLeftY-firstShadowOffset, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 0.5, 'rx': 1})
+    svg.rect(x=boxTopLeftX+boxSize/2+firstShadowOffset, y=boxTopLeftY+boxSize/2+firstShadowOffset, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 0.5, 'rx': 1})
+    secondShadowOffset = 6
+    svg.rect(x=boxTopLeftX-secondShadowOffset, y=boxTopLeftY-secondShadowOffset, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 0.2, 'rx': 1})
+    svg.rect(x=boxTopLeftX-secondShadowOffset, y=boxTopLeftY+boxSize/2+secondShadowOffset, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 0.2, 'rx': 1})
+    svg.rect(x=boxTopLeftX+boxSize/2+secondShadowOffset, y=boxTopLeftY-secondShadowOffset, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 0.2, 'rx': 1})
+    svg.rect(x=boxTopLeftX+boxSize/2+secondShadowOffset, y=boxTopLeftY+boxSize/2+secondShadowOffset, height=boxSize/2, width=boxSize/2, **{'fill': starColor, 'opacity': 0.2, 'rx': 1})
+
     return svg.to_string()
 
 
 @click.command()
 async def run():
-    patternSvg = geo_triangles('hello')
-    with open("output1.svg", 'w') as output:
-        output.write(patternSvg)
-    cairosvg.svg2png(bytestring=patternSvg, write_to="output1.png")
-    # renderPM.drawToFile(svg2rlg("output1.svg"), "output1.png", fmt="PNG")
-    patternSvg = geo_triangles('world')
-    with open("output2.svg", 'w') as output:
-        output.write(patternSvg)
-    cairosvg.svg2png(bytestring=patternSvg, write_to="output2.png")
-    # renderPM.drawToFile(svg2rlg("output2.svg"), "output2.png", fmt="PNG")
+    # red: c31432
+    BLUE_COLOR_CONFIGS = [
+        # black
+        ColorConfig(colorPoints=generate_default_points("#4CC9F0", "#000000"), shouldUseHslMerging=False),
+        # dark red
+        ColorConfig(colorPoints=generate_default_points("#4CC9F0", "#5F0000"), shouldUseHslMerging=False),
+        # dark green
+        ColorConfig(colorPoints=generate_default_points("#4CC9F0", "#005F11"), shouldUseHslMerging=False),
+    ]
+    PURPLE_COLOR_CONFIGS = [
+        # black
+        ColorConfig(colorPoints=generate_default_points("#4361EE", "#000000"), shouldUseHslMerging=False),
+        # dark red
+        ColorConfig(colorPoints=generate_default_points("#4361EE", "#5F0000"), shouldUseHslMerging=False),
+        # dark green
+        ColorConfig(colorPoints=generate_default_points("#4361EE", "#005F11"), shouldUseHslMerging=False),
+    ]
+    LAVENDER_COLOR_CONFIGS = [
+        # black
+        ColorConfig(colorPoints=generate_default_points("#7209B7", "#000000"), shouldUseHslMerging=False),
+        # dark red
+        ColorConfig(colorPoints=generate_default_points("#7209B7", "#5F0000"), shouldUseHslMerging=False),
+        # dark green
+        ColorConfig(colorPoints=generate_default_points("#7209B7", "#005F11"), shouldUseHslMerging=False),
+    ]
+    PINK_COLOR_CONFIGS = [
+        # black
+        ColorConfig(colorPoints=generate_default_points("#F72585", "#000000"), shouldUseHslMerging=False),
+        # dark red
+        ColorConfig(colorPoints=generate_default_points("#F72585", "#5F0000"), shouldUseHslMerging=False),
+        # dark blue
+        ColorConfig(colorPoints=generate_default_points("#F72585", "#022C42"), shouldUseHslMerging=False),
+        # orange
+        ColorConfig(colorPoints=generate_default_points("#F72585", "#de875f"), shouldUseHslMerging=False),
+        # brown
+        ColorConfig(colorPoints=generate_default_points("#F72585", "#703801"), shouldUseHslMerging=False),
+        # dark cyan
+        ColorConfig(colorPoints=generate_default_points("#F72585", "#015270"), shouldUseHslMerging=False),
+    ]
+    GOLD_COLOR_CONFIGS = [
+        # black
+        ColorConfig(colorPoints=generate_default_points("#FFD700", "#000000"), shouldUseHslMerging=False),
+    ]
+
+    for tokenId, colorConfig in zip([1, 711, 3985, 6035, 6566, 8884], [GOLD_COLOR_CONFIGS[0], BLUE_COLOR_CONFIGS[0], PURPLE_COLOR_CONFIGS[0], LAVENDER_COLOR_CONFIGS[0], PINK_COLOR_CONFIGS[0], PINK_COLOR_CONFIGS[5]]):
+        print(f'Generating {tokenId}')
+        patternSvg = generate_svg(tokenId, colorConfig)
+        with open(os.path.join('output', f"frame{tokenId}.svg"), 'w') as output:
+            output.write(patternSvg)
+        cairosvg.svg2png(bytestring=patternSvg, write_to=os.path.join('output', f"frame{tokenId}.png"))
+        # renderPM.drawToFile(svg2rlg(os.path.join('output', f"frame{tokenId}.svg"), os.path.join('output', f"frame{tokenId}.png"), fmt="PNG")
 
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@ import { EveryviewTracker } from '@kibalabs/everyview-tracker';
 import { Head, IHeadRootProviderProps, KibaApp } from '@kibalabs/ui-react';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { BigNumber, ethers } from 'ethers';
-import { toast, ToastContainer } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import { Web3Storage } from 'web3.storage';
 import 'react-toastify/dist/ReactToastify.min.css';
 
@@ -44,7 +44,6 @@ const globals: Globals = {
   localStorageClient,
   apiClient,
   web3StorageClient,
-  web3: undefined,
   network: undefined,
   migrationNetwork: undefined,
   contract: undefined,
@@ -57,8 +56,6 @@ export interface IAppProps extends IHeadRootProviderProps {
 }
 
 export const App = (props: IAppProps): React.ReactElement => {
-  const [accounts, setAccounts] = React.useState<ethers.Signer[] | undefined | null>(undefined);
-  const [accountIds, setAccountIds] = React.useState<string[] | undefined | null>(undefined);
   const [chainId, setChainId] = React.useState<number | null | undefined>(undefined);
   const [network, setNetwork] = React.useState<string | null | undefined>(undefined);
   const [migrationNetwork, setMigrationNetwork] = React.useState<string | null | undefined>(undefined);
@@ -69,8 +66,6 @@ export const App = (props: IAppProps): React.ReactElement => {
   const loadWeb3 = async (): Promise<void> => {
     const provider = await detectEthereumProvider();
     if (!provider) {
-      setAccounts(null);
-      setAccountIds(null);
       setContract(null);
       setChainId(DEFAULT_CHAIN_ID);
       return;
@@ -79,15 +74,6 @@ export const App = (props: IAppProps): React.ReactElement => {
     const web3Connection = new ethers.providers.Web3Provider(provider);
     setWeb3(web3Connection);
   };
-
-  const onAccountsChanged = React.useCallback(async (accountAddresses: string[]): Promise<void> => {
-    // NOTE(krishan711): metamask only deals with one account at the moment but returns an array for future compatibility
-    const linkedAccounts = accountAddresses.map((accountAddress: string): ethers.Signer => web3.getSigner(accountAddress));
-    setAccounts(linkedAccounts);
-    Promise.all(linkedAccounts.map((account: ethers.Signer): Promise<string> => account.getAddress())).then((retrievedAccountIds: string[]): void => {
-      setAccountIds(retrievedAccountIds);
-    });
-  }, [web3]);
 
   const onChainChanged = React.useCallback((): void => {
     window.location.reload();
@@ -100,27 +86,11 @@ export const App = (props: IAppProps): React.ReactElement => {
     const newChainId = await web3.provider.request({ method: 'eth_chainId' });
     setChainId(BigNumber.from(newChainId).toNumber());
     web3.provider.on('chainChanged', onChainChanged);
-    onAccountsChanged(await web3.provider.request({ method: 'eth_accounts' }));
-    web3.provider.on('accountsChanged', onAccountsChanged);
-  }, [web3, onChainChanged, onAccountsChanged]);
+  }, [web3, onChainChanged]);
 
   React.useEffect((): void => {
     loadAccounts();
   }, [loadAccounts]);
-
-  const onLinkAccountsClicked = async (): Promise<void> => {
-    if (web3) {
-      web3.provider.request({ method: 'eth_requestAccounts', params: [] }).then(async (): Promise<void> => {
-        await loadWeb3();
-      }).catch((error: unknown): void => {
-        if (error.message?.includes('wallet_requestPermissions')) {
-          toast.error('You already have a MetaMask request window open, please find it!');
-        } else {
-          toast.error('Something went wrong connecting to MetaMask. Please try refresh the page / your browser and try again');
-        }
-      });
-    }
-  };
 
   useInitialization((): void => {
     loadWeb3();
@@ -186,8 +156,8 @@ export const App = (props: IAppProps): React.ReactElement => {
       <Head headId='app'>
         <script async src='https://www.googletagmanager.com/gtag/js?id=UA-31771231-11' />
       </Head>
-      <GlobalsProvider globals={{ ...globals, network, migrationNetwork, contract, migrationContract, web3, chainId }}>
-        <AccountControlProvider accounts={accounts} accountIds={accountIds} onLinkAccountsClicked={onLinkAccountsClicked}>
+      <GlobalsProvider globals={{ ...globals, network, migrationNetwork, contract, migrationContract, chainId }}>
+        <AccountControlProvider>
           <Router staticPath={props.staticPath} routes={routes} />
         </AccountControlProvider>
       </GlobalsProvider>

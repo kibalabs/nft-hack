@@ -419,7 +419,7 @@ class MdtpManager:
             endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber)
             tokenIdsToUpdate.update(await self._get_updated_token_ids(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber))
             if contract.sourceNetwork:
-                tokenIdsToUpdate.update(await self._get_updated_token_ids(network=contract.sourceNetwork, startBlockNumber=startBlockNumber-15, endBlockNumber=endBlockNumber))
+                tokenIdsToUpdate.update(await self._get_updated_token_ids(network=contract.sourceNetwork, startBlockNumber=startBlockNumber-5, endBlockNumber=endBlockNumber))
         for tokenId in list(tokenIdsToUpdate):
             await self.update_token_deferred(network=network, tokenId=tokenId)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
@@ -569,10 +569,14 @@ class MdtpManager:
         if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
             logging.info(f'Saving token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
+            for contract in self.contractStore.contracts:
+                if contract.sourceNetwork == network:
+                    await self.update_token_deferred(network=contract.sourceNetwork, tokenId=tokenId)
         if not resizableImageUrl:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
         if gridItem.groupId and gridItem.groupId != groupId:
             await self.update_grid_item_group_image_deferred(network=network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
+
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)

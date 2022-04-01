@@ -11,9 +11,6 @@ async function main() {
   const deployedContract = await contractFactory.deploy(...args, { gasPrice: 5 * GWEI });
   await deployedContract.deployed();
   console.log("Contract deployed to address:", deployedContract.address);
-  // const deployedContract = await hardhat.upgrades.deployProxy(contractFactory, args, { gasPrice: 100 * GWEI });
-  // await deployedContract.deployed();
-  // console.log("Contract deployed to address:", deployedContract.address, '->', await hardhat.upgrades.erc1967.getImplementationAddress(deployedContract.address));
 }
 
 main()

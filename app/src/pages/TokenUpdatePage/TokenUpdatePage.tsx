@@ -5,7 +5,7 @@ import { useDeepCompareCallback, useDeepCompareEffect, useNumberRouteParam } fro
 import { Alignment, Box, Button, Direction, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, TabBar, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { ContractReceipt, ContractTransaction } from 'ethers';
 
-import { useAccountIds, useAccounts } from '../../accountsContext';
+import { useAccount, useWeb3 } from '../../accountsContext';
 import { PresignedUpload } from '../../client';
 import { ShareForm } from '../../components/ShareForm';
 import { TokenUpdateForm, UpdateResult } from '../../components/TokenUpdateForm';
@@ -17,9 +17,11 @@ import { useOwnerIds } from '../../util/useOwnerIds';
 import { useTokenData } from '../../util/useTokenMetadata';
 
 export const TokenUpdatePage = (): React.ReactElement => {
-  const tokenId = useNumberRouteParam('tokenId');
-  const { contract, migrationContract, requester, apiClient, network, migrationNetwork, web3StorageClient, web3 } = useGlobals();
   const colors = useColors();
+  const tokenId = useNumberRouteParam('tokenId');
+  const { contract, migrationContract, requester, apiClient, network, migrationNetwork, web3StorageClient } = useGlobals();
+  const account = useAccount();
+  const web3 = useWeb3();
   const setTokenSelection = useSetTokenSelection();
   const tokenData = useTokenData(tokenId);
   const tokenMetadata = tokenData.tokenMetadata;
@@ -33,8 +35,6 @@ export const TokenUpdatePage = (): React.ReactElement => {
   const [offchainTransactionReceipt, setOffchainTransactionReceipt] = React.useState<boolean | null>(null);
   const [updateOnchain, setUpdateOnchain] = React.useState<boolean>(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const accounts = useAccounts();
-  const accountIds = useAccountIds();
 
   const onImageFilesChosen = async (shouldUseIpfs: boolean, files: File[]): Promise<UpdateResult> => {
     if (!network) {
@@ -77,7 +77,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
   };
 
   const onTokenUpdateFormSubmitted = async (shouldUseIpfs: boolean, title: string, description: string | null, url: string | null, imageUrl: string | null): Promise<UpdateResult> => {
-    if (!network || !contract || !tokenMetadata || !ownerIds || !accounts || !accountIds || !web3) {
+    if (!network || !contract || !tokenMetadata || !ownerIds || !account || !web3) {
       return { isSuccess: false, message: 'Could not connect to contract. Please refresh and try again.' };
     }
 
@@ -94,8 +94,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
 
     // const tokenId = tokenId;
     const chainOwnerId = ownerIds.get(tokenId);
-    const signerIndex = accountIds.indexOf(chainOwnerId || '0x0000000000000000000000000000000000000000');
-    if (signerIndex === -1) {
+    if (account.address !== chainOwnerId) {
       return { isSuccess: false, message: 'We failed to identify the account you need to sign this transaction. Please refresh and try again.' };
     }
     if (!title) {
@@ -123,11 +122,10 @@ export const TokenUpdatePage = (): React.ReactElement => {
 
     if (!updateOnchain) {
       const blockNumber = await web3.getBlockNumber();
-      const signer = accounts[signerIndex];
       const message = JSON.stringify({ network: networkToUse, tokenId, width: requestWidth, height: requestHeight, blockNumber, tokenMetadataUrls });
       let signature;
       try {
-        signature = await signer.signMessage(message);
+        signature = await account.signer.signMessage(message);
       } catch (error: unknown) {
         return { isSuccess: false, message: (error as Error).message };
       }
@@ -138,7 +136,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
 
     let newTransaction = null;
     try {
-      const contractWithSigner = contractToUse.connect(accounts[signerIndex]);
+      const contractWithSigner = contractToUse.connect(account.signer);
       if (isUpdatingMultiple && contractWithSigner.setTokenGroupContentURIs) {
         newTransaction = await contractWithSigner.setTokenGroupContentURIs(tokenId, requestWidth, requestHeight, tokenMetadataUrls);
       } else if (!isUpdatingMultiple && contractWithSigner.setTokenContentURI) {
@@ -206,7 +204,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
   };
 
   const unownedTokenIds = ownerIds ? Array.from(ownerIds.entries()).reduce((accumulator: number[], value: [number, string | null]): number[] => {
-    if (!value[1] || !accountIds || !accountIds.includes(value[1])) {
+    if (!value[1] || account?.address !== value[1]) {
       accumulator.push(value[0]);
     }
     return accumulator;
@@ -226,9 +224,9 @@ export const TokenUpdatePage = (): React.ReactElement => {
         <Spacing />
         { contract === null || network === null ? (
           <Text variant='error'>You can&apos;t update a token if you aren&apos;t connected to the network 🤪. Please connect using the button at the bottom of the page</Text>
-        ) : tokenMetadata === null || ownerIds === null || accountIds === null ? (
-          <Text variant='error'>Something went wrong. Please check your accounts are connected correctly and try again.</Text>
-        ) : contract === undefined || network === undefined || tokenMetadata === undefined || accountIds === undefined ? (
+        ) : tokenMetadata === null || ownerIds === null || account === null ? (
+          <Text variant='error'>Something went wrong. Please check your wallet is connected correctly and try again.</Text>
+        ) : contract === undefined || network === undefined || tokenMetadata === undefined || account === undefined ? (
           <LoadingSpinner />
         ) : (transactionReceipt || offchainTransactionReceipt) ? (
           <React.Fragment>

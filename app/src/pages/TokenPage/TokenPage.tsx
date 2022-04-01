@@ -2,9 +2,10 @@ import React from 'react';
 
 import { getLinkableUrl, getUrlDisplayString, truncateMiddle, truncateStart } from '@kibalabs/core';
 import { useNavigator, useNumberRouteParam } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Head, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Head, KibaIcon, Link, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { ContractReceipt, ContractTransaction } from 'ethers';
 
-import { useAccountIds, useAccounts } from '../../accountsContext';
+import { useAccount, useWeb3 } from '../../accountsContext';
 import { GridItem } from '../../client';
 import { Badge } from '../../components/Badge';
 import { KeyValue } from '../../components/KeyValue';
@@ -12,28 +13,31 @@ import { MdtpImage } from '../../components/MdtpImage';
 import { ShareForm } from '../../components/ShareForm';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
-import { getTokenEtherscanUrl, getTokenOpenseaUrl, NON_OWNER } from '../../util/chainUtil';
+import { getTokenEtherscanUrl, getTokenOpenseaUrl, getTransactionEtherscanUrl, NON_OWNER } from '../../util/chainUtil';
 import { useOwnerId } from '../../util/useOwnerId';
 import { useTokenData } from '../../util/useTokenMetadata';
 
 export const TokenPage = (): React.ReactElement => {
   const tokenId = useNumberRouteParam('tokenId');
-
   const navigator = useNavigator();
+  const colors = useColors();
   const setTokenSelection = useSetTokenSelection();
-  const { contract, apiClient, network, web3 } = useGlobals();
+  const { contract, migrationContract, apiClient, network } = useGlobals();
   const chainOwnerId = useOwnerId(tokenId);
+  const account = useAccount();
+  const web3 = useWeb3();
   const tokenData = useTokenData(tokenId);
   const tokenMetadata = tokenData.tokenMetadata;
   const gridItem = tokenData.gridItem;
   const [groupGridItems, setGroupGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
-  const accounts = useAccounts();
-  const accountIds = useAccountIds();
+  const [migrationTransaction, setMigrationTransaction] = React.useState<ContractTransaction | null>(null);
+  const [migrationTransactionError, setMigrationTransactionError] = React.useState<Error | null>(null);
+  const [migrationTransactionReceipt, setMigrationTransactionReceipt] = React.useState<ContractReceipt | null>(null);
 
   const ownerId = chainOwnerId || gridItem?.ownerId || NON_OWNER;
   const isOwned = ownerId && ownerId !== NON_OWNER;
-  const isOwnedByUser = ownerId && accountIds && accountIds.includes(ownerId);
+  const isOwnedByUser = ownerId && account?.address === ownerId;
   const ownerIdString = ownerName || (ownerId ? truncateMiddle(ownerId, 10) : null);
   const isPartOfGroup = groupGridItems && groupGridItems.length > 1;
 
@@ -87,6 +91,42 @@ export const TokenPage = (): React.ReactElement => {
   const onUpdateTokenClicked = (): void => {
     navigator.navigateTo(`/tokens/${tokenId}/update`);
   };
+
+  const onTokenMigrateClicked = async (): Promise<void> => {
+    if (!network || !migrationContract || !contract || !account) {
+      return;
+    }
+    setMigrationTransaction(null);
+    setMigrationTransactionError(null);
+    setMigrationTransactionReceipt(null);
+    const contractWithSigner = migrationContract.connect(account.signer);
+    let newTransaction = null;
+    try {
+      // NOTE(krishan711): wierd syntax for calling overloaded functions
+      // https://docs.ethers.io/v5/single-page/#/v5/migration/web3/-%23-migration-from-web3-js--contracts--overloaded-functions
+      newTransaction = await contractWithSigner['safeTransferFrom(address,address,uint256)'](account.address, contract.address, tokenId);
+    } catch (error: unknown) {
+      setMigrationTransactionError(error as Error);
+    }
+    setMigrationTransaction(newTransaction);
+  };
+
+  const waitForTransaction = React.useCallback(async (): Promise<void> => {
+    if (network && migrationTransaction) {
+      try {
+        const receipt = await migrationTransaction.wait();
+        setMigrationTransactionReceipt(receipt);
+      } catch (error: unknown) {
+        setMigrationTransactionError(new Error(`Transaction failed: ${(error as Error).message || 'Unknown error'}`));
+        setMigrationTransactionReceipt(null);
+      }
+      setMigrationTransaction(null);
+    }
+  }, [migrationTransaction, network]);
+
+  React.useEffect((): void => {
+    waitForTransaction();
+  }, [waitForTransaction]);
 
   const onUpdateGroupClicked = (): void => {
     if (!groupGridItems) {
@@ -152,6 +192,9 @@ export const TokenPage = (): React.ReactElement => {
                   {tokenData.isSetForMigration && (
                     <Badge type='alert' iconId='ion-repeat-outline' hoverText='This token is being proxied from MDTP v1. The owner is a true OG 💪' />
                   )}
+                  {tokenData.isMigrated && (
+                    <Badge type='alert' iconId='ion-star-outline' hoverText='This token was originally bought on MDTP v1. The owner is a true OG 💪' />
+                  )}
                 </Stack>
                 <Text variant='header2' alignment={TextAlignment.Center}>{`${tokenMetadata.name}`}</Text>
                 {tokenMetadata.url && (
@@ -173,11 +216,9 @@ export const TokenPage = (): React.ReactElement => {
                     <Button variant='primary' onClicked={onMintClicked} text='Mint Token' />
                   )}
                 </Stack.Item>
-                { (accounts === undefined || accountIds === undefined || tokenMetadata === undefined) ? (
-                  <LoadingSpinner />
-                ) : (accounts === null || accountIds === null || tokenMetadata === null) ? (
+                { (account === undefined || tokenMetadata === undefined) ? (
                   <React.Fragment />
-                ) : (!contract || accounts?.length === 0) || (accountIds?.length === 0) ? (
+                ) : (!contract || account === null || tokenMetadata === null) ? (
                   <Text variant='note'>{'Please connect your account to view more options.'}</Text>
                 ) : isOwnedByUser && (
                   <React.Fragment>
@@ -188,10 +229,38 @@ export const TokenPage = (): React.ReactElement => {
                         <Button variant={'primary'} text='Update group' onClicked={onUpdateGroupClicked} />
                       )}
                     </Stack>
+                    { tokenData.isSetForMigration && (
+                      <React.Fragment>
+                        {migrationTransactionReceipt ? (
+                          <React.Fragment>
+                            <KibaIcon iconId='ion-checkmark-circle' variant='extraLarge' _color={colors.success} />
+                            <Text alignment={TextAlignment.Center}>🎉 Token migrated successfully 🎉</Text>
+                          </React.Fragment>
+                        ) : migrationTransaction ? (
+                          <React.Fragment>
+                            <LoadingSpinner />
+                            <Text alignment={TextAlignment.Center}>Your transaction is going through.</Text>
+                            <Button
+                              variant='invisibleNote'
+                              text='View on etherscan'
+                              target={getTransactionEtherscanUrl(network, migrationTransaction.hash) || ''}
+                            />
+                          </React.Fragment>
+                        ) : (
+                          // NOTE(krishan711): non-group migration not implemented yet
+                          !isPartOfGroup && (
+                            <Button variant='secondary' text={'Migrate Token to v2'} onClicked={onTokenMigrateClicked} />
+                          )
+                        )}
+                        {migrationTransactionError && (
+                          <Text variant='error'>{String(migrationTransactionError.message)}</Text>
+                        )}
+                      </React.Fragment>
+                    )}
                   </React.Fragment>
                 )}
                 <Stack.Item growthFactor={1}>
-                  <Spacing variant={PaddingSize.Wide} />
+                  <Spacing variant={PaddingSize.Wide2} />
                 </Stack.Item>
                 <ShareForm
                   initialShareText={getShareText()}

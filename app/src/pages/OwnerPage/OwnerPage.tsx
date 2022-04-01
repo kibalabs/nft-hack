@@ -4,7 +4,7 @@ import { truncateMiddle } from '@kibalabs/core';
 import { useNavigator, useStringRouteParam } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, Image, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
-import { useAccountIds } from '../../accountsContext';
+import { useAccount, useWeb3 } from '../../accountsContext';
 import { GridItem } from '../../client';
 import { OwnedGridItemView } from '../../components/OwnedGridItemView';
 import { useGlobals } from '../../globalsContext';
@@ -20,12 +20,13 @@ interface GridItemGroup {
 export const OwnerPage = (): React.ReactElement => {
   const ownerId = normalizeAddress(useStringRouteParam('ownerId'));
   const navigator = useNavigator();
-  const { apiClient, network, web3 } = useGlobals();
+  const { apiClient, network } = useGlobals();
+  const account = useAccount();
+  const web3 = useWeb3();
   const setTokenSelection = useSetTokenSelection();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [gridItemGroups, setGridItemGroups] = React.useState<GridItemGroup[] | null | undefined>(undefined);
   const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
-  const accountIds = useAccountIds();
 
   const loadTokens = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -82,7 +83,7 @@ export const OwnerPage = (): React.ReactElement => {
     loadOwnerName();
   }, [loadOwnerName]);
 
-  const isOwnerUser = Boolean(ownerId && accountIds && accountIds.indexOf(ownerId) !== -1);
+  const isOwnerUser = Boolean(ownerId && account?.address === ownerId);
   const ownerIdString = ownerId ? (ownerName || truncateMiddle(ownerId, 10)) : null;
 
   const onTokenIdClicked = (startTokenId: string): void => {

@@ -3,6 +3,7 @@ import React from 'react';
 import { Log } from '@ethersproject/abstract-provider';
 import { KibaResponse, RestMethod } from '@kibalabs/core';
 
+import { useWeb3 } from '../accountsContext';
 import { GridItem, TokenMetadata } from '../client';
 import { useGlobals } from '../globalsContext';
 import { gridItemToTokenMetadata } from './gridItemUtil';
@@ -12,13 +13,16 @@ interface TokenData {
   gridItem: GridItem | null | undefined;
   chainGridItem: GridItem | null | undefined;
   isSetForMigration: boolean | null | undefined;
+  isMigrated: boolean | null | undefined;
 }
 
 export const useTokenData = (tokenId: number): TokenData => {
-  const { contract, apiClient, requester, network, web3 } = useGlobals();
+  const { contract, apiClient, requester, network } = useGlobals();
+  const web3 = useWeb3();
   const [gridItem, setGridItem] = React.useState<GridItem | null | undefined>(undefined);
   const [chainGridItem, setChainGridItem] = React.useState<GridItem | null | undefined>(undefined);
   const [isSetForMigration, setIsSetForMigration] = React.useState<boolean | null | undefined>(undefined);
+  const [isMigrated, setIsMigrated] = React.useState<boolean | null | undefined>(undefined);
 
   const loadToken = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -63,8 +67,16 @@ export const useTokenData = (tokenId: number): TokenData => {
       } else {
         setIsSetForMigration(false);
       }
+      if (contract.isTokenMigrated) {
+        contract.isTokenMigrated(tokenId).then((value: boolean): void => {
+          setIsMigrated(value);
+        });
+      } else {
+        setIsMigrated(false);
+      }
     } else {
       setIsSetForMigration(null);
+      setIsMigrated(null);
     }
   }, [tokenId, network, contract, requester, web3]);
 
@@ -99,5 +111,5 @@ export const useTokenData = (tokenId: number): TokenData => {
     return undefined;
   }, [gridItem, chainGridItem]);
 
-  return { tokenMetadata, gridItem, chainGridItem, isSetForMigration };
+  return { tokenMetadata, gridItem, chainGridItem, isSetForMigration, isMigrated };
 };

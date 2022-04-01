@@ -432,13 +432,12 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents minting a when sale has not started", async function() {
       await mdtp.setIsSaleActive(false);
-      const transaction = mdtp.mintToken(10001);
+      const transaction = mdtp.mintToken(1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("does allow minting a token with id 10000", async function() {
-      const transaction = mdtp.mintToken(10000);
-      await expect(transaction).to.be.reverted;
+    it("allows minting a token with id 10000", async function() {
+      await mdtp.mintToken(10000);
     });
 
     it("prevents minting a token with id over 10000", async function() {
@@ -473,7 +472,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       expect(mintedCount).to.equal(1);
     });
 
-    it("cannot mint over the totalMintLimit", async function() {
+    it("prevents mint over the totalMintLimit", async function() {
       await mdtp.setTotalMintLimit(2);
       await mdtp.mintToken(100);
       await mdtp.mintToken(101);
@@ -481,7 +480,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the ownershipMintLimit", async function() {
+    it("prevents mint over the ownershipMintLimit", async function() {
       await mdtp.setOwnershipMintLimit(2);
       await mdtp.mintToken(100);
       await mdtp.mintToken(101);
@@ -489,7 +488,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint with less money than the mintPrice", async function() {
+    it("prevents mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       const transaction = mdtp.mintToken(100, {value: 1});
       await expect(transaction).to.be.reverted;
@@ -553,7 +552,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await mdtp.mintToken(5963);
     });
 
-    it("does allow minting center blocks when isCenterSaleActive is true", async function() {
+    it("allows minting center blocks when isCenterSaleActive is true", async function() {
       await mdtp.setIsCenterSaleActive(true);
       await mdtp.mintToken(4038);
       await mdtp.mintToken(4062);
@@ -564,12 +563,6 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents minting when paused", async function() {
       await mdtp.pause();
-      const transaction = mdtp.mintToken(1);
-      await expect(transaction).to.be.reverted;
-    });
-
-    it("prevents minting when isSaleActive is false", async function() {
-      await mdtp.setIsSaleActive(false);
       const transaction = mdtp.mintToken(1);
       await expect(transaction).to.be.reverted;
     });
@@ -590,13 +583,12 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents minting a when sale has not started", async function() {
       await mdtp.setIsSaleActive(false);
-      const transaction = mdtp.mintTokenTo(otherWallet.address, 10001);
+      const transaction = mdtp.mintTokenTo(otherWallet.address, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("does allow minting a token with id 10000", async function() {
-      const transaction = mdtp.mintTokenTo(otherWallet.address, 10000);
-      await expect(transaction).to.be.reverted;
+    it("allows minting a token with id 10000", async function() {
+      await mdtp.mintTokenTo(otherWallet.address, 10000);
     });
 
     it("prevents minting a token with id over 10000", async function() {
@@ -631,7 +623,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       expect(mintedCount).to.equal(1);
     });
 
-    it("cannot mint over the totalMintLimit", async function() {
+    it("prevents mint over the totalMintLimit", async function() {
       await mdtp.setTotalMintLimit(2);
       await mdtp.mintTokenTo(otherWallet.address, 100);
       await mdtp.mintTokenTo(otherWallet.address, 101);
@@ -639,7 +631,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the ownershipMintLimit", async function() {
+    it("prevents mint over the ownershipMintLimit", async function() {
       await mdtp.setOwnershipMintLimit(2);
       await mdtp.mintTokenTo(otherWallet.address, 100);
       await mdtp.mintTokenTo(otherWallet.address, 101);
@@ -647,7 +639,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint with less money than the mintPrice", async function() {
+    it("prevents mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       const transaction = mdtp.mintTokenTo(otherWallet.address, 100, {value: 1});
       await expect(transaction).to.be.reverted;
@@ -711,7 +703,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await mdtp.mintTokenTo(otherWallet.address, 5963);
     });
 
-    it("does allow minting center blocks when isCenterSaleActive is true", async function() {
+    it("allows minting center blocks when isCenterSaleActive is true", async function() {
       await mdtp.setIsCenterSaleActive(true);
       await mdtp.mintTokenTo(otherWallet.address, 4038);
       await mdtp.mintTokenTo(otherWallet.address, 4062);
@@ -722,12 +714,6 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents minting when paused", async function() {
       await mdtp.pause();
-      const transaction = mdtp.mintTokenTo(otherWallet.address, 1);
-      await expect(transaction).to.be.reverted;
-    });
-
-    it("prevents minting when isSaleActive is false", async function() {
-      await mdtp.setIsSaleActive(false);
       const transaction = mdtp.mintTokenTo(otherWallet.address, 1);
       await expect(transaction).to.be.reverted;
     });
@@ -748,7 +734,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents minting a when sale has not started", async function() {
       await mdtp.setIsSaleActive(false);
-      const transaction = mdtp.mintTokenGroup(100, 2, 2);
+      const transaction = mdtp.mintTokenGroup(100, 1, 1);
       await expect(transaction).to.be.reverted;
     });
 
@@ -784,9 +770,8 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("does allow minting token with id 10000", async function() {
-      const transaction = mdtp.mintTokenGroup(10000, 1, 1);
-      await expect(transaction).to.be.reverted;
+    it("allows minting token with id 10000", async function() {
+      await mdtp.mintTokenGroup(10000, 1, 1);
     });
 
     it("prevents minting any token with id over 10000", async function() {
@@ -835,39 +820,39 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       expect(mintedCount).to.equal(10);
     });
 
-    it("cannot mint over the singleMintLimit", async function() {
+    it("prevents mint over the singleMintLimit", async function() {
       await mdtp.setSingleMintLimit(2);
       const transaction = mdtp.mintTokenGroup(100, 3, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the totalMintLimit in separate transactions", async function() {
+    it("prevents mint over the totalMintLimit in separate transactions", async function() {
       await mdtp.setTotalMintLimit(3);
       await mdtp.mintTokenGroup(100, 2, 1);
       const transaction = mdtp.mintTokenGroup(102, 2, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the totalMintLimit in a single transactions", async function() {
+    it("prevents mint over the totalMintLimit in a single transactions", async function() {
       await mdtp.setTotalMintLimit(3);
       const transaction = mdtp.mintTokenGroup(100, 4, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the ownershipMintLimit in separate transactions", async function() {
+    it("prevents mint over the ownershipMintLimit in separate transactions", async function() {
       await mdtp.setOwnershipMintLimit(3);
       await mdtp.mintTokenGroup(100, 2, 1);
       const transaction = mdtp.mintTokenGroup(102, 2, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the ownershipMintLimit in a single transactions", async function() {
+    it("prevents mint over the ownershipMintLimit in a single transactions", async function() {
       await mdtp.setOwnershipMintLimit(3);
       const transaction = mdtp.mintTokenGroup(100, 4, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint with less money than the mintPrice", async function() {
+    it("prevents mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       const transaction = mdtp.mintTokenGroup(100, 2, 1, {value: 3});
       await expect(transaction).to.be.reverted;
@@ -916,7 +901,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("does allow minting center blocks when isCenterSaleActive is true", async function() {
+    it("allows minting center blocks when isCenterSaleActive is true", async function() {
       await mdtp.setIsCenterSaleActive(true);
       await mdtp.mintTokenGroup(4037, 1, 1);
       await mdtp.mintTokenGroup(4062, 1, 1);
@@ -927,12 +912,6 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents minting when paused", async function() {
       await mdtp.pause();
-      const transaction = mdtp.mintTokenGroup(1, 1, 1);
-      await expect(transaction).to.be.reverted;
-    });
-
-    it("prevents minting when isSaleActive is false", async function() {
-      await mdtp.setIsSaleActive(false);
       const transaction = mdtp.mintTokenGroup(1, 1, 1);
       await expect(transaction).to.be.reverted;
     });
@@ -953,7 +932,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
 
     it("prevents minting a when sale has not started", async function() {
       await mdtp.setIsSaleActive(false);
-      const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 100, 2, 2);
+      const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 1, 1, 1);
       await expect(transaction).to.be.reverted;
     });
 
@@ -989,9 +968,8 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("does allow minting token with id 10000", async function() {
-      const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 10000, 1, 1);
-      await expect(transaction).to.be.reverted;
+    it("allows minting token with id 10000", async function() {
+      await mdtp.mintTokenGroupTo(otherWallet.address, 10000, 1, 1);
     });
 
     it("prevents minting any token with id over 10000", async function() {
@@ -1040,39 +1018,39 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       expect(mintedCount).to.equal(10);
     });
 
-    it("cannot mint over the singleMintLimit", async function() {
+    it("prevents mint over the singleMintLimit", async function() {
       await mdtp.setSingleMintLimit(2);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 100, 3, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the totalMintLimit in separate transactions", async function() {
+    it("prevents mint over the totalMintLimit in separate transactions", async function() {
       await mdtp.setTotalMintLimit(3);
       await mdtp.mintTokenGroupTo(otherWallet.address, 100, 2, 1);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 102, 2, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the totalMintLimit in a single transactions", async function() {
+    it("prevents mint over the totalMintLimit in a single transactions", async function() {
       await mdtp.setTotalMintLimit(3);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 100, 4, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the ownershipMintLimit in separate transactions", async function() {
+    it("prevents mint over the ownershipMintLimit in separate transactions", async function() {
       await mdtp.setOwnershipMintLimit(3);
       await mdtp.mintTokenGroupTo(otherWallet.address, 100, 2, 1);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 102, 2, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint over the ownershipMintLimit in a single transactions", async function() {
+    it("prevents mint over the ownershipMintLimit in a single transactions", async function() {
       await mdtp.setOwnershipMintLimit(3);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 100, 4, 1);
       await expect(transaction).to.be.reverted;
     });
 
-    it("cannot mint with less money than the mintPrice", async function() {
+    it("prevents mint with less money than the mintPrice", async function() {
       await mdtp.setMintPrice(2);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 100, 2, 1, {value: 3});
       await expect(transaction).to.be.reverted;
@@ -1121,7 +1099,7 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("does allow minting center blocks when isCenterSaleActive is true", async function() {
+    it("allows minting center blocks when isCenterSaleActive is true", async function() {
       await mdtp.setIsCenterSaleActive(true);
       await mdtp.mintTokenGroupTo(otherWallet.address, 4037, 1, 1);
       await mdtp.mintTokenGroupTo(otherWallet.address, 4062, 1, 1);
@@ -1136,17 +1114,202 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
-    it("prevents minting when isSaleActive is false", async function() {
-      await mdtp.setIsSaleActive(false);
-      const transaction = mdtp.mintTokenGroupTo(otherWallet.address, 1, 1, 1);
-      await expect(transaction).to.be.reverted;
-    });
-
     it("prevents minting a token id from the old contract", async function() {
       await mdtp.addTokensToMigrate(tokenIdsToMigrate);
       const transaction = mdtp.mintTokenGroupTo(otherWallet.address, tokenIdsToMigrate[0] - 1, 2, 2);
       await expect(transaction).to.be.reverted;
       const transaction2 = mdtp.mintTokenGroupTo(otherWallet.address, tokenIdsToMigrate[tokenIdsToMigrate.length - 1] - 1, 2, 2);
+      await expect(transaction2).to.be.reverted;
+    });
+  });
+
+  describe("Owner Minting Group To", async function () {
+    beforeEach(async () => {
+      await mdtp.setIsSaleActive(true);
+    });
+
+    it("prevents non-admins from calling", async function() {
+      const transaction = mdtp.connect(otherWallet).ownerMintTokenGroupTo(otherWallet.address, 100, 2, 2);
+      expect(transaction).to.be.reverted;
+    });
+
+    it("allows minting a when sale has not started", async function() {
+      await mdtp.setIsSaleActive(false);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 2);
+    });
+
+    it("sets the owner to the recipient", async function() {
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 2);
+      const owner = await mdtp.ownerOf(100);
+      expect(owner).to.equal(otherWallet.address)
+      const owner2 = await mdtp.ownerOf(101);
+      expect(owner2).to.equal(otherWallet.address)
+      const owner3 = await mdtp.ownerOf(200);
+      expect(owner3).to.equal(otherWallet.address)
+      const owner4 = await mdtp.ownerOf(201);
+      expect(owner4).to.equal(otherWallet.address)
+    });
+
+    it("prevents a width < 0", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, -1, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents a width = 0", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 0, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents a height < 0", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 1, -1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents a height = 0", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 1, 0);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("allows minting token with id 10000", async function() {
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 10000, 1, 1);
+    });
+
+    it("prevents minting any token with id over 10000", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 10001, 1, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting any token with id over 10000 (with height overflow)", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 9999, 1, 2);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting any token with id over 10000 (with width overflow)", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 9999, 3, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting any token with id 0", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 0);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting any token with negative id", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, -100);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents any token to be minted twice", async function() {
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 1);
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 101);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("emits Transfer events when tokens are minted", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 2);
+      const receipt = await transaction;
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', otherWallet.address, 100);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', otherWallet.address, 101);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', otherWallet.address, 200);
+      expect(receipt).to.emit(mdtp, 'Transfer').withArgs('0x0000000000000000000000000000000000000000', otherWallet.address, 201);
+    });
+
+    it("updates mintedCount when tokens are minted", async function() {
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 5, 2);
+      const mintedCount = await mdtp.mintedCount();
+      expect(mintedCount).to.equal(10);
+    });
+
+    it("allows mint over the singleMintLimit", async function() {
+      await mdtp.setSingleMintLimit(2);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 2);
+      const owner4 = await mdtp.ownerOf(201);
+      expect(owner4).to.equal(otherWallet.address)
+    });
+
+    it("allows mint over the totalMintLimit in separate transactions", async function() {
+      await mdtp.setTotalMintLimit(3);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 1);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 200, 2, 1);
+      const owner4 = await mdtp.ownerOf(201);
+      expect(owner4).to.equal(otherWallet.address)
+    });
+
+    it("allows mint over the totalMintLimit in a single transactions", async function() {
+      await mdtp.setTotalMintLimit(3);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 2);
+      const owner4 = await mdtp.ownerOf(201);
+      expect(owner4).to.equal(otherWallet.address)
+    });
+
+    it("allows mint over the ownershipMintLimit in separate transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 1);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 200, 2, 1);
+      const owner4 = await mdtp.ownerOf(201);
+      expect(owner4).to.equal(otherWallet.address)
+    });
+
+    it("allows mint over the ownershipMintLimit in a single transactions", async function() {
+      await mdtp.setOwnershipMintLimit(3);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 2);
+      const owner4 = await mdtp.ownerOf(201);
+      expect(owner4).to.equal(otherWallet.address)
+    });
+
+    it("should change the content uri to the metadata uri after minting", async function() {
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 100, 2, 1);
+      const contentUri1 = await mdtp.tokenContentURI(100);
+      expect(contentUri1).to.equal(`${metadataBaseUri}100.json`);
+      const contentUri2 = await mdtp.tokenContentURI(101);
+      expect(contentUri2).to.equal(`${metadataBaseUri}101.json`);
+    });
+
+    it("prevents minting top left center block when isCenterSaleActive is false", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 4037, 2, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting top right center block when isCenterSaleActive is false", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 4062, 2, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting bottom left center block when isCenterSaleActive is false", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 5937, 2, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting bottom right center block when isCenterSaleActive is false", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 5962, 2, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting middle center block when isCenterSaleActive is false", async function() {
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 5054, 2, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("allows minting center blocks when isCenterSaleActive is true", async function() {
+      await mdtp.setIsCenterSaleActive(true);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 4037, 1, 1);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 4062, 1, 1);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 5937, 1, 1);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 5962, 1, 1);
+      await mdtp.ownerMintTokenGroupTo(otherWallet.address, 5054, 1, 1);
+    });
+
+    it("prevents minting when paused", async function() {
+      await mdtp.pause();
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, 1, 1, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents minting a token id from the old contract", async function() {
+      await mdtp.addTokensToMigrate(tokenIdsToMigrate);
+      const transaction = mdtp.ownerMintTokenGroupTo(otherWallet.address, tokenIdsToMigrate[0] - 1, 2, 2);
+      await expect(transaction).to.be.reverted;
+      const transaction2 = mdtp.ownerMintTokenGroupTo(otherWallet.address, tokenIdsToMigrate[tokenIdsToMigrate.length - 1] - 1, 2, 2);
       await expect(transaction2).to.be.reverted;
     });
   });
@@ -1397,6 +1560,23 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await expect(transaction).to.be.reverted;
     });
 
+    it("returns false from isTokenMigrated for an un-migrated token", async function() {
+      const isTokenMigrated = await mdtp.isTokenMigrated(123);
+      expect(isTokenMigrated).to.equal(false);
+    });
+
+    it("returns false from isTokenMigrated for an token to be migrate", async function() {
+      const isTokenMigrated = await mdtp.isTokenMigrated(tokenIdsToMigrate[0]);
+      expect(isTokenMigrated).to.equal(false);
+    });
+
+    it("returns true from isTokenMigrated for a migrated token", async function() {
+      await originalMdtp.mintToken(tokenIdsToMigrate[0]);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
+      const isTokenMigrated = await mdtp.isTokenMigrated(tokenIdsToMigrate[0]);
+      expect(isTokenMigrated).to.equal(true);
+    });
+
     it("sets the transferrer as the new owner when a token is migrated", async function() {
       const owner = await mdtp.ownerOf(tokenIdsToMigrate[0]);
       expect(owner).to.equal(originalContractAccount);
@@ -1498,6 +1678,46 @@ describe("MillionDollarTokenPageV2 contract", async function() {
       await originalMdtp.mintToken(tokenIdsToMigrate[0]);
       const transaction = originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, mdtp.address, tokenIdsToMigrate[0]);
       await expect(transaction).to.emit(mdtp, 'TokenMigrated').withArgs(tokenIdsToMigrate[0]);
+    });
+
+    it("prevents calling migrateTokens if not approved", async function () {
+      await originalMdtp.connect(otherWallet).mintTokenGroup(tokenIdsToMigrate[0], 4, 1);
+      const transaction = mdtp.connect(otherWallet).migrateTokens(tokenIdsToMigrate[0], 4, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("allows owner to transfer with migrateTokens", async function () {
+      await originalMdtp.connect(otherWallet).mintTokenGroup(tokenIdsToMigrate[0], 4, 1);
+      await originalMdtp.connect(otherWallet).setApprovalForAll(mdtp.address, true);
+      await mdtp.connect(otherWallet).migrateTokens(tokenIdsToMigrate[0], 4, 1);
+      const owner1 = await mdtp.ownerOf(tokenIdsToMigrate[0]);
+      expect(owner1).to.equal(otherWallet.address);
+      const owner2 = await mdtp.ownerOf(tokenIdsToMigrate[1]);
+      expect(owner2).to.equal(otherWallet.address);
+      const owner3 = await mdtp.ownerOf(tokenIdsToMigrate[2]);
+      expect(owner3).to.equal(otherWallet.address);
+      const owner4 = await mdtp.ownerOf(tokenIdsToMigrate[3]);
+      expect(owner4).to.equal(otherWallet.address);
+    });
+
+    it("prevents non-owner from transferring with migrateTokens", async function () {
+      await originalMdtp.connect(otherWallet).mintTokenGroup(tokenIdsToMigrate[0], 4, 1);
+      await originalMdtp.connect(otherWallet).setApprovalForAll(mdtp.address, true);
+      const transaction = mdtp.connect(ownerWallet).migrateTokens(tokenIdsToMigrate[0], 4, 1);
+      await expect(transaction).to.be.reverted;
+    });
+
+    it("prevents owner from transferring a non-migration token with migrateTokens", async function () {
+      await originalMdtp.connect(otherWallet).mintTokenGroup(tokenIdsToMigrate[0], 4, 2);
+      await originalMdtp.connect(otherWallet).setApprovalForAll(mdtp.address, true);
+      const transaction = mdtp.connect(otherWallet).migrateTokens(tokenIdsToMigrate[0], 4, 2);
+      await expect(transaction).to.be.reverted;
+    });
+  });
+
+  describe.only("Cost Test", async function () {
+    it("tests costs", async function () {
+      await mdtp.addTokensToMigrate(tokenIdsToMigrate);
     });
   });
 });
