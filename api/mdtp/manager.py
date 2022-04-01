@@ -577,7 +577,6 @@ class MdtpManager:
         if gridItem.groupId and gridItem.groupId != groupId:
             await self.update_grid_item_group_image_deferred(network=network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
 
-
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)
 
