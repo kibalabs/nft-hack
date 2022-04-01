@@ -19,7 +19,7 @@ interface IERC721CollectionMetadata {
 interface MillionDollarTokenPageV1 {
     function ownerOf(uint256 tokenId) external view returns (address);
     function tokenContentURI(uint256 tokenId) external view returns (string memory);
-    function setTokenContentURI(uint256 tokenId, string memory contentURI) external;
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
 }
 
 contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC721Receiver, IERC721Enumerable, IERC721CollectionMetadata {
@@ -51,6 +51,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     bool public canAddTokenIdsToMigrate;
     uint256 private tokenIdsToMigrateCount;
     uint256[(SUPPLY_LIMIT / 256) + 1] private tokenIdsToMigrateBitmap;
+    uint256[(SUPPLY_LIMIT / 256) + 1] private tokenIdsMigratedBitmap;
 
     event TokenContentURIChanged(uint256 indexed tokenId);
     event TokenMigrated(uint256 indexed tokenId);
@@ -58,7 +59,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     constructor(uint16 _totalMintLimit, uint16 _singleMintLimit, uint16 _ownershipMintLimit, uint256 _mintPrice, string memory _metadataBaseURI, string memory _defaultContentBaseURI, string memory _collectionURI, uint16 _royaltyBasisPoints, address _original) ERC721("MillionDollarTokenPage", "\u22A1") Ownable() Pausable() {
         isSaleActive = false;
         isCenterSaleActive = false;
-        canAddTokenIdsToMigrate = false;
+        canAddTokenIdsToMigrate = true;
         metadataBaseURI = _metadataBaseURI;
         defaultContentBaseURI = _defaultContentBaseURI;
         collectionURI = _collectionURI;
@@ -189,6 +190,21 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     // url: optional[string] -> a URI pointing to the location you want visitors of your content to go to.
     // groupId: optional[string] -> a unique identifier you can use to group multiple grid items together by giving them all the same groupId.
 
+    function tokenContentURI(uint256 tokenId) external view onlyValidToken(tokenId) returns (string memory) {
+        if (isTokenSetForMigration(tokenId)) {
+            return original.tokenContentURI(tokenId);
+        }
+        string memory _tokenContentURI = _tokenContentURIs[tokenId];
+        if (bytes(_tokenContentURI).length > 0) {
+            return _tokenContentURI;
+        }
+        address owner = _owners[tokenId];
+        if (owner != address(0)) {
+            return tokenURI(tokenId);
+        }
+        return string(abi.encodePacked(defaultContentBaseURI, Strings.toString(tokenId), ".json"));
+    }
+
     function setTokenContentURI(uint256 tokenId, string memory contentURI) external {
         _setTokenContentURI(tokenId, contentURI);
     }
@@ -209,22 +225,11 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         emit TokenContentURIChanged(tokenId);
     }
 
-    function tokenContentURI(uint256 tokenId) external view onlyValidToken(tokenId) returns (string memory) {
-        if (isTokenSetForMigration(tokenId)) {
-            return original.tokenContentURI(tokenId);
-        }
-        string memory _tokenContentURI = _tokenContentURIs[tokenId];
-        if (bytes(_tokenContentURI).length > 0) {
-            return _tokenContentURI;
-        }
-        address owner = _owners[tokenId];
-        if (owner != address(0)) {
-            return tokenURI(tokenId);
-        }
-        return string(abi.encodePacked(defaultContentBaseURI, Strings.toString(tokenId), ".json"));
-    }
-
     // Minting
+
+    function ownerMintTokenGroupTo(address receiver, uint256 tokenId, uint8 width, uint8 height) external onlyOwner {
+        _safeMint(receiver, tokenId, width, height, true, "");
+    }
 
     function mintToken(uint256 tokenId) external payable {
         require(msg.value >= mintPrice, "MDTP: insufficient payment");
@@ -247,19 +252,21 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     }
 
     function _safeMint(address receiver, uint256 tokenId, uint8 width, uint8 height) internal {
-        _safeMint(receiver, tokenId, width, height, "");
+        _safeMint(receiver, tokenId, width, height, false, "");
     }
 
-    function _safeMint(address receiver, uint256 tokenId, uint8 width, uint8 height, bytes memory _data) internal onlyValidTokenGroup(tokenId, width, height) {
-        require(isSaleActive, "MDTP: sale not active");
+    function _safeMint(address receiver, uint256 tokenId, uint8 width, uint8 height, bool shouldIgnoreLimits, bytes memory _data) internal onlyValidTokenGroup(tokenId, width, height) {
         require(receiver != address(0), "MDTP: invalid address");
         require(tokenId > 0, "MDTP: invalid tokenId");
-        require(tokenId + (ROW_COUNT * height) + width < SUPPLY_LIMIT, "MDTP: invalid tokenId");
+        require(tokenId + (ROW_COUNT * (height - 1)) + (width - 1) <= SUPPLY_LIMIT, "MDTP: invalid tokenId");
         uint256 quantity = (width * height);
         require(quantity > 0, "MDTP: insufficient quantity");
-        require(quantity <= singleMintLimit, "MDTP: over singleMintLimit");
-        require(mintedCount() + quantity <= totalMintLimit, "MDTP: over totalMintLimit");
-        require(balanceOf(receiver) + quantity <= ownershipMintLimit, "MDTP: over ownershipMintLimit");
+        if (!shouldIgnoreLimits) {
+            require(isSaleActive, "MDTP: sale not active");
+            require(balanceOf(receiver) + quantity <= ownershipMintLimit, "MDTP: over ownershipMintLimit");
+            require(quantity <= singleMintLimit, "MDTP: over singleMintLimit");
+            require(mintedCount() + quantity <= totalMintLimit, "MDTP: over totalMintLimit");
+        }
 
         _beforeTokenTransfers(address(0), receiver, tokenId, width, height);
         for (uint8 y = 0; y < height; y++) {
@@ -339,8 +346,15 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
 
     // Migration
 
+    function isTokenMigrated(uint256 tokenId) public view returns (bool) {
+        return tokenIdsMigratedBitmap[tokenId / 256].isBitSet(uint8(tokenId % 256));
+    }
+
     function isTokenSetForMigration(uint256 tokenId) public view returns (bool) {
-        return tokenIdsToMigrateCount > 0 && tokenIdsToMigrateBitmap[tokenId / 256].isBitSet(uint8(tokenId % 256));
+        if (tokenIdsToMigrateCount == 0 || isTokenMigrated(tokenId)) {
+            return false;
+        }
+        return tokenIdsToMigrateBitmap[tokenId / 256].isBitSet(uint8(tokenId % 256));
     }
 
     function ownerOf(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
@@ -348,7 +362,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
             return address(original);
         }
         address owner = _owners[tokenId];
-        require(owner != address(0), "ERC721: owner query for nonexistent token");
+        require(owner != address(0), "MDTP: owner query for nonexistent token");
         return owner;
     }
 
@@ -367,11 +381,11 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     }
 
     function completeMigration() external onlyOwner {
-        canAddTokenIdsToMigrate = true;
+        canAddTokenIdsToMigrate = false;
     }
 
     function addTokensToMigrate(uint256[] calldata _tokenIdsToMigrate) external onlyOwner {
-        require(!canAddTokenIdsToMigrate, "MDTP: migration has already happened!");
+        require(canAddTokenIdsToMigrate, "MDTP: migration has already happened!");
         for (uint16 tokenIdIndex = 0; tokenIdIndex < _tokenIdsToMigrate.length; tokenIdIndex++) {
             uint256 tokenId = _tokenIdsToMigrate[tokenIdIndex];
             require(tokenId > 0 && tokenId <= SUPPLY_LIMIT, "MDTP: invalid tokenId");
@@ -383,12 +397,23 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         tokenIdsToMigrateCount += _tokenIdsToMigrate.length;
     }
 
+    // NOTE(krishan711): this requires the owner to have approved this contract to manage v1 tokens
+    function migrateTokens(uint256 tokenId, uint8 width, uint8 height) external {
+        for (uint8 y = 0; y < height; y++) {
+            for (uint8 x = 0; x < width; x++) {
+                uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
+                original.safeTransferFrom(_msgSender(), address(this), innerTokenId);
+            }
+        }
+    }
+
     function onERC721Received(address, address from, uint256 tokenId, bytes calldata) external override returns (bytes4) {
         require(_msgSender() == address(original), "MDTP: cannot accept token from unknown contract");
         require(original.ownerOf(tokenId) == address(this), "MDTP: token not yet owned by this contract");
         require(ownerOf(tokenId) == address(original), "MDTP: cannot accept token not set for migration");
         _transfer(address(original), from, tokenId);
         tokenIdsToMigrateBitmap[tokenId / 256] = tokenIdsToMigrateBitmap[tokenId / 256].clearBit(uint8(tokenId % 256));
+        tokenIdsMigratedBitmap[tokenId / 256] = tokenIdsMigratedBitmap[tokenId / 256].setBit(uint8(tokenId % 256));
         tokenIdsToMigrateCount -= 1;
         mintedTokenCount += 1;
         emit TokenMigrated(tokenId);

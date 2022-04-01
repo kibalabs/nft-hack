@@ -19,7 +19,6 @@ export interface Globals {
   migrationNetwork: string | null | undefined;
   contract: ethers.Contract | null | undefined;
   migrationContract: ethers.Contract | null | undefined;
-  web3: ethers.providers.Web3Provider | null | undefined;
   chainId: ChainId | null | undefined;
 }
 
