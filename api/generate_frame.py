@@ -1,16 +1,19 @@
 import dataclasses
-import math
 import logging
+import math
 import os
 import random
-from typing import Dict, List
-import asyncclick as click
+from typing import Dict
+from typing import List
 
+import asyncclick as click
 import cairosvg
-from svglib.svglib import svg2rlg
-from reportlab.graphics import renderPM
 from colour import Color
+from reportlab.graphics import renderPM
+from svglib.svglib import svg2rlg
+
 from frame_util import Delaunator
+
 
 @dataclasses.dataclass
 class ColorConfig:
