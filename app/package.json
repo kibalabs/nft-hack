@@ -13,29 +13,29 @@
     "type-check": "type-check"
   },
   "dependencies": {
-    "@ethersproject/abstract-provider": "5.5.1",
-    "@kibalabs/core": "0.5.7",
-    "@kibalabs/core-react": "0.8.0",
+    "@ethersproject/abstract-provider": "5.6.0",
+    "@kibalabs/core": "0.5.8",
+    "@kibalabs/core-react": "0.9.0",
     "@kibalabs/everyview-tracker": "0.3.1",
     "@kibalabs/everyview-tracker-react": "0.3.1",
-    "@kibalabs/ui-react": "0.9.7-next.9",
+    "@kibalabs/ui-react": "0.9.7",
     "@metamask/detect-provider": "1.2.0",
     "canvas-size": "1.2.5",
-    "ethers": "5.5.4",
+    "ethers": "5.6.2",
     "querystring-es3": "^0.2.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-dropzone": "12.0.4",
     "react-toastify": "8.2.0",
     "react-tooltip": "4.2.21",
-    "styled-components": "5.3.3",
+    "styled-components": "5.3.5",
     "url": "^0.11.0",
-    "web3.storage": "3.5.4"
+    "web3.storage": "4.0.0"
   },
   "devDependencies": {
-    "@kibalabs/build": "0.8.3-next.4",
-    "@types/react": "17.0.39",
-    "@types/react-dom": "17.0.11",
-    "@types/styled-components": "5.1.23"
+    "@kibalabs/build": "0.8.3",
+    "@types/react": "17.0.43",
+    "@types/react-dom": "17.0.14",
+    "@types/styled-components": "5.1.24"
   }
 }

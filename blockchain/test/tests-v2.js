@@ -1715,9 +1715,17 @@ describe("MillionDollarTokenPageV2 contract", async function() {
     });
   });
 
-  describe.only("Cost Test", async function () {
+  describe("Cost Test", async function () {
     it("tests costs", async function () {
+      await originalMdtp.setTotalMintLimit(100);
+      await originalMdtp.mintToken(1);
+      await originalMdtp.mintTokenGroup(2, 3, 3);
+      await originalMdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, otherWallet.address, 1);
       await mdtp.addTokensToMigrate(tokenIdsToMigrate);
+      await mdtp.setIsSaleActive(true);
+      await mdtp.mintToken(1234);
+      await mdtp.mintTokenGroup(1235, 3, 3);
+      await mdtp['safeTransferFrom(address,address,uint256)'](ownerWallet.address, otherWallet.address, 1234);
     });
   });
 });
