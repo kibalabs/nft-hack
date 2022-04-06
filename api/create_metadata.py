@@ -165,7 +165,7 @@ async def run(tokenId: Optional[int], shouldUpload: bool):
         metadata = {
             "tokenId": tokenId,
             "tokenIndex": tokenId - 1,
-            "name": f'MDTP Token {tokenId}' if tokenId in VALID_TOKEN_IDS else f'INVALID MDTP Token {tokenId}',
+            "name": f'MDTP Token #{tokenId}' if tokenId in VALID_TOKEN_IDS else f'INVALID MDTP Token #{tokenId}',
             "description": (
                 f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). MDTP is a digital content-sharing space powered by Ethereum and NFTs. Each block can be bought as a unique NFT, set to display the content you like, and later re-sold. Show off and share your content, and own a piece of crypto history!"
                 if tokenId in VALID_TOKEN_IDS else
