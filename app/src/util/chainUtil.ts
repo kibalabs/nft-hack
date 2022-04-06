@@ -30,19 +30,21 @@ export const isBeta = (): boolean => {
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
   [ChainId.Rinkeby]: isBeta() ? 'rinkeby9' : undefined,
-  [ChainId.Mainnet]: 'mainnet1',
+  [ChainId.Mainnet]: isBeta() ? 'mainnet2' : 'mainnet1',
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
   rinkeby6: '0x8f1F643637046c867675Ca101ce28E2763daC1E2',
   mainnet1: '0x1Cf33F4c6C4E6391F4D2B445aa3a36639b77dd68',
   rinkeby9: '0x2B45a10bc643aA057da80a2EF5FF63F0C20F5ac0',
+  mainnet2: '0x8e720f90014fa4de02627f4a4e217b7e3942d5e8',
 };
 
 const networkContractMap: Record<string, ContractInterface | null> = {
   rinkeby6: contract7 as unknown as ContractInterface,
   mainnet1: contract7 as unknown as ContractInterface,
   rinkeby9: contract8 as unknown as ContractInterface,
+  mainnet2: contract8 as unknown as ContractInterface,
 };
 
 export const getMigrationNetwork = (network: string): string | null => {
@@ -51,6 +53,9 @@ export const getMigrationNetwork = (network: string): string | null => {
   }
   if (network === 'rinkeby9') {
     return 'rinkeby6';
+  }
+  if (network === 'mainnet2') {
+    return 'mainnet1';
   }
   return null;
 };

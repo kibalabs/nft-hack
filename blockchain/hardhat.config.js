@@ -1,8 +1,10 @@
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
-require("@openzeppelin/hardhat-upgrades");
+require("@nomiclabs/hardhat-solhint");
 require("hardhat-gas-reporter");
+
+const GWEI = 1000000000;
 
 module.exports = {
   solidity: {
@@ -19,17 +21,19 @@ module.exports = {
     hardhat: {},
     mainnet: {
       url: process.env.ALCHEMY_MAINNET_URL,
-      from: '0xF3A535cEdf65cB8C287Cb5CAc67E970E94eb372D',
+      accounts: [process.env.PRIVATE_KEY],
+      gasPrice: 20 * GWEI,
     },
     rinkeby: {
       url: process.env.ALCHEMY_URL,
       accounts: [process.env.PRIVATE_KEY],
+      gasPrice: 0.1 * GWEI,
     },
   },
   gasReporter: {
     enabled: true,
     currency: "USD",
-    gasPrice: 100,
+    gasPrice: 50,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     excludeContracts: [
       'ERC721Upgradeable.sol',

@@ -9,10 +9,9 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-// import "hardhat/console.sol";
 
 interface IERC721CollectionMetadata {
-    /* Read more at https://docs.token.page/IERC721CollectionMetadata */
+    /* Read more at https://docs.tokenpage.xyz/IERC721CollectionMetadata */
     function contractURI() external returns (string memory);
 }
 
@@ -27,7 +26,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     using Bits for uint256;
 
     uint256 private mintedTokenCount;
-    mapping(uint256 => string) private _tokenContentURIs;
+    mapping(uint256 => string) private tokenContentURIs;
 
     uint16 public constant COLUMN_COUNT = 100;
     uint16 public constant ROW_COUNT = 100;
@@ -194,7 +193,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         if (isTokenSetForMigration(tokenId)) {
             return original.tokenContentURI(tokenId);
         }
-        string memory _tokenContentURI = _tokenContentURIs[tokenId];
+        string memory _tokenContentURI = tokenContentURIs[tokenId];
         if (bytes(_tokenContentURI).length > 0) {
             return _tokenContentURI;
         }
@@ -220,8 +219,8 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         }
     }
 
-    function _setTokenContentURI(uint256 tokenId, string memory contentURI) internal onlyTokenOwner(tokenId) whenNotPaused() {
-        _tokenContentURIs[tokenId] = contentURI;
+    function _setTokenContentURI(uint256 tokenId, string memory contentURI) internal onlyTokenOwner(tokenId) whenNotPaused {
+        tokenContentURIs[tokenId] = contentURI;
         emit TokenContentURIChanged(tokenId);
     }
 
@@ -311,7 +310,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         _beforeTokenTransfers(sender, receiver, tokenId, 1, 1);
     }
 
-    function _beforeTokenTransfers(address sender, address receiver, uint256, uint8 width, uint8 height) internal whenNotPaused() {
+    function _beforeTokenTransfers(address sender, address receiver, uint256, uint8 width, uint8 height) internal whenNotPaused {
         if (sender != receiver) {
             if (sender == address(0)) {
                 mintedTokenCount += width * height;
@@ -351,10 +350,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     }
 
     function isTokenSetForMigration(uint256 tokenId) public view returns (bool) {
-        if (tokenIdsToMigrateCount == 0 || isTokenMigrated(tokenId)) {
-            return false;
-        }
-        return tokenIdsToMigrateBitmap[tokenId / 256].isBitSet(uint8(tokenId % 256));
+        return tokenIdsToMigrateCount >= 0 && tokenIdsToMigrateBitmap[tokenId / 256].isBitSet(uint8(tokenId % 256));
     }
 
     function ownerOf(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
@@ -398,7 +394,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
     }
 
     // NOTE(krishan711): this requires the owner to have approved this contract to manage v1 tokens
-    function migrateTokens(uint256 tokenId, uint8 width, uint8 height) external {
+    function migrateTokens(uint256 tokenId, uint8 width, uint8 height) external whenNotPaused {
         for (uint8 y = 0; y < height; y++) {
             for (uint8 x = 0; x < width; x++) {
                 uint256 innerTokenId = tokenId + (ROW_COUNT * y) + x;
@@ -407,7 +403,7 @@ contract MillionDollarTokenPageV2 is ERC721, IERC2981, Pausable, Ownable, IERC72
         }
     }
 
-    function onERC721Received(address, address from, uint256 tokenId, bytes calldata) external override returns (bytes4) {
+    function onERC721Received(address, address from, uint256 tokenId, bytes calldata) external override whenNotPaused returns (bytes4) {
         require(_msgSender() == address(original), "MDTP: cannot accept token from unknown contract");
         require(original.ownerOf(tokenId) == address(this), "MDTP: token not yet owned by this contract");
         require(ownerOf(tokenId) == address(original), "MDTP: cannot accept token not set for migration");

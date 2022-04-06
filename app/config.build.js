@@ -38,7 +38,7 @@ module.exports = (config) => {
       ...webpackConfig.resolve.fallback,
       "querystring": false,
       "url": false,
-    },
+    };
     webpackConfig.plugins = [
       ...webpackConfig.plugins,
       new webpack.DefinePlugin({
