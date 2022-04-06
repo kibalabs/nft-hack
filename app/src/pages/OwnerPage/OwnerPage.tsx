@@ -5,7 +5,7 @@ import { useNavigator, useStringRouteParam } from '@kibalabs/core-react';
 import { Alignment, Box, Button, Direction, Head, Image, KibaIcon, List, LoadingSpinner, PaddingSize, Spacing, Stack, Text, TextAlignment } from '@kibalabs/ui-react';
 
 import { useAccount, useWeb3 } from '../../accountsContext';
-import { GridItem } from '../../client';
+import { GridItem, NetworkStatus } from '../../client';
 import { OwnedGridItemView } from '../../components/OwnedGridItemView';
 import { useGlobals } from '../../globalsContext';
 import { useSetTokenSelection } from '../../tokenSelectionContext';
@@ -20,13 +20,14 @@ interface GridItemGroup {
 export const OwnerPage = (): React.ReactElement => {
   const ownerId = normalizeAddress(useStringRouteParam('ownerId'));
   const navigator = useNavigator();
-  const { apiClient, network } = useGlobals();
+  const { apiClient, network, contract } = useGlobals();
   const account = useAccount();
   const web3 = useWeb3();
   const setTokenSelection = useSetTokenSelection();
   const [gridItems, setGridItems] = React.useState<GridItem[] | null | undefined>(undefined);
   const [gridItemGroups, setGridItemGroups] = React.useState<GridItemGroup[] | null | undefined>(undefined);
   const [ownerName, setOwnerName] = React.useState<string | null | undefined>(undefined);
+  const [randomAvailableTokenId, setRandomAvailableTokenId] = React.useState<number | undefined | null>(undefined);
 
   const loadTokens = React.useCallback(async (): Promise<void> => {
     if (network === null) {
@@ -83,6 +84,19 @@ export const OwnerPage = (): React.ReactElement => {
     loadOwnerName();
   }, [loadOwnerName]);
 
+  const updateData = React.useCallback((): void => {
+    if (!network || !apiClient) {
+      return;
+    }
+    apiClient.getNetworkStatus(network).then((networkStatus: NetworkStatus): void => {
+      setRandomAvailableTokenId(networkStatus.randomAvailableTokenId);
+    });
+  }, [apiClient, network]);
+
+  React.useEffect((): void => {
+    updateData();
+  }, [updateData]);
+
   const isOwnerUser = Boolean(ownerId && account?.address === ownerId);
   const ownerIdString = ownerId ? (ownerName || truncateMiddle(ownerId, 10)) : null;
 
@@ -133,8 +147,8 @@ export const OwnerPage = (): React.ReactElement => {
                 </List.Item>
               ))}
             </List>
-            {isOwnerUser && (
-              <Button variant='primary' isFullWidth={true} text='Mint another token' />
+            {isOwnerUser && randomAvailableTokenId && (
+              <Button variant='primary' isFullWidth={true} text='Mint another token' target={`/tokens/${randomAvailableTokenId}/mint`} />
             )}
           </React.Fragment>
         )}
