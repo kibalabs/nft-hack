@@ -152,7 +152,7 @@ export const App = (props: IAppProps): React.ReactElement => {
   ];
 
   return (
-    <KibaApp theme={theme} setHead={props.setHead}>
+    <KibaApp theme={theme} isFullPageApp={true} setHead={props.setHead}>
       <Head headId='app'>
         <script async src='https://www.googletagmanager.com/gtag/js?id=UA-31771231-11' />
       </Head>
