@@ -77,7 +77,7 @@ export const isValidChain = (chainId: ChainId): boolean => {
 };
 
 export const getTokenOpenseaUrl = (network: string, tokenId: number, isSetForMigration: boolean): string | null => {
-  const contractAddress = getContractAddress(isSetForMigration ? getMigrationNetwork(network) : network);
+  const contractAddress = getContractAddress(isSetForMigration ? getMigrationNetwork(network) as string : network);
   if (!contractAddress) {
     return null;
   }
@@ -91,7 +91,7 @@ export const getTokenOpenseaUrl = (network: string, tokenId: number, isSetForMig
 };
 
 export const getTokenEtherscanUrl = (network: string, tokenId: number, isSetForMigration: boolean): string | null => {
-  const contractAddress = getContractAddress(isSetForMigration ? getMigrationNetwork(network) : network);
+  const contractAddress = getContractAddress(isSetForMigration ? getMigrationNetwork(network) as string : network);
   if (!contractAddress) {
     return null;
   }

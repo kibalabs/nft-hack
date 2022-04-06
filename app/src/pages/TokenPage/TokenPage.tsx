@@ -208,8 +208,8 @@ export const TokenPage = (): React.ReactElement => {
                     <React.Fragment>
                       <KeyValue name='Owned by' markdownValue={`[${ownerIdString}](/owners/${String(ownerId)})`} />
                       <Stack direction={Direction.Horizontal} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} shouldAddGutters={true} shouldWrapItems={true} paddingTop={PaddingSize.Default}>
-                        <Button variant='secondary' target={getTokenOpenseaUrl(network, tokenId, tokenData.isSetForMigration) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
-                        <Button variant='secondary' target={getTokenEtherscanUrl(network, tokenId, tokenData.isSetForMigration) || ''} text='View on Etherscan' />
+                        <Button variant='secondary' target={getTokenOpenseaUrl(network, tokenId, tokenData.isSetForMigration || false) || ''} text={isOwnedByUser ? 'View on Opensea' : 'Bid on Token'} />
+                        <Button variant='secondary' target={getTokenEtherscanUrl(network, tokenId, tokenData.isSetForMigration || false) || ''} text='View on Etherscan' />
                       </Stack>
                     </React.Fragment>
                   ) : (
