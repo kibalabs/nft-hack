@@ -30,7 +30,7 @@ export const isBeta = (): boolean => {
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
   [ChainId.Rinkeby]: isBeta() ? 'rinkeby9' : undefined,
-  [ChainId.Mainnet]: isBeta() ? 'mainnet2' : 'mainnet1',
+  [ChainId.Mainnet]: 'mainnet2',
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
@@ -76,8 +76,8 @@ export const isValidChain = (chainId: ChainId): boolean => {
   return validChainIdNetworkMap[chainId] !== undefined;
 };
 
-export const getTokenOpenseaUrl = (network: string, tokenId: number): string | null => {
-  const contractAddress = getContractAddress(network);
+export const getTokenOpenseaUrl = (network: string, tokenId: number, isSetForMigration: boolean): string | null => {
+  const contractAddress = getContractAddress(isSetForMigration ? getMigrationNetwork(network) as string : network);
   if (!contractAddress) {
     return null;
   }
@@ -90,8 +90,8 @@ export const getTokenOpenseaUrl = (network: string, tokenId: number): string | n
   return null;
 };
 
-export const getTokenEtherscanUrl = (network: string, tokenId: number): string | null => {
-  const contractAddress = getContractAddress(network);
+export const getTokenEtherscanUrl = (network: string, tokenId: number, isSetForMigration: boolean): string | null => {
+  const contractAddress = getContractAddress(isSetForMigration ? getMigrationNetwork(network) as string : network);
   if (!contractAddress) {
     return null;
   }
