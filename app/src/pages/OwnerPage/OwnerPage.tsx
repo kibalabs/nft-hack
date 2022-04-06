@@ -20,7 +20,7 @@ interface GridItemGroup {
 export const OwnerPage = (): React.ReactElement => {
   const ownerId = normalizeAddress(useStringRouteParam('ownerId'));
   const navigator = useNavigator();
-  const { apiClient, network, contract } = useGlobals();
+  const { apiClient, network } = useGlobals();
   const account = useAccount();
   const web3 = useWeb3();
   const setTokenSelection = useSetTokenSelection();
