@@ -30,7 +30,7 @@ export const isBeta = (): boolean => {
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
   [ChainId.Rinkeby]: isBeta() ? 'rinkeby9' : undefined,
-  [ChainId.Mainnet]: isBeta() ? 'mainnet2' : 'mainnet1',
+  [ChainId.Mainnet]: 'mainnet2',
 };
 
 const networkContractAddressMap: Record<string, string | null> = {
