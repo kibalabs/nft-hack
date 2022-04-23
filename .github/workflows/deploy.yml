@@ -56,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NAME: mdtp-app
-      VERSION: $GITHUB_SHA
+      VERSION: ${{ github.sha }}
       DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
     steps:
       - name: executing remote ssh commands
@@ -66,7 +66,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             url="milliondollartokenpage.com"
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NAME: mdtp-app-new
-      VERSION: $GITHUB_SHA
+      VERSION: ${{ github.sha }}
       DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
     steps:
       - name: executing remote ssh commands
@@ -99,7 +99,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             url="new.milliondollartokenpage.com"
@@ -122,7 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NAME: mdtp-worker
-      VERSION: $GITHUB_SHA
+      VERSION: ${{ github.sha }}
       DOCKER_IMAGE: ghcr.io/${{ github.repository }}-api:latest
     steps:
       - name: executing remote ssh commands
@@ -132,7 +132,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             varsFile=~/.${NAME}.vars
@@ -152,7 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NAME: mdtp-api
-      VERSION: $GITHUB_SHA
+      VERSION: ${{ github.sha }}
       DOCKER_IMAGE: ghcr.io/${{ github.repository }}-api:latest
     steps:
       - name: executing remote ssh commands
@@ -162,7 +162,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             url="api.mdtp.co,api.milliondollartokenpage.com"
@@ -194,7 +194,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             url="app.mdtp.co,mdtp.app"

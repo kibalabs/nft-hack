@@ -108,7 +108,6 @@ class Saver(CoreSaver):
             values[NetworkUpdatesTable.c.latestBlockNumber.key] = latestBlockNumber
         if len(values) > 0:
             values[NetworkUpdatesTable.c.updatedDate.key] = date_util.datetime_from_now()
-        print(networkUpdateId, values)
         query = NetworkUpdatesTable.update(NetworkUpdatesTable.c.networkUpdateId == networkUpdateId).values(values)
         await self._execute(query=query, connection=connection)
 
