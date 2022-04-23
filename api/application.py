@@ -6,7 +6,6 @@ from core.api.middleware.database_connection_middleware import DatabaseConnectio
 from core.api.middleware.exception_handling_middleware import ExceptionHandlingMiddleware
 from core.api.middleware.logging_middleware import LoggingMiddleware
 from core.api.middleware.server_headers_middleware import ServerHeadersMiddleware
-from core.aws_requester import AwsRequester
 from core.http.basic_authentication import BasicAuthentication
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.requester import Requester
@@ -46,9 +45,11 @@ retriever = Retriever(database=database)
 workQueue = SqsMessageQueue(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'], queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue')
 s3Manager = S3Manager(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'])
 
-awsRequester = AwsRequester(accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'])
-ethClient = RestEthClient(url='https://nd-foldvvlb25awde7kbqfvpgvrrm.ethereum.managedblockchain.eu-west-1.amazonaws.com', requester=awsRequester)
+# NOTE(krishan711): The AWS eth instance is much slower with getLogs so fails when calling ContractStore.get_latest_update_block_number
+# awsRequester = AwsRequester(accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'])
+# ethClient = RestEthClient(url='https://nd-foldvvlb25awde7kbqfvpgvrrm.ethereum.managedblockchain.eu-west-1.amazonaws.com', requester=awsRequester)
 requester = Requester()
+ethClient = RestEthClient(url=os.environ['ALCHEMY_MAINNET_URL'], requester=requester)
 rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
 mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
 contractStore = create_contract_store(ethClient=ethClient, rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
