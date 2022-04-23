@@ -66,7 +66,6 @@ async def main():
     await workQueue.connect()
     await messageQueueProcessor.run()
 
-    await awsRequester.close_connections()
     await requester.close_connections()
     await workQueue.disconnect()
     await s3Manager.disconnect()

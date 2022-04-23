@@ -411,15 +411,12 @@ class MdtpManager:
         networkUpdate = await self.retriever.get_network_update_by_network(network=network)
         latestProcessedBlockNumber = networkUpdate.latestBlockNumber
         latestBlockNumber = await self.contractStore.get_latest_block_number(network=network)
-        contract = self.contractStore.get_contract(network=network)
         batchSize = 2500
         tokenIdsToUpdate = set()
         logging.info(f'Processing blocks from {latestProcessedBlockNumber} to {latestBlockNumber}')
         for startBlockNumber in range(latestProcessedBlockNumber + 1, latestBlockNumber + 1, batchSize):
             endBlockNumber = min(startBlockNumber + batchSize, latestBlockNumber)
             tokenIdsToUpdate.update(await self._get_updated_token_ids(network=network, startBlockNumber=startBlockNumber, endBlockNumber=endBlockNumber))
-            if contract.sourceNetwork:
-                tokenIdsToUpdate.update(await self._get_updated_token_ids(network=contract.sourceNetwork, startBlockNumber=startBlockNumber-5, endBlockNumber=endBlockNumber))
         for tokenId in list(tokenIdsToUpdate):
             await self.update_token_deferred(network=network, tokenId=tokenId)
         await self.saver.update_network_update(networkUpdateId=networkUpdate.networkUpdateId, latestBlockNumber=latestBlockNumber)
@@ -571,11 +568,12 @@ class MdtpManager:
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
             for contract in self.contractStore.contracts:
                 if contract.sourceNetwork == network:
-                    await self.update_token_deferred(network=contract.sourceNetwork, tokenId=tokenId)
+                    logging.info(f'Scheduling processing for dependent token: {contract.network}/{tokenId}')
+                    await self.update_token_deferred(network=contract.network, tokenId=tokenId)
         if not resizableImageUrl:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
         if (gridItem.groupId and gridItem.groupId != groupId) or gridItem.ownerId != ownerId:
-            await self.update_grid_item_group_image_deferred(network=network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
+            await self.update_grid_item_group_image_deferred(network=network, ownerId=ownerId, groupId=groupId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
         return await self.imageManager.get_image_url(imageId=imageId, width=width, height=height)

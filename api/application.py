@@ -86,5 +86,4 @@ async def shutdown():
     await database.disconnect()
     await s3Manager.disconnect()
     await workQueue.disconnect()
-    await awsRequester.close_connections()
     await requester.close_connections()
