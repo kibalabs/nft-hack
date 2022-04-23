@@ -66,7 +66,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             url="milliondollartokenpage.com"
@@ -99,7 +99,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             url="new.milliondollartokenpage.com"
@@ -132,7 +132,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             varsFile=~/.${NAME}.vars
@@ -162,7 +162,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             url="api.mdtp.co,api.milliondollartokenpage.com"
@@ -194,7 +194,7 @@ jobs:
           username: ${{ secrets.MDTPBOX_USER }}
           key: ${{ secrets.MDTPBOX_SSH_KEY }}
           port: ${{ secrets.MDTPBOX_PORT }}
-          envs: DOCKER_IMAGE,NAME
+          envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
             url="app.mdtp.co,mdtp.app"
