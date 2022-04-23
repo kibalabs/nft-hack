@@ -141,7 +141,8 @@ export const App = (props: IAppProps): React.ReactElement => {
   const routes: IRoute[] = [
     { path: '/',
       page: HomePage,
-      subRoutes: [{ path: '/tokens/:tokenId', page: TokenPage },
+      subRoutes: [
+        { path: '/tokens/:tokenId', page: TokenPage },
         { path: '/tokens/:tokenId/update', page: TokenUpdatePage },
         { path: '/tokens/:tokenId/mint', page: TokenMintPage },
         { path: '/owners/:ownerId', page: OwnerPage },
