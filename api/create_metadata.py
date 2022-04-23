@@ -1,9 +1,9 @@
 import json
-import logging
 import os
 from typing import Optional
 
 import asyncclick as click
+from core import logging
 from core.http.basic_authentication import BasicAuthentication
 from core.requester import Requester
 from core.util import file_util

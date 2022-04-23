@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import json
-import logging
 import math
 import os
 import urllib.parse as urlparse
@@ -13,6 +12,7 @@ from typing import List
 from typing import Optional
 from typing import Sequence
 
+from core import logging
 from core.exceptions import BadRequestException
 from core.exceptions import NotFoundException
 from core.queues.sqs_message_queue import SqsMessageQueue
@@ -48,8 +48,8 @@ from mdtp.model import GridItem
 from mdtp.model import NetworkStatus
 from mdtp.model import NetworkSummary
 from mdtp.model import TokenMetadata
-from mdtp.store.retriever import MdtpRetriever
-from mdtp.store.saver import MdtpSaver
+from mdtp.store.retriever import Retriever
+from mdtp.store.saver import Saver
 from mdtp.store.schema import BaseImagesTable
 from mdtp.store.schema import GridItemsTable
 from mdtp.store.schema import OffchainContentsTable
@@ -64,7 +64,7 @@ _API_URL = 'https://d2a7i2107hou45.cloudfront.net'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: MdtpRetriever, saver: MdtpSaver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager, ipfsManager: IpfsManager):
+    def __init__(self, requester: Requester, retriever: Retriever, saver: Saver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager, ipfsManager: IpfsManager):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
@@ -526,8 +526,6 @@ class MdtpManager:
             source = originalGridItem.source
             blockNumber = originalGridItem.blockNumber
         else:
-            contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
-            blockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId) or 0
             # Resolve pending contents for the current owner only
             offchainPendingContents = await self.retriever.list_offchain_pending_contents(fieldFilters=[
                 StringFieldFilter(fieldName=OffchainPendingContentsTable.c.network.key, eq=network),
@@ -538,12 +536,14 @@ class MdtpManager:
             for offchainPendingContent in offchainPendingContents:
                 await self.saver.create_offchain_content(network=offchainPendingContent.network, tokenId=offchainPendingContent.tokenId, contentUrl=offchainPendingContent.contentUrl, blockNumber=offchainPendingContent.blockNumber, ownerId=offchainPendingContent.ownerId, signature=offchainPendingContent.signature, signedMessage=offchainPendingContent.signedMessage)
                 await self.saver.update_offchain_pending_content(offchainPendingContentId=offchainPendingContent.offchainPendingContentId, appliedDate=date_util.datetime_from_now())
-            source = 'onchain'
             latestOffchainContents = await self.retriever.list_offchain_contents(fieldFilters=[
                 StringFieldFilter(fieldName=OffchainContentsTable.c.network.key, eq=network),
                 StringFieldFilter(fieldName=OffchainContentsTable.c.tokenId.key, eq=tokenId),
             ], orders=[Order(fieldName=OffchainContentsTable.c.blockNumber.key, direction=Direction.DESCENDING)], limit=1)
-            if len(latestOffchainContents) > 0 and (latestOffchainContents[0].blockNumber > blockNumber):
+            contentUrl = await self.contractStore.get_token_content_url(network=network, tokenId=tokenId)
+            blockNumber = await self.contractStore.get_latest_update_block_number(network=network, tokenId=tokenId) or 0
+            source = 'onchain'
+            if len(latestOffchainContents) > 0 and latestOffchainContents[0].blockNumber > blockNumber:
                 contentUrl = latestOffchainContents[0].contentUrl
                 source = 'offchain'
                 blockNumber = latestOffchainContents[0].blockNumber
@@ -574,7 +574,7 @@ class MdtpManager:
                     await self.update_token_deferred(network=contract.sourceNetwork, tokenId=tokenId)
         if not resizableImageUrl:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
-        if gridItem.groupId and gridItem.groupId != groupId:
+        if (gridItem.groupId and gridItem.groupId != groupId) or gridItem.ownerId != ownerId:
             await self.update_grid_item_group_image_deferred(network=network, ownerId=gridItem.ownerId, groupId=gridItem.groupId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:

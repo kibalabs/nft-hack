@@ -1,38 +1,50 @@
 import asyncio
-import logging
 import os
 
-import boto3
+from core import logging
+from core.aws_requester import AwsRequester
 from core.http.basic_authentication import BasicAuthentication
 from core.queues.message_queue_processor import MessageQueueProcessor
 from core.queues.sqs_message_queue import SqsMessageQueue
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.slack_client import SlackClient
+from core.store.database import Database
+from core.util.value_holder import RequestIdHolder
 from core.web3.eth_client import RestEthClient
-from databases import Database
 
 from contracts import create_contract_store
 from mdtp.image_manager import ImageManager
 from mdtp.ipfs_manager import IpfsManager
 from mdtp.manager import MdtpManager
 from mdtp.mdtp_message_processor import MdtpMessageProcessor
-from mdtp.store.retriever import MdtpRetriever
-from mdtp.store.saver import MdtpSaver
+from mdtp.store.retriever import Retriever
+from mdtp.store.saver import Saver
 
 
 async def main():
-    database = Database(f'postgresql://{os.environ["DB_USERNAME"]}:{os.environ["DB_PASSWORD"]}@{os.environ["DB_HOST"]}:{os.environ["DB_PORT"]}/{os.environ["DB_NAME"]}')
-    saver = MdtpSaver(database=database)
-    retriever = MdtpRetriever(database=database)
+    requestIdHolder = RequestIdHolder()
+    name = os.environ.get('NAME', 'notd-api')
+    version = os.environ.get('VERSION', 'local')
+    environment = os.environ.get('ENV', 'dev')
+    isRunningDebugMode = environment == 'dev'
 
-    sqsClient = boto3.client(service_name='sqs', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
-    workQueue = SqsMessageQueue(sqsClient=sqsClient, queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue')
-    s3Client = boto3.client(service_name='s3', region_name='eu-west-1', aws_access_key_id=os.environ['AWS_KEY'], aws_secret_access_key=os.environ['AWS_SECRET'])
-    s3Manager = S3Manager(s3Client=s3Client)
+    if isRunningDebugMode:
+        logging.init_basic_logging()
+    else:
+        logging.init_json_logging(name=name, version=version, environment=environment, requestIdHolder=requestIdHolder)
 
+    databaseConnectionString = Database.create_psql_connection_string(username=os.environ["DB_USERNAME"], password=os.environ["DB_PASSWORD"], host=os.environ["DB_HOST"], port=os.environ["DB_PORT"], name=os.environ["DB_NAME"])
+    database = Database(connectionString=databaseConnectionString)
+    saver = Saver(database=database)
+    retriever = Retriever(database=database)
+
+    workQueue = SqsMessageQueue(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'], queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue')
+    s3Manager = S3Manager(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'])
+
+    awsRequester = AwsRequester(accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'])
+    ethClient = RestEthClient(url='https://nd-foldvvlb25awde7kbqfvpgvrrm.ethereum.managedblockchain.eu-west-1.amazonaws.com', requester=awsRequester)
     requester = Requester()
-    ethClient = RestEthClient(url=os.environ['ALCHEMY_MAINNET_URL'], requester=requester)
     rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     contractStore = create_contract_store(ethClient=ethClient, rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
@@ -49,11 +61,15 @@ async def main():
     messageQueueProcessor = MessageQueueProcessor(queue=workQueue, messageProcessor=processor, slackClient=slackClient)
 
     await database.connect()
+    await s3Manager.connect()
+    await workQueue.connect()
     await messageQueueProcessor.run()
 
+    await awsRequester.close_connections()
     await requester.close_connections()
+    await workQueue.disconnect()
+    await s3Manager.disconnect()
     await database.disconnect()
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     asyncio.run(main())

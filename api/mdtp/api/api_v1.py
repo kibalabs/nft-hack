@@ -1,7 +1,7 @@
 import datetime
 from typing import Optional
 
-from core.api.kiba_router import KibaRouter
+from fastapi import APIRouter
 from fastapi import Response
 
 from mdtp.api.endpoints_v1 import BaseImageUrlResponse
@@ -34,8 +34,8 @@ from mdtp.cache_control_header import CacheControlHeader
 from mdtp.manager import MdtpManager
 
 
-def create_api(manager: MdtpManager) -> KibaRouter():
-    router = KibaRouter()
+def create_api(manager: MdtpManager) -> APIRouter():
+    router = APIRouter()
 
     @router.get('/networks/{network}/latest-base-image', response_model=BaseImageUrlResponse)
     async def get_latest_base_image_url(network: str) -> BaseImageUrlResponse: # request: BaseImageUrlRequest

@@ -1,4 +1,4 @@
-from core.api.kiba_router import KibaRouter
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 from mdtp.api.resources_v1 import ApiTokenMetadata
@@ -17,8 +17,8 @@ class GetTokenDefaultContentRequest(BaseModel):
 class GetTokenDefaultContentResponse(ApiTokenMetadata):
     pass
 
-def create_api(manager: MdtpManager) -> KibaRouter():
-    router = KibaRouter()
+def create_api(manager: MdtpManager) -> APIRouter():
+    router = APIRouter()
 
     @router.get('/token-metadatas/{tokenId}', response_model=GetTokenMetadataResponse)
     async def get_token_metadata(tokenId: str) -> GetTokenMetadataResponse: # request: GetTokenMetadataRequest

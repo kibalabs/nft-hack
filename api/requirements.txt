@@ -1,2 +1,2 @@
 Pillow==8.2.0
-kiba-core[database-psql, requester, queues, api, web3]==0.2.2
+kiba-core[database-psql, requester, queues, api, web3]==0.2.11.dev15
