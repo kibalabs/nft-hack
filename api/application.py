@@ -26,7 +26,7 @@ from mdtp.store.retriever import Retriever
 from mdtp.store.saver import Saver
 
 requestIdHolder = RequestIdHolder()
-name = os.environ.get('NAME', 'notd-api')
+name = os.environ.get('NAME', 'mdtp-api')
 version = os.environ.get('VERSION', 'local')
 environment = os.environ.get('ENV', 'dev')
 isRunningDebugMode = environment == 'dev'
