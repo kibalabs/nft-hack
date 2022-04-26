@@ -1,7 +1,8 @@
 import json
 import math
 import os
-from typing import Dict, Optional
+from typing import Dict
+from typing import Optional
 
 import asyncclick as click
 from core import logging

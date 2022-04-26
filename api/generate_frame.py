@@ -11,7 +11,8 @@ from colour import Color
 from core import logging
 from core.util import file_util
 
-from frame_util import Delaunator, SVG
+from frame_util import SVG
+from frame_util import Delaunator
 
 
 @dataclasses.dataclass
