@@ -17,6 +17,9 @@ class IpfsManager:
         return response
 
     async def upload_file_to_ipfs(self, fileContent: FileContent) -> str:
+        # response = await self.requester.post_form(url='https://api.pinata.cloud/pinning/pinFileToIPFS', formDataDict={'file': fileContent}, timeout=60)
+        # repsonseDict = json.loads(response.text)
+        # return repsonseDict["IpfsHash"]
         response = await self.requester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?pin=true', formDataDict={'file': fileContent}, timeout=60)
         repsonseDict = json.loads(response.text)
         return repsonseDict["Hash"]
@@ -34,3 +37,6 @@ class IpfsManager:
         cid = directoryUploadDict["Hash"]
         await self.requester.post(url=f'https://ipfs.infura.io:5001/api/v0/pin/add?arg={cid}', timeout=len(fileContentMap) * 10)
         return cid
+
+    # async def pin_hash(self, hash: str) -> None:
+    #     await self.requester.post_json(url='https://api.pinata.cloud/pinning/pinByHash', dataDict={'hashToPin': hash}, timeout=60)
