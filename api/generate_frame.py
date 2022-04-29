@@ -45,15 +45,16 @@ def angle_between_points(x1: float, y1: float, x2: float, y2: float) -> float:
 def generate_svg(tokenId: int) -> str:
     tokenX = int((tokenId - 1) % 100)
     tokenY = int((tokenId - 1) / 100)
+    print(tokenX, tokenY)
     if tokenX >= 37 and tokenX <= 61 and tokenY >= 40 and tokenY <= 59:
         colorConfigList = GOLD_COLOR_CONFIGS
     elif tokenX < 50 and tokenY < 50:
         colorConfigList = BLUE_COLOR_CONFIGS
     elif tokenX >= 50 and tokenY < 50:
         colorConfigList = DARKBLUE_COLOR_CONFIGS
-    elif tokenX <= 50 and tokenY >= 50:
+    elif tokenX < 50 and tokenY >= 50:
         colorConfigList = PURPLE_COLOR_CONFIGS
-    elif tokenX > 50 and tokenY >= 50:
+    elif tokenX >= 50 and tokenY >= 50:
         colorConfigList = PINK_COLOR_CONFIGS
 
     random.seed(hash(tokenId))
@@ -239,6 +240,7 @@ def generate_svg(tokenId: int) -> str:
     blockSegments = 10
     angleFragmentWidth = angleWidth / blockSegments
     colors = ['#4CC9F0', '#3F37C9', '#560BAD', '#F72585']
+    BRAND_EDGE_BUFFER = 20
     allTopPoints = []
     allBottomPoints = []
     for i in range(blocks):
@@ -246,8 +248,8 @@ def generate_svg(tokenId: int) -> str:
         bottomPoints = []
         for angleFraction in range(0, blockSegments + 1):
             angle = blockStart - (i * angleWidth) - (angleFraction * angleFragmentWidth)
-            x = (math.cos(angle) * (innerDistance + 20)) + centerX
-            y = (math.sin(angle) * (innerDistance + 20)) + centerY
+            x = (math.cos(angle) * (innerDistance + BRAND_EDGE_BUFFER)) + centerX
+            y = (math.sin(angle) * (innerDistance + BRAND_EDGE_BUFFER)) + centerY
             # half height
             # x = (math.cos(angle) * (innerDistance + (outerDistance - innerDistance) / 2)) + centerX
             # y = (math.sin(angle) * (innerDistance + (outerDistance - innerDistance) / 2)) + centerY
@@ -255,8 +257,45 @@ def generate_svg(tokenId: int) -> str:
             # x = (math.cos(angle) * (innerDistance + 0)) + centerX
             # y = (math.sin(angle) * (innerDistance + 0)) + centerY
             topPoints.append((x, y))
-            x = (math.cos(angle) * (outerDistance - 20)) + centerX
-            y = (math.sin(angle) * (outerDistance - 20)) + centerY
+            x = (math.cos(angle) * (outerDistance - BRAND_EDGE_BUFFER)) + centerX
+            y = (math.sin(angle) * (outerDistance - BRAND_EDGE_BUFFER)) + centerY
+            bottomPoints.append((x, y))
+        allTopPoints += topPoints
+        allBottomPoints += bottomPoints
+        # topString = ' '.join(f'{x},{y}' for x, y in topPoints)
+        # bottomString = ' '.join(f'{x},{y}' for x, y in reversed(bottomPoints))
+        # svg.polygon(f'{topString} {bottomString}', **{
+        #     'fill': colors[i],
+        #     'fill-opacity': '1',
+        #     'mask': "url(#ringmask)",
+        # })
+    allTopString = ' '.join(f'{x},{y}' for x, y in allTopPoints)
+    allBottomString = ' '.join(f'{x},{y}' for x, y in reversed(allBottomPoints))
+    svg.polygon(f'{allTopString} {allBottomString}', **{
+        'fill-opacity': '0',
+        'stroke': '#000000',
+        'stroke-width': '10',
+        'stroke-linecap': "round",
+        'stroke-opacity': "0.25",
+        'mask': "url(#ringmask)",
+    })
+    # Post the blocks on top of the grey border
+    for i in range(blocks):
+        topPoints = []
+        bottomPoints = []
+        for angleFraction in range(0, blockSegments + 1):
+            angle = blockStart - (i * angleWidth) - (angleFraction * angleFragmentWidth)
+            x = (math.cos(angle) * (innerDistance + BRAND_EDGE_BUFFER)) + centerX
+            y = (math.sin(angle) * (innerDistance + BRAND_EDGE_BUFFER)) + centerY
+            # half height
+            # x = (math.cos(angle) * (innerDistance + (outerDistance - innerDistance) / 2)) + centerX
+            # y = (math.sin(angle) * (innerDistance + (outerDistance - innerDistance) / 2)) + centerY
+            # full height
+            # x = (math.cos(angle) * (innerDistance + 0)) + centerX
+            # y = (math.sin(angle) * (innerDistance + 0)) + centerY
+            topPoints.append((x, y))
+            x = (math.cos(angle) * (outerDistance - BRAND_EDGE_BUFFER)) + centerX
+            y = (math.sin(angle) * (outerDistance - BRAND_EDGE_BUFFER)) + centerY
             bottomPoints.append((x, y))
         allTopPoints += topPoints
         allBottomPoints += bottomPoints
@@ -267,17 +306,6 @@ def generate_svg(tokenId: int) -> str:
             'fill-opacity': '1',
             'mask': "url(#ringmask)",
         })
-    allTopString = ' '.join(f'{x},{y}' for x, y in allTopPoints)
-    allBottomString = ' '.join(f'{x},{y}' for x, y in reversed(allBottomPoints))
-    svg.polygon(f'{allTopString} {allBottomString}', **{
-        'fill-opacity': '0',
-        'stroke': '#000000',
-        'stroke-width': '5',
-        'stroke-linecap': "round",
-        'stroke-opacity': "0.25",
-        'mask': "url(#ringmask)",
-    })
-
     # branded around
     # angleStart = math.pi / 2
     # blocks = 4
@@ -308,7 +336,6 @@ def generate_svg(tokenId: int) -> str:
     #         'mask': "url(#ringmask)",
     #     })
     return svg.to_string()
-
 
 
 def generate_default_points(color1: str, color2: str) -> List[Dict]:
@@ -395,8 +422,9 @@ GOLD_COLOR_CONFIGS = [
 async def run():
     outputDirectory = os.path.join('output', 'frames')
     await file_util.create_directory(directory=outputDirectory)
-    for tokenId in range(1, 10000 + 1):
-    # for tokenId in [3938, 4038, 5938, 6038]:
+    # for tokenId in range(1, 10000 + 1):
+    for tokenId in range(7910, 10000 + 1):
+    # for tokenId in [5037]:
         print(f'Generating {tokenId}')
         patternSvg = generate_svg(tokenId)
         with open(os.path.join(outputDirectory, f"{tokenId}.svg"), 'w') as output:

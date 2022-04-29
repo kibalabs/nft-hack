@@ -32,6 +32,7 @@ FUNNY_NUMBERS = {
     420: 'Baked',
     6969: 'Partay',
     4269: 'Wake-n-Bake',
+    1729: 'Balaji'
 }
 
 def is_prime(n):
@@ -68,16 +69,11 @@ def get_traits(tokenId: int) -> Dict[str, str]:
         location = 'North-West'
     elif tokenX >= 50 and tokenY < 50:
         location = 'North-East'
-    elif tokenX <= 50 and tokenY >= 50:
+    elif tokenX < 50 and tokenY >= 50:
         location = 'South-West'
-    elif tokenX > 50 and tokenY >= 50:
+    elif tokenX >= 50 and tokenY >= 50:
         location = 'South-East'
     traits['Location'] = location
-    specialNumber = FUNNY_NUMBERS.get(tokenId)
-    if not specialNumber:
-        if '69' in str(tokenId):
-            specialNumber = 'Sexy'
-    traits['Funny Number'] = specialNumber or None
     if tokenId in {1, 100, 9901, 10000}:
         traits['Position'] = 'Corner'
     elif tokenId <= 100 or tokenId >= 9901 or tokenId % 100 == 1 or tokenId % 100 == 99:
@@ -86,17 +82,22 @@ def get_traits(tokenId: int) -> Dict[str, str]:
         traits['Position'] = 'Middle'
     else:
         traits['Position'] = None
-    traits['OG'] = tokenId in VALID_TOKEN_IDS
+    specialNumber = FUNNY_NUMBERS.get(tokenId)
+    # if not specialNumber:
+    #     if '69' in str(tokenId):
+    #         specialNumber = 'Sexy'
+    traits['Special'] = specialNumber or None
+    traits['OG'] = 'Yes' if tokenId in VALID_TOKEN_IDS else 'No'
     if is_fibonacci(tokenId):
-        traits['Math Nerd'] = 'Fibonacci'
+        traits['Math'] = 'Fibonacci'
     elif is_prime(tokenId):
-        traits['Math Nerd'] = 'Prime'
+        traits['Math'] = 'Prime'
     elif is_square(tokenId):
-        traits['Math Nerd'] = 'Square'
+        traits['Math'] = 'Square'
     elif str(tokenId) == str(tokenId)[::-1]:
-        traits['Math Nerd'] = 'Palindrome'
+        traits['Math'] = 'Palindrome'
     else:
-        traits['Math Nerd'] = None
+        traits['Math'] = None
     return traits
 
 def draw_gradient(image: Image, start_color: str, end_color: str) -> Image:
@@ -205,31 +206,73 @@ def generate_image(tokenId: int) -> Image:
     return image
 
 def generate_rounded_image(tokenId: int) -> Image:
-    frameWidth = 80
+    frameWidth = 120
     image = Image.new('RGBA', (IMAGE_SIZE, IMAGE_SIZE), (0, 0, 0))
 
     tokenIndex = tokenId - 1
-    xCoord = (tokenIndex % 100) * (IMAGE_SIZE / 100)
-    yCoord = (int(tokenIndex / 100)) * (IMAGE_SIZE / 100)
+    xCoord = int(tokenIndex % 100) * (IMAGE_SIZE / 100)
+    yCoord = int(tokenIndex / 100) * (IMAGE_SIZE / 100)
 
     # Draw grid
     image = draw_grid(image)
     imageDraw = ImageDraw.Draw(image)
 
     # Draw Box at Token Number
-    # xCircle = xCoord
-    # yCircle = yCoord
+    # print(xCoord, yCoord)
+    # xSquare = ((xCoord / IMAGE_SIZE) * 2) - 1
+    # ySquare = ((1 - (yCoord / IMAGE_SIZE)) * 2) - 1
+    # print(xSquare, ySquare)
+    # # xCircle = xSquare * math.sqrt(xSquare**2 + ySquare**2 - (xSquare**2 * ySquare**2)) / math.sqrt(xSquare**2 + ySquare**2)
+    # # yCircle = ySquare * math.sqrt(xSquare**2 + ySquare**2 - (xSquare**2 * ySquare**2)) / math.sqrt(xSquare**2 + ySquare**2)
+    # xCircle = ((xSquare * math.sqrt(1 - ySquare * ySquare / 2)) + 1) / 2.0
+    # yCircle = ((ySquare * math.sqrt(1 - xSquare * xSquare / 2)) + 1) / 2.0
+    # print(xCircle, yCircle)
     # width = 10
-    # imageDraw.rectangle((xCircle, yCircle, xCircle + width, yCircle + width), fill=WHITE)
+    # xPos = int(frameWidth + (xCircle * (IMAGE_SIZE - (frameWidth * 2.0))))
+    # yPos = int(frameWidth + ((1 - yCircle) * (IMAGE_SIZE - (frameWidth * 2.0))))
+    # print(xPos, yPos)
+    # gridLineWidth = 2
+    # boxSize = 20
+    # gridSize = boxSize / 2
+    # gridOpacity = 0.4
+    # overlay = Image.new('RGBA', image.size, (0, 0, 0, 0))
+    # imageDraw = ImageDraw.Draw(overlay)  # Create a context for drawing things on it.
+    # imageDraw.rectangle((xPos, yPos, xPos + width, yPos + width), fill=WHITE)
+    # xPos -= width / 2
+    # yPos -= width / 2
+    # grid2LineWidth = 2
+    # grid2Size = boxSize
+    # grid2Opacity = 0.1
+    # # outergrid
+    # imageDraw.rectangle((xPos, yPos-grid2Size, xPos + grid2LineWidth, yPos-grid2Size+grid2Size), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos+boxSize-grid2LineWidth, yPos-grid2Size, xPos+boxSize-grid2LineWidth + grid2LineWidth, yPos-grid2Size+grid2Size), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos, yPos+boxSize, xPos + grid2LineWidth, yPos+boxSize+grid2Size), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos+boxSize-grid2LineWidth, yPos+boxSize, xPos+boxSize-grid2LineWidth + grid2LineWidth, yPos+boxSize+grid2Size), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos-grid2Size, yPos, xPos-grid2Size + grid2Size, yPos+grid2LineWidth), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos-grid2Size, yPos+boxSize-grid2LineWidth, xPos-grid2Size + grid2Size, yPos+boxSize-grid2LineWidth+grid2LineWidth), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos+boxSize, yPos, xPos+boxSize + grid2Size, yPos+grid2LineWidth), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos+boxSize, yPos+boxSize-grid2LineWidth, xPos+boxSize + grid2Size, yPos+boxSize-grid2LineWidth+grid2LineWidth), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos-gridSize*2, yPos-gridSize-grid2LineWidth, xPos-gridSize*2 + boxSize*3, yPos-gridSize-grid2LineWidth+grid2LineWidth), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos-gridSize*2, yPos+boxSize+gridSize, xPos-gridSize*2 + boxSize*3, yPos+boxSize+gridSize+grid2LineWidth), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos-gridSize-grid2LineWidth, yPos-gridSize*2, xPos-gridSize-grid2LineWidth + grid2LineWidth, yPos-gridSize*2+boxSize*3), fill=(25, 25, 25))
+    # imageDraw.rectangle((xPos+boxSize+gridSize, yPos-gridSize*2, xPos+boxSize+gridSize + grid2LineWidth, yPos-gridSize*2+boxSize*3), fill=(25, 25, 25))
+    # # main grid
+    # imageDraw.rectangle((xPos, yPos-gridSize, xPos + gridLineWidth, yPos-gridSize + gridSize*2+boxSize), fill=(100, 100, 100))
+    # imageDraw.rectangle((xPos+boxSize-gridLineWidth, yPos-gridSize, xPos+boxSize-gridLineWidth+gridLineWidth, yPos-gridSize+gridSize*2+boxSize), fill=(100, 100, 100))
+    # imageDraw.rectangle((xPos-gridSize, yPos, xPos-gridSize+gridSize*2+boxSize, yPos+gridLineWidth), fill=(100, 100, 100))
+    # imageDraw.rectangle((xPos-gridSize, yPos+boxSize-gridLineWidth, xPos-gridSize+gridSize*2+boxSize, yPos+boxSize-gridLineWidth+gridLineWidth), fill=(100, 100, 100))
+    # image = Image.alpha_composite(image, overlay)
 
     # Draw Text
     title = "MDTP"
     subtitle = f'#{tokenId}'
+    imageDraw = ImageDraw.Draw(image)
     titleSize = imageDraw.textsize(text=title, font=FONT)
     subtitleSize = imageDraw.textsize(text=subtitle, font=FONT)
-    imageDraw = ImageDraw.Draw(image)
-    imageDraw.text((IMAGE_SIZE / 2.0 - titleSize[0] / 2.0, IMAGE_SIZE / 2.0 - titleSize[1]), text=title, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
-    imageDraw.text((IMAGE_SIZE / 2.0 - subtitleSize[0] / 2.0, IMAGE_SIZE / 2.0), text=subtitle, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
+    # titleTop = (IMAGE_SIZE * 3.0 / 4.0 - titleSize[1] - frameWidth / 2) if yCoord < 500 else (IMAGE_SIZE / 4.0 - titleSize[1] + frameWidth / 2)
+    titleTop = IMAGE_SIZE / 2.0 - titleSize[1]
+    imageDraw.text((IMAGE_SIZE / 2.0 - titleSize[0] / 2.0, titleTop), text=title, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
+    imageDraw.text((IMAGE_SIZE / 2.0 - subtitleSize[0] / 2.0, titleTop + titleSize[1]), text=subtitle, font=FONT, fill=WHITE, stroke_width=10, stroke_fill=BLACK)
 
     with Image.open(fp=f'./output/frames/{tokenId}.png') as tokenImage:
         frameImage = tokenImage.resize(size=(IMAGE_SIZE, IMAGE_SIZE))
@@ -244,14 +287,18 @@ def generate_rounded_image(tokenId: int) -> Image:
 @click.option('-v', '--v1', 'shouldGenerateForV1', required=False, is_flag=True, default=False)
 async def run(tokenId: Optional[int], shouldUpload: bool, shouldGenerateForV1: bool):
     tokenIds = [tokenId] if tokenId else list(range(1, 10000 + 1))
+    # tokenIds = [5001, 711, 1, 100, 5050]
 
     infuraIpfsAuth = BasicAuthentication(username=os.environ['INFURA_IPFS_PROJECT_ID'], password=os.environ['INFURA_IPFS_PROJECT_SECRET'])
-    infuraIpfsRequester = Requester(headers={'authorization': f'Basic {infuraIpfsAuth.to_string()}'})
-    ipfsManager = IpfsManager(requester=infuraIpfsRequester)
+    ipfsRequester = Requester(headers={'authorization': f'Basic {infuraIpfsAuth.to_string()}'})
+    # pinataApiKey = os.environ['PINATA_API_KEY']
+    # ipfsRequester = Requester(headers={'Authorization': f'Bearer {pinataApiKey}'})
+    ipfsManager = IpfsManager(requester=ipfsRequester)
 
-    imagesOutputDirectory = f'output/images'
+    imagesOutputDirectory = 'output/images' if not shouldGenerateForV1 else 'output/images-v1'
     await file_util.create_directory(directory=imagesOutputDirectory)
-    metadataOutputDirectory = f'output/metadatas'
+    framesOutputDirectory = 'output/frames'
+    metadataOutputDirectory = 'output/metadatas' if not shouldGenerateForV1 else 'output/metadatas-v1'
     await file_util.create_directory(directory=metadataOutputDirectory)
 
     for tokenId in tokenIds:
@@ -269,18 +316,26 @@ async def run(tokenId: Optional[int], shouldUpload: bool, shouldGenerateForV1: b
             with open(imagePath, 'rb') as imageFile:
                 cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
             imageUrl = f'ipfs://{cid}'
+        framePath = os.path.join(framesOutputDirectory, f'{tokenId}.png')
+        frameUrl = framePath
+        if shouldUpload:
+            print(f'Uploading frame for {tokenId}')
+            with open(framePath, 'rb') as frameFile:
+                cid = await ipfsManager.upload_file_to_ipfs(fileContent=frameFile)
+            frameUrl = f'ipfs://{cid}'
         print(f'Generating metadata for {tokenId}')
         metadata = {
             "tokenId": tokenId,
             "tokenIndex": tokenId - 1,
             "name": f'MDTP #{tokenId}' if isValid else f'INVALID MDTP #{tokenId}',
             "description": (
-                f"This NFT gives you full ownership of block {tokenId} on milliondollartokenpage.com (MDTP). MDTP is a digital content-sharing space powered by Ethereum and NFTs. Each block can be bought as a unique NFT, set to display the content you like, and later re-sold. Show off and share your content, and own a piece of crypto history!"
+                f"This an official TokenPage NFT! This NFT gives you special access in the TokenPage community. It also gives you full ownership of block {tokenId} on https://milliondollartokenpage.com/ (MDTP), a content-sharing space where you can show off your best work. Plus, it also gives you a gorgeous frame to display around your PFP and show off that you belong to the TokenPage community, set your frame now at https://pfpkit.xyz! "
                 if isValid else
                 f'DO NOT BUY THIS, DO NOT TRADE THIS. This token was part of MDTP v1 but was not claimed in time so is now useless.'
             ),
             "image": imageUrl,
-            "url": None,
+            "frameImage": frameUrl if isValid else None,
+            "url": f'https://milliondollartokenpage.com/tokens/{tokenId}',
             "attributes": [{'trait_type': key, 'value': value} for key, value in get_traits(tokenId=tokenId).items()] if isValid else []
         }
         with open(os.path.join(metadataOutputDirectory, f'{tokenId}.json'), "w") as metadataFile:
@@ -293,11 +348,11 @@ async def run(tokenId: Optional[int], shouldUpload: bool, shouldGenerateForV1: b
         for openFile in fileContentMap.values():
             openFile.close()
         print(f'Uploaded metadata to ipfs://{cid}')
-    await infuraIpfsRequester.close_connections()
+    await ipfsRequester.close_connections()
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     run(_anyio_backend='asyncio')
 
-# $ py create_consolidated_metadata.py -d ./output/metadatas -o output/metadata_consolidated.json
+# py create_consolidated_metadata.py -d ./output/metadatas -o output/metadata_consolidated.json
 # aws --profile kiba s3 sync ./output/images/ s3://mdtp-images/images/ --acl public-read
