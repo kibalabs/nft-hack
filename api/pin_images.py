@@ -30,6 +30,10 @@ v2Ids = [
     5972, 5993, 5994, 5995, 5996, 6011, 6022, 6027, 6028, 6033, 6034, 6035, 6036, 6037, 6038, 6039, 6040, 6041, 6042, 6043, 6044, 6045, 6046, 6047, 6048, 6049, 6050, 6051, 6052, 6053, 6054, 6055, 6056, 6057, 6058, 6059, 6060, 6061, 6062, 6063, 6064, 6066, 6067, 6079, 6093, 6094, 6095, 6096, 6111, 6127, 6128, 6132, 6133, 6134, 6135, 6136, 6137, 6138, 6139, 6140, 6141, 6142, 6143, 6144, 6145, 6146, 6147, 6148, 6149, 6150, 6151, 6152, 6153, 6154, 6155, 6156, 6157, 6158, 6159, 6160, 6161, 6163, 6174, 6193, 6194, 6195, 6196, 6211, 6233, 6234, 6235, 6236, 6237, 6240, 6241, 6243, 6244, 6245, 6246, 6247, 6248, 6249, 6250, 6251, 6252, 6253, 6254, 6255, 6256, 6257, 6258, 6259, 6261, 6262, 6293, 6294, 6295, 6296, 6311, 6333, 6334, 6335, 6340, 6341, 6343, 6344, 6345, 6346, 6347, 6348, 6349, 6350, 6351, 6352, 6353, 6354, 6355, 6356, 6357, 6358, 6359, 6361, 6362, 6365, 6393, 6394, 6395, 6396, 6411, 6433, 6434, 6435, 6443, 6444, 6445, 6446, 6447, 6448, 6449, 6450, 6451, 6452, 6453, 6454, 6455, 6456, 6457, 6458, 6459, 6460, 6461, 6462, 6470, 6493, 6494, 6495, 6496, 6511, 6517, 6518, 6519, 6520, 6521, 6522, 6523, 6524, 6529, 6539, 6543, 6544, 6545, 6546, 6547, 6548, 6549, 6550, 6551, 6552, 6553, 6554, 6555, 6556, 6557, 6558, 6559, 6560, 6561, 6562, 6574, 6575, 6576, 6611, 6617, 6618, 6619, 6620, 6621, 6622, 6623, 6624, 6634, 6643, 6644, 6645, 6646, 6647, 6648, 6649, 6650, 6651, 6652, 6653, 6654, 6660, 6661, 6662, 6666, 6674, 6675, 6676, 6711, 6717, 6718, 6719, 6720, 6721, 6722, 6723, 6724, 6729, 6743, 6744, 6745, 6746, 6747, 6748, 6752, 6753, 6754, 6761, 6774, 6775, 6776, 6817, 6818, 6819, 6820, 6821, 6822, 6823, 6824, 6834, 6835, 6836, 6843, 6844, 6845, 6846, 6847, 6848, 6852, 6853, 6854, 6855, 6934, 6935, 6942, 6952, 6953, 6954, 6969, 6973, 6983, 7050, 7051, 7061, 7062, 7083, 7094, 7132, 7133, 7134, 7135, 7150, 7151, 7161, 7162, 7232, 7233, 7234, 7235, 7332, 7333, 7334, 7335, 7432, 7433, 7434, 7435, 7487, 7488, 7515, 7532, 7533, 7534, 7535, 7547, 7585, 7587, 7588, 7632, 7633, 7634, 7635, 7688, 7761, 7762, 7763, 7764, 7765, 7777, 7861, 7862, 7863, 7864, 7865, 7958, 7959, 7961, 7962, 7963, 7964, 7965, 8037, 8038, 8039, 8058, 8059, 8061, 8062, 8063, 8064, 8065, 8137, 8138, 8139, 8161, 8162, 8163, 8164, 8165, 8214, 8237, 8238, 8239, 8386, 8447, 8627, 8750, 8760, 8761, 8762, 8763, 8797, 8838, 8839, 8860, 8861, 8862, 8863, 8867, 8868, 8869, 8870, 8888, 8911, 8912, 8938, 8939, 8943, 8960, 8961, 8962, 8963, 8967, 8968, 8969, 8970, 9000, 9042, 9043, 9044, 9045, 9060, 9061, 9062, 9063, 9142, 9143, 9144, 9145, 9177, 9200, 9242, 9243, 9244, 9245, 9301, 9342, 9343, 9344, 9345, 9401, 9480, 9501, 9538, 9559, 9601, 9701, 9743, 9796, 9797, 9798, 9896, 9897, 9898, 9901, 9950, 9996, 9997, 9998, 9999, 10000,
 ]
 
+cids = [
+    'QmReVRvNy148M1aTSw5upZVRR3EmJBNsX36xE1kcTtw6L8',
+]
+
 @click.command()
 async def run():
     # infuraIpfsAuth = BasicAuthentication(username=os.environ['INFURA_IPFS_PROJECT_ID'], password=os.environ['INFURA_IPFS_PROJECT_SECRET'])
@@ -82,26 +86,30 @@ async def run():
     #         cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
     #     print(cid)
 
-    image2OutputDirectory = 'output/images'
-    image2FrameDirectory = 'output/frames'
-    for tokenId in v2Ids:
-        print(tokenId)
-        with open(os.path.join(image2OutputDirectory, f'{tokenId}.png'), 'rb') as imageFile:
-            cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+    # image2OutputDirectory = 'output/images'
+    # image2FrameDirectory = 'output/frames'
+    # for tokenId in v2Ids:
+    #     print(tokenId)
+    #     with open(os.path.join(image2OutputDirectory, f'{tokenId}.png'), 'rb') as imageFile:
+    #         cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+    #     print(cid)
+    #     with open(os.path.join(image2FrameDirectory, f'{tokenId}.png'), 'rb') as imageFile:
+    #         cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+    #     print(cid)
+    # image1OutputDirectory = 'output/images-v1'
+    # image1FrameDirectory = 'output/frames'
+    # for tokenId in v1Ids:
+    #     print(tokenId)
+    #     with open(os.path.join(image1OutputDirectory, f'{tokenId}.png'), 'rb') as imageFile:
+    #         cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+    #     print(cid)
+    #     with open(os.path.join(image1FrameDirectory, f'{tokenId}.png'), 'rb') as imageFile:
+    #         cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
+    #     print(cid)
+
+    for cid in cids:
         print(cid)
-        with open(os.path.join(image2FrameDirectory, f'{tokenId}.png'), 'rb') as imageFile:
-            cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
-        print(cid)
-    image1OutputDirectory = 'output/images-v1'
-    image1FrameDirectory = 'output/frames'
-    for tokenId in v1Ids:
-        print(tokenId)
-        with open(os.path.join(image1OutputDirectory, f'{tokenId}.png'), 'rb') as imageFile:
-            cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
-        print(cid)
-        with open(os.path.join(image1FrameDirectory, f'{tokenId}.png'), 'rb') as imageFile:
-            cid = await ipfsManager.upload_file_to_ipfs(fileContent=imageFile)
-        print(cid)
+        await ipfsManager.pin_cid(cid=cid)
 
     await ipfsRequester.close_connections()
 

@@ -89,9 +89,8 @@ class MdtpManager:
 
     async def _get_json_content(self, url: str) -> Dict[str, Any]:
         if url.startswith('ipfs://'):
-            response = await self.ipfsManager.read_file(cid=url.replace('ipfs://', ''))
-        else:
-            response = await self.requester.make_request(method='GET', url=url)
+            url = url.replace('ipfs://', 'https://kibalabs.mypinata.cloud/ipfs/')
+        response = await self.requester.make_request(method='GET', url=url)
         return json.loads(response.text)
 
     async def get_token_metadata(self, network: str, tokenId: str) -> TokenMetadata:
@@ -233,9 +232,8 @@ class MdtpManager:
             logging.info(f'Drawing grid item {gridItem.gridItemId}')
             imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
             if imageUrl.startswith('ipfs://'):
-                imageResponse = await self.ipfsManager.read_file(cid=imageUrl.replace('ipfs://', ''))
-            else:
-                imageResponse = await self.requester.get(url=imageUrl)
+                imageUrl = imageUrl.replace('ipfs://', 'https://kibalabs.mypinata.cloud/ipfs/')
+            imageResponse = await self.requester.get(url=imageUrl)
             contentBuffer = BytesIO(imageResponse.content)
             with PILImage.open(fp=contentBuffer) as tokenImage:
                 image = tokenImage.resize(size=(tokenWidth, tokenHeight))
@@ -483,9 +481,8 @@ class MdtpManager:
                 logging.info(f'Drawing grid item {gridItem.gridItemId}')
                 imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
                 if imageUrl.startswith('ipfs://'):
-                    imageResponse = await self.ipfsManager.read_file(cid=imageUrl.replace('ipfs://', ''))
-                else:
-                    imageResponse = await self.requester.get(url=imageUrl)
+                    imageUrl = imageUrl.replace('ipfs://', 'https://kibalabs.mypinata.cloud/ipfs/')
+                imageResponse = await self.requester.get(url=imageUrl)
                 contentBuffer = BytesIO(imageResponse.content)
                 with PILImage.open(fp=contentBuffer) as tokenImage:
                     image = tokenImage.resize(size=(tokenWidth, tokenHeight))
