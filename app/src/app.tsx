@@ -94,9 +94,8 @@ export const App = (props: IAppProps): React.ReactElement => {
 
   useInitialization((): void => {
     loadWeb3();
-    tracker.initialize().then((): void => {
-      tracker.trackApplicationOpen();
-    });
+    tracker.initialize();
+    tracker.trackApplicationOpen();
     const analyticsScript = document.createElement('script');
     analyticsScript.text = `
       window.dataLayer = window.dataLayer || [];
