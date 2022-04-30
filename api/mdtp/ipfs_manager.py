@@ -1,42 +1,26 @@
 import json
 from typing import Dict
-from typing import Optional
 
 from core.requester import FileContent
-from core.requester import KibaResponse
 from core.requester import Requester
 
 
 class IpfsManager:
 
-    def __init__(self, requester: Requester):
-        self.requester = requester
-
-    async def read_file(self, cid: str, outputFilePath: Optional[str] = None) -> KibaResponse:
-        response = await self.requester.post(url=f'https://ipfs.infura.io:5001/api/v0/cat?arg={cid}', outputFilePath=outputFilePath)
-        return response
+    def __init__(self, pinataRequester: Requester):
+        self.pinataRequester = pinataRequester
 
     async def upload_file_to_ipfs(self, fileContent: FileContent) -> str:
-        # response = await self.requester.post_form(url='https://api.pinata.cloud/pinning/pinFileToIPFS', formDataDict={'file': fileContent}, timeout=60)
-        # repsonseDict = json.loads(response.text)
-        # return repsonseDict["IpfsHash"]
-        response = await self.requester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?pin=true', formDataDict={'file': fileContent}, timeout=60)
+        response = await self.pinataRequester.post_form(url='https://api.pinata.cloud/pinning/pinFileToIPFS', formDataDict={'file': fileContent}, timeout=60)
         repsonseDict = json.loads(response.text)
-        return repsonseDict["Hash"]
+        return repsonseDict["IpfsHash"]
 
     async def upload_files_to_ipfs(self, fileContentMap: Dict[str, FileContent]) -> str:
-        # NOTE(krishan711): pinning straight away seems to fail so this uploads first and then pins separately
-        response = await self.requester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?wrap-with-directory=true&silent=true&pin=false', formDataDict=fileContentMap, timeout=len(fileContentMap) * 10)
-        allUploadDicts = []
-        for line in response.text.split('\n'):
-            if line:
-                allUploadDicts.append(json.loads(line))
-        directoryUploadDict = next((uploadDict for uploadDict in allUploadDicts if uploadDict['Name'] == ''), None)
-        if not directoryUploadDict:
-            raise Exception(f'Failed to find directory upload: {response.text}')
-        cid = directoryUploadDict["Hash"]
-        await self.requester.post(url=f'https://ipfs.infura.io:5001/api/v0/pin/add?arg={cid}', timeout=len(fileContentMap) * 10)
-        return cid
+        # NOTE(krishan711): we need the leading underscore so everything is treated as one directory rather than individual files (pinata quirk)
+        pinataFiles = [('file', (f'_/{filename}', value)) for filename, value in fileContentMap.items()]
+        response = await self.pinataRequester.post_form(url='https://api.pinata.cloud/pinning/pinFileToIPFS', formDataDict={'a': 'b'}, formFiles=pinataFiles, timeout=len(fileContentMap) * 10)
+        repsonseDict = json.loads(response.text)
+        return repsonseDict["IpfsHash"]
 
-    # async def pin_hash(self, hash: str) -> None:
-    #     await self.requester.post_json(url='https://api.pinata.cloud/pinning/pinByHash', dataDict={'hashToPin': hash}, timeout=60)
+    async def pin_cid(self, cid: str) -> None:
+        await self.pinataRequester.post_json(url='https://api.pinata.cloud/pinning/pinByHash', dataDict={'hashToPin': cid})
