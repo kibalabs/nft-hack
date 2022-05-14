@@ -139,7 +139,7 @@ export const TokenPage = (): React.ReactElement => {
   };
 
   const onUseFrameClicked = (): void => {
-    window.open('https://pfpkit.xyz')
+    window.open('https://pfpkit.xyz');
   };
 
   const onMintClicked = (): void => {
