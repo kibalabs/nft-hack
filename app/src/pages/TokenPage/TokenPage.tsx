@@ -138,6 +138,10 @@ export const TokenPage = (): React.ReactElement => {
     navigator.navigateTo(`/tokens/${groupTokenId}/update`);
   };
 
+  const onUseFrameClicked = (): void => {
+    window.open('https://pfpkit.xyz');
+  };
+
   const onMintClicked = (): void => {
     navigator.navigateTo(`/tokens/${tokenId}/mint`);
   };
@@ -229,6 +233,7 @@ export const TokenPage = (): React.ReactElement => {
                         <Button variant={'primary'} text='Update group' onClicked={onUpdateGroupClicked} />
                       )}
                     </Stack>
+                    <Button variant={'secondary'} text='Use frame with PFP Kit ✨' onClicked={onUseFrameClicked} />
                     { tokenData.isSetForMigration && (
                       <React.Fragment>
                         {migrationTransactionReceipt ? (
