@@ -7,14 +7,6 @@ export const AboutPage = (): React.ReactElement => {
   const mainText = `
 **MDTP is the Homepage of the Metaverse! 🔮**
 
-Show off your NFTs on space that you own as an NFT 😎
-
-Its [milliondollarhomepage.com](http://milliondollarhomepage.com/) with crypto rocket-fuel 🚀
-
-&nbsp;
-
-**MDTP is easy to use! 👌**
-
 Check out what's hot by scrolling and selecting tokens.
 
 ![Blocks](/assets/pixel-block.mp4)
@@ -33,7 +25,7 @@ It's that simple! Join us now to own a piece of crypto history! ❤️
   const learnMoreText = `
 **Don't get crypto and want to learn more? Read on... 🤓**
 
-When created in 2005 milliondollarhomepage acted as an advertising board on the internet, selling one million pixels on the web for $1 each. Back then the web was still very static and there were no digital native forms of transacting value so when pixels were bought and set, they could no longer be re-sold or updated.
+When it was created in 2005, [milliondollarhomepage.com](http://milliondollarhomepage.com/) acted as an advertising board on the internet, selling one million pixels on the web for $1 each. Back then the web was still very static and there were no digital native forms of transacting value so when pixels were bought and set, they could no longer be re-sold or updated.
 
 Today the internet is a lot more fun to play with and cryptocurrencies like [Bitcoin](https://bitcoin.org/en/faq) and [Ethereum](https://ethereum.org/en/what-is-ethereum/) have ushered in a whole new age known as [Web3](https://ethereum.org/en/developers/docs/web2-vs-web3/) where digitally native money and assets, represented by [tokens](https://blog.coinbase.com/a-beginners-guide-to-ethereum-tokens-fbd5611fe30b) and [NFTs](https://opensea.io/blog/guides/non-fungible-tokens/), can be transacted openly [peer-to-peer](https://www.investopedia.com/terms/p/peertopeer-p2p-service.asp) across the internet. MDTP infuses these modern innovations into the original idea to build a much more fun and functional virtual space to share content on anything you like!
 
@@ -65,7 +57,7 @@ The more people know about the site the more demand will rise and subsequently t
   return (
     <React.Fragment>
       <Head headId='about'>
-        <title>{'About | Million Dollar Token Page'}</title>
+        <title>{'Million Dollar Token Page'}</title>
       </Head>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Start} isScrollableVertically={true} paddingVertical={PaddingSize.Wide3} paddingHorizontal={PaddingSize.Wide2} shouldAddGutters={true} defaultGutter={PaddingSize.Wide1}>
         <Text variant='header1'>{'Million Dollar Token Page'}</Text>
