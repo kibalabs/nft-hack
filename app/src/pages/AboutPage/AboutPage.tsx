@@ -52,6 +52,17 @@ The first relates to the fact that when data is written into the Ethereum blockc
 Secondly, as an owner of this NFT, you can use external marketplace like [opensea](https://opensea.io/) to re-sell that block for whatever price you like. So if you have a block that someone else finds particularly desirable, they can bid up prices to buy them off you, and an NFT you bought for say $100 could sell for $1000 or more depending on demand - the sky is the limit!
 
 The more people know about the site the more demand will rise and subsequently the price of your NFTs! So make sure to share the site with your friends and followers and own a piece of crypto history! ❤️
+
+**Anything else 🤔**
+
+Most NFT projects today are widely seen on twitter, discord and even IRL because they come with a profile picture.
+
+With MillionDollarTokenPage we give you something even better - we give you a profile frame 🖼!
+
+You can [read more about Frames here](https://blog.milliondollartokenpage.com/frames). We think they are the future.
+
+Once you own a token, you can use [PFP Kit](https://pfpkit.xyz) to create a new PFP with your other NFTs overlaid by an awesome MDTP Frame.
+" />
   `;
 
   return (
