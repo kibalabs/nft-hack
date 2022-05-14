@@ -569,7 +569,7 @@ class MdtpManager:
                     await self.update_token_deferred(network=contract.network, tokenId=tokenId)
         if not resizableImageUrl:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
-        if (gridItem.groupId and gridItem.groupId != groupId) or gridItem.ownerId != ownerId:
+        if gridItem.groupId and (gridItem.groupId != groupId) or gridItem.ownerId != ownerId:
             await self.update_grid_item_group_image_deferred(network=network, ownerId=ownerId, groupId=groupId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:
