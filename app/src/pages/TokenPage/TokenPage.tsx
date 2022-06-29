@@ -152,11 +152,11 @@ export const TokenPage = (): React.ReactElement => {
     }
     if (isOwned) {
       if (tokenMetadata.url) {
-        return `Frens, check out "${tokenMetadata.name}" (${tokenMetadata.url}), looks legit! I just found it on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
+        return `Frens, check out "${tokenMetadata.name}" (${tokenMetadata.url}), looks legit! I just found it on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @tokenpagexyz, LFG! 🚀`;
       }
-      return `Frens, check out "${tokenMetadata.name}", looks legit! I just found it on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @mdtp_app, LFG! 🚀`;
+      return `Frens, check out "${tokenMetadata.name}", looks legit! I just found it on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @tokenpagexyz, LFG! 🚀`;
     }
-    return `Frens, you can mint this NFT on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} and show off your JPGs. @mdtp_app I'm gonna ape in, LFG! 🚀`;
+    return `Frens, you can mint this NFT on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} and show off your JPGs. @tokenpagexyz I'm gonna ape in, LFG! 🚀`;
   };
 
   const isOnChain = gridItem && gridItem.source === 'onchain';

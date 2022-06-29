@@ -129,6 +129,9 @@ export const getProductOpenseaUrl = (network: string): string | null => {
     return 'https://testnets.opensea.io/collection/milliondollartokenpage-sgxa7mknyi';
   }
   if (network === 'mainnet1') {
+    return 'https://opensea.io/collection/milliondollartokenpage-v1';
+  }
+  if (network === 'mainnet2') {
     return 'https://opensea.io/collection/milliondollartokenpage';
   }
   return null;

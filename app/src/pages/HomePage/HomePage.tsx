@@ -199,9 +199,9 @@ export const HomePage = (): React.ReactElement => {
                     <Button variant='overlay' text='About MDTP' iconLeft={<KibaIcon iconId='ion-help-circle' />} target={'/about'} />
                     <Button variant='overlay' text='View Roadmap' iconLeft={<KibaIcon iconId='ion-map' />} target={'/roadmap'} />
                     <Button variant='overlay' text='Refer a Friend' iconLeft={<KibaIcon iconId='ion-share' />} target={'/share'} />
-                    <Button variant='overlay' text='Read our Blog' iconLeft={<KibaIcon iconId='ion-newspaper' />} target={'https://blog.milliondollartokenpage.com'} />
+                    <Button variant='overlay' text='Read our Blog' iconLeft={<KibaIcon iconId='ion-newspaper' />} target={'https://blog.tokenpage.xyz'} />
                     <Button variant='overlay' text='Join Discord' iconLeft={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/bUeQjW4KSN'} />
-                    <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/mdtp_app'} />
+                    <Button variant='overlay' text='Follow Twitter' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/tokenpagexyz'} />
                     <Button variant='overlay' text='Open Marketplace' iconLeft={<KibaIcon iconId='ion-cart' />} target={getProductOpenseaUrl(network || '') || ''} />
                   </Stack>
                 </HidingView>

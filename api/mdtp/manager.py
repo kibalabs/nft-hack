@@ -552,24 +552,27 @@ class MdtpManager:
             metadata = await self.get_token_metadata(network=network, tokenId=tokenId)
             title = title or metadata.title
             imageUrl = imageUrl or metadata.image
+        isNew = False
+        isChanged = False
         try:
             gridItem = await self.retriever.get_grid_item_by_token_id_network(tokenId=tokenId, network=network)
         except NotFoundException:
             logging.info(f'Creating token {network}/{tokenId}')
             gridItem = await self.saver.create_grid_item(tokenId=tokenId, network=network, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=None, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
-        resizableImageUrl = gridItem.resizableImageUrl
-        if gridItem.imageUrl != imageUrl:
-            resizableImageUrl = None
-        if gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId:
-            logging.info(f'Saving token {network}/{tokenId}')
+            isNew = True
+        resizableImageUrl = gridItem.resizableImageUrl if gridItem.imageUrl == imageUrl else None
+        isChanged = gridItem.contentUrl != contentUrl or gridItem.title != title or gridItem.description != description or gridItem.imageUrl != imageUrl or gridItem.resizableImageUrl != resizableImageUrl or gridItem.url != url or gridItem.groupId != groupId or gridItem.ownerId != ownerId
+        if isChanged:
+            logging.info(f'Updating token {network}/{tokenId}')
             await self.saver.update_grid_item(gridItemId=gridItem.gridItemId, contentUrl=contentUrl, title=title, description=description, imageUrl=imageUrl, resizableImageUrl=resizableImageUrl, url=url, groupId=groupId, ownerId=ownerId, blockNumber=blockNumber, source=source)
+        if isChanged or isNew:
             for contract in self.contractStore.contracts:
                 if contract.sourceNetwork == network:
                     logging.info(f'Scheduling processing for dependent token: {contract.network}/{tokenId}')
                     await self.update_token_deferred(network=contract.network, tokenId=tokenId)
         if not resizableImageUrl:
             await self.upload_token_image_deferred(network=network, tokenId=tokenId, delay=1)
-        if gridItem.groupId and (gridItem.groupId != groupId) or gridItem.ownerId != ownerId:
+        if groupId and (isNew or groupId != gridItem.groupId or ownerId != gridItem.ownerId):
             await self.update_grid_item_group_image_deferred(network=network, ownerId=ownerId, groupId=groupId)
 
     async def go_to_image(self, imageId: str, width: Optional[int] = None, height: Optional[int] = None) -> str:

@@ -2,7 +2,7 @@ import React from 'react';
 
 import { KibaException } from '@kibalabs/core';
 import { useDeepCompareCallback, useNumberRouteParam } from '@kibalabs/core-react';
-import { Alignment, Box, Button, Direction, Form, Head, InputType, KibaIcon, Link, LoadingSpinner, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, Form, Head, InputType, KibaIcon, Link, LoadingSpinner, MarkdownText, PaddingSize, SingleLineInput, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ContractReceipt, ContractTransaction, utils as etherUtils } from 'ethers';
 
 import { useAccount, useWeb3 } from '../../accountsContext';
@@ -426,6 +426,10 @@ export const TokenMintPage = (): React.ReactElement => {
             )}
           </React.Fragment>
         )}
+        <Stack.Item growthFactor={1} shrinkFactor={1}>
+          <Spacing variant={PaddingSize.Wide} />
+        </Stack.Item>
+        <MarkdownText textVariant='note' textAlignment={TextAlignment.Center} source='By minting a token you are agreeing to our [Terms of Sale](/assets/tos.pdf). Please take some time to read them!' />
       </Stack>
     </React.Fragment>
   );

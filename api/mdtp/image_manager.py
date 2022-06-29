@@ -51,9 +51,9 @@ class ImageManager:
         return f'image/{imageType}'
 
     async def upload_image_from_url(self, url: str) -> str:
-        localFilePath = f'./download-{str(uuid.uuid4())}'
         if url.startswith('ipfs://'):
             url = url.replace('ipfs://', 'https://kibalabs.mypinata.cloud/ipfs/')
+        localFilePath = f'./download-{str(uuid.uuid4())}'
         await self.requester.get(url=url, outputFilePath=localFilePath)
         imageId = await self.upload_image_from_file(filePath=localFilePath)
         await file_util.remove_file(filePath=localFilePath)

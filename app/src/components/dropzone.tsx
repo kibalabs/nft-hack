@@ -6,6 +6,7 @@ import * as ReactDropzone from 'react-dropzone';
 import styled from 'styled-components';
 
 export interface IDropzoneProps {
+  className?: string;
   onFilesChosen: (files: File[]) => void;
 }
 
@@ -36,10 +37,12 @@ export const Dropzone = (props: IDropzoneProps): React.ReactElement => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.onFilesChosen]);
 
-  const { getRootProps, getInputProps } = ReactDropzone.useDropzone({ onDrop, maxFiles: 1, accept: ['image/png', 'image/jpeg', 'image/jpg'] });
+  const { getRootProps, getInputProps } = ReactDropzone.useDropzone({ onDrop,
+    maxFiles: 1,
+    accept: { 'image/png': [], 'image/jpeg': [], 'image/jpg': [] } });
 
   return (
-    <StyledDropzone theme={theme} {...getRootProps()}>
+    <StyledDropzone className={props.className} theme={theme} {...getRootProps()}>
       <input {...getInputProps()} />
       <KibaIcon iconId='ion-cloud-upload-outline' />
     </StyledDropzone>

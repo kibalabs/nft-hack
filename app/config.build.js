@@ -15,7 +15,7 @@ const seoTags = [
   new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
   new InjectSeoPlugin.Tag('meta', {property: 'og:url', content: url}),
   new InjectSeoPlugin.MetaTag('twitter:card', 'summary_large_image'),
-  new InjectSeoPlugin.MetaTag('twitter:site', '@mdtp_app'),
+  new InjectSeoPlugin.MetaTag('twitter:site', '@tokenpagexyz'),
   new InjectSeoPlugin.Tag('link', {rel: 'canonical', href: url}),
   new InjectSeoPlugin.Tag('link', {rel: 'apple-touch-icon', sizes: '180x180', href: '/assets/apple-touch-icon.png'}),
   new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/svg+xml', href: '/assets/favicon.svg'}),
@@ -64,7 +64,7 @@ module.exports = (config) => {
       new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:url', content: `${url}/about`}),
       new InjectSeoPlugin.MetaTag('twitter:card', 'summary_large_image'),
-      new InjectSeoPlugin.MetaTag('twitter:site', '@mdtp_app'),
+      new InjectSeoPlugin.MetaTag('twitter:site', '@tokenpagexyz'),
       new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/svg+xml', href: '/assets/favicon.svg'}),
     ],
   }, {
@@ -78,7 +78,7 @@ module.exports = (config) => {
       new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:url', content: `${url}/roadmap`}),
       new InjectSeoPlugin.MetaTag('twitter:card', 'summary_large_image'),
-      new InjectSeoPlugin.MetaTag('twitter:site', '@mdtp_app'),
+      new InjectSeoPlugin.MetaTag('twitter:site', '@tokenpagexyz'),
       new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/svg+xml', href: '/assets/favicon.svg'}),
     ],
   }, {
@@ -92,7 +92,7 @@ module.exports = (config) => {
       new InjectSeoPlugin.Tag('meta', {property: 'og:image', content: imageUrl}),
       new InjectSeoPlugin.Tag('meta', {property: 'og:url', content: `${url}/share`}),
       new InjectSeoPlugin.MetaTag('twitter:card', 'summary_large_image'),
-      new InjectSeoPlugin.MetaTag('twitter:site', '@mdtp_app'),
+      new InjectSeoPlugin.MetaTag('twitter:site', '@tokenpagexyz'),
       new InjectSeoPlugin.Tag('link', {rel: 'icon', type: 'image/svg+xml', href: '/assets/favicon.svg'}),
     ],
   }];

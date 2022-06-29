@@ -20,7 +20,7 @@ Update tokens to show off what you've got!
 ![Update](/assets/update-block.mp4)
 
 It's that simple! Join us now to own a piece of crypto history! ❤️
-`;
+  `;
 
   const learnMoreText = `
 **Don't get crypto and want to learn more? Read on... 🤓**
@@ -59,10 +59,17 @@ Most NFT projects today are widely seen on twitter, discord and even IRL because
 
 With MillionDollarTokenPage we give you something even better - we give you a profile frame 🖼!
 
-You can [read more about Frames here](https://blog.milliondollartokenpage.com/frames). We think they are the future.
+You can [read more about Frames here](https://www.tokenpage.xyz/frames). We think they are the future.
 
 Once you own a token, you can use [PFP Kit](https://pfpkit.xyz) to create a new PFP with your other NFTs overlaid by an awesome MDTP Frame.
-" />
+
+**About Us 🦸‍♂️🦸🏾‍♂️**
+
+MillionDollarTokenPage is built by [TokenPage](https://www.tokenpage.xyz).
+
+We are a product studio focussed on developing and creating value for communities, powered by a deep web3 core.
+
+If you'd like us to help build out your web3 vision, [get in touch](https://calendly.com/d/dn7-npm-xdb/token-page-intro) 🙌.
   `;
 
   return (
