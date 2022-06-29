@@ -236,7 +236,7 @@ export const TokenUpdatePage = (): React.ReactElement => {
             <Text>It may take a few minutes for the page to update as doing things on a secure blockchain can take some time!</Text>
             <Spacing />
             <ShareForm
-              initialShareText={`Frens, I just updated my NFT on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @mdtp_app 🔥🔥 You too can show off your JPGs and projects here, LFG 🚀`}
+              initialShareText={`Frens, I just updated my NFT on MillionDollarTokenPage.com/tokens/${tokenMetadata.tokenId} @tokenpagexyz 🔥🔥 You too can show off your JPGs and projects here, LFG 🚀`}
               minRowCount={3}
             />
           </React.Fragment>

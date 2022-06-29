@@ -36,9 +36,9 @@ export const MetaMaskConnection = (): React.ReactElement => {
   }, [loadTokens]);
 
   const onClicked = async (): Promise<void> => {
-    if (account === undefined) {
+    if (account === null) {
       window.open('https://metamask.io');
-    } else if (account === null) {
+    } else if (account === undefined) {
       await onLinkAccountsClicked();
     } else {
       navigator.navigateTo(`/owners/${account.address}`);
@@ -50,9 +50,9 @@ export const MetaMaskConnection = (): React.ReactElement => {
   return (
     <LinkBase onClicked={onClicked}>
       <Box variant={`overlayView-horizontal${boxVariantSuffix}`} isFullWidth={false}>
-        { account === undefined ? (
+        { account === null ? (
           <Text variant='bold'>Install metamask to get started</Text>
-        ) : account === null ? (
+        ) : account === undefined ? (
           <Text variant='bold'>Connect accounts to get started</Text>
         ) : (
           <Stack

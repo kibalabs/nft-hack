@@ -196,7 +196,7 @@ contract MillionDollarTokenPage is ERC721, IERC721Enumerable, Ownable {
         require(msg.value >= mintPrice.mul(quantity), "MDTP: Insufficient payment");
         require(mintedCount() + quantity <= totalMintLimit, "MDTP: reached current minting limit");
         require(balanceOf(msg.sender) + quantity <= ownershipMintLimit, "MDTP: reached current ownership limit");
-        require(quantity <= singleMintLimit, "MDTP: requested token count is over singleMintLimit");
+        require(quantity <= singleMintLimit, "MDTP: requescted token count is over singleMintLimit");
         require(canMintCenter || !isAnyInMiddle(tokenId, width, height), "MDTP: Minting the middle 500 tokens is not permitted yet");
         _mintTokenGroup(tokenId, width, height);
     }

@@ -114,7 +114,7 @@ export const useAccount = (): Account | undefined | null => {
     return null;
   }
   if (accounts.length === 0) {
-    return null;
+    return undefined;
   }
   return accounts[0];
 };

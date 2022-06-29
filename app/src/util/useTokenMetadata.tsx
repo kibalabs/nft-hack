@@ -90,7 +90,7 @@ export const useTokenData = (tokenId: number): TokenData => {
 
 
   const tokenMetadata = React.useMemo((): TokenMetadata | undefined | null => {
-    if (gridItem === undefined || chainGridItem === undefined) {
+    if (gridItem === undefined && chainGridItem === undefined) {
       return undefined;
     }
     if (gridItem && chainGridItem) {
