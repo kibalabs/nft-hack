@@ -49,7 +49,7 @@ export const useTokenData = (tokenId: number): TokenData => {
     }
     if (contract) {
       contract.tokenContentURI(tokenId).then((tokenMetadataUrl: string): void => {
-        const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://kibalabs.mypinata.cloud/ipfs/') : tokenMetadataUrl;
+        const url = tokenMetadataUrl.startsWith('ipfs://') ? tokenMetadataUrl.replace('ipfs://', 'https://pablo-images.kibalabs.com/v1/ipfs/') : tokenMetadataUrl;
         requester.makeRequest(RestMethod.GET, url).then((response: KibaResponse): void => {
           const filter = contract.filters.TokenContentURIChanged(tokenId);
           web3.getLogs({ address: filter.address, topics: filter.topics, fromBlock: 0 }).then((logs: Log[]): void => {
