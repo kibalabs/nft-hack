@@ -89,7 +89,7 @@ class MdtpManager:
 
     async def _get_json_content(self, url: str) -> Dict[str, Any]:
         if url.startswith('ipfs://'):
-            url = url.replace('ipfs://', 'https://kibalabs.mypinata.cloud/ipfs/')
+            url = url.replace('ipfs://', 'https://pablo-images.kibalabs.com/v1/ipfs/')
         response = await self.requester.make_request(method='GET', url=url)
         return json.loads(response.text)
 
@@ -232,7 +232,7 @@ class MdtpManager:
             logging.info(f'Drawing grid item {gridItem.gridItemId}')
             imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
             if imageUrl.startswith('ipfs://'):
-                imageUrl = imageUrl.replace('ipfs://', 'https://kibalabs.mypinata.cloud/ipfs/')
+                imageUrl = imageUrl.replace('ipfs://', 'https://pablo-images.kibalabs.com/v1/ipfs/')
             imageResponse = await self.requester.get(url=imageUrl)
             contentBuffer = BytesIO(imageResponse.content)
             with PILImage.open(fp=contentBuffer) as tokenImage:
@@ -481,7 +481,7 @@ class MdtpManager:
                 logging.info(f'Drawing grid item {gridItem.gridItemId}')
                 imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
                 if imageUrl.startswith('ipfs://'):
-                    imageUrl = imageUrl.replace('ipfs://', 'https://kibalabs.mypinata.cloud/ipfs/')
+                    imageUrl = imageUrl.replace('ipfs://', 'https://pablo-images.kibalabs.com/v1/ipfs/')
                 imageResponse = await self.requester.get(url=imageUrl)
                 contentBuffer = BytesIO(imageResponse.content)
                 with PILImage.open(fp=contentBuffer) as tokenImage:
