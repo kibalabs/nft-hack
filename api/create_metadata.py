@@ -291,8 +291,6 @@ async def run(tokenId: Optional[int], shouldUpload: bool, shouldGenerateForV1: b
 
     infuraIpfsAuth = BasicAuthentication(username=os.environ['INFURA_IPFS_PROJECT_ID'], password=os.environ['INFURA_IPFS_PROJECT_SECRET'])
     ipfsRequester = Requester(headers={'authorization': f'Basic {infuraIpfsAuth.to_string()}'})
-    # pinataApiKey = os.environ['PINATA_API_KEY']
-    # ipfsRequester = Requester(headers={'Authorization': f'Bearer {pinataApiKey}'})
     ipfsManager = IpfsManager(requester=ipfsRequester)
 
     imagesOutputDirectory = 'output/images' if not shouldGenerateForV1 else 'output/images-v1'

@@ -50,9 +50,11 @@ async def main():
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     contractStore = create_contract_store(ethClient=ethClient, rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
 
-    pinataApiKey = os.environ['PINATA_API_KEY']
-    pinataRequester = Requester(headers={'Authorization': f'Bearer {pinataApiKey}'})
-    ipfsManager = IpfsManager(pinataRequester=pinataRequester)
+    infuraUsername = os.environ['INFURA_IPFS_PROJECT_ID']
+    infuraPassword = os.environ['INFURA_IPFS_PROJECT_SECRET']
+    infuraAuth = BasicAuthentication(username=infuraUsername, password=infuraPassword)
+    infuraRequester = Requester(headers={'Authorization': f'Basic {infuraAuth.to_string()}'})
+    ipfsManager = IpfsManager(infuraRequester=infuraRequester)
 
     imageManager = ImageManager(requester=requester, s3Manager=s3Manager, ipfsManager=ipfsManager)
     manager = MdtpManager(requester=requester, retriever=retriever, saver=saver, s3Manager=s3Manager, contractStore=contractStore, workQueue=workQueue, imageManager=imageManager, ipfsManager=ipfsManager)
@@ -67,7 +69,7 @@ async def main():
     await messageQueueProcessor.run()
 
     await requester.close_connections()
-    await pinataRequester.close_connections()
+    await infuraRequester.close_connections()
     await s3Manager.disconnect()
     await workQueue.disconnect()
     await database.disconnect()
