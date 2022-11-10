@@ -3,10 +3,10 @@ import os
 
 import asyncclick as click
 from core import logging
+from core.http.basic_authentication import BasicAuthentication
 from core.requester import Requester
 
 from mdtp.ipfs_manager import IpfsManager
-
 
 cids = [
     'QmNd18v6domwX1wR7gqq5TSHAsoFdTfZnpEnaJKWPHN9Yc',
@@ -14,9 +14,11 @@ cids = [
 
 @click.command()
 async def run():
-    pinataApiKey = os.environ['PINATA_API_KEY']
-    pinataRequester = Requester(headers={'Authorization': f'Bearer {pinataApiKey}'})
-    ipfsManager = IpfsManager(pinataRequester=pinataRequester)
+    infuraUsername = os.environ['INFURA_IPFS_PROJECT_ID']
+    infuraPassword = os.environ['INFURA_IPFS_PROJECT_SECRET']
+    infuraAuth = BasicAuthentication(username=infuraUsername, password=infuraPassword)
+    infuraRequester = Requester(headers={'Authorization': f'Basic {infuraAuth.to_string()}'})
+    ipfsManager = IpfsManager(infuraRequester=infuraRequester)
 
     metadata2OutputDirectory = 'output/metadatas'
     metadata1OutputDirectory = 'output/metadatas-v1'
@@ -65,7 +67,7 @@ async def run():
     #     print(cid)
     #     await ipfsManager.pin_cid(cid=cid)
 
-    await pinataRequester.close_connections()
+    await infuraRequester.close_connections()
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
