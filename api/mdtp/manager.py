@@ -331,7 +331,7 @@ class MdtpManager:
                     metadataFile.write(json.dumps(data))
                 metadataFileNames.append(metadataFileName)
         if shouldUseIpfs:
-            fileContentMap = {metadataFileName: open(os.path.join(outputDirectory, metadataFileName), 'r') for metadataFileName in metadataFileNames}  # pylint: disable=consider-using-with
+            fileContentMap = {metadataFileName: open(os.path.join(outputDirectory, metadataFileName), 'rb') for metadataFileName in metadataFileNames}  # pylint: disable=consider-using-with
             cid = await self.ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
             for openFile in fileContentMap.values():
                 openFile.close()
@@ -357,7 +357,7 @@ class MdtpManager:
             'tokenMetadataUrls': contentUrls,
         }, separators=(',', ':'))
         messageHash = defunct_hash_message(text=signedMessage)
-        signer = w3.eth.account.recoverHash(message_hash=messageHash, signature=signature)
+        signer = w3.eth.account._recover_hash(message_hash=messageHash, signature=signature)  # pylint: disable=protected-access
         isPending = False
         tokenIds = []
         for row in range(0, height):
