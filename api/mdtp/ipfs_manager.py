@@ -28,4 +28,4 @@ class IpfsManager:
         raise InternalServerErrorException('Failed to find root hash in IPFS response')
 
     async def pin_cid(self, cid: str) -> None:
-        await self.infuraRequester.post_json(url=f'https://ipfs.infura.io:5001/api/v0/pin/addarg={cid}&recursive=true')
+        await self.infuraRequester.post(url=f'https://ipfs.infura.io:5001/api/v0/pin/add?arg={cid}&recursive=true', timeout=600)

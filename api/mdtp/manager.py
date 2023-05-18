@@ -94,7 +94,7 @@ class MdtpManager:
         return json.loads(response.text)
 
     async def get_token_metadata(self, network: str, tokenId: str) -> TokenMetadata:
-        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4'}:
+        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4', 'sepolia1'}:
             try:
                 tokenIdValue = int(tokenId)
             except ValueError:
@@ -125,7 +125,7 @@ class MdtpManager:
         )
 
     async def get_token_content(self, network: str, tokenId: str) -> TokenMetadata:
-        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4'}:
+        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4', 'sepolia1'}:
             try:
                 tokenIdValue = int(tokenId)
             except ValueError:

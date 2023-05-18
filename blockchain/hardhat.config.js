@@ -16,24 +16,26 @@ module.exports = {
       },
     },
   },
-  defaultNetwork: "hardhat",
+  defaultNetwork: 'hardhat',
   networks: {
-    hardhat: {},
-    mainnet: {
-      url: process.env.ALCHEMY_MAINNET_URL,
-      accounts: [process.env.PRIVATE_KEY],
-      gasPrice: 20 * GWEI,
+    hardhat: {
+      accounts: {
+        count: 100,
+      },
     },
-    rinkeby: {
-      url: process.env.ALCHEMY_URL,
-      accounts: [process.env.PRIVATE_KEY],
-      gasPrice: 0.1 * GWEI,
+    mainnet: {
+      url: process.env.MAINNET_DEPLOYMENT_URL,
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+    },
+    sepolia: {
+      url: process.env.SEPOLIA_DEPLOYMENT_URL,
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
     },
   },
   gasReporter: {
     enabled: true,
-    currency: "USD",
-    gasPrice: 50,
+    currency: 'USD',
+    gasPrice: 20,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
     excludeContracts: [
       'ERC721Upgradeable.sol',
