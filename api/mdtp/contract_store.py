@@ -7,6 +7,7 @@ from typing import Optional
 from core.exceptions import BadRequestException
 from core.exceptions import NotFoundException
 from core.exceptions import ServerException
+from core.exceptions import InternalServerErrorException
 from core.web3.eth_client import EthClientInterface
 from web3.main import Web3
 from web3.types import TxReceipt
@@ -71,7 +72,7 @@ class ContractStore:
 
     async def _send_transaction(self, contract: Contract, methodName: str, nonce: int, gas: int, gasPrice: int, arguments: Optional[dict] = None) -> str:
         if not self.accountAddress or not self.privateKey:
-            raise Exception('accountAddress and privateKey must be provided to ContractStore in order to make transactions')
+            raise InternalServerErrorException('accountAddress and privateKey must be provided to ContractStore in order to make transactions')
         functionAbi = [abi for abi in contract.abi if abi.get('name') == methodName][0]
         transactionHash = await contract.ethClient.send_transaction(toAddress=contract.address, contractAbi=contract.abi, functionAbi=functionAbi, arguments=arguments, fromAddress=self.accountAddress, privateKey=self.privateKey, nonce=nonce, gas=gas, gasPrice=gasPrice)
         return transactionHash
@@ -79,7 +80,7 @@ class ContractStore:
     async def get_token_owner(self, network: str, tokenId: int) -> str:
         contract = self.get_contract(network=network)
         ownerIdResponse = await self._call_function(contract=contract, methodName=contract.ownerOfMethodName, arguments={'tokenId': int(tokenId)})
-        ownerId = Web3.toChecksumAddress(ownerIdResponse[0].strip())
+        ownerId = Web3.to_checksum_address(ownerIdResponse[0].strip())
         return ownerId
 
     async def should_check_migrations(self, network: str) -> bool:
@@ -91,7 +92,7 @@ class ContractStore:
         if not contract.migrationTargetMethodName:
             raise BadRequestException('Contract does not have a migrationTargetMethodName')
         ownerIdResponse = await self._call_function(contract=contract, methodName=contract.migrationTargetMethodName)
-        migrationTarget = Web3.toChecksumAddress(ownerIdResponse[0].strip())
+        migrationTarget = Web3.to_checksum_address(ownerIdResponse[0].strip())
         return migrationTarget
 
     async def is_token_set_for_migration(self, network: str, tokenId: int) -> bool:
@@ -134,7 +135,7 @@ class ContractStore:
 
     async def set_token_group_content_urls(self, network: str, tokenId: int, width: int, height: int, tokenContentUris: List[str], nonce: int, gas: int, gasPrice: int) -> str:
         if width * height != len(tokenContentUris):
-            raise Exception(f'length of tokenContentUris ({len(tokenContentUris)}) must be equal to width * height ({width * height})')
+            raise InternalServerErrorException(f'length of tokenContentUris ({len(tokenContentUris)}) must be equal to width * height ({width * height})')
         contract = self.get_contract(network=network)
         arguments = {'tokenId': tokenId, 'width': width, 'height': height, 'contentURIs': tokenContentUris}
         transactionHash = await self._send_transaction(contract=contract, methodName=contract.setTokenGroupContentUriMethodName, arguments=arguments, nonce=nonce, gas=gas, gasPrice=gasPrice)

@@ -15,7 +15,8 @@ from typing import Sequence
 from core import logging
 from core.exceptions import BadRequestException
 from core.exceptions import NotFoundException
-from core.queues.sqs_message_queue import SqsMessageQueue
+from core.queues.message_queue import MessageQueue
+from core.queues.model import Message
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
@@ -64,7 +65,7 @@ _API_URL = 'https://d2a7i2107hou45.cloudfront.net'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: Retriever, saver: Saver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager, ipfsManager: IpfsManager):
+    def __init__(self, requester: Requester, retriever: Retriever, saver: Saver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: MessageQueue[Message], imageManager: ImageManager, ipfsManager: IpfsManager):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
@@ -101,7 +102,6 @@ class MdtpManager:
                 # pylint: disable=raise-missing-from
                 raise NotFoundException()
             if tokenIdValue <= 0 or tokenIdValue > 10000:
-                # pylint: disable=raise-missing-from
                 raise NotFoundException()
             return TokenMetadata(
                 tokenId=tokenId,
@@ -171,6 +171,8 @@ class MdtpManager:
             ownerId='',
             url=metadata.url,
             groupId=metadata.groupId,
+            blockNumber=0,
+            source='default',
         )
 
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:

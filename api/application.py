@@ -7,7 +7,7 @@ from core.api.middleware.exception_handling_middleware import ExceptionHandlingM
 from core.api.middleware.logging_middleware import LoggingMiddleware
 from core.api.middleware.server_headers_middleware import ServerHeadersMiddleware
 from core.http.basic_authentication import BasicAuthentication
-from core.queues.sqs_message_queue import SqsMessageQueue
+from core.queues.sqs import SqsMessageQueue
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.store.database import Database

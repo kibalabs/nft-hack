@@ -75,7 +75,7 @@ class ImageManager:
         image = await self._load_image(imageId=imageId)
         targetSize = ImageSize(int(image.size.width / width), int(image.size.height / height))
         if image.imageFormat not in {ImageFormat.JPG, ImageFormat.PNG, ImageFormat.WEBP}:
-            raise Exception(f'Unable to crop image of type {image.imageFormat}')
+            raise InternalServerErrorException(f'Unable to crop image of type {image.imageFormat}')
         contentBuffer = BytesIO(image.content)
         fileNames = []
         with PILImage.open(fp=contentBuffer) as pilImage:
