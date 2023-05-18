@@ -244,7 +244,7 @@ class MdtpManager:
             yPosition = math.floor(tokenIndex / canvasSizeY)
             outputImage.paste(emptyTokenImage, (xPosition * tokenWidth, yPosition * tokenHeight))
             outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
-        outputFilePath = 'base_image_output.png'
+        outputFilePath = f'base_image_output-{str(uuid.uuid4())}.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
         await file_util.remove_file(filePath=outputFilePath)
@@ -492,7 +492,7 @@ class MdtpManager:
                 xPosition = (tokenIndex % canvasTokenHeight) - minX
                 yPosition = math.floor(tokenIndex / canvasTokenHeight) - minY
                 outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
-            outputFilePath = 'grid_item_group_image_output.png'
+            outputFilePath = f'grid_item_group_image_output-{str(uuid.uuid4())}.png'
             outputImage.save(outputFilePath)
             imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
             await file_util.remove_file(filePath=outputFilePath)
