@@ -6,7 +6,7 @@ WORKDIR /app
 # Install requirements
 COPY package.json $WORKDIR
 COPY package-lock.json $WORKDIR
-RUN npm run install
+RUN npm install
 
 # Build app
 COPY . $WORKDIR
