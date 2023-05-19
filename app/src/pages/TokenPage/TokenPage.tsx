@@ -22,7 +22,7 @@ export const TokenPage = (): React.ReactElement => {
   const navigator = useNavigator();
   const colors = useColors();
   const setTokenSelection = useSetTokenSelection();
-  const { contract, migrationContract, apiClient, network } = useGlobals();
+  const { contract, migrationContract, apiClient, network, chainId } = useGlobals();
   const chainOwnerId = useOwnerId(tokenId);
   const account = useAccount();
   const web3 = useWeb3();
@@ -68,13 +68,13 @@ export const TokenPage = (): React.ReactElement => {
 
   const loadOwnerName = React.useCallback(async (): Promise<void> => {
     setOwnerName(undefined);
-    if (ownerId && web3) {
+    if (ownerId && web3 && chainId === 1) {
       const retrievedOwnerName = await web3.lookupAddress(ownerId);
       setOwnerName(retrievedOwnerName);
     } else {
       setOwnerName(null);
     }
-  }, [ownerId, web3]);
+  }, [ownerId, web3, chainId]);
 
   React.useEffect((): void => {
     loadOwnerName();
