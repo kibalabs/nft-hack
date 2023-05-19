@@ -4,7 +4,7 @@ import os
 from core import logging
 from core.http.basic_authentication import BasicAuthentication
 from core.queues.message_queue_processor import MessageQueueProcessor
-from core.queues.sqs_message_queue import SqsMessageQueue
+from core.queues.sqs import SqsMessageQueue
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.slack_client import SlackClient
@@ -41,14 +41,11 @@ async def main():
     workQueue = SqsMessageQueue(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'], queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue')
     s3Manager = S3Manager(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'])
 
-    # NOTE(krishan711): The AWS eth instance is much slower with getLogs so fails when calling ContractStore.get_latest_update_block_number
-    # awsRequester = AwsRequester(accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'])
-    # ethClient = RestEthClient(url='https://nd-foldvvlb25awde7kbqfvpgvrrm.ethereum.managedblockchain.eu-west-1.amazonaws.com', requester=awsRequester)
     requester = Requester()
-    ethClient = RestEthClient(url=os.environ['ALCHEMY_MAINNET_URL'], requester=requester)
-    rinkebyEthClient = RestEthClient(url=os.environ['ALCHEMY_URL'], requester=requester)
+    ethClient = RestEthClient(url=os.environ['MAINNET_DEPLOYMENT_URL'], requester=requester)
+    sepoliaEthClient = RestEthClient(url='https://eth-sepolia-public.unifra.io', requester=requester)
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
-    contractStore = create_contract_store(ethClient=ethClient, rinkebyEthClient=rinkebyEthClient, mumbaiEthClient=mumbaiEthClient)
+    contractStore = create_contract_store(ethClient=ethClient, sepoliaEthClient=sepoliaEthClient, mumbaiEthClient=mumbaiEthClient)
 
     infuraUsername = os.environ['INFURA_IPFS_PROJECT_ID']
     infuraPassword = os.environ['INFURA_IPFS_PROJECT_SECRET']
@@ -66,6 +63,7 @@ async def main():
     await database.connect()
     await s3Manager.connect()
     await workQueue.connect()
+
     await messageQueueProcessor.run()
 
     await requester.close_connections()

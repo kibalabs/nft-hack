@@ -17,6 +17,7 @@ export enum ChainId {
   Mainnet = 1,
   Ropsten = 3,
   Rinkeby = 4,
+  Sepolia = 11155111,
   Goerli = 5,
   Kovan = 42,
   Mumbai = 80001,
@@ -29,7 +30,7 @@ export const isBeta = (): boolean => {
 };
 
 const validChainIdNetworkMap: Record<number, string | undefined> = {
-  [ChainId.Rinkeby]: isBeta() ? 'rinkeby9' : undefined,
+  [ChainId.Sepolia]: 'sepolia1',
   [ChainId.Mainnet]: 'mainnet2',
 };
 
@@ -38,6 +39,7 @@ const networkContractAddressMap: Record<string, string | null> = {
   mainnet1: '0x1Cf33F4c6C4E6391F4D2B445aa3a36639b77dd68',
   rinkeby9: '0x2B45a10bc643aA057da80a2EF5FF63F0C20F5ac0',
   mainnet2: '0x8e720f90014fa4de02627f4a4e217b7e3942d5e8',
+  sepolia1: '0xE1a62F1DCb4bAD97fF1F63EDB8b98274B3AEF3bA',
 };
 
 const networkContractMap: Record<string, ContractInterface | null> = {
@@ -45,6 +47,7 @@ const networkContractMap: Record<string, ContractInterface | null> = {
   mainnet1: contract7 as unknown as ContractInterface,
   rinkeby9: contract8 as unknown as ContractInterface,
   mainnet2: contract8 as unknown as ContractInterface,
+  sepolia1: contract8 as unknown as ContractInterface,
 };
 
 export const getMigrationNetwork = (network: string): string | null => {
@@ -84,6 +87,9 @@ export const getTokenOpenseaUrl = (network: string, tokenId: number, isSetForMig
   if (network.startsWith('rinkeby')) {
     return `https://testnets.opensea.io/assets/${contractAddress}/${tokenId}`;
   }
+  if (network.startsWith('sepolia')) {
+    return `https://testnets.opensea.io/assets/${contractAddress}/${tokenId}`;
+  }
   if (network.startsWith('mainnet')) {
     return `https://opensea.io/assets/${contractAddress}/${tokenId}`;
   }
@@ -98,6 +104,9 @@ export const getTokenEtherscanUrl = (network: string, tokenId: number, isSetForM
   if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/token/${contractAddress}?a=${tokenId}`;
   }
+  if (network.startsWith('sepolia')) {
+    return `https://sepolia.etherscan.io/token/${contractAddress}?a=${tokenId}`;
+  }
   if (network.startsWith('mainnet')) {
     return `https://etherscan.io/token/${contractAddress}?a=${tokenId}`;
   }
@@ -108,6 +117,9 @@ export const getTransactionEtherscanUrl = (network: string, transactionHash: str
   if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/tx/${transactionHash}`;
   }
+  if (network.startsWith('sepolia')) {
+    return `https://sepolia.etherscan.io/tx/${transactionHash}`;
+  }
   if (network.startsWith('mainnet')) {
     return `https://etherscan.io/tx/${transactionHash}`;
   }
@@ -117,6 +129,9 @@ export const getTransactionEtherscanUrl = (network: string, transactionHash: str
 export const getAccountEtherscanUrl = (network: string, account: string): string | null => {
   if (network.startsWith('rinkeby')) {
     return `https://rinkeby.etherscan.io/address/${account}`;
+  }
+  if (network.startsWith('sepolia')) {
+    return `https://sepolia.etherscan.io/address/${account}`;
   }
   if (network.startsWith('mainnet')) {
     return `https://etherscan.io/address/${account}`;

@@ -1,4 +1,4 @@
-FROM python:3.9.2-slim
+FROM python:3.10.9-slim
 
 WORKDIR /app
 
@@ -9,7 +9,6 @@ RUN apt-get update \
     && pip install cytoolz==0.11.0 \
     && pip install bitarray==1.2.2 \
     && pip install lru-dict==1.1.7 \
-    && pip install httptools==0.1.1 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get purge -y --auto-remove gcc libc-dev
 

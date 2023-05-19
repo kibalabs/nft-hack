@@ -1,5 +1,3 @@
 colour==0.1.5
-CairoSVG==2.5.2
-svglib==1.2.1
-asyncclick==8.0.1.3
-kiba-build==0.1.3
+kiba-core[types]==0.5.2.dev2
+kiba-build==0.1.9.dev1

@@ -15,7 +15,8 @@ from typing import Sequence
 from core import logging
 from core.exceptions import BadRequestException
 from core.exceptions import NotFoundException
-from core.queues.sqs_message_queue import SqsMessageQueue
+from core.queues.message_queue import MessageQueue
+from core.queues.model import Message
 from core.requester import Requester
 from core.s3_manager import S3Manager
 from core.s3_manager import S3PresignedUpload
@@ -64,7 +65,7 @@ _API_URL = 'https://d2a7i2107hou45.cloudfront.net'
 
 class MdtpManager:
 
-    def __init__(self, requester: Requester, retriever: Retriever, saver: Saver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: SqsMessageQueue, imageManager: ImageManager, ipfsManager: IpfsManager):
+    def __init__(self, requester: Requester, retriever: Retriever, saver: Saver, s3Manager: S3Manager, contractStore: ContractStore, workQueue: MessageQueue[Message], imageManager: ImageManager, ipfsManager: IpfsManager):
         self.w3 = Web3()
         self.requester = requester
         self.retriever = retriever
@@ -94,14 +95,13 @@ class MdtpManager:
         return json.loads(response.text)
 
     async def get_token_metadata(self, network: str, tokenId: str) -> TokenMetadata:
-        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4'}:
+        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4', 'sepolia1'}:
             try:
                 tokenIdValue = int(tokenId)
             except ValueError:
                 # pylint: disable=raise-missing-from
                 raise NotFoundException()
             if tokenIdValue <= 0 or tokenIdValue > 10000:
-                # pylint: disable=raise-missing-from
                 raise NotFoundException()
             return TokenMetadata(
                 tokenId=tokenId,
@@ -125,7 +125,7 @@ class MdtpManager:
         )
 
     async def get_token_content(self, network: str, tokenId: str) -> TokenMetadata:
-        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4'}:
+        if network in {'rinkeby', 'mumbai', 'rinkeby2', 'rinkeby3', 'rinkeby4', 'sepolia1'}:
             try:
                 tokenIdValue = int(tokenId)
             except ValueError:
@@ -171,6 +171,8 @@ class MdtpManager:
             ownerId='',
             url=metadata.url,
             groupId=metadata.groupId,
+            blockNumber=0,
+            source='default',
         )
 
     async def retrieve_grid_item(self, network: str, tokenId: int) -> GridItem:
@@ -229,7 +231,7 @@ class MdtpManager:
         logging.info(f'Drawing {len(gridItems)} new grid items')
         emptyTokenImage = PILImage.new('RGB', (tokenWidth, tokenHeight))
         for gridItem in gridItems:
-            logging.info(f'Drawing grid item {gridItem.gridItemId}')
+            logging.info(f'Drawing grid item {gridItem.gridItemId} ({gridItem.resizableImageUrl or gridItem.imageUrl})')
             imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
             if imageUrl.startswith('ipfs://'):
                 imageUrl = imageUrl.replace('ipfs://', 'https://pablo-images.kibalabs.com/v1/ipfs/')
@@ -242,7 +244,7 @@ class MdtpManager:
             yPosition = math.floor(tokenIndex / canvasSizeY)
             outputImage.paste(emptyTokenImage, (xPosition * tokenWidth, yPosition * tokenHeight))
             outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
-        outputFilePath = 'base_image_output.png'
+        outputFilePath = f'base_image_output-{str(uuid.uuid4())}.png'
         outputImage.save(outputFilePath)
         imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
         await file_util.remove_file(filePath=outputFilePath)
@@ -329,7 +331,7 @@ class MdtpManager:
                     metadataFile.write(json.dumps(data))
                 metadataFileNames.append(metadataFileName)
         if shouldUseIpfs:
-            fileContentMap = {metadataFileName: open(os.path.join(outputDirectory, metadataFileName), 'r') for metadataFileName in metadataFileNames}  # pylint: disable=consider-using-with
+            fileContentMap = {metadataFileName: open(os.path.join(outputDirectory, metadataFileName), 'rb') for metadataFileName in metadataFileNames}  # pylint: disable=consider-using-with
             cid = await self.ipfsManager.upload_files_to_ipfs(fileContentMap=fileContentMap)
             for openFile in fileContentMap.values():
                 openFile.close()
@@ -355,7 +357,7 @@ class MdtpManager:
             'tokenMetadataUrls': contentUrls,
         }, separators=(',', ':'))
         messageHash = defunct_hash_message(text=signedMessage)
-        signer = w3.eth.account.recoverHash(message_hash=messageHash, signature=signature)
+        signer = w3.eth.account._recover_hash(message_hash=messageHash, signature=signature)  # pylint: disable=protected-access
         isPending = False
         tokenIds = []
         for row in range(0, height):
@@ -490,7 +492,7 @@ class MdtpManager:
                 xPosition = (tokenIndex % canvasTokenHeight) - minX
                 yPosition = math.floor(tokenIndex / canvasTokenHeight) - minY
                 outputImage.paste(image, (xPosition * tokenWidth, yPosition * tokenHeight), mask=image if image.mode == 'RGBA' else None)
-            outputFilePath = 'grid_item_group_image_output.png'
+            outputFilePath = f'grid_item_group_image_output-{str(uuid.uuid4())}.png'
             outputImage.save(outputFilePath)
             imageId = await self.imageManager.upload_image_from_file(filePath=outputFilePath)
             await file_util.remove_file(filePath=outputFilePath)

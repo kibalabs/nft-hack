@@ -1,6 +1,6 @@
 from core.exceptions import KibaException
 from core.queues.message_queue_processor import MessageProcessor
-from core.queues.model import SqsMessage
+from core.queues.model import Message
 
 from mdtp.manager import MdtpManager
 from mdtp.messages import BuildBaseImageMessageContent
@@ -15,7 +15,7 @@ class MdtpMessageProcessor(MessageProcessor):
     def __init__(self, manager: MdtpManager):
         self.manager = manager
 
-    async def process_message(self, message: SqsMessage) -> None:
+    async def process_message(self, message: Message) -> None:
         if message.command == UpdateTokenMessageContent.get_command():
             messageContent = UpdateTokenMessageContent.parse_obj(message.content)
             await self.manager.update_token(network=messageContent.network, tokenId=messageContent.tokenId)

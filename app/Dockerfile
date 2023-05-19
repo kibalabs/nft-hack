@@ -1,15 +1,15 @@
 # Stage 1: build
-FROM node:16.13.0-stretch as build
+FROM node:18.2.0 as build
 
 WORKDIR /app
 
 # Install requirements
-COPY package.json .
-COPY package-lock.json .
-RUN npm ci
+COPY package.json $WORKDIR
+COPY package-lock.json $WORKDIR
+RUN npm install
 
 # Build app
-COPY . .
+COPY . $WORKDIR
 RUN npm run build-static
 
 # Stage 2: Serve with nginx
