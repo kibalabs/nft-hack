@@ -231,7 +231,7 @@ class MdtpManager:
         logging.info(f'Drawing {len(gridItems)} new grid items')
         emptyTokenImage = PILImage.new('RGB', (tokenWidth, tokenHeight))
         for gridItem in gridItems:
-            logging.info(f'Drawing grid item {gridItem.gridItemId}')
+            logging.info(f'Drawing grid item {gridItem.gridItemId} ({gridItem.resizableImageUrl or gridItem.imageUrl})')
             imageUrl = self._get_resized_image_url(resizableImageUrl=gridItem.resizableImageUrl, width=tokenWidth, height=tokenHeight) if gridItem.resizableImageUrl else gridItem.imageUrl
             if imageUrl.startswith('ipfs://'):
                 imageUrl = imageUrl.replace('ipfs://', 'https://pablo-images.kibalabs.com/v1/ipfs/')
