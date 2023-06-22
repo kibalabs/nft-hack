@@ -543,7 +543,6 @@ class MdtpManager:
                 contentUrl = latestOffchainContents[0].contentUrl
                 source = 'offchain'
                 blockNumber = latestOffchainContents[0].blockNumber
-        print('contentUrl', contentUrl)
         contentJson = await self._get_json_content(url=contentUrl)
         title = contentJson.get('title') or contentJson.get('name') or None
         imageUrl = contentJson.get('imageUrl') or contentJson.get('image') or None
