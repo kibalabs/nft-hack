@@ -191,8 +191,13 @@ class ContractStore:
         contract = self.get_contract(network=network)
         if not contract.updateMethodSignature:
             return []
-        events = await contract.ethClient.get_log_entries(address=contract.address, startBlockNumber=contract.startBlockNumber, topics=[Web3.keccak(text=contract.updateMethodSignature).hex(), int_to_hex(tokenId)])
-        return next((event['blockNumber'] for event in reversed(events)), None)
+        currentBlockNumber = await contract.ethClient.get_latest_block_number()
+        for blockNumber in reversed(range(contract.startBlockNumber, currentBlockNumber, 100000)):
+            endBlockNumber = blockNumber + 100000
+            events = await contract.ethClient.get_log_entries(address=contract.address, startBlockNumber=blockNumber, endBlockNumber=endBlockNumber, topics=[Web3.keccak(text=contract.updateMethodSignature).hex(), int_to_hex(tokenId)])
+            if len(events) > 0:
+                return events[-1]['blockNumber']
+        return None
 
     async def wait_for_transaction(self, network: str, transactionHash: str, sleepTime: int = 15, raiseOnFailure: bool = True) -> TxReceipt:
         transactionReceipt = None
