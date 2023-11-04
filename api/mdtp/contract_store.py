@@ -192,8 +192,8 @@ class ContractStore:
         if not contract.updateMethodSignature:
             return []
         currentBlockNumber = await contract.ethClient.get_latest_block_number()
-        for blockNumber in reversed(range(contract.startBlockNumber, currentBlockNumber, 100000)):
-            endBlockNumber = blockNumber + 100000
+        for blockNumber in reversed(range(contract.startBlockNumber, currentBlockNumber, 10000)):
+            endBlockNumber = blockNumber + 10000
             events = await contract.ethClient.get_log_entries(address=contract.address, startBlockNumber=blockNumber, endBlockNumber=endBlockNumber, topics=[Web3.keccak(text=contract.updateMethodSignature).hex(), int_to_hex(tokenId)])
             if len(events) > 0:
                 return events[-1]['blockNumber']
