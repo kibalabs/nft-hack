@@ -43,7 +43,8 @@ async def main():
 
     requester = Requester()
     ethClient = RestEthClient(url=os.environ['MAINNET_DEPLOYMENT_URL'], requester=requester)
-    sepoliaEthClient = RestEthClient(url='https://rpc-sepolia.rockx.com', requester=requester)
+    # NOTE(krishan711): update from https://chainlist.org/chain/11155111
+    sepoliaEthClient = RestEthClient(url='https://eth-sepolia-public.unifra.io', requester=requester)
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     contractStore = create_contract_store(ethClient=ethClient, sepoliaEthClient=sepoliaEthClient, mumbaiEthClient=mumbaiEthClient)
 
