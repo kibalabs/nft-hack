@@ -38,12 +38,12 @@ async def main():
     saver = Saver(database=database)
     retriever = Retriever(database=database)
 
-    workQueue = SqsMessageQueue(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'], queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue')
+    workQueue = SqsMessageQueue(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'], queueUrl='https://sqs.eu-west-1.amazonaws.com/097520841056/mdtp-work-queue-dl')
     s3Manager = S3Manager(region='eu-west-1', accessKeyId=os.environ['AWS_KEY'], accessKeySecret=os.environ['AWS_SECRET'])
 
     requester = Requester()
     ethClient = RestEthClient(url=os.environ['MAINNET_DEPLOYMENT_URL'], requester=requester)
-    sepoliaEthClient = RestEthClient(url='https://eth-sepolia-public.unifra.io', requester=requester)
+    sepoliaEthClient = RestEthClient(url='https://rpc-sepolia.rockx.com', requester=requester)
     mumbaiEthClient = RestEthClient(url='https://matic-mumbai.chainstacklabs.com', requester=requester)
     contractStore = create_contract_store(ethClient=ethClient, sepoliaEthClient=sepoliaEthClient, mumbaiEthClient=mumbaiEthClient)
 
