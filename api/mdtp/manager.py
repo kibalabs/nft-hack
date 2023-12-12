@@ -374,18 +374,20 @@ class MdtpManager:
                         raise exception
                 if tokenOwnerId != signer and not (shouldAllowPendingChange and tokenOwnerId == NON_OWNER_ID):
                     raise BadRequestException(message='Owners do not match')
-        promises = []
+        databasePromises = []
         for index, innerTokenId in enumerate(tokenIds):
             if isPending:
-                promises.append(self.saver.create_offchain_pending_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=signer, signature=signature, signedMessage=signedMessage))
+                databasePromises.append(self.saver.create_offchain_pending_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=signer, signature=signature, signedMessage=signedMessage))
             else:
-                promises.append(self.saver.create_offchain_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=signer, signature=signature, signedMessage=signedMessage))
-        await asyncio.gather(*promises)
+                databasePromises.append(self.saver.create_offchain_content(network=network, tokenId=innerTokenId, contentUrl=contentUrls[index], blockNumber=blockNumber, ownerId=signer, signature=signature, signedMessage=signedMessage))
+        await asyncio.gather(*databasePromises)
+        updatePromises = []
         for innerTokenId in tokenIds:
             if isPending:
-                await self.update_token_deferred(network=network, tokenId=innerTokenId, delay=60)
+                updatePromises.append(self.update_token_deferred(network=network, tokenId=innerTokenId, delay=60))
             else:
-                await self.update_token(network=network, tokenId=innerTokenId)
+                updatePromises.append(self.update_token(network=network, tokenId=innerTokenId))
+        await asyncio.gather(*updatePromises)
 
     async def update_tokens_deferred(self, network: str, delay: Optional[int] = None) -> None:
         await self.workQueue.send_message(message=UpdateTokensMessageContent(network=network).to_message(), delaySeconds=delay or 0)
