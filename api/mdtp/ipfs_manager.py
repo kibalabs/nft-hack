@@ -12,12 +12,12 @@ class IpfsManager:
         self.infuraRequester = infuraRequester
 
     async def upload_file_to_ipfs(self, fileContent: FileContent) -> str:
-        response = await self.infuraRequester.post_form(url='https://ipfs.infura.io:5001/api/v0/add', formDataDict={'file': fileContent}, timeout=300)
+        response = await self.infuraRequester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?pin=true', formDataDict={'file': fileContent}, timeout=300)
         responseDict = json.loads(response.text)
         return responseDict["Hash"]
 
     async def upload_files_to_ipfs(self, fileContentMap: Dict[str, FileContent]) -> str:
-        response = await self.infuraRequester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?wrap-with-directory=true', formDataDict=fileContentMap, timeout=len(fileContentMap) * 10)
+        response = await self.infuraRequester.post_form(url='https://ipfs.infura.io:5001/api/v0/add?wrap-with-directory=true&pin=true', formDataDict=fileContentMap, timeout=len(fileContentMap) * 10)
         outputLines = response.text.strip().split('\n')
         for outputLine in outputLines:
             if not outputLine:
