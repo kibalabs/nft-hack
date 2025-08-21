@@ -14,7 +14,7 @@ CREATE TABLE tbl_grid_items (
     block_id TEXT,
     owner_id TEXT NOT NULL,
     block_number INTEGER NOT NULL,
-    owner_id TEXT NOT NULL,
+    source TEXT NOT NULL
 );
 CREATE UNIQUE INDEX tbl_grid_items_uq_token_id_network ON tbl_grid_items (token_id, network);
 CREATE INDEX tbl_grid_items_updated_date ON tbl_grid_items (updated_date);
